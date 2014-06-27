@@ -704,8 +704,6 @@ DispatchForm.prototype.updateDispatchStatus = function(){"use strict";
 DispatchForm.prototype.savedDispatchNode = function(e){"use strict";
     var workNid, dispatchNid, sendUpdates, db, localOnly, singleSaveNid, isFinalSave, setFlag;
     
-    Ti.API.debug("in saved dispatchnode");
-    
     localOnly = (e.isContinuous || e.isDraft);
 
     if (!localOnly) {
@@ -735,10 +733,9 @@ DispatchForm.prototype.savedDispatchNode = function(e){"use strict";
             Dispatch.workSavedInfo = e;
         }
     }
-
+    
     if (Dispatch.workSavedInfo !== null && Dispatch.dispatchSavedInfo !== null) {
         // Both nodes are saved, so we can close the window
-        
         Dispatch.setSendingData = false;
         // Allow the updates to go through now that all the data is present
         Omadi.service.setSendingData(false);

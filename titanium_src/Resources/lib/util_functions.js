@@ -705,7 +705,8 @@ Omadi.utils.list_search_node_matches_search_criteria = function(node, criteria) 
     value_index, nodeDBValues, nodeTextValues, search_time_value2, compare_times2, 
     node_value, weekdays, reference_types, db, result, query, possibleValues, 
     searchValues, chosen_value, retval, and_groups, and_group, and_group_index, 
-    and_group_match, useNids;
+    and_group_match, useNids, jsonValues, nodeDescNames, tids, search_datestamp_value, 
+    search_datestamp_operator, search_value2, search_datestamp_operator2, search_datestamp_value2;
     /*jslint nomen: true*/
 
     try {
@@ -861,6 +862,56 @@ Omadi.utils.list_search_node_matches_search_criteria = function(node, criteria) 
 
                                         row_matches[criteria_index] = true;
                                         Ti.API.debug("IS WEEKDAY MATCH");
+                                    }
+                                }
+                            }
+                            else{
+                        
+                                search_datestamp_value = search_value.timestamp;
+                                search_datestamp_operator = search_value.operator;
+            
+                                if(search_datestamp_operator != 'user-defined'){
+                                    search_datestamp_value = Omadi.utils.list_search_set_datestamp_value_from_relative(search_datestamp_operator);
+                                }
+                                
+                                if(search_operator == 'between'){
+                                    
+                                    search_value2 = null;
+                                    if(typeof criteria_row.value2 !== 'undefined'){
+                                        search_value2 = criteria_row.value2;
+                                    }
+                                    
+                                    search_datestamp_value2 = search_value2.timestamp;
+                                    search_datestamp_operator2 = search_value2.operator;
+                                    
+                                    if(search_datestamp_operator2 != 'user-defined'){
+                                        search_datestamp_value2 = Omadi.utils.list_search_set_datestamp_value_from_relative(search_datestamp_operator2);
+                                    }
+            
+                                    if(search_datestamp_value < search_datestamp_value2){
+                                        // Make sure the value is less than the end value
+                                        for ( i = 0; i < nodeDBValues.length; i++) {
+                                            node_value = nodeDBValues[i];
+                                            if (node_value != null && node_value >= search_datestamp_value && node_value < search_datestamp_value2) {
+                                                row_matches[criteria_index] = true;
+                                            }
+                                        }
+                                    }
+                                }
+                                else if(search_operator == 'before'){
+                                    for ( i = 0; i < nodeDBValues.length; i++) {
+                                        node_value = nodeDBValues[i];
+                                        if (node_value != null && node_value < search_datestamp_value) {
+                                            row_matches[criteria_index] = true;
+                                        }
+                                    }
+                                }
+                                else if(search_operator == 'after'){
+                                    for ( i = 0; i < nodeDBValues.length; i++) {
+                                        node_value = nodeDBValues[i];
+                                        if (node_value != null && node_value > search_datestamp_value) {
+                                            row_matches[criteria_index] = true;
+                                        }
                                     }
                                 }
                             }
@@ -1112,55 +1163,134 @@ Omadi.utils.list_search_node_matches_search_criteria = function(node, criteria) 
                                     
                                 case 'extra_price':
                                     
-                                    if (search_operator == '__blank') {
-                                        row_matches[criteria_index] = true;
-                                    }
-                                    
-                                    for ( i = 0; i < nodeDBValues.length; i++) {
-                                        node_value = nodeDBValues[i];
-                                        switch(search_operator) {
-                                            case '__filled':
-                                                if (node_value != 0) {
-                                                    row_matches[criteria_index] = true;
+                                    if(search_operator == 'desc='){
+                                        row_matches[criteria_index] = false;
+                                        jsonValues = [];
+                                        
+                                        Ti.API.error("search values: " + JSON.stringify(search_value));
+                                        
+                                        if(search_value){
+                                            if(typeof node[field_name] !== 'undefined'){
+                                                if(typeof node[field_name].textValues !== 'undefined'){
+                                                    for(i = 0; i < node[field_name].textValues.length; i ++){
+                                                        jsonValues.push(JSON.parse(node[field_name].textValues[i]));
+                                                    }
                                                 }
-                                                break;
-                                                
-                                            case '__blank':
-                                                if (nodeDBValues[i] != 0) {
-                                                    row_matches[criteria_index] = false;
+                                            }
+                                            
+                                            Ti.API.error("json values: " + JSON.stringify(jsonValues));
+                                            
+                                            tids = [];
+                                            nodeDescNames = {};
+                                            
+                                            for(i = 0; i < jsonValues.length; i ++){
+                                                if(jsonValues[i] && typeof jsonValues[i].desc !== 'undefined'){
+                                                    nodeDescNames[jsonValues[i].desc] = jsonValues[i].desc;
                                                 }
-                                                break;
-                                            case '>':
-                                                if (node_value > search_value) {
-                                                    row_matches[criteria_index] = true;
+                                            }
+                                            
+                                            Ti.API.error("desc: " + JSON.stringify(nodeDescNames));
+                                            
+                                            db = Omadi.utils.openMainDatabase();
+                                            
+                                            result = db.execute("SELECT vid from vocabulary WHERE machine_name='" + search_field.settings.vocabulary + "'");
+    
+                                            query = 'SELECT tid, name from term_data WHERE vid=' + result.fieldByName('vid');
+                                            
+                                            result.close();
+    
+                                            result = db.execute(query);
+                                            while (result.isValidRow()) {
+                                                if(typeof nodeDescNames[result.fieldByName('name')] !== 'undefined'){
+                                                    tids.push(result.fieldByName('tid'));
                                                 }
-                                                break;
-                                            case '>=':
-                                                if (node_value >= search_value) {
-                                                    row_matches[criteria_index] = true;
-                                                }
-                                                break;
-                                            case '!=':
-                                                if (node_value != search_value) {
-                                                    row_matches[criteria_index] = true;
-                                                }
-                                                break;
-                                            case '<':
-                                                if (node_value < search_value) {
-                                                    row_matches[criteria_index] = true;
-                                                }
-                                                break;
-                                            case '<=':
-                                                if (node_value <= search_value) {
-                                                    row_matches[criteria_index] = true;
-                                                }
-                                                break;
+                                                result.next();
+                                            }
+                                            result.close();
+                                            db.close();
+                                            
+                                            Ti.API.error("tids: " + JSON.stringify(tids));
+                                            
+                                            if(tids.length > 0){
+                                                // Make sure the search value is an array
+                                                // This will convert an object to an array or a string to an array
+                                                searchValues = [];
+                                                if (!Omadi.utils.isArray(search_value)) {
 
-                                            default:
-                                                if (node_value == search_value) {
-                                                    row_matches[criteria_index] = true;
+                                                    for (i in search_value) {
+                                                        if (search_value.hasOwnProperty(i)) {
+            
+                                                            searchValues.push(i);
+                                                        }
+                                                    }
+                                                    search_value = searchValues;
                                                 }
-                                                break;
+                                                
+                                                for(i = 0; i < search_value.length; i ++){
+                                                    for(j = 0; j < tids.length; j ++){
+                                                        if(tids[j] == search_value[i]){
+                                                            row_matches[criteria_index] = true;
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            
+                                            Ti.API.error("matches: " + row_matches[criteria_index]);
+                                        }
+                                    }
+                                    else{
+                                        
+                                        if (search_operator == '__blank') {
+                                            row_matches[criteria_index] = true;
+                                        }
+                                        
+                                        for ( i = 0; i < nodeDBValues.length; i++) {
+                                            node_value = nodeDBValues[i];
+                                            switch(search_operator) {
+                                                case '__filled':
+                                                    if (node_value != 0) {
+                                                        row_matches[criteria_index] = true;
+                                                    }
+                                                    break;
+                                                    
+                                                case '__blank':
+                                                    if (nodeDBValues[i] != 0) {
+                                                        row_matches[criteria_index] = false;
+                                                    }
+                                                    break;
+                                                case '>':
+                                                    if (node_value > search_value) {
+                                                        row_matches[criteria_index] = true;
+                                                    }
+                                                    break;
+                                                case '>=':
+                                                    if (node_value >= search_value) {
+                                                        row_matches[criteria_index] = true;
+                                                    }
+                                                    break;
+                                                case '!=':
+                                                    if (node_value != search_value) {
+                                                        row_matches[criteria_index] = true;
+                                                    }
+                                                    break;
+                                                case '<':
+                                                    if (node_value < search_value) {
+                                                        row_matches[criteria_index] = true;
+                                                    }
+                                                    break;
+                                                case '<=':
+                                                    if (node_value <= search_value) {
+                                                        row_matches[criteria_index] = true;
+                                                    }
+                                                    break;
+    
+                                                default:
+                                                    if (node_value == search_value) {
+                                                        row_matches[criteria_index] = true;
+                                                    }
+                                                    break;
+                                            }
                                         }
                                     }
 
@@ -1661,6 +1791,42 @@ Omadi.utils.list_search_node_matches_search_criteria = function(node, criteria) 
     }
 
     return true;
+};
+
+Omadi.utils.list_search_set_datestamp_value_from_relative = function(relative_string){"use strict";
+    var retval = null, now;
+    now = Omadi.utils.getUTCTimestamp();
+
+    switch(relative_string){
+        case 'now':
+            retval = now; break;
+        case '+1day':
+            retval = now + (24 * 3600); break;
+        case '24-hours':
+            retval = now - (24 * 3600); break;
+        case '2-days':
+            retval = now - (2 * 24 * 3600); break;
+        case '3-days':
+            retval = now - (3 * 24 * 3600); break;
+        case '1-week':
+            retval = now - (7 * 24 * 3600); break;
+        case '2-weeks':
+            retval = now - (2 * 7 * 24 * 3600); break;
+        case '4-weeks':
+            retval = now - (4 * 7 * 24 * 3600); break;
+        case '8-weeks':
+            retval = now - (8 * 7 * 24 * 3600); break;
+        case '3-months':
+            retval = now - (13 * 7 * 24 * 3600); break;
+        case '6-months':
+            retval = now - (26 * 7 * 24 * 3600); break;
+        case '1-year':
+            retval = now - (52 * 7 * 24 * 3600); break;
+        case '2-years':
+            retval = now - (2 * 52 * 7 * 24 * 3600); break;
+    }
+
+    return retval;
 };
 
 Omadi.utils.list_search_get_search_sql = function(nodeType, criteria){"use strict";

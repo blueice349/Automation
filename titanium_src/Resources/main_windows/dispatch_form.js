@@ -68,6 +68,8 @@ function exitForm(){"use strict";
 function savedWorkNowSaveDispatch(){"use strict";
     Ti.App.removeEventListener("omadi:dispatch:savedDispatchNode", savedWorkNowSaveDispatch);
     
+    Ti.API.error("in savedWorkNowSaveDispatch");
+    
     if (dispatchWindowOpen) {
         dispatchWindow.fireEvent("omadi:saveForm", {
             saveType : "normal"
@@ -76,8 +78,12 @@ function savedWorkNowSaveDispatch(){"use strict";
 }
 
 function dispatchSaveForms(saveType){"use strict";
+
+    Ti.API.error("in dispatchSaveForms");
+
     if(workWindowOpen && dispatchWindowOpen){
         // When both forms are open, save one at a time to avoid negative nid conflicts
+        Ti.API.error("in dispatchSaveForms both open");
         
         Ti.App.removeEventListener("omadi:dispatch:savedDispatchNode", savedWorkNowSaveDispatch);
         Ti.App.addEventListener("omadi:dispatch:savedDispatchNode", savedWorkNowSaveDispatch);

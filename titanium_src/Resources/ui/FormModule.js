@@ -5,7 +5,7 @@ FormObj = {};
 popupWin = null;
 
 function rules_field_passed_time_check(time_rule, timestamp) {"use strict";
-    var retval, timestamp_day, timestamp_midnight, days, day_rule, values, start_time, end_time;
+    var retval, timestamp_day, timestamp_midnight, days, day_rule, values, start_time, end_time, i;
 
     retval = false;
 
@@ -22,27 +22,39 @@ function rules_field_passed_time_check(time_rule, timestamp) {"use strict";
         day_rule = days[timestamp_day];
 
         values = day_rule.split('|');
+        
+        Ti.API.error(JSON.stringify(values));
 
         if (values[0] == '1' || values[0] == 1) {
             if (values[1] == '1' || values[1] == 1) {
                 retval = true;
             }
             else {
-                start_time = Number(timestamp_midnight) + Number(values[2]);
-                end_time = Number(timestamp_midnight) + Number(values[3]) + Number(59);
-
-                // For times like 8:00PM - 5:00AM
-                if (start_time > end_time) {
-                    end_time = Number(end_time) + Number((3600 * 24));
-                }
-
-                if (Number(timestamp) >= Number(start_time) && Number(timestamp) <= Number(end_time)) {
-                    retval = true;
+                
+                for(i = 2; i < values.length; i += 2){
+                    start_time = Number(timestamp_midnight) + Number(values[i]);
+                    
+                    // Make sure the end value exists
+                    if(typeof values[i+1] !== 'undefined'){
+                        
+                        // Get the end minute and add 59 seconds to go to the end of the minute
+                        end_time = Number(timestamp_midnight) + Number(values[i+1]) + Number(59);
+        
+                        // For times like 8:00PM - 5:00AM
+                        if (start_time > end_time) {
+                            end_time = Number(end_time) + Number((3600 * 24));
+                        }
+        
+                        if (Number(timestamp) >= Number(start_time) && Number(timestamp) <= Number(end_time)) {
+                            retval = true;
+                        }
+                    }
                 }
             }
         }
 
         if (retval == false) {
+            // Check the previous day in case there was a bleedover time from the previous day
             if (timestamp_day == 0) {
                 timestamp_day = 6;
             }
@@ -59,14 +71,22 @@ function rules_field_passed_time_check(time_rule, timestamp) {"use strict";
                     Ti.API.debug("");
                 }
                 else {
-                    start_time = Number(timestamp_midnight) + Number(values[2]);
-                    end_time = Number(timestamp_midnight) + Number(values[3]) + Number(59);
-                    // For times like 8:00PM - 5:00AM
-                    if (start_time > end_time) {
-                        start_time = Number(start_time) - (3600 * 24);
-                        // Only do the check if we're in a multi-day time span since we moved to the day before
-                        if (Number(timestamp) >= Number(start_time) && Number(timestamp) <= Number(end_time)) {
-                            retval = true;
+                    for(i = 2; i < values.length; i += 2){
+                        start_time = Number(timestamp_midnight) + Number(values[i]);
+                        
+                        // Make sure the end time exists in the array
+                        if(typeof values[i+1] !== 'undefined'){
+                            
+                            end_time = Number(timestamp_midnight) + Number(values[i+1]) + Number(59);
+                            
+                            // For times like 8:00PM - 5:00AM
+                            if (start_time > end_time) {
+                                start_time = Number(start_time) - (3600 * 24);
+                                // Only do the check if we're in a multi-day time span since we moved to the day before
+                                if (Number(timestamp) >= Number(start_time) && Number(timestamp) <= Number(end_time)) {
+                                    retval = true;
+                                }
+                            }
                         }
                     }
                 }
@@ -740,6 +760,9 @@ FormModule.prototype.trySaveNode = function(saveType){"use strict";
     // Allow instant saving of drafts and continuous saves
     // Do not allow drafts or continuous saves to happen while an update is happening as it can cause problems
     if(Omadi.data.isUpdating()){
+        
+        Ti.API.error("is updating");
+        
         if(saveType != 'continuous'){
             if(this.trySaveNodeTries == 0){
                 // Only show waiting once and not everytime it passes through here
@@ -760,14 +783,11 @@ FormModule.prototype.trySaveNode = function(saveType){"use strict";
         this.trySaveNodeTries = 0;
         Omadi.display.doneLoading();
         
-        if(saveType != 'continuous'){
-            if(Ti.App.isAndroid){
-                // Just let android do its thing
-                //Omadi.display.loading("Saving...");
-            }
-            else{
-                //Omadi.display.loading("Saving...", ActiveFormObj.win);   
-            }
+        if(saveType == 'continuous'){
+            this.node._isContinuous = true;
+        }
+        else{
+            this.node._isContinuous = false;
         }
         
         try{
@@ -783,14 +803,13 @@ FormModule.prototype.trySaveNode = function(saveType){"use strict";
             // Setup the current node and nid in the window so a duplicate won't be made for this window
             this.nid = this.node.nid;
             
-            if(this.node._saved === true){
+            if(this.node._saved === true){ 
                 // Don't set the node as saved on a continuous save, as that can mess up windows closing, etc.
                 if(!this.node._isContinuous){
                     this.nodeSaved = true;
                 }
                 
                 if(this.usingDispatch){
-                    Ti.API.debug("about to fire save dispatchnode");
                     // Let the dispatch_form.js window take care of the rest once the data is in the database
                     this.win.dispatchTabGroup.fireEvent("omadi:dispatch:savedDispatchNode",{
                         nodeNid: this.node._saveNid,
@@ -2308,8 +2327,12 @@ FormModule.prototype.displayDuplicateWarnings = function(warningJSON, value, sav
                     
                     // Actually finish the saving process
                     if(ActiveFormObj.usingDispatch){
+                        Ti.API.error("about to save node from continue saving button with type: " + saveType);
+                        // For dispatch, there are no other options for save type besides normal
                         ActiveFormObj.trySaveNode(saveType);
+                        Ti.API.error("about to save dispatch node");
                         FormObj.dispatch.trySaveNode(saveType);
+                        Ti.API.error("done saving dispatch node");
                     }
                     else{
                         ActiveFormObj.trySaveNode(saveType);
@@ -3673,7 +3696,7 @@ FormModule.prototype.setupViolationFields = function(field_name){"use strict";
             
             if(typeof this.fieldWrappers[field_name] !== 'undefined'){
                 
-                if(typeof this.node[field_name].dbValues !== 'undefined'){
+                if(typeof this.node !== 'undefined' && typeof this.node[field_name] !== 'undefined' && typeof this.node[field_name].dbValues !== 'undefined'){
                     this.origViolations = this.node[field_name].dbValues;
                 }
                 

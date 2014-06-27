@@ -767,16 +767,7 @@ Omadi.service.logout = function() {"use strict";
         //Omadi.background.android.stopUpdateService();
     }
     
-    if(Omadi.bundles.companyVehicle.getCurrentVehicleNid > 0){
-        
-        Ti.App.removeEventListener('exitedVehicle', Omadi.service.sendLogoutRequest);
-        Ti.App.addEventListener('exitedVehicle', Omadi.service.sendLogoutRequest);
-        
-        Omadi.bundles.companyVehicle.exitVehicle();
-    }
-    else{
-        Omadi.service.sendLogoutRequest();
-    }
+    Omadi.service.sendLogoutRequest();
 };
 
 Omadi.service.doPostLogoutOperations = function(){"use strict";

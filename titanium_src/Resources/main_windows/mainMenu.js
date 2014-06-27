@@ -215,7 +215,7 @@ function displayWatermark(){"use strict";
     
     if(watermarkImage === null){
         watermarkImage = Ti.UI.createImageView({
-            image: '/images/watermark_600x600.png',
+            image: '/images/logo.png',
             width: Math.round(minWidth * 0.75),
             height: Math.round(minWidth * 0.75)
         });
