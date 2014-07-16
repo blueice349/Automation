@@ -1593,7 +1593,15 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                                         node[field_name].jsonValue = JSON.parse(node[field_name].tempData);
                                         if(Omadi.utils.isArray(node[field_name].jsonValue)){
                                             for(i = 0; i < node[field_name].jsonValue.length; i ++){
-                                                node[field_name].dbValues[i] = node[field_name].jsonValue[i].price;
+                                                
+                                                // If we have a total amount, add that in there instead of the price as they may be different
+                                                if(typeof node[field_name].jsonValue[i].total !== 'undefined'){
+                                                    node[field_name].dbValues[i] = node[field_name].jsonValue[i].total;
+                                                }
+                                                else{
+                                                    node[field_name].dbValues[i] = node[field_name].jsonValue[i].price;
+                                                }
+                                                
                                                 node[field_name].textValues[i] = JSON.stringify(node[field_name].jsonValue[i]);
                                                 
                                                 if(!isNaN(parseFloat(node[field_name].dbValues[i]))){
@@ -1603,7 +1611,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                                         }
                                     }
                                     
-                                    Ti.API.error(JSON.stringify(node[field_name]));
+                                   // Ti.API.error(JSON.stringify(node[field_name]));
 
                                     break;
                                     
@@ -2982,12 +2990,14 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                 Omadi.service.fetchedJSON.node[type] && 
                 typeof Omadi.service.fetchedJSON.node[type].insert !== 'undefined' &&
                 Omadi.service.fetchedJSON.node[type].insert) {
-
-                Ti.API.debug("inserting " + type + " nodes");
+                
+                
                 //Ti.API.debug(Omadi.service.fetchedJSON.node[type]);
                 //Multiple objects
                 if (Omadi.service.fetchedJSON.node[type].insert.length) {
-
+                    
+                    Ti.API.debug("inserting " + type + " nodes: " + Omadi.service.fetchedJSON.node[type].insert.length);
+                    
                     for ( i = 0; i < Omadi.service.fetchedJSON.node[type].insert.length; i++) {
                         
                         if(typeof Omadi.service.fetchedJSON.node[type].insert[i].__error !== 'undefined' && Omadi.service.fetchedJSON.node[type].insert[i].__error == 1){

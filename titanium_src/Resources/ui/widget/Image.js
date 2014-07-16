@@ -1133,11 +1133,11 @@ ImageWidget.prototype.saveAndroidFileInfo = function(fieldName, imageIndex, file
         
         location = Omadi.location.getLastLocation();
         
+        // TODO: check for a location that has a lat and lng of 0, and grab a new GPS coordinate now to save now or before the photo is uploaded
+        
         uid = Omadi.utils.getUid();
         clientAccount = Omadi.utils.getClientAccount();
         sql = "INSERT INTO _files (nid, timestamp, file_path, field_name, file_name, delta, latitude, longitude, accuracy, degrees, thumb_path, filesize, bytes_uploaded, type, uid, client_account) VALUES ('0','" + timestamp + "','" + filePath + "','" + fieldName + "','" + imageName + "'," + imageIndex + ",'" + location.latitude + "','" + location.longitude + "'," + location.accuracy + "," + degrees + ",'" + thumbPath + "'," + filesize + ",0,'" + 'image' + "'," + uid + ",'" + clientAccount + "')";
-        
-        Ti.API.info(sql);
         
         db = Omadi.utils.openListDatabase();
         db.execute(sql);

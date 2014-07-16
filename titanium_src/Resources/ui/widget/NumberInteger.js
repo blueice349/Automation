@@ -125,7 +125,7 @@ NumberIntegerWidget.prototype.redraw = function(){"use strict";
 };
 
 NumberIntegerWidget.prototype.getNewElement = function(index){"use strict";
-    var dbValue, textValue, element;
+    var dbValue, textValue, element, defaultValue;
     
     dbValue = null;
     textValue = "";
@@ -140,7 +140,15 @@ NumberIntegerWidget.prototype.getNewElement = function(index){"use strict";
         }
     }
     
-    Ti.API.debug("Creating decimal field: " + this.instance.label);
+    if (dbValue === null && typeof this.instance.settings.default_value !== 'undefined'){
+        defaultValue = parseInt(this.instance.settings.default_value, 10);
+        if(!isNaN(defaultValue)){
+            dbValue = defaultValue;
+            textValue = "".toString() + defaultValue;
+        }
+    }
+    
+    Ti.API.debug("Creating integer field: " + this.instance.label);
     
     element = this.formObj.getTextField(this.instance);
     

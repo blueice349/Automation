@@ -619,18 +619,19 @@ DispatchForm.prototype.getTimestampFieldName = function(status){"use strict";
 };
 
 DispatchForm.prototype.updateDispatchStatus = function(){"use strict";
-    var savedFormPart, windowFormPart, updateToStatus, workBundle, textValue, i, timestampFieldName;
+    var savedFormPart, windowFormPart, updateToStatus, workBundle, textValue, i, timestampFieldName, sendStatusUpdate, origStatus;
+    
+    sendStatusUpdate = false;
     
     try{
+        
         if(this.workNode !== null){
             savedFormPart = this.currentWorkFormPart;
             windowFormPart = this.form_part;
             
-            Ti.API.debug("About to update dispatch status: " + savedFormPart + " " + windowFormPart);
-            
             if(!isNaN(windowFormPart)){
-            
                 if(windowFormPart > savedFormPart){
+                    
                     // We're doing a next part
                     workBundle = Omadi.data.getBundle(this.workNode.type);
                     
@@ -646,23 +647,42 @@ DispatchForm.prototype.updateDispatchStatus = function(){"use strict";
                                         if(typeof this.dispatchObj.fieldObjects.field_dispatching_status !== 'undefined'){
                                             if(typeof this.dispatchObj.fieldObjects.field_dispatching_status.elements !== 'undefined'){
                                                 if(typeof this.dispatchObj.fieldObjects.field_dispatching_status.elements[0] !== 'undefined'){
-                                        
+                                                    
+                                                    origStatus = null;
+                                                    if(typeof this.dispatchObj.fieldObjects.field_dispatching_status.elements[0].dbValue !== 'undefined'){
+                                                        origStatus = this.dispatchObj.fieldObjects.field_dispatching_status.elements[0].dbValue;
+                                                    }
+                                                    
+                                                    if(updateToStatus != origStatus){
+                                                        // Send the status update since the original status is different
+                                                        sendStatusUpdate = true;
+                                                    }
+                                                    
                                                     this.dispatchObj.fieldObjects.field_dispatching_status.elements[0].dbValue = updateToStatus;
                                                     
                                                     try{
                                                         // Update the timestamp for the status update
                                                         timestampFieldName = DispatchForm.prototype.getTimestampFieldName(updateToStatus);
                                                         if(typeof this.dispatchObj.fieldObjects[timestampFieldName] !== 'undefined'){
-                                                            this.dispatchObj.fieldObjects[timestampFieldName].elements[0].dbValue = Omadi.utils.getUTCTimestamp();
-                                                            this.dispatchObj.fieldObjects[timestampFieldName].elements[0].jsTime = (new Date()).getTime();
                                                             
-                                                            textValue = Omadi.utils.formatDate(this.dispatchObj.fieldObjects[timestampFieldName].elements[0].dbValue, false);
+                                                            // Only allow the timestamp update if one was not already saved
+                                                            if(typeof this.dispatchObj.fieldObjects[timestampFieldName].elements[0].dbValue === 'undefined' || 
+                                                                Omadi.utils.isEmpty(this.dispatchObj.fieldObjects[timestampFieldName].elements[0].dbValue)){
+                                                                
+                                                                this.dispatchObj.fieldObjects[timestampFieldName].elements[0].dbValue = Omadi.utils.getUTCTimestamp();
+                                                                this.dispatchObj.fieldObjects[timestampFieldName].elements[0].jsTime = (new Date()).getTime();
+                                                                
+                                                                textValue = Omadi.utils.formatDate(this.dispatchObj.fieldObjects[timestampFieldName].elements[0].dbValue, false);
                                                             
-                                                            this.dispatchObj.fieldObjects[timestampFieldName].elements[0].textValue = textValue; 
-                                                            this.dispatchObj.fieldObjects[timestampFieldName].dateViews[0].setText(textValue);
-                                                            
-                                                            textValue = Omadi.utils.formatTime(this.dispatchObj.fieldObjects[timestampFieldName].elements[0].dbValue);
-                                                            this.dispatchObj.fieldObjects[timestampFieldName].timeViews[0].setText(textValue);
+                                                                this.dispatchObj.fieldObjects[timestampFieldName].elements[0].textValue = textValue; 
+                                                                this.dispatchObj.fieldObjects[timestampFieldName].dateViews[0].setText(textValue);
+                                                                
+                                                                textValue = Omadi.utils.formatTime(this.dispatchObj.fieldObjects[timestampFieldName].elements[0].dbValue);
+                                                                this.dispatchObj.fieldObjects[timestampFieldName].timeViews[0].setText(textValue);
+                                                                
+                                                                // Send the status update since a time is not already saved
+                                                                sendStatusUpdate = true;
+                                                            }
                                                         }   
                                                     }
                                                     catch(timestampEx){
@@ -687,8 +707,11 @@ DispatchForm.prototype.updateDispatchStatus = function(){"use strict";
                                 catch(ex1){
                                     Omadi.service.sendErrorReport("Exception updating status on dispatch screen: " + ex1);
                                 }
-                            
-                                Omadi.bundles.dispatch.updateStatus(this.workNode.nid, updateToStatus, true);
+                                
+                                if(sendStatusUpdate){
+                                    Ti.API.debug("About to send new dispatch status to server: " + savedFormPart + " " + windowFormPart);
+                                    Omadi.bundles.dispatch.updateStatus(this.workNode.nid, updateToStatus, true);
+                                }
                             }
                         }
                     }

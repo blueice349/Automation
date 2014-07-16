@@ -125,7 +125,7 @@ NumberDecimalWidget.prototype.redraw = function(){"use strict";
 };
 
 NumberDecimalWidget.prototype.getNewElement = function(index){"use strict";
-    var dbValue, textValue, element;
+    var dbValue, textValue, element, defaultValue;
     
     dbValue = null;
     textValue = "";
@@ -137,6 +137,14 @@ NumberDecimalWidget.prototype.getNewElement = function(index){"use strict";
         
         if(typeof this.textValues[index] !== 'undefined'){
             textValue = this.textValues[index];
+        }
+    }
+    
+    if (dbValue === null && typeof this.instance.settings.default_value !== 'undefined'){
+        defaultValue = parseFloat(this.instance.settings.default_value);
+        if(!isNaN(defaultValue)){
+            dbValue = defaultValue;
+            textValue = "".toString() + defaultValue;
         }
     }
     

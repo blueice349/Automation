@@ -49,7 +49,7 @@ TaxonomyTermReferenceWidget.prototype.getFieldView = function(){"use strict";
     this.fieldView.add(this.formObj.getRegularLabelView(this.instance));
     this.options = this.getOptions();
     
-    Ti.API.error(JSON.stringify(this.options));
+    //Ti.API.error(JSON.stringify(this.options));
     
     // Add the actual fields
     for(i = 0; i < this.numVisibleFields; i ++){
@@ -378,7 +378,7 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
                 try{
                     if (e.source.instance.settings.cardinality == -1) {
                         
-                        Ti.API.error(JSON.stringify(e.source.options));
+                        //Ti.API.error(JSON.stringify(e.source.options));
                         
                         Widget[e.source.instance.field_name].formObj.getMultipleSelector(Widget[e.source.instance.field_name], e.source.options, e.source.dbValue);
                     }

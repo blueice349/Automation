@@ -220,87 +220,104 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
                 http.onload = function(e) {
                     var dir, file, string;
                     
-                    Ti.API.debug("Sync data loaded");
-                    
-                    Ti.API.debug("text: " + (this.responseText !== null));
-                    Ti.API.debug("data: " + (this.responseData !== null));
-                    
-                    
-                    //Parses response into strings
-                    if (this.responseText !== null && isJsonString(this.responseText) === true) {
-            
-                        //Ti.API.info(this.responseText.substring(0, 3000));
+                    try{
+                        Ti.API.debug("Sync data loaded");
                         
-                        Ti.API.debug("JSON String Length: " + this.responseText.length);
-            
-                        Omadi.service.fetchedJSON = JSON.parse(this.responseText);
+                        //Ti.API.debug("text: " + (this.responseText !== null));
+                        //Ti.API.debug("data: " + (this.responseData !== null));
+                        if (typeof this.responseText !== 'undefined' && this.responseText !== null){
+                            Ti.API.debug("JSON String Length 1: " + this.responseText.length);
+                        }
                         
-                        // Free the memory
-                        this.responseText = null;
+                        if (typeof this.responseData !== 'undefined' && this.responseData !== null){
+                            Ti.API.debug("JSON String Length 2: " + this.responseData.length);
+                        }
                         
-                        Omadi.data.processFetchedJson();
-                    }
-                    else if(this.responseData !== null){
-                        // In some very rare cases, this.responseText will be null
-                        // Here, we write the data to a file, read it back and do the installation
-                        try{
-                            dir = Ti.Filesystem.getFile(Ti.Filesystem.tempDirectory);
+                        Ti.API.debug("another sync message");
+                        //Parses response into strings
+                        if (typeof this.responseText !== 'undefined' && this.responseText !== null && isJsonString(this.responseText) === true) {
+                
+                            //Ti.API.info(this.responseText.substring(0, 3000));
                             
-                            if(!dir.exists()){
-                                dir.createDirectory();
-                            }
+                            Ti.API.debug("JSON String Length: " + this.responseText.length);
+                
+                            Omadi.service.fetchedJSON = JSON.parse(this.responseText);
                             
-                            Ti.API.debug("JSON String Length: " + this.responseData.length);
+                            // Free the memory
+                            this.responseText = null;
                             
-                            file = Ti.Filesystem.getFile(Ti.Filesystem.tempDirectory + "/download_" + Omadi.utils.getUTCTimestamp() + ".txt");
-                            
-                            if(file.write(this.responseData)){
-                               
-                               string = file.read();
-                               
-                               if(isJsonString(string.text)){
-                                    Ti.API.debug("Is JSON");
-                                    
-                                    Omadi.service.fetchedJSON = JSON.parse(string.text);
-                                    
-                                    // Free the memory
-                                    string = null;
-                                    
-                                    Omadi.data.processFetchedJson();
+                            Omadi.data.processFetchedJson();
+                        }
+                        else if(typeof this.responseData !== 'undefined' && this.responseData !== null){
+                            // In some very rare cases, this.responseText will be null
+                            // Here, we write the data to a file, read it back and do the installation
+                            try{
+                                dir = Ti.Filesystem.getFile(Ti.Filesystem.tempDirectory);
+                                
+                                Ti.API.debug("Got here 1");
+                                
+                                if(!dir.exists()){
+                                    dir.createDirectory();
                                 }
-                                else{
-                                    Omadi.service.sendErrorReport("Text is not json");
-                                    if (Omadi.service.progressBar !== null) {
-                                        Omadi.service.progressBar.close();
-                                        Omadi.service.progressBar = null;
+                                
+                                Ti.API.debug("JSON String Length: " + this.responseData.length);
+                                
+                                file = Ti.Filesystem.getFile(Ti.Filesystem.tempDirectory + "/download_" + Omadi.utils.getUTCTimestamp() + ".txt");
+                                
+                                Ti.API.debug("Got here 1");
+                                
+                                if(file.write(this.responseData)){
+                                   Ti.API.debug("Got here 2");
+                                   string = file.read();
+                                   
+                                   if(isJsonString(string.text)){
+                                        Ti.API.debug("Is JSON");
+                                        
+                                        Omadi.service.fetchedJSON = JSON.parse(string.text);
+                                        
+                                        // Free the memory
+                                        string = null;
+                                        
+                                        Omadi.data.processFetchedJson();
+                                    }
+                                    else{
+                                        Omadi.service.sendErrorReport("Text is not json");
+                                        if (Omadi.service.progressBar !== null) {
+                                            Omadi.service.progressBar.close();
+                                            Omadi.service.progressBar = null;
+                                        }
                                     }
                                 }
+                                else{
+                                    Omadi.service.sendErrorReport("Failed to write to the download file");
+                                }
+                                
+                                if(file.exists()){
+                                    file.deleteFile();
+                                }
                             }
-                            else{
-                                Omadi.service.sendErrorReport("Failed to write to the download file");
+                            catch(ex){
+                                Ti.API.debug("Exception at data: " + ex);
+                                Omadi.service.sendErrorReport("Exception at json data: " + ex);
                             }
                             
-                            if(file.exists()){
-                                file.deleteFile();
+                            file = null;
+                            dir = null;
+                        }
+                        else{
+                            Ti.API.debug("No data was found.");
+                            if (Omadi.service.progressBar !== null) {
+                                Omadi.service.progressBar.close();
+                                Omadi.service.progressBar = null;
                             }
-                        }
-                        catch(ex){
-                            Ti.API.debug("Exception at data: " + ex);
-                            Omadi.service.sendErrorReport("Exception at json data: " + ex);
-                        }
-                        
-                        file = null;
-                        dir = null;
+                
+                            Omadi.service.sendErrorReport("Bad response text and data for download: " + this.responseText + ", stautus: " + this.status + ", statusText: " + this.statusText);
+                        }               
                     }
-                    else{
-                        if (Omadi.service.progressBar !== null) {
-                            Omadi.service.progressBar.close();
-                            Omadi.service.progressBar = null;
-                        }
-            
-                        Omadi.service.sendErrorReport("Bad response text and data for download: " + this.responseText + ", stautus: " + this.status + ", statusText: " + this.statusText);
-                    }               
-
+                    catch(ex1){
+                        Omadi.service.sendErrorReport("Exception in saving sync data onsuccess: " + ex1);
+                    }
+                    
                     Omadi.data.setUpdating(false);
                     Ti.App.fireEvent('omadi:finishedDataSync');
 
@@ -536,7 +553,7 @@ Omadi.service.sendDataOnLoad = function(e){"use strict";
             dialog.addEventListener('click', function(e) {
                 try{
                     Ti.App.Properties.setString('logStatus', "The server logged you out");
-                    Ti.API.info('From Functions ... Value is : ' + Ti.App.Properties.getString('logStatus'));
+                    //Ti.API.info('From Functions ... Value is : ' + Ti.App.Properties.getString('logStatus'));
                     Omadi.service.logout();
                 }
                 catch(ex){
@@ -590,10 +607,16 @@ Omadi.service.sendDataOnError = function(e){"use strict";
         }
         else if (this.status == 500) {
     
+            // TODO: fix this so it only changes the flag_is_updated for the nid that had the problem
+            // Possible fix is to limit sending only one node at a time
+            
             // Set the node as a draft
             db = Omadi.utils.openMainDatabase();
+            // This is only being set for brand new nodes
             db.execute("UPDATE node SET flag_is_updated = 3 WHERE nid < 0");
             db.close();
+            
+            // TODO: update old nodes that save incorrectly
     
             dialog = Titanium.UI.createAlertDialog({
                 title : 'Service Error',
@@ -610,12 +633,12 @@ Omadi.service.sendDataOnError = function(e){"use strict";
             try{
                 Omadi.service.sendErrorReport('Showed the user a network error dialog on send: ' + this.status + " " + e.error);
             }
-            catch(none){}
+            catch(none2){}
             
             dialog = Titanium.UI.createAlertDialog({
                 title : 'Network Error',
                 buttonNames : ['Retry', 'Cancel'],
-                message : "A network error occurred while sending your data. Once the network issues are resolved, the data will sync correctly."
+                message : "Please check your Internet connection. Your saved data will sync once you regain an Internet connection."
             });
             
             dialog.addEventListener('click', function(e){
@@ -1490,7 +1513,9 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
 
 Omadi.service.sendErrorReport = function(message) {"use strict";
     var http, uid, domain, appVersion, platform, model, version;
-
+    
+    Ti.API.error("ERROR: " + message);
+    
     uid = Omadi.utils.getUid();
     domain = Omadi.DOMAIN_NAME.replace('https://', '').replace('.omadi.com', '');
     appVersion = Ti.App.version;

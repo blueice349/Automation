@@ -854,6 +854,8 @@ Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
                 formWindow.addEventListener('open', Omadi.display.doneLoading);
                 formWindow.open();
                 
+                Omadi.display.FormModule.populateWindow(Omadi, type, nid, form_part, false);
+                
                 // Must be called after getWindow
                 node = Omadi.display.FormModule.getNode(type);
             }

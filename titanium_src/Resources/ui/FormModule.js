@@ -1054,7 +1054,6 @@ FormModule.prototype.getDBValues = function(fieldWrapper){"use strict";
         
         // Find the dbValue up to 4 levels deep in the UI elements
         // The only one going 4 levels deep is the image field with widget signature
-        
         for(i = 0; i < children.length; i ++){
             if(typeof children[i].dbValue !== 'undefined'){
                 if(typeof children[i].dbValue === 'object' && children[i].dbValue instanceof Array){
@@ -1775,14 +1774,11 @@ FormModule.prototype.validate_form_data = function(saveType){"use strict";
     catch(ex){
         Omadi.service.sendErrorReport("Exception in form validation: " + ex);
     }
-    
-    //Ti.API.debug(JSON.stringify(this.form_errors));
 };
 
 FormModule.prototype.validateEmail = function(instance){"use strict";
     
     var i, regExp;
-    
     try{
         if (typeof this.node[instance.field_name] !== 'undefined' &&
             typeof this.node[instance.field_name].dbValues !== 'undefined' &&
@@ -1890,10 +1886,7 @@ FormModule.prototype.saveForm = function(saveType){"use strict";
         }
         else{
             
-            
-            
             try{
-    
                 //TODO: fix the below
                 /*else if (pass_it === false && Ti.App.Properties.getString("timestamp_offset") > OFF_BY) {
             
@@ -2008,6 +2001,7 @@ FormModule.prototype.showDuplicateWarnings = function(saveType){"use strict";
                 if(typeof this.node[fieldObject.instance.field_name] !== 'undefined'){
                     if(typeof this.node[fieldObject.instance.field_name].dbValues !== 'undefined'){
                         if(typeof this.node[fieldObject.instance.field_name].dbValues[0] !== 'undefined'){
+                            
                             nodeValue = "".toString() + this.node[fieldObject.instance.field_name].dbValues[0];
                             nodeValue = nodeValue.trim();
                             
@@ -3006,9 +3000,6 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
                     options: options
                 });
                 
-                Ti.API.error("in 1");
-                
-                
                 for(i = 0; i < options.length; i ++){
                     if(typeof options[i] !== 'undefined' && options[i]){
                         options[i].isSelected = false;
@@ -3020,8 +3011,6 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
                         }
                     }
                 }
-                
-                Ti.API.error("in 3");
                 
                 data = [];
                 selectedIndexes = [];
@@ -3421,6 +3410,9 @@ FormModule.prototype.getWindow = function(){"use strict";
         }
         
         try{
+            this.wrapperView.add(this.scrollView);
+            this.win.add(this.wrapperView);
+            
             for(field_name in this.instances){
                 if(this.instances.hasOwnProperty(field_name)){
                     
@@ -3487,10 +3479,12 @@ FormModule.prototype.getWindow = function(){"use strict";
                                             this.regionViews[instance.region].add(fieldWrapper);
                                            
                                             if(instance.widget.type == 'violation_select'){
+                                                // Make sure we know which field is the violations field
                                                 this.hasViolationField = instance.field_name;
                                             }
                                             else if(instance.type == 'extra_price'){
                                                 if(instance.field_name != 'total_credits' && instance.field_name != 'total_amount_paid'){
+                                                    // Add any field names to the extra price field list
                                                     this.hasExtraPriceField.push(instance.field_name);   
                                                 }
                                             }
@@ -3530,7 +3524,9 @@ FormModule.prototype.getWindow = function(){"use strict";
                 ActiveFormObj.scrollPositionY = e.y;
             });
             
-            this.wrapperView.add(this.scrollView);
+            // this.wrapperView.add(this.scrollView);
+//             
+            // this.win.add(this.wrapperView);
             
             // TODO: get this working with the omadi reference widget module
             //Ti.UI.currentWindow.fireEvent("customCopy");
@@ -3627,7 +3623,7 @@ FormModule.prototype.getWindow = function(){"use strict";
                 this.setupExtraPriceFields(this.hasExtraPriceField);
             }
             
-            this.win.add(this.wrapperView);
+            //this.win.add(this.wrapperView);
             
             // Give the window a second to popup before recalculating
             this.recalculateCalculationFields();
@@ -4533,6 +4529,7 @@ FormModule.prototype.setConditionallyRequiredLabelForInstance = function(instanc
                             case 'omadi_time':
                             case 'calculation_field':
                             case 'location':
+                            case 'extra_price':
                             
                                 if (search_operator == '__filled') {
                                     for (i = 0; i < values.length; i++) {

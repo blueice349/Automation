@@ -29,6 +29,7 @@ function CalculationFieldWidget(formObj, instance, fieldViewWrapper){"use strict
             this.textValues = this.nodeElement.textValues;
         }
     }
+    
 }
 
 CalculationFieldWidget.prototype.resetCache = function(){"use strict";
@@ -69,7 +70,7 @@ CalculationFieldWidget.prototype.getFieldView = function(showCalc){"use strict";
 };
 
 CalculationFieldWidget.prototype.redraw = function(skipFormToNode){"use strict";
-    Ti.API.debug("in redraw");
+    Ti.API.debug("in calc redraw");
     var origFieldView;
     
     if(typeof skipFormToNode === 'undefined'){
@@ -187,9 +188,7 @@ CalculationFieldWidget.prototype.getTableView = function() {"use strict";
     tableView = null;
     
     try{
-        
         this.formObj.formToNode(true);
-    
         this.node = this.formObj.node;
         
         dbValue = null;

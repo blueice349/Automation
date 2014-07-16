@@ -596,7 +596,7 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
                                     widget.itemChangeDelta(e.source.delta);
                                     
                                     if(descView.check_conditional_fields.length > 0){
-                                        Ti.API.debug("Checking conditionally required");
+                                        Ti.API.debug("Checking conditionally required in amounts field");
                                         widget.formObj.setConditionallyRequiredLabels(e.source.instance, descView.check_conditional_fields);
                                     }
                                 }
