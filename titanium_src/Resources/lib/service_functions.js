@@ -158,8 +158,396 @@ Omadi.service.setNodeViewed = function(nid) {"use strict";
     // We don't care about the response, as this is a very trivial thing
 };
 
+Omadi.service.initialInstallPage = 0;
+Omadi.service.isInitialInstall = false;
+Omadi.service.initialInstallTotalPages = 0;
+
+Omadi.service.syncInitialFormItems = function(count, numPages){"use strict";
+    var http, syncURL, i, max;
+    
+    try{
+        Ti.API.error("in initial form items");
+        
+        max = count + (numPages * 100);
+        
+        Omadi.service.progressBar = new Omadi.display.DefaultProgressBar(max, 'Syncing ' + count + ' form items ...');
+        
+        Ti.API.debug("Syncing initial form items: " + count);
+        
+        Omadi.service.initialInstallPage = 0;
+        Omadi.service.initialInstallTotalPages = numPages;
+        Omadi.service.isInitialInstall = true;
+        
+        // Make sure any incremental syncs do not interfere
+        Omadi.data.setUpdating(true);
+        
+        Ti.App.removeEventListener('omadi:initialInstallDownloadComplete', Omadi.service.syncInitialInstallDownloadNextPage); 
+        Ti.App.addEventListener('omadi:initialInstallDownloadComplete', Omadi.service.syncInitialInstallDownloadNextPage);      
+           
+        Ti.App.removeEventListener('omadi:initialInstallDownloadRetry', Omadi.service.syncInitialInstallDownloadRetry); 
+        Ti.App.addEventListener('omadi:initialInstallDownloadRetry', Omadi.service.syncInitialInstallDownloadRetry);  
+        
+        Omadi.service.syncInitialInstallDownloadNextPage();
+    }
+    catch(ex1){
+        Omadi.service.sendErrorReport("Exception in paging retrieval setup: " + ex1);    
+    }
+};
+
+Omadi.service.syncInitialInstallRetryCount = 0;
+Omadi.service.syncInitialInstallDownloadNextPage = function(){"use strict";
+    Omadi.service.initialInstallPage ++;
+    Omadi.service.syncInitialInstallRetryCount = 0;
+    
+    if(Omadi.service.initialInstallPage < Omadi.service.initialInstallTotalPages){
+        // Make sure the update timestamp is 0 because the sync is not complete    
+        Omadi.data.setLastUpdateTimestamp(0);
+        Omadi.service.syncInitialFormPage(Omadi.service.initialInstallPage);   
+    }
+    else{
+        Omadi.data.setUpdating(false);
+        
+        if(Omadi.service.progressBar !== null){
+            Omadi.service.progressBar.close();
+        }
+        
+        Ti.API.error("NOW DO AN INCREMENTAL SYNC");
+        
+        Ti.API.error("last sync: " + Omadi.data.getLastUpdateTimestamp());
+        
+        Omadi.service.fetchUpdates(true, true);
+    }
+};
+
+Omadi.service.syncInitialInstallDownloadRetry = function(){"use strict";
+    
+    Omadi.service.syncInitialInstallRetryCount ++;
+    
+    if(Omadi.service.syncInitialInstallRetryCount <= 5){
+        // Make sure the update timestamp is 0 because the sync is not complete
+        Omadi.data.setLastUpdateTimestamp(0);
+        
+        if(Omadi.service.initialInstallPage < Omadi.service.initialInstallTotalPages){
+            // Wait 5 seconds before retrying again
+            setTimeout(function(){
+                Omadi.service.syncInitialFormPage(Omadi.service.initialInstallPage);       
+            }, 5000);
+        }
+        else{
+            Omadi.service.sendErrorReport("in else in syncInitialInstallDownloadRetry: page=" + Omadi.service.initialInstallPage + ', total=' + Omadi.service.initialInstallTotalPages);
+            
+            if(Omadi.service.progressBar !== null){
+                Omadi.service.progressBar.close();
+                Omadi.service.progressBar = null;
+            }
+        }
+    }
+    else{
+        Omadi.data.setLastUpdateTimestamp(0);
+        
+        alert("A problem occurred syncing the initial form entries. Please logout and try again.");
+        Omadi.service.sendErrorReport("Too many retries in the initial install");
+    }
+};
+
+Omadi.service.processInitialInstallJSON = function(){"use strict";
+    var tableName, mainDB;
+    // This is only done for the initial install
+    // All other objects except for the nodes are installed previous to this
+    // We only care about the nodes here
+    try{
+        mainDB = Omadi.utils.openMainDatabase();
+        
+        Ti.API.debug("About to do a node initial install");
+        
+        if (typeof Omadi.service.fetchedJSON.node !== 'undefined') {
+            Ti.API.debug("Installing nodes");
+            for (tableName in Omadi.service.fetchedJSON.node) {
+                if (Omadi.service.fetchedJSON.node.hasOwnProperty(tableName)) {
+                    if (Omadi.service.fetchedJSON.node.hasOwnProperty(tableName)) {
+                        Omadi.data.processNodeJson(tableName, mainDB);
+                    }
+                }
+            }
+        }
+        
+        Ti.API.debug("about to set request_time");
+        // Setup the last update timestamp to the correct timestamp in case this is the last synced node bunch
+        if(typeof Omadi.service.fetchedJSON.request_time !== 'undefined'){
+            Omadi.data.setLastUpdateTimestamp(Omadi.service.fetchedJSON.request_time);
+        }
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception in processInitialInstallJSON: " + ex);
+    }
+    finally{
+        try{
+            mainDB.close();
+        }
+        catch(ex1){}
+    }
+};
+
+Omadi.service.syncInitialLastProgress = 0;
+Omadi.service.syncInitialFormPage = function(page){"use strict";
+    var http, syncURL;
+    
+    Ti.API.error("syncing for page " + page);
+    
+    try{
+        http = Ti.Network.createHTTPClient({
+            enableKeepAlive: false,
+            validatesSecureCertificate: false,
+            timeout: 30000
+        });
+        
+        Omadi.service.syncInitialLastProgress = 0;
+        
+        // While streaming - following method should be called before open URL
+        http.ondatastream = function(e) {
+            Omadi.service.progressBar.add((e.progress - Omadi.service.syncInitialLastProgress) * 100);
+            Omadi.service.syncInitialLastProgress = e.progress;
+        };
+        
+        syncURL = Omadi.DOMAIN_NAME + '/js-sync/download.json?sync_timestamp=0&page=' + page;
+        
+        http.open('GET', syncURL);
+    
+        //Header parameters
+        http.setRequestHeader("Content-Type", "application/json");
+    
+        Omadi.utils.setCookieHeader(http);
+    
+        //When connected
+        http.onload = function(e) {
+            var dir, file, string;
+            
+            try{
+                Ti.API.debug("Initial Sync data loaded");
+                
+                //Ti.API.debug("text: " + (this.responseText !== null));
+                //Ti.API.debug("data: " + (this.responseData !== null));
+                if (typeof this.responseText !== 'undefined' && this.responseText !== null){
+                    Ti.API.debug("JSON String Length 1: " + this.responseText.length);
+                }
+                
+                if (typeof this.responseData !== 'undefined' && this.responseData !== null){
+                    Ti.API.debug("JSON String Length 2: " + this.responseData.length);
+                }
+                
+                Ti.API.debug("another sync message");
+                //Parses response into strings
+                if (typeof this.responseText !== 'undefined' && this.responseText !== null && isJsonString(this.responseText) === true) {
+        
+                    //Ti.API.info(this.responseText.substring(0, 3000));
+                    
+                    Ti.API.debug("JSON String Length: " + this.responseText.length);
+                    Omadi.service.fetchedJSON = null;
+                    
+                    if(Ti.App.isAndroid && typeof AndroidSysUtil !== 'undefined' && AndroidSysUtil != null){
+                        AndroidSysUtil.OptimiseMemory();
+                    }
+                    
+                    Omadi.service.fetchedJSON = JSON.parse(this.responseText);
+                    
+                    // Free the memory
+                    this.responseText = null;
+                    
+                    Omadi.service.processInitialInstallJSON();
+                }
+                else if(typeof this.responseData !== 'undefined' && this.responseData !== null){
+                    // In some very rare cases, this.responseText will be null
+                    // Here, we write the data to a file, read it back and do the installation
+                    try{
+                        dir = Ti.Filesystem.getFile(Ti.Filesystem.tempDirectory);
+                        
+                        Ti.API.debug("Got here 1");
+                        
+                        if(!dir.exists()){
+                            dir.createDirectory();
+                        }
+                        
+                        Ti.API.debug("JSON String Length: " + this.responseData.length);
+                        
+                        file = Ti.Filesystem.getFile(Ti.Filesystem.tempDirectory + "/download_" + Omadi.utils.getUTCTimestamp() + ".txt");
+                        
+                        Ti.API.debug("Got here 1");
+                        
+                        if(file.write(this.responseData)){
+                           Ti.API.debug("Got here 2");
+                           string = file.read();
+                           
+                           if(isJsonString(string.text)){
+                                Ti.API.debug("Is JSON");
+                                
+                                Omadi.service.fetchedJSON = null;
+                                if(Ti.App.isAndroid && typeof AndroidSysUtil !== 'undefined' && AndroidSysUtil != null){
+                                    AndroidSysUtil.OptimiseMemory();
+                                }
+                    
+                                Omadi.service.fetchedJSON = JSON.parse(string.text);
+                                
+                                // Free the memory
+                                string = null;
+                                
+                                Omadi.service.processInitialInstallJSON();
+                            }
+                            else{
+                                Omadi.service.sendErrorReport("Text is not json");
+                                if (Omadi.service.progressBar !== null) {
+                                    Omadi.service.progressBar.close();
+                                    Omadi.service.progressBar = null;
+                                }
+                            }
+                        }
+                        else{
+                            Omadi.service.sendErrorReport("Failed to write to the download file");
+                        }
+                        
+                        if(file.exists()){
+                            file.deleteFile();
+                        }
+                    }
+                    catch(ex){
+                        Ti.API.debug("Exception at data: " + ex);
+                        Omadi.service.sendErrorReport("Exception at json data: " + ex);
+                    }
+                    
+                    file = null;
+                    dir = null;
+                }
+                else{
+                    Ti.API.debug("No data was found.");        
+                    Omadi.service.sendErrorReport("Bad response text and data for download: " + this.responseText + ", stautus: " + this.status + ", statusText: " + this.statusText);
+                }  
+                
+                setTimeout(function(){
+                    Ti.App.fireEvent('omadi:initialInstallDownloadComplete');      
+                }, 500);       
+            }
+            catch(ex1){
+                Omadi.service.sendErrorReport("Exception in saving initial install data onsuccess: " + ex1);
+                
+                Ti.App.fireEvent('omadi:initialInstallDownloadRetry'); 
+            }
+            
+            Omadi.service.fetchedJSON = null;
+        };
+    
+        //Connection error:
+        http.onerror = function(e) {
+            var dialog, message, errorDescription;
+            
+            Ti.API.error('Code status: ' + e.error);
+            Ti.API.error('CODE ERROR = ' + this.status);
+            //Ti.API.info("Progress bar = " + progress);
+    
+            if (this.status == 403) {
+                
+                // Do not allow a logout when a background logout is disabled
+                // Currently, this should only be when the user is filling out a form
+                if(Ti.App.allowBackgroundLogout){
+                    dialog = Titanium.UI.createAlertDialog({
+                        title : 'Omadi',
+                        buttonNames : ['OK'],
+                        message : "You have been logged out. Please log back in."
+                    });
+    
+                    dialog.addEventListener('click', function(e) {
+                        try{
+                            var db_func = Omadi.utils.openListDatabase();
+                            db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
+                            db_func.close();
+                        }
+                        catch(ex){
+                            Omadi.service.sendErrorReport("exception in logged out update 403: " + ex);
+                        }
+                    });
+    
+                    dialog.show();
+                    Omadi.service.logout();
+                }
+            }
+            else if (this.status == 401) {
+                // Do not allow a logout when a background logout is disabled
+                // Currently, this should only be when the user is filling out a form
+                if(Ti.App.allowBackgroundLogout){
+                    dialog = Titanium.UI.createAlertDialog({
+                        title : 'Omadi',
+                        buttonNames : ['OK'],
+                        message : "Your session is no longer valid. Please log back in."
+                    });
+    
+                    dialog.addEventListener('click', function(e) {
+                        try{
+                            var db_func = Omadi.utils.openListDatabase();
+                            db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
+                            db_func.close();
+                        }
+                        catch(ex){
+                            Omadi.service.sendErrorReport("exception in logged out update 401: " + ex);
+                        }
+                    });
+    
+                    dialog.show();
+                    
+                    Omadi.service.logout();
+                }
+            }
+            // Only show the dialog if this is not a background update
+            else{
+   
+                errorDescription = "Error description: " + e.error;
+                if (errorDescription.indexOf('connection failure') != -1) {
+                    errorDescription = '';
+                }
+                else if (errorDescription.indexOf("imeout") != -1) {
+                    errorDescription = 'Error: Timeout. Please check your Internet connection.';
+                }
+                
+                if(Omadi.data.getLastUpdateTimestamp() <= 1 || this.userInitiated){
+                    
+                    Omadi.service.sendErrorReport("Network Error with dialog: " + errorDescription);
+                    
+                    message = "There was a network error";
+                    dialog = Titanium.UI.createAlertDialog({
+                        title : 'Network Error',
+                        buttonNames : ['Retry', 'Cancel'],
+                        cancel : 1,
+                        click_index : e.index,
+                        sec_obj : e.section,
+                        row_obj : e.row,
+                        message : "A network error occurred. Do you want to retry?"
+                    });
+    
+                    dialog.addEventListener('click', function(e) {
+                        
+                        if(e.index == 0){
+                            setTimeout(function() {
+                                Omadi.service.fetchUpdates(true);
+                            }, 300);
+                        }
+                    });
+    
+                    dialog.show();
+                }
+                
+                Ti.App.fireEvent('omadi:initialInstallDownloadRetry');
+            }
+            
+            Omadi.service.fetchedJSON = null;
+        };
+    
+        http.send();
+        
+    }
+    catch(ex1){
+        Omadi.service.sendErrorReport("Exception in paging retrieval: " + ex1);    
+    }
+};
+
 Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use strict";
-    var http, progress = null, lastSyncTimestamp;
+    var http, progress = null, lastSyncTimestamp, timeout, syncURL;
     /*global isJsonString*/
     /*jslint eqeq:true*/
     try {
@@ -181,22 +569,23 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
                     Omadi.service.progressBar = new Omadi.display.ProgressBar(0, 100);
                 }
 
-                http = Ti.Network.createHTTPClient({
-                    enableKeepAlive: false,
-                    validatesSecureCertificate: false,
-                    userInitiated: userInitiated
-                });
-
                 lastSyncTimestamp = Omadi.data.getLastUpdateTimestamp();
+
+                timeout = 30000;
 
                 //Timeout until error:
                 if(lastSyncTimestamp <= 1){
                     // Allow extra time for the initial downloads
-                    http.setTimeout(90000);    
+                    timeout = 90000; 
+                    Omadi.service.isInitialInstall = true;
                 }
-                else{
-                    http.setTimeout(45000);
-                }
+                
+                http = Ti.Network.createHTTPClient({
+                    enableKeepAlive: false,
+                    validatesSecureCertificate: false,
+                    userInitiated: userInitiated,
+                    timeout: timeout
+                });
 
                 //While streamming - following method should be called b4 open URL
                 http.ondatastream = function(e) {
@@ -207,9 +596,22 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
                     }
                 };
                 
+                http.onreadystatechange = function(e){
+                    if(this.readyState == this.LOADING){
+                        if(typeof Omadi.display.progressBar !== 'undefined' && Omadi.display.progressBar !== null){
+                            Omadi.display.progressBar.setMessage('Downloading...');
+                        }
+                    }
+                };
+                
                 Ti.API.debug("lastSynctimestamp: " + lastSyncTimestamp);
                 
-                http.open('GET', Omadi.DOMAIN_NAME + '/js-sync/download.json?sync_timestamp=' + lastSyncTimestamp);
+                syncURL = Omadi.DOMAIN_NAME + '/js-sync/download.json?sync_timestamp=' + lastSyncTimestamp;
+                if(lastSyncTimestamp <= 1){
+                    syncURL += '&page=' + Omadi.service.initialInstallPage;    
+                }
+                
+                http.open('GET', syncURL);
 
                 //Header parameters
                 http.setRequestHeader("Content-Type", "application/json");
@@ -225,13 +627,13 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
                         
                         //Ti.API.debug("text: " + (this.responseText !== null));
                         //Ti.API.debug("data: " + (this.responseData !== null));
-                        if (typeof this.responseText !== 'undefined' && this.responseText !== null){
-                            Ti.API.debug("JSON String Length 1: " + this.responseText.length);
-                        }
+                        //if (typeof this.responseText !== 'undefined' && this.responseText !== null){
+                            //Ti.API.debug("JSON String Length 1: " + this.responseText.length);
+                        //}
                         
-                        if (typeof this.responseData !== 'undefined' && this.responseData !== null){
-                            Ti.API.debug("JSON String Length 2: " + this.responseData.length);
-                        }
+                        //if (typeof this.responseData !== 'undefined' && this.responseData !== null){
+                            //Ti.API.debug("JSON String Length 2: " + this.responseData.length);
+                        //}
                         
                         Ti.API.debug("another sync message");
                         //Parses response into strings
@@ -240,7 +642,8 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
                             //Ti.API.info(this.responseText.substring(0, 3000));
                             
                             Ti.API.debug("JSON String Length: " + this.responseText.length);
-                
+                            
+                            Omadi.service.fetchedJSON = null;
                             Omadi.service.fetchedJSON = JSON.parse(this.responseText);
                             
                             // Free the memory
@@ -273,6 +676,7 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
                                    if(isJsonString(string.text)){
                                         Ti.API.debug("Is JSON");
                                         
+                                        Omadi.service.fetchedJSON = null;
                                         Omadi.service.fetchedJSON = JSON.parse(string.text);
                                         
                                         // Free the memory
@@ -319,9 +723,13 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
                     }
                     
                     Omadi.data.setUpdating(false);
-                    Ti.App.fireEvent('omadi:finishedDataSync');
-
-                    Omadi.service.uploadFile();
+                    
+                    Omadi.service.fetchedJSON = null;
+                    
+                    if(lastSyncTimestamp > 1){
+                        Ti.App.fireEvent('omadi:finishedDataSync');
+                        Omadi.service.uploadFile();
+                    }
                 };
 
                 //Connection error:
@@ -431,9 +839,13 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
                     }
 
                     Omadi.data.setUpdating(false);
+                    
+                    Omadi.service.fetchedJSON = null;
                 };
 
                 http.send();
+                
+                
             }
             else if(useProgressBar){
                 alert("You do not have an Internet connection.");
