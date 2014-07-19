@@ -176,7 +176,7 @@ Comment.prototype.showFormWindow = function(parent){"use strict";
             
             CommentObj.formToNode();
             
-            Ti.API.debug(JSON.stringify(this.node));
+            Ti.API.debug(JSON.stringify(CommentObj.node));
             
             
             CommentObj.formViewParent.remove(CommentObj.formView);
