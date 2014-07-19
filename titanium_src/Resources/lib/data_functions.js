@@ -2560,6 +2560,11 @@ Omadi.data.processFetchedJson = function(){"use strict";
                 }
             }
             
+            if ( typeof Omadi.service.fetchedJSON.comment !== 'undefined') {
+                Ti.API.debug("Installing comments");
+                Omadi.data.processCommentJson(mainDB);
+            }
+            
             mainDB.close();
             
             Omadi.data.setLastUpdateTimestamp(Omadi.service.fetchedJSON.request_time);
@@ -2673,7 +2678,6 @@ Omadi.data.processFakeFieldsJson = function(mainDB) {"use strict";
         alert("Saving extra fields: " + ex);
     }
 };
-
 
 
 Omadi.data.processFieldsJson = function(mainDB) {"use strict";
@@ -2867,6 +2871,62 @@ Omadi.data.processFieldsJson = function(mainDB) {"use strict";
         alert("Saving fields: " + ex);
     }
 };
+
+Omadi.data.processCommentJson = function(mainDB) {"use strict";
+    var i, j, queries;
+
+    try {
+        queries = [];
+
+        //Insert - Users
+        if (Omadi.service.fetchedJSON.comment.insert) {
+            if (Omadi.service.fetchedJSON.comment.insert.length) {
+                for ( i = 0; i < Omadi.service.fetchedJSON.comment.insert.length; i++) {
+                    if (Omadi.service.progressBar != null) {
+                        //Increment Progress Bar
+                        Omadi.service.progressBar.set();
+                    }
+
+                    queries.push('INSERT OR REPLACE INTO comment (cid, nid, uid, subject, created, changed, status, name, body) VALUES (' + dbEsc(Omadi.service.fetchedJSON.comment.insert[i].cid) + "," + dbEsc(Omadi.service.fetchedJSON.comment.insert[i].nid) + "," + dbEsc(Omadi.service.fetchedJSON.comment.insert[i].uid) + ",'" + dbEsc(Omadi.service.fetchedJSON.comment.insert[i].subject) + "'," + dbEsc(Omadi.service.fetchedJSON.comment.insert[i].created) + "," + dbEsc(Omadi.service.fetchedJSON.comment.insert[i].changed) + "," + dbEsc(Omadi.service.fetchedJSON.comment.insert[i].status) + ",'" + dbEsc(Omadi.service.fetchedJSON.comment.insert[i].name) + "','" + dbEsc(Omadi.service.fetchedJSON.comment.insert[i].body) + "')");
+
+                }
+            }
+        }
+
+
+        //Delete - Comments
+        // TODO: Implement the comment delete section
+        // if (Omadi.service.fetchedJSON.users["delete"]) {
+            // if (Omadi.service.fetchedJSON.users["delete"].length) {
+                // for ( i = 0; i < Omadi.service.fetchedJSON.users["delete"].length; i++) {
+                    // if (Omadi.service.progressBar != null) {
+                        // //Increment Progress Bar
+                        // Omadi.service.progressBar.set();
+                    // }
+// 
+                    // //Deletes current row (contact)
+                    // queries.push('DELETE FROM user WHERE uid=' + Omadi.service.fetchedJSON.users["delete"][i].uid);
+                    // queries.push('DELETE FROM user_roles WHERE uid=' + Omadi.service.fetchedJSON.users["delete"][i].uid);
+                // }
+            // }
+        // }
+
+        if (queries.length > 0) {
+
+            mainDB.execute("BEGIN IMMEDIATE TRANSACTION");
+            for ( i = 0; i < queries.length; i++) {
+                mainDB.execute(queries[i]);
+                Ti.API.debug("Inserted a comment");
+            }
+            mainDB.execute("COMMIT TRANSACTION");
+        }
+
+    }
+    catch(ex) {
+        alert("Installing Comments: " + ex);
+    }
+};
+
 
 Omadi.data.processUsersJson = function(mainDB) {"use strict";
     var i, j, queries;

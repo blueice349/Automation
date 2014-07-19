@@ -16,12 +16,16 @@ function DispatchForm(type, nid, form_part){"use strict";
     
     this.workTab = null;
     this.dispatchTab = null;
+    this.commentsTab = null;
     
     this.tabGroup = null;
     
     this.FormModule = null;
     this.dispatchObj = null;
     this.workObj = null;
+    
+    this.Comment = null;
+    this.commentsWindow = null;
     
     this.setSendingData = false;
     
@@ -32,7 +36,7 @@ function DispatchForm(type, nid, form_part){"use strict";
     this.continuousWorkInfo = null;
     
     this.currentWorkFormPart = -1;
-    
+
     this.lastSaveTime = 0;
 }
 
@@ -259,7 +263,7 @@ DispatchForm.prototype.loadCustomCopyNode = function(originalNode, from_type, to
 
 DispatchForm.prototype.getWindow = function(initNewDispatch){"use strict";
     var dispatchWin, workWin, allowRecover, openDispatch, workBundle, db, result, 
-        tempDispatchNid, iconFile, tempFormPart, origNid, copyToBundle;
+        tempDispatchNid, iconFile, tempFormPart, origNid, copyToBundle, commentsCount;
     
     try{
         openDispatch = false;
@@ -273,6 +277,8 @@ DispatchForm.prototype.getWindow = function(initNewDispatch){"use strict";
         
         this.FormModule = require('ui/FormModule');
         this.FormModule.reset();
+        
+        this.Comment = require('ui/Comment');
         
         if (this.nid == 'new') {
     
@@ -411,9 +417,6 @@ DispatchForm.prototype.getWindow = function(initNewDispatch){"use strict";
             }
         }
         
-        Ti.API.debug("Here");
-        Ti.API.debug(JSON.stringify(this.dispatchNode));
-        
         //create app tabs
         this.dispatchObj = this.FormModule.getDispatchObject(Omadi, 'dispatch', this.dispatchNode.nid, 0, this);
         
@@ -505,8 +508,8 @@ DispatchForm.prototype.getWindow = function(initNewDispatch){"use strict";
                 }
             }
         }
-        catch(copyEx){
-            Omadi.service.sendErrorReport("Exception with custom copy in dispatch: " + copyEx);
+        catch(copyEx1){
+            Omadi.service.sendErrorReport("Exception with custom copy in dispatch: " + copyEx1);
         }
         
         if(openDispatch){
@@ -520,6 +523,24 @@ DispatchForm.prototype.getWindow = function(initNewDispatch){"use strict";
                this.tabGroup.addTab(this.workTab);
            }
            this.tabGroup.addTab(this.dispatchTab);
+        }
+        
+        if(this.workTab && this.workNode && this.workNode.nid && this.workNode.nid > 0){
+            // The node is already saved and on the server
+            try{
+                this.Comment.init(Omadi, this.workNode.nid);
+                commentsCount = this.Comment.getCommentCount();
+                
+                this.commentsTab = Ti.UI.createTab({
+                    title: commentsCount + ' Comment' + (commentsCount == 1 ? '' : 's'),
+                    window: this.Comment.getListWindow()
+                });
+                
+                this.tabGroup.addTab(this.commentsTab);
+            }
+            catch(commentEx){
+                this.sendError("Exception with comments: " + commentEx);
+            }
         }
         
         this.tabGroup.addEventListener("omadi:dispatch:towTypeChanged", Dispatch.towTypeChanged);
