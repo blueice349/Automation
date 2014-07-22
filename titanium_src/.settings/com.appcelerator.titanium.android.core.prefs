@@ -1,0 +1,10 @@
+android/ATTR_PROJECT_NAME=Omadi
+android/abi=armeabi-v7a
+android/distribute_path=/Users/chris/Desktop/Mobile Releases/android
+android/key_password=
+android/keystore_alias=app_joseandro_version
+android/keystore_password=cjocjo
+android/keystore_path=/Users/chris/Projects/omadi_crm/omadi_mobile/omadi.keystore
+android/recent_output=/Users/chris/Desktop/Mobile Releases/android
+android/sdk_version=4.4.2
+eclipse.preferences.version=1

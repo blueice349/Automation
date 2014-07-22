@@ -840,7 +840,13 @@ function doneSendingDataMainMenu(e){"use strict";
     }
 }
 
-
+function doneSendingCommentMainMenu(e){"use strict";
+    Ti.API.debug("Done Sending comment event received");
+    
+    hideNetworkStatus();
+    
+    Omadi.service.sendComment();
+}
 
 function doneSendingPhotosMainMenu(e){"use strict";
     hideNetworkStatus();
@@ -1162,6 +1168,9 @@ function openFormWindow(e){"use strict";
     Ti.App.removeEventListener('sendUpdates', Omadi.service.sendUpdates);
     Ti.App.addEventListener('sendUpdates', Omadi.service.sendUpdates);
     
+    Ti.App.removeEventListener('sendComments', Omadi.service.sendComments);
+    Ti.App.addEventListener('sendComments', Omadi.service.sendComments);
+    
     if(Ti.App.isIOS){
         Ti.App.removeEventListener('resume', Omadi.service.checkUpdate);
         Ti.App.addEventListener('resume', Omadi.service.checkUpdate);
@@ -1240,10 +1249,12 @@ function openFormWindow(e){"use strict";
             Ti.App.removeEventListener('showNextAlertInQueue', showNextAlertInQueue);
             Ti.App.removeEventListener("omadi:syncInstallComplete", displayBundleList);
             Ti.App.removeEventListener("doneSendingData", doneSendingDataMainMenu);
+            Ti.App.removeEventListener("doneSendingComment", doneSendingCommentMainMenu);
             Ti.App.removeEventListener("doneSendingPhotos", doneSendingPhotosMainMenu);
             Ti.App.removeEventListener("sendingData", sendingDataMainMenu);
             Ti.App.removeEventListener('loggingOut', loggingOutMainMenu);
             Ti.App.removeEventListener('sendUpdates', Omadi.service.sendUpdates);
+            Ti.App.removeEventListener('sendComments', Omadi.service.sendComments);
             Ti.App.removeEventListener('omadi:finishedDataSync', setupBottomButtons);
             Ti.App.removeEventListener('normal_update_from_menu', normalUpdateFromMenu);
             Ti.App.removeEventListener('full_update_from_menu', fullUpdateFromMenu);
