@@ -1,6 +1,6 @@
 /*jslint eqeq:true,plusplus:true*/
 var Dispatch, Omadi;
-
+var CommentList = null;
 
 function DispatchForm(type, nid, form_part){"use strict";
     var tempFormPart, origNid;
@@ -23,9 +23,6 @@ function DispatchForm(type, nid, form_part){"use strict";
     this.FormModule = null;
     this.dispatchObj = null;
     this.workObj = null;
-    
-    this.Comment = null;
-    this.commentsWindow = null;
     
     this.setSendingData = false;
     
@@ -278,8 +275,6 @@ DispatchForm.prototype.getWindow = function(initNewDispatch){"use strict";
         this.FormModule = require('ui/FormModule');
         this.FormModule.reset();
         
-        this.Comment = require('ui/Comment');
-        
         if (this.nid == 'new') {
     
             if (this.type != 'dispatch') {
@@ -528,12 +523,23 @@ DispatchForm.prototype.getWindow = function(initNewDispatch){"use strict";
         if(this.workTab && this.workNode && this.workNode.nid && this.workNode.nid > 0){
             // The node is already saved and on the server
             try{
-                this.Comment.init(Omadi, this.workNode.nid);
-                commentsCount = this.Comment.getCommentCount();
+                CommentList = require('ui/CommentList');
+                
+                CommentList.init(Omadi, this.workNode.nid);
+                commentsCount = CommentList.getCommentCount();
                 
                 this.commentsTab = Ti.UI.createTab({
                     title: commentsCount + ' Comment' + (commentsCount == 1 ? '' : 's'),
-                    window: this.Comment.getListWindow()
+                    window: CommentList.getListWindow(),
+                    commentCount: commentsCount
+                });
+                
+                Ti.App.addEventListener('incrementCommentTab', function(e){
+                    var count, title;
+                    count = Dispatch.commentsTab.commentCount + 1;
+                    title = count + ' Comment' + (count == 1 ? '' : 's');
+                    Dispatch.commentsTab.setTitle(title);
+                    Dispatch.commentsTab.commentCount = count;
                 });
                 
                 this.tabGroup.addTab(this.commentsTab);

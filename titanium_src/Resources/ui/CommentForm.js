@@ -551,38 +551,19 @@ CommentForm.prototype.initNewNode = function(){"use strict";
 };
 
 CommentForm.prototype.save = function(){"use strict";
-    var db, sql, saved, cid;
+    var db, sql, saved, cid, Comment;
     
     saved = false;
     
     cid = CommentForm.prototype.getNewCommentCid();
     
     this.formToNode();
+    this.node.cid = cid;
     
     Ti.API.debug(JSON.stringify(this.node));
     
-    try{
-        db = Omadi.utils.openMainDatabase();
-        
-        sql = "INSERT INTO comment (cid, nid, uid, subject, created, changed, status, name, body, sync_status) VALUES ";
-        sql += "(" + cid + "," + this.nid + "," + this.node.uid + ",''," + this.node.created + "," + this.node.changed + ",1,'','" + dbEsc(this.node.comment_body.dbValues[0]) + "',1)"; 
-        
-        Ti.API.debug(sql);
-        
-        db.execute(sql);
-        saved = true;
-        
-        Ti.API.info("Saved comment");
-    }
-    catch(ex){
-        this.sendError("Exception saving comment: " + ex);
-    }
-    finally{
-        try{
-            db.close();
-        }
-        catch(ex1){}
-    }
+    Comment = require('objects/Comment');
+    saved = Comment.save(this.node);
     
     return saved;
 };
@@ -883,14 +864,18 @@ CommentForm.prototype.showFormWindow = function(parent){"use strict";
                     
                     if(saved){
                         
-                        Ti.App.fireEvent('sendComments');
                         // Let the parent window know that the comments have changed, and that the list should be updated
                         FormObj.formViewParent.fireEvent('updateView');
+                        
+                        Ti.App.fireEvent('incrementCommentTab');
                         
                         // Remove this view from the parent and set this view to null to deallocate memory
                         FormObj.formViewParent.remove(FormObj.formView);
                         FormObj.formView = null;
                         FormObj.isFormShowing = false;
+                        FormObj.unfocusField();
+                        
+                        Ti.App.fireEvent('sendComments');
                     }
                     else{
                         alert("Could not save the comment.");
@@ -933,8 +918,20 @@ CommentForm.prototype.showFormWindow = function(parent){"use strict";
         this.formView.add(buttonView);  
         
         this.formViewParent.add(this.formView);
-    }  
-   
+        
+        // After the for is loaded, focus the comment body so the keyboard comes up automatically
+        if(typeof this.fieldObjects.comment_body !== 'undefined'){
+            if(typeof this.fieldObjects.comment_body.elements !== 'undefined'){
+                if(typeof this.fieldObjects.comment_body.elements[0] !== 'undefined'){
+                    Ti.API.error("found comment body element");
+                    if(Ti.App.isAndroid){
+                        this.fieldObjects.comment_body.elements[0].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_SHOW_ON_FOCUS;
+                    }
+                    this.fieldObjects.comment_body.elements[0].focus();
+                }
+            }
+        }
+    }
 };
 
 exports.showFormWindow = function(OmadiObj, nid, parent){"use strict";

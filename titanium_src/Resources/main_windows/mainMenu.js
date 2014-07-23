@@ -840,12 +840,16 @@ function doneSendingDataMainMenu(e){"use strict";
     }
 }
 
-function doneSendingCommentMainMenu(e){"use strict";
-    Ti.API.debug("Done Sending comment event received");
+
+
+function sendCommentsMainMenu(e){"use strict";
+    var Comments;
     
     hideNetworkStatus();
     
-    Omadi.service.sendComment();
+    Comments = require('services/Comments');
+    
+    Comments.sendComments();
 }
 
 function doneSendingPhotosMainMenu(e){"use strict";
@@ -1168,8 +1172,8 @@ function openFormWindow(e){"use strict";
     Ti.App.removeEventListener('sendUpdates', Omadi.service.sendUpdates);
     Ti.App.addEventListener('sendUpdates', Omadi.service.sendUpdates);
     
-    Ti.App.removeEventListener('sendComments', Omadi.service.sendComments);
-    Ti.App.addEventListener('sendComments', Omadi.service.sendComments);
+    Ti.App.removeEventListener('sendComments', sendCommentsMainMenu);
+    Ti.App.addEventListener('sendComments', sendCommentsMainMenu);
     
     if(Ti.App.isIOS){
         Ti.App.removeEventListener('resume', Omadi.service.checkUpdate);
@@ -1249,12 +1253,11 @@ function openFormWindow(e){"use strict";
             Ti.App.removeEventListener('showNextAlertInQueue', showNextAlertInQueue);
             Ti.App.removeEventListener("omadi:syncInstallComplete", displayBundleList);
             Ti.App.removeEventListener("doneSendingData", doneSendingDataMainMenu);
-            Ti.App.removeEventListener("doneSendingComment", doneSendingCommentMainMenu);
             Ti.App.removeEventListener("doneSendingPhotos", doneSendingPhotosMainMenu);
             Ti.App.removeEventListener("sendingData", sendingDataMainMenu);
             Ti.App.removeEventListener('loggingOut', loggingOutMainMenu);
             Ti.App.removeEventListener('sendUpdates', Omadi.service.sendUpdates);
-            Ti.App.removeEventListener('sendComments', Omadi.service.sendComments);
+            Ti.App.removeEventListener('sendComments', sendCommentsMainMenu);
             Ti.App.removeEventListener('omadi:finishedDataSync', setupBottomButtons);
             Ti.App.removeEventListener('normal_update_from_menu', normalUpdateFromMenu);
             Ti.App.removeEventListener('full_update_from_menu', fullUpdateFromMenu);

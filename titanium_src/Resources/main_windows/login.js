@@ -916,6 +916,7 @@ function openMainScreen(loggedIn){"use strict";
                             //Passes parameter to the second window:
                             domainName = 'https://' + portal.value + '.omadi.com';
                             Omadi.DOMAIN_NAME = domainName;
+                            Ti.App.DOMAIN_NAME = domainName;
         
                             setProperties(domainName, this.responseText);
                             

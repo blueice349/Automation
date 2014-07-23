@@ -1,7 +1,7 @@
 /*jslint eqeq:true,plusplus:true*/
-var Omadi, CommentObj;
+var Omadi, commentList;
 
-function Comment(nid){"use strict";
+function CommentList(nid){"use strict";
     //create module instance
     
     this.nid = nid;
@@ -13,11 +13,11 @@ function Comment(nid){"use strict";
     this.scrollView = null;
 }
 
-Comment.prototype.back = function(){"use strict";
+CommentList.prototype.back = function(){"use strict";
     Ti.API.debug("Pressed back button from comments...");
 };
 
-Comment.prototype.initComments = function(){"use strict";
+CommentList.prototype.initComments = function(){"use strict";
     var db, result, comment;
     
     this.comments = [];
@@ -51,7 +51,7 @@ Comment.prototype.initComments = function(){"use strict";
     }
 };
 
-Comment.prototype.getCommentCount = function(){"use strict";
+CommentList.prototype.getCommentCount = function(){"use strict";
     if(this.comments === null){
         this.initComments();
     }
@@ -59,11 +59,11 @@ Comment.prototype.getCommentCount = function(){"use strict";
     return this.comments.length;
 };
 
-Comment.prototype.setNumCommentsLabel = function(){"use strict";
+CommentList.prototype.setNumCommentsLabel = function(){"use strict";
     this.numCommentsLabel.setText(this.comments.length + " comment" + (this.comments.length == 1 ? '' : 's'));
 };
 
-Comment.prototype.getListWindow = function(){"use strict";
+CommentList.prototype.getListWindow = function(){"use strict";
     
     var numCommentsLabel, headerView, newCommentButton;
     
@@ -129,7 +129,7 @@ Comment.prototype.getListWindow = function(){"use strict";
         var commentForm = require('ui/CommentForm');
         
         try{
-            commentForm.showFormWindow(Omadi, CommentObj.nid, CommentObj.listWin);
+            commentForm.showFormWindow(Omadi, commentList.nid, commentList.listWin);
         }
         catch(ex){
             Ti.API.error("Exception showing comment form: " + ex);
@@ -151,40 +151,39 @@ Comment.prototype.getListWindow = function(){"use strict";
     //this.listWin.add(scrollView);
     
     
-    this.listWin.addEventListener('updateView', CommentObj.updateView);
+    this.listWin.addEventListener('updateView', commentList.updateView);
     
     //this.win.addEventListener("android:back", this.back);
     
     return this.listWin;
 };
 
-Comment.prototype.setScrollView = function(){"use strict";
+CommentList.prototype.setScrollView = function(){"use strict";
     var commentView, comment, comments, i, 
         commentHeaderView, commentDateLabel, bodyView, bodyLabel, nameLabel;
     
     try{
-        if(this.scrollView !== null){
+        if(this.scrollView !== null && this.listWin !== null){
             // Attempt to remove the scroll view if this is a refresh
-            //this.listView.remove(this.scrollView);
+            this.listWin.remove(this.scrollView);
+            this.scrollView = null;
         }
     }
     catch(ex){}
-    
-    Ti.API.debug("to chris 1");
     
     this.scrollView = Ti.UI.createScrollView({
         top: 45,
         width: Ti.UI.FILL,
         bottom: 0,
         left: 0,
-        layout: 'vertical'
+        layout: 'vertical',
+        scrollType: 'vertical'
     });
     
     if(this.comments.length > 0){
         for(i = 0; i < this.comments.length; i ++){
             
             comment = this.comments[i];
-            
             commentView = Ti.UI.createView({
                 layout: 'vertical',
                 width: '94%',
@@ -270,33 +269,29 @@ Comment.prototype.setScrollView = function(){"use strict";
        this.scrollView.add(bodyLabel);
     }
     
-    Ti.API.debug("to chris 2");
-    
     this.listWin.add(this.scrollView);
-    
-    Ti.API.debug("to chris 3");
 };
 
-Comment.prototype.updateView = function(){"use strict";
+CommentList.prototype.updateView = function(){"use strict";
     Ti.API.debug("Updating the comment list view");
     
     // Reinitialize the comments so the scroll view can have the updated list
-    CommentObj.initComments();
-    CommentObj.setNumCommentsLabel();
-    CommentObj.setScrollView();
+    commentList.initComments();
+    commentList.setNumCommentsLabel();
+    commentList.setScrollView();
     
     Ti.API.debug("Updated the comment list view");
 };
 
 exports.init = function(OmadiObj, nid){"use strict";
     Omadi = OmadiObj;
-    CommentObj = new Comment(nid);
+    commentList = new CommentList(nid);
 };
 
 exports.getCommentCount = function(){"use strict";
-    return CommentObj.getCommentCount();
+    return commentList.getCommentCount();
 };
 
 exports.getListWindow = function(){"use strict";
-    return CommentObj.getListWindow();
+    return commentList.getListWindow();
 };

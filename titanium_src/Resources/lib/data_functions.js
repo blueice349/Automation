@@ -1698,69 +1698,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
     return node;
 };
 
-Omadi.data.commentLoad = function(cid) {"use strict";
 
-    var db, comment, result, subResult, field_name, dbValue, tempDBValues, textValue, 
-        subValue, decoded, i, real_field_name, part, field_parts, widget, instances, 
-        tempValue, origDBValue, jsonValue, allowedValues, allowedKey, filePath, newCid,
-        listDB, intCid;
-
-    comment = null;
-    
-    Ti.API.debug("Loading cid: " + cid);
-    
-    if(typeof cid !== 'undefined'){
-        intCid = parseInt(cid, 10);
-    
-        if (!isNaN(intCid) && intCid != 0) {
-            
-            comment = {
-                cid : cid
-            };
-
-            db = Omadi.utils.openMainDatabase();
-            //listDB = Omadi.utils.openListDatabase();
-            
-            try{
-
-                result = db.execute('SELECT cid, nid, uid, created, changed, subject, sync_status, status, name, body FROM comment WHERE cid = ' + cid);
-                Ti.API.debug("Executed comment sql");
-                
-                if (result.isValidRow()) {
-                    Ti.API.info("Loaded a comment");
-                    
-                    comment.cid = result.fieldByName('cid', Ti.Database.FIELD_TYPE_INT);
-                    comment.nid = result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT);
-                    comment.uid = result.fieldByName('uid', Ti.Database.FIELD_TYPE_INT);
-                    
-                    comment.subject = result.fieldByName('subject', Ti.Database.FIELD_TYPE_STRING);
-                    comment.created = result.fieldByName('created', Ti.Database.FIELD_TYPE_INT);
-                    comment.changed = result.fieldByName('changed', Ti.Database.FIELD_TYPE_INT);
-                    
-                    comment.sync_status = result.fieldByName('sync_status', Ti.Database.FIELD_TYPE_INT);
-                    comment.name = result.fieldByName('name', Ti.Database.FIELD_TYPE_STRING);
-                    comment.comment_body = {
-                      dbValues : [result.fieldByName('body', Ti.Database.FIELD_TYPE_STRING)],
-                      textValues : [result.fieldByName('body', Ti.Database.FIELD_TYPE_STRING)]  
-                    };
-                }
-                
-                result.close();
-
-            }
-            catch(ex){
-                Omadi.service.sendErrorReport("Exception with comment table query: " + ex);
-            }
-            
-            //listDB.close();
-            db.close();
-        }
-    }
-    
-    Ti.API.debug("Comment load: " + JSON.stringify(comment));
-    
-    return comment;
-};
 
 Omadi.data.getNodeTableInsertStatement = function(node) {"use strict";
 

@@ -5,7 +5,12 @@ var Omadi = Omadi || {};
 Omadi.utils = Omadi.utils || {};
 
 Omadi.DOMAIN_NAME = domainName;
-Omadi.DB_VERSION = "DB1719";
+Ti.App.DOMAIN_NAME = domainName;
+
+// IMPORTANT, IMPORTANT, IMPORTANT, IMPORTANT!!!!!
+// When changing this version number, also change it in the Database module
+Omadi.DB_VERSION = "DB1720";
+// IMPORTANT, IMPORTANT, IMPORTANT, IMPORTANT!!!!!
 
 Omadi.utils.checkVolumeLevel = function(){"use strict";
     /*global alertQueue*/
