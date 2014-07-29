@@ -705,40 +705,50 @@ Omadi.display.openWebView = function(nid){"use strict";
 };
 
 Omadi.display.openViewWindow = function(type, nid, win) {"use strict";
-    var isDispatch, viewWindow;
+    var isDispatch, viewWindow, NodeViewTabs;
     
-    if(typeof win === 'undefined'){
-        win = Ti.UI.currentWindow;
-    }
+    Omadi.display.loading();
+            
+    NodeViewTabs = require('ui/NodeViewTabs');
+    viewWindow = NodeViewTabs.getTabs(Omadi, type, nid);
     
-    Omadi.display.loading("Loading...", win);
-    
-    //Omadi.display.showActivityIndicator();
-    
-    isDispatch = Omadi.bundles.dispatch.isDispatch(type, nid);
-    
-    if(isDispatch){
-        viewWindow = Titanium.UI.createWindow({
-            navBarHidden : true,
-            type : type,
-            url : '/main_windows/dispatch_view.js',
-            nid : nid,
-            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
-        });
+    if(viewWindow){
+        viewWindow.addEventListener('open', Omadi.display.doneLoading);
+        viewWindow.open();
     }
     else{
-        viewWindow = Titanium.UI.createWindow({
-            navBarHidden : true,
-            type : type,
-            url : '/main_windows/individual_object.js',
-            nid : nid,
-            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
-        });
+        Omadi.service.sendErrorReport("Could not open dispatch form window");
+        alert("Could not open the view.");
+        Omadi.display.doneLoading();
     }
-
-    viewWindow.addEventListener('open', Omadi.display.doneLoading);
     
-    viewWindow.open();
+    
+    //Omadi.display.showActivityIndicator();
+//     
+    // isDispatch = Omadi.bundles.dispatch.isDispatch(type, nid);
+//     
+    // if(isDispatch){
+        // viewWindow = Titanium.UI.createWindow({
+            // navBarHidden : true,
+            // type : type,
+            // url : '/main_windows/dispatch_view.js',
+            // nid : nid,
+            // orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
+        // });
+    // }
+    // else{
+        // viewWindow = Titanium.UI.createWindow({
+            // navBarHidden : true,
+            // type : type,
+            // url : '/main_windows/individual_object.js',
+            // nid : nid,
+            // orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
+        // });
+    // }
+// 
+    // viewWindow.addEventListener('open', Omadi.display.doneLoading);
+//     
+    // viewWindow.open();
 
     return viewWindow;
 };
@@ -853,8 +863,6 @@ Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
             
                 formWindow.addEventListener('open', Omadi.display.doneLoading);
                 formWindow.open();
-                
-                Omadi.display.FormModule.populateWindow(Omadi, type, nid, form_part, false);
                 
                 // Must be called after getWindow
                 node = Omadi.display.FormModule.getNode(type);

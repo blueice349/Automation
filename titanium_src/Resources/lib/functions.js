@@ -130,7 +130,11 @@ function notifyIOS(msg, update_time) {"use strict";
 function getNodeTableInsertStatement(node) {"use strict";
 
     var sql = 'INSERT OR REPLACE INTO node (nid, perm_edit, perm_delete, created, changed, title, author_uid, flag_is_updated, table_name, form_part, changed_uid, no_data_fields, viewed) VALUES (';
-
+    
+    if(typeof node.viewed === 'undefined'){
+        node.viewed = 0;
+    }
+    
     sql += node.nid;
     sql += ',' + node.perm_edit;
     sql += ',' + node.perm_delete;

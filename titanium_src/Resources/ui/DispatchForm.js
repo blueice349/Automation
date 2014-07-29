@@ -194,6 +194,14 @@ DispatchForm.prototype.doDispatchSave = function(){"use strict";
     }
 };
 
+function incrementCommentTab(e){"use strict";
+    var count, title;
+    count = Dispatch.commentsTab.commentCount + 1;
+    title = count + ' Comment' + (count == 1 ? '' : 's');
+    Dispatch.commentsTab.setTitle(title);
+    Dispatch.commentsTab.commentCount = count;  
+}
+
 //******** loadCustomCopyNode ****************************************************
 // Pass in original node, from node type, and to node type
 // Return a modified node with the new type initialized with correct data transfer
@@ -394,8 +402,6 @@ DispatchForm.prototype.getWindow = function(initNewDispatch){"use strict";
                 form_part : 0
             };
             
-            
-            
             openDispatch = true;
         }
         
@@ -534,13 +540,8 @@ DispatchForm.prototype.getWindow = function(initNewDispatch){"use strict";
                     commentCount: commentsCount
                 });
                 
-                Ti.App.addEventListener('incrementCommentTab', function(e){
-                    var count, title;
-                    count = Dispatch.commentsTab.commentCount + 1;
-                    title = count + ' Comment' + (count == 1 ? '' : 's');
-                    Dispatch.commentsTab.setTitle(title);
-                    Dispatch.commentsTab.commentCount = count;
-                });
+                Ti.App.removeEventListener('incrementCommentTab', incrementCommentTab);
+                Ti.App.addEventListener('incrementCommentTab', incrementCommentTab);
                 
                 this.tabGroup.addTab(this.commentsTab);
             }
@@ -589,11 +590,6 @@ DispatchForm.prototype.exitForm = function(){"use strict";
         var db, result, numPhotos, secondDialog, negativeNid, query, continuousId, photoNids, types, dialogTitle, dialogMessage, messageParts, windowNid;
         try{
             if (e.index == 0) {
-                
-                windowNid = parseInt(Ti.UI.currentWindow.nid, 10);
-                if (isNaN(windowNid)) {
-                    windowNid = 0;
-                }
                 
                 if(Dispatch.dispatchObj !== null){
                     Dispatch.dispatchObj.closeWindow();

@@ -56,14 +56,31 @@ function is_first_time() {"use strict";
 }
 
 function startGPSService() {"use strict";
-    var intent, intent2;
+    var start, loginJson;
     /*global iOSStartGPS, createNotification*/
-
-    if (Ti.App.isIOS) {
-        iOSStartGPS();
+    
+    try{
+        start = true;
+        
+        loginJson = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
+        if(typeof loginJson.gps_track !== 'undefined'){
+            start = loginJson.gps_track;
+        }
+        
+        Ti.API.debug("loginjson: " + JSON.stringify(loginJson));
+        
+        // Only start the GPS service if not denied from the session return values
+        if(start){
+            if (Ti.App.isIOS) {
+                iOSStartGPS();
+            }
+            else {
+                Omadi.background.android.startGPSService();
+            }
+        }
     }
-    else {
-        Omadi.background.android.startGPSService();
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception in startGPSService: " + ex);
     }
 }
 

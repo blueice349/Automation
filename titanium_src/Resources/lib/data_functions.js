@@ -703,6 +703,10 @@ Omadi.data.nodeSave = function(node) {"use strict";
                     node.custom_copy_orig_nid = 0;
                 }
                 
+                if(typeof node.viewed === 'undefined'){
+                    node.viewed = 0;
+                }
+                
                 if (node._isContinuous) {          
                     Ti.API.debug("SAVING TO CONTINUOUS: " + saveNid + " " + origNid + " " + node.dispatch_nid);    
                     
@@ -3679,11 +3683,13 @@ Omadi.data.processNodeTypeJson = function(mainDB) {"use strict";
         //Node type inserts
         if (Omadi.service.fetchedJSON.node_type.insert) {
             if (Omadi.service.fetchedJSON.node_type.insert.length) {
+            
+                Ti.API.debug("node_type: " + JSON.stringify(Omadi.service.fetchedJSON.node_type));
 
                 for ( i = 0; i < Omadi.service.fetchedJSON.node_type.insert.length; i++) {
                     type = Omadi.service.fetchedJSON.node_type.insert[i].type;
 
-                    if (type != 'user') {
+                    if (type != 'user' && type != '') {
                         
                         //Increment the progress bar
                         if (Omadi.service.progressBar != null) {

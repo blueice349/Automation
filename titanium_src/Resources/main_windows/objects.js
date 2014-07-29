@@ -195,7 +195,7 @@ function setTableData() {"use strict";
         label1, label2, db, db_result, title, separator, whiteSpaceTest, 
         backgroundColor, numTitleRows, fullWidth, text_values, text_value, 
         values, safeValues, subResult, tableIndex, resultCount, appendData, 
-        countSQL, dbValue;
+        countSQL, dbValue, allowedValue, allowedValues;
 
     tableIndex = 0;
     appendData = [];
@@ -320,7 +320,6 @@ function setTableData() {"use strict";
         db = Omadi.utils.openMainDatabase();
         db_result = db.execute(sql);
         
-        
         while (db_result.isValidRow()) {
             
             //Ti.API.debug(lastFilterField);
@@ -396,6 +395,29 @@ function setTableData() {"use strict";
                 }
                 else{
                     text_values[safeValues[i]] = 'No - ' + lastFilterField.label;
+                }
+            }
+        }
+        else if (lastFilterField.type == 'list_text'){
+            
+            Ti.API.debug(JSON.stringify(lastFilterField));
+            
+            if(typeof lastFilterField.settings !== 'undefined'){
+                if(typeof lastFilterField.settings.instance_allowed_values !== 'undefined'){
+                    if(lastFilterField.settings.instance_allowed_values != null && lastFilterField.settings.instance_allowed_values != ''){
+                        allowedValues = lastFilterField.settings.instance_allowed_values.split("\n");
+                        if (allowedValues.length > 0) {
+                            for (i = 0; i < allowedValues.length; i ++) {
+                                allowedValue = Omadi.utils.trimWhiteSpace(allowedValues[i]);
+                                if(allowedValue != ""){
+                                    allowedValue = allowedValue.split('|');
+                                    if(allowedValue.length == 2){
+                                        text_values[allowedValue[0]] = allowedValue[1];
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

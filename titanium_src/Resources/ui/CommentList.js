@@ -25,7 +25,7 @@ CommentList.prototype.initComments = function(){"use strict";
         if(this.nid > 0){
             db = Omadi.utils.openMainDatabase();
             
-            result = db.execute("SELECT cid, created, changed, body, uid FROM comment WHERE nid = " + this.nid + " ORDER BY changed DESC");
+            result = db.execute("SELECT cid, created, changed, body, uid FROM comment WHERE nid = " + this.nid + " ORDER BY created DESC");
             
             while(result.isValidRow()){
                 
@@ -102,11 +102,7 @@ CommentList.prototype.getListWindow = function(){"use strict";
        left: '3%'
     });
     
-    Ti.API.debug("top 1");
-    
     this.setNumCommentsLabel();
-    
-    Ti.API.debug("top 2");
     
     newCommentButton = Ti.UI.createLabel({
         backgroundGradient: Omadi.display.backgroundGradientBlue,
@@ -139,21 +135,11 @@ CommentList.prototype.getListWindow = function(){"use strict";
     headerView.add(this.numCommentsLabel);
     headerView.add(newCommentButton);
     
-    Ti.API.debug("top 3");
-    
     this.listWin.add(headerView);
-    
-    Ti.API.debug("top 4");
     
     this.setScrollView();
     
-    
-    //this.listWin.add(scrollView);
-    
-    
     this.listWin.addEventListener('updateView', commentList.updateView);
-    
-    //this.win.addEventListener("android:back", this.back);
     
     return this.listWin;
 };
@@ -202,7 +188,7 @@ CommentList.prototype.setScrollView = function(){"use strict";
             });
             
             commentDateLabel = Ti.UI.createLabel({
-                text: Omadi.utils.formatDate(comment.changed, true),
+                text: Omadi.utils.formatDate(comment.created, true),
                 color: '#eee',
                 font: {
                     fontSize: 14,
