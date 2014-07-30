@@ -857,4 +857,16 @@ exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper)
     return Widget[instance.field_name];
 };
 
+exports.getView = function(OmadiObj, node, instance){"use strict";
+    var formObj, widget;
+    Omadi = OmadiObj;
+    
+    formObj = {};
+    formObj.node = node;
+    formObj.unfocusField = function(){};
+    
+    widget = new RulesFieldWidget(formObj, instance, null);
+    
+    return widget.getNewElement(0);
+};
 

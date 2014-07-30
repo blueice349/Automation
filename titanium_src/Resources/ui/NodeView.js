@@ -67,6 +67,7 @@ NodeView.prototype.init = function(){"use strict";
     var db, result, reg_settings, region_name, field_desc, unsorted_res, 
         savedValues, settings, i, j, roles, stringifyObj, omadi_session_details;
     
+    unsorted_res = [];
     
     db = Omadi.utils.openMainDatabase();
     
@@ -90,8 +91,6 @@ NodeView.prototype.init = function(){"use strict";
                 this.regions[region_name].label = result.fieldByName('label');
                 this.regions[region_name].settings = result.fieldByName('settings');
                 this.regions[region_name].fields = [];
-        
-               
             }
             result.next();
         }
@@ -265,7 +264,7 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
    
     var i, rowView, valueView, valueLabel, labelView, labelLabel, fieldIsHidden, tableView, fileId, 
         contentImage, field_parts, part, contentWidth, dotIndex, extension, imagePath, degrees, transform,
-        animation, rotateDegrees;
+        animation, rotateDegrees, widget;
     
     
     if ( typeof this.node[fieldObj.field_name] !== 'undefined') {
@@ -316,7 +315,11 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
             if (fieldObj.type === 'calculation_field') {
     
                 if (fieldObj.settings.hidden == 0) {
-                    tableView = Omadi.widgets.calculation_field.getTableView(this.node, fieldObj);
+                    
+                    widget = require('ui/widget/CalculationField');
+                    tableView = widget.getView(Omadi, this.node, fieldObj);
+                    
+                    //tableView = Omadi.widgets.calculation_field.getTableView(this.node, fieldObj);
     
                     if (tableView.singleValue) {
                         valueView.add(tableView);
@@ -335,7 +338,11 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
             else if (fieldObj.type === 'rules_field') {
                 rowView.add(labelView);
                 
-                valueView = Omadi.widgets.rules_field.getNewElement(this.node, fieldObj);
+                //valueView = Omadi.widgets.rules_field.getNewElement(this.node, fieldObj);
+                
+                widget = require('ui/widget/RulesField');
+                valueView = widget.getView(Omadi, this.node, fieldObj);
+                
                 valueView.setWidth("59%");
                 valueView.setRight(0);
                 
@@ -349,7 +356,11 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
                 labelLabel.left = '2%';
                 
                 this.scrollView.add(labelView);
-                tableView = Omadi.widgets.extra_price.getTableView(this.node, fieldObj);
+                widget = require('ui/widget/ExtraPrice');
+                tableView = widget.getView(Omadi, this.node, fieldObj);
+                
+                //tableView = Omadi.widgets.extra_price.getTableView(this.node, fieldObj);
+                
                 this.scrollView.add(tableView);
                 this.scrollView.add(Ti.UI.createView({
                     width: '100%',
@@ -498,11 +509,13 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
                                 imageVal : fileId,
                                 fid : fileId,
                                 nid : this.node.nid,
+                                node_type: this.node.type,
                                 instance : fieldObj
                             });
     
                             contentImage.addEventListener('click', function(e){
-                                 Omadi.widgets.video.openVideoPlayer(e.source);
+                                var widget = require('ui/widget/Video');
+                                widget.openVideoPlayer(Omadi, e.source.instance, e.source);
                             });
                             
                             valueView.add(contentImage);
@@ -703,7 +716,7 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
 };
 
 NodeView.prototype.getWindow = function(){"use strict";
-    var regionName;
+    var regionName, i, db, result, usernames, metaDataFields;
     
     if(!this.initialized){
         this.init();
@@ -730,6 +743,91 @@ NodeView.prototype.getWindow = function(){"use strict";
         if (this.regions.hasOwnProperty(regionName)) {
             this.addRegion(this.regions[regionName]);
         }
+    }
+    
+    this.scrollView.add(Ti.UI.createLabel({
+        text : 'METADATA',
+        color : '#ddd',
+        font : {
+            fontSize : 16,
+            fontWeight : 'bold'
+        },
+        textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER,
+        width : '100%',
+        touchEnabled : false,
+        height : 25,
+        backgroundGradient : {
+            type : 'linear',
+            startPoint : {
+                x : '50%',
+                y : '0%'
+            },
+            endPoint : {
+                x : '50%',
+                y : '100%'
+            },
+            colors : [{
+                color : '#888',
+                offset : 0.0
+            }, {
+                color : '#999',
+                offset : 0.3
+            }, {
+                color : '#666',
+                offset : 1.0
+            }]
+        },
+        ellipsize : true,
+        wordWrap : false
+    }));
+
+    db = Omadi.utils.openMainDatabase();
+    result = db.execute("SELECT realname, uid FROM user WHERE uid IN (" + this.node.author_uid + "," + this.node.changed_uid + ")");
+    usernames = [];
+
+    while (result.isValidRow()) {
+        usernames[result.fieldByName("uid")] = result.fieldByName("realname");
+        result.next();
+    }
+    result.close();
+    db.close();
+
+    metaDataFields = [];
+
+    metaDataFields.push({
+        type : 'metadata',
+        label : 'Created By',
+        field_name : 'author_uid',
+        textValue : usernames[this.node.author_uid],
+        can_view: true
+    });
+    metaDataFields.push({
+        type : 'metadata',
+        label : 'Created Time',
+        field_name : 'created',
+        textValue : Omadi.utils.formatDate(this.node.created, true),
+        can_view: true
+    });
+
+    if (this.node.created !== this.node.changed) {
+        metaDataFields.push({
+            type : 'metadata',
+            label : 'Last Updated By',
+            field_name : 'author_uid',
+            textValue : usernames[this.node.author_uid],
+            can_view: true
+        });
+        metaDataFields.push({
+            type : 'metadata',
+            label : 'Last Updated Time',
+            field_name : 'changed',
+            textValue : Omadi.utils.formatDate(this.node.changed, true),
+            can_view: true
+        });
+    }
+
+    for ( i = 0; i < metaDataFields.length; i++) {
+        this.addField(metaDataFields[i]);
     }
     
     // Send a ping to the server that this node was viewed

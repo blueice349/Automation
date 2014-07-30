@@ -490,7 +490,14 @@ function setupBottomButtons() {"use strict";
                 });
         
                 Omadi.display.loading();
-        
+                
+                if(Ti.App.isAndroid){
+                    // Hide the Android action bar
+                    alertsWindow.addEventListener('open', function(){
+                        alertsWindow.activity.actionBar.hide();
+                    });
+                }
+                
                 alertsWindow.addEventListener('open', Omadi.display.doneLoading);
                 alertsWindow.open();
             }
@@ -583,7 +590,14 @@ function setupBottomButtons() {"use strict";
             });
     
             Omadi.display.loading();
-    
+            
+            if(Ti.App.isAndroid){
+                // Hide the Android action bar
+                recentWindow.addEventListener('open', function(){
+                    recentWindow.activity.actionBar.hide();
+                });
+            }
+            
             recentWindow.addEventListener('open', Omadi.display.doneLoading);
             recentWindow.open();
         }

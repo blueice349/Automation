@@ -5,6 +5,9 @@ var Omadi, _instance = null;
 var NodeView = require('ui/NodeView');
 var CommentList = null;
 
+var androidMenuItemData = [];
+
+
 function NodeViewTabs(type, nid){"use strict";
     var tempFormPart, origNid;
     
@@ -24,6 +27,8 @@ function NodeViewTabs(type, nid){"use strict";
     
     this.dispatchWindow = null;
     this.workWindow = null;
+    
+    this.currentWorkFormPart = 0;
 }
 
 function getInstance(){"use strict";
@@ -114,6 +119,117 @@ function incrementCommentTab(e){"use strict";
     title = count + ' Comment' + (count == 1 ? '' : 's');
     _instance.commentsTab.setTitle(title);
     _instance.commentsTab.commentCount = count;  
+}
+
+function openAndroidMenuItemNodeView(e){"use strict";
+    var itemIndex, itemData;
+    
+    itemIndex = e.source.getOrder();
+    
+    Ti.API.debug(itemIndex);
+    itemData = androidMenuItemData[itemIndex];
+    
+    Ti.API.debug(JSON.stringify(itemData));
+    
+    Ti.App.fireEvent('openFormWindow', {
+        node_type: itemData.type,
+        nid: itemData.nid,
+        form_part: itemData.form_part 
+    });
+}
+
+NodeViewTabs.prototype.addActions = function(){"use strict";
+    var isEditEnabled, db1, result;
+    
+    if(this.workNode !== null){
+            
+        if (Ti.App.isAndroid) {
+            
+            this.tabGroup.activity.onCreateOptionsMenu = function(e) {
+                var db, result, bundle, menu_zero, menu_edit, 
+                    customCopy, to_type, to_bundle, order, iconFile, menu_print, 
+                    menu_charge, node;
+                
+                node = getInstance().workNode;
+                
+                order = 0;
+                bundle = Omadi.data.getBundle(node.type);
+                    
+                if(node.perm_edit == true){
+                    
+                    menu_edit = e.menu.add({
+                        title : 'Edit',
+                        order : order,
+                        icon: "/images/edit_white.png",
+                        showAsAction : (Ti.Android.SHOW_AS_ACTION_ALWAYS | Ti.Android.SHOW_AS_ACTION_WITH_TEXT)
+                    });
+                    
+                    androidMenuItemData[order] = {
+                        type: node.type,
+                        nid: node.nid,
+                        form_part: getInstance().currentWorkFormPart
+                    };
+                    
+                    menu_edit.addEventListener("click", openAndroidMenuItemNodeView);
+                    
+                    order++;
+                }
+                
+                if(Omadi.print.canPrintReceipt(node.nid)){
+                    menu_print = e.menu.add({
+                        title : 'Print',
+                        order : order,
+                        icon: "/images/printer_white.png",
+                        showAsAction : (Ti.Android.SHOW_AS_ACTION_ALWAYS | Ti.Android.SHOW_AS_ACTION_WITH_TEXT)
+                    });
+                    
+                    menu_print.addEventListener('click', function(){
+                        Omadi.print.printReceipt(node.nid);
+                    });
+                    
+                    order ++;
+                    
+                    // menu_charge = e.menu.add({
+                        // title : 'Charge',
+                        // order : order 
+                    // });
+        //             
+                    // //menu_charge.setIcon("/images/printer_white.png");
+        //             
+                    // menu_charge.addEventListener('click', function(){
+                        // Omadi.print.chargeCard(curWin.nid);
+                    // });
+        //             
+                    // order ++;
+                }
+                
+                if(typeof bundle.data.custom_copy !== 'undefined'){
+                    for(to_type in bundle.data.custom_copy){
+                        if(bundle.data.custom_copy.hasOwnProperty(to_type)){
+                            to_bundle = Omadi.data.getBundle(to_type);
+                            if(to_bundle && to_bundle.can_create == 1){
+                                customCopy = e.menu.add({
+                                    title : "Copy to " + to_bundle.label,
+                                    order : order,
+                                    showAsAction : (Ti.Android.SHOW_AS_ACTION_NEVER | Ti.Android.SHOW_AS_ACTION_WITH_TEXT)
+                                });
+                                
+                                androidMenuItemData[order] = {
+                                    type: node.type,
+                                    nid: node.nid,
+                                    form_part: to_type 
+                                };
+                    
+                                customCopy.addEventListener("click", openAndroidMenuItemNodeView);
+                                
+                                order ++;
+                            }
+                        }
+                    }
+                }
+            };
+        }
+    }
 };
 
 NodeViewTabs.prototype.getTabs = function(){"use strict";
@@ -124,11 +240,11 @@ NodeViewTabs.prototype.getTabs = function(){"use strict";
         openDispatch = false;
         
         this.tabGroup = Ti.UI.createTabGroup({
-            navBarHidden: true,
             tabsBackgroundImage: '/images/black_button1.png',
             activeTabBackgroundImage: '/images/blue_button1.png',
             tabsTintColor: '#fff',
-            activeTabIconTint: '#fff'
+            activeTabIconTint: '#fff',
+            title: 'View'
         });
         
         this.workNode = Omadi.data.nodeLoad(this.nid);
@@ -192,6 +308,8 @@ NodeViewTabs.prototype.getTabs = function(){"use strict";
             alert("A problem occurred loading this dispatch. Omadi support has been notified about this issue.");
             Omadi.service.sendErrorReport("The work node passed into the dispatch form is invalid: " + this.nid);   
         }
+        
+        
         
         //create app tabs
         //this.dispatchObj = NodeViewTabs.getDispatchObject(Omadi, 'dispatch', this.dispatchNode.nid, 0, this);
@@ -263,24 +381,10 @@ NodeViewTabs.prototype.getTabs = function(){"use strict";
                 this.sendError("Exception with comments: " + commentEx);
             }
         }
-        
-        //this.tabGroup.addEventListener("android:back", this.exitForm);
-        
-        if(Ti.App.isAndroid){
-            this.tabGroup.addEventListener("open", function(e) {
-                _instance.tabGroup.activity.onCreateOptionsMenu = function(e) {
-                    var menuItem = e.menu.add({
-                        title : "Save",
-                        icon : "/images/save_light_blue.png"
-                    });
-                    menuItem.addEventListener("click", _instance.doDispatchSave);
-                };
-            });
-        }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Could not open dispatch window: " + ex);
-        alert("There was a problem loading this dispatch. Please contact support.");
+        Omadi.service.sendErrorReport("Could not open view window: " + ex);
+        alert("There was a problem loading this view. Please contact support.");
     }
 
     Ti.App.removeEventListener('loggingOut', _instance.loggingOut);
@@ -288,7 +392,24 @@ NodeViewTabs.prototype.getTabs = function(){"use strict";
 
     Ti.App.removeEventListener("savedNode", _instance.savedNode);
     Ti.App.addEventListener("savedNode", _instance.savedNode);
-  
+    
+    if(Ti.App.isAndroid){
+        this.tabGroup.addEventListener('open', function(){
+            
+            try{
+                // Add actions after the work node has been fully loaded
+                getInstance().addActions();
+                
+                var actionBar = getInstance().tabGroup.activity.actionBar;
+                actionBar.setHomeAsUp = true;
+                actionBar.onHomeIconItemSelected = function(){
+                    getInstance().close();  
+                };
+            }
+            catch(ex){}
+        });
+    }
+    
     return this.tabGroup;
 };
 
@@ -300,7 +421,7 @@ NodeViewTabs.prototype.loggingOut = function(){"use strict";
     this.close();
 };
 
-NodeViewTabs.close = function(){"use strict";
+NodeViewTabs.prototype.close = function(){"use strict";
     try{
         if(this.dispatchWindow !== null){
             this.dispatchWindow.close();
@@ -325,8 +446,6 @@ NodeViewTabs.prototype.sendError = function(message){"use strict";
     Ti.API.error(message);
     Omadi.service.sendErrorReport(message);
 };
-
-
 
 
 exports.getTabs = function(OmadiObj, type, nid){"use strict";

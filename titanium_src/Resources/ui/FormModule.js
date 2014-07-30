@@ -263,8 +263,6 @@ function sort_by_weight(a, b) {"use strict";
     return 0;
 }
 
-
-
 function FormModule(type, nid, form_part, usingDispatch) {"use strict";
     var tempNid, tempFormPart, origNid;
     
@@ -809,7 +807,7 @@ FormModule.prototype.trySaveNode = function(saveType){"use strict";
                     this.nodeSaved = true;
                 }
                 
-                if(this.usingDispatch){
+                // if(this.usingDispatch){
                     // Let the dispatch_form.js window take care of the rest once the data is in the database
                     this.win.dispatchTabGroup.fireEvent("omadi:dispatch:savedDispatchNode",{
                         nodeNid: this.node._saveNid,
@@ -818,10 +816,10 @@ FormModule.prototype.trySaveNode = function(saveType){"use strict";
                         isDraft: this.node._isDraft,
                         saveType: saveType
                     });
-                    
-                    // if in dispatch, the dispatch_form.js will take care of closing the window
-                    closeAfterSave = false;
-                }
+//                     
+                    // // if in dispatch, the dispatch_form.js will take care of closing the window
+                    // closeAfterSave = false;
+                // }
                 
                 if(this.node._isContinuous === true){
                     // Keep the window open, do not sync
@@ -833,38 +831,38 @@ FormModule.prototype.trySaveNode = function(saveType){"use strict";
                     
                     if(this.node._isDraft === true){
                         
-                        if(closeAfterSave){
-                            this.closeWindow();
-                        }
+                        // if(closeAfterSave){
+                            // this.closeWindow();
+                        // }
                     }
                     else if(Ti.Network.online){
                         
                         
-                        if(this.usingDispatch){
-                            closeAfterSave = false;  
-                        }
-                        else{
-                            // Send updates immediately only when not using dispatch
-                            // When using dispatch, the DispatchForm module will initialize this
-                            Ti.App.fireEvent('sendUpdates');
-                        }
+                        // if(this.usingDispatch){
+                            // closeAfterSave = false;  
+                        // }
+                        // else{
+                            // // Send updates immediately only when not using dispatch
+                            // // When using dispatch, the DispatchForm module will initialize this
+                            // Ti.App.fireEvent('sendUpdates');
+                        // }
                         
                         if (saveType === "next_part") {         
                             
                             this.initNewWindowFromCurrentData(this.node.form_part + 1);
                             
-                            closeAfterSave = false;                
+                            //closeAfterSave = false;                
                         }
                         else if(saveType == 'new'){
                             
                             this.initNewWindowFromCurrentData(this.node.type);
                                                   
-                            closeAfterSave = false;
+                            //closeAfterSave = false;
                         }
                         
-                        if(closeAfterSave){
-                            this.closeWindow();
-                        }
+                        // if(closeAfterSave){
+                            // this.closeWindow();
+                        // }
                     }
                     else{
                        
@@ -1235,158 +1233,7 @@ FormModule.prototype.getRegionWrappers = function(){"use strict";
     return regionWrappers;
 };
 
-FormModule.prototype.setupMenu = function(){"use strict";
-    
-    try {
-        if(Ti.App.isAndroid){
-            
-            this.win.activity.onCreateOptionsMenu = function(e) {
-                var db, result, menu_zero, btn_tt, btn_id, 
-                    menu_first, menu_second, menu_third, menu_save_new, 
-                    iconFile, windowFormPart, bundle;
-                    
-                btn_tt = [];
-                btn_id = [];
-                
-                Ti.API.debug("Creating options menu");
-                
-                try{
-                    bundle = Omadi.data.getBundle(ActiveFormObj.node.type);
-                    
-                    e.menu.clear();
-                       
-                    if (bundle.data.form_parts != null && bundle.data.form_parts != "") {
-                        
-                        windowFormPart = ActiveFormObj.form_part;
-                        
-                        if (bundle.data.form_parts.parts.length >= windowFormPart + 2) {
-                            menu_zero = e.menu.add({
-                                title : "Save + " + bundle.data.form_parts.parts[windowFormPart + 1].label,
-                                order : 0
-                            });
-                            menu_zero.setIcon("/images/save_arrow_white.png");
-                            menu_zero.addEventListener("click", function(ev) {
-                                ActiveFormObj.saveForm('next_part');
-                            });
-                        }
-                    }
-                    
-                    btn_tt.push('Save');
-                    
-                    btn_tt.push('Save as Draft');
-                    btn_tt.push('Cancel');
-                
-                    menu_first = e.menu.add({
-                        title : 'Save',
-                        order : 1
-                    });
-                    menu_first.setIcon("/images/save_light_blue.png");
-                    
-                    menu_save_new = e.menu.add({
-                        title : 'Save + New',
-                        order : 2
-                    });
-                    menu_save_new.setIcon("/images/save_plus_white.png");
-                
-                    menu_second = e.menu.add({
-                        title : 'Save as Draft',
-                        order : 3
-                    });
-                    menu_second.setIcon("/images/display_drafts_white.png");
-                
-                    //======================================
-                    // MENU - EVENTS
-                    //======================================
-                    menu_first.addEventListener("click", function(e) {
-                        ActiveFormObj.saveForm('normal');
-                    });
-                    
-                    menu_save_new.addEventListener("click", function(e) {
-                        Ti.API.debug("SAVING + NEW");
-                        ActiveFormObj.saveForm('new');
-                    });
-                
-                    menu_second.addEventListener("click", function(e) {
-                        ActiveFormObj.saveForm('draft');
-                    });
-                }
-                catch(ex){
-                    this.sendError("Could not init the Android menu: " + ex);
-                }
-            };
-            
-        }
-        else{
-            var back, space, bundle, labelScrollView, label, actions, toolbar;
-            
-            back = Ti.UI.createButton({
-                title : 'Back',
-                style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
-            });
-            
-            back.addEventListener('click', function() {
-                try{
-                    ActiveFormObj.cancelOpt();
-                }
-                catch(ex){
-                    Omadi.service.sendErrorReport("Exception in back click for form: " + ex);
-                }
-            });
-    
-            space = Titanium.UI.createButton({
-                systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
-            });
-            
-            bundle = Omadi.data.getBundle(this.type);
-            
-            labelScrollView = Ti.UI.createScrollView({
-                layout: 'horizontal',
-                width: Ti.UI.FILL,
-                height: Ti.UI.SIZE
-            });
-            
-            label = Titanium.UI.createLabel({
-                text : (this.node.nid == 'new' ? 'New ' : 'Update ') + bundle.label,
-                right: 5,
-                font: {
-                    fontWeight: 'bold'
-                },
-                style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
-            });
-            
-            labelScrollView.add(label);
-            
-            label.color = '#333';
-            
-            actions = Ti.UI.createButton({
-                title : 'Actions',
-                style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
-            });
-            
-            if(this.usingDispatch){
-                actions.title = 'Save';
-                actions.addEventListener('click', ActiveFormObj.parentTabObj.doDispatchSave);
-            }
-            else{
-                actions.addEventListener('click', ActiveFormObj.showActionsOptions);
-            }
-    
-            // create and add toolbar
-            toolbar = Ti.UI.iOS.createToolbar({
-                items : [back, space, labelScrollView, space, actions],
-                top : 0,
-                borderTop : false,
-                borderBottom : false,
-                height: Ti.UI.SIZE
-            });
-            
-            this.wrapperView.add(toolbar);
-        }
-    }
-    catch(evt) {
-        this.sendError("Exception setting up form menu: " + evt);
-    }
-};
+
 
 FormModule.prototype.validateRestrictions = function(){"use strict";
     var instances, query, db = null, result, timestamp, field_name, vin, license_plate, nid, restrictions, i, account;
@@ -3360,7 +3207,7 @@ FormModule.prototype.getWindow = function(){"use strict";
            left: 0 
         });
         // Setup the menu early in case something crashes, at least iOS will have a back button
-        this.setupMenu();
+        //this.setupMenu();
         
         if(Ti.App.isIOS7){
             this.wrapperView.top = 20;   
@@ -4783,12 +4630,12 @@ exports.resetAllButDispatch = function(){"use strict";
     }
 };
 
-exports.getDispatchObject = function(OmadiObj, type, nid, form_part, parentTabObj){"use strict";
+exports.getDispatchObject = function(OmadiObj, type, nid, form_part, parentTabObj, usingDispatch){"use strict";
     var tempFormPart;
     
     Omadi = OmadiObj;
     
-    FormObj[type] = new FormModule(type, nid, form_part, true);
+    FormObj[type] = new FormModule(type, nid, form_part, usingDispatch);
     ActiveFormObj = FormObj[type];
     ActiveFormObj.parentTabObj = parentTabObj;
     ActiveFormObj.getWindow();

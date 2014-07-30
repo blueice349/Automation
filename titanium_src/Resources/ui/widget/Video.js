@@ -376,7 +376,8 @@ VideoWidget.prototype.openVideoPlayer = function(imageView){"use strict";
                 json = JSON.parse(this.responseText);
                 
                 if(json.success == true){
-                
+                    Ti.API.debug("S3 URL: " + json.url);
+                    
                     Widget[this.instance.field_name].videoPlayer = Ti.Media.createVideoPlayer({
                         allowsAirPlay: true,
                         autoplay: true,
@@ -655,4 +656,15 @@ exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper)
     return Widget[instance.field_name];
 };
 
-
+exports.openVideoPlayer = function(OmadiObj, instance, imageView){"use strict";
+    var widget, formObj;
+    formObj = {};
+    formObj.node = {};
+    Omadi = OmadiObj;
+    
+    //widget = new VideoWidget(null, null, null);
+    Widget[instance.field_name] = new VideoWidget(formObj, instance, null);
+    
+    Widget[instance.field_name].openVideoPlayer(imageView);
+    
+};

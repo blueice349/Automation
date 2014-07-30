@@ -74,6 +74,14 @@ Omadi.display.showBigImage = function(imageView) {"use strict";
                 navBarHidden: true
             });
             
+            
+            if(Ti.App.isAndroid){
+                // Hide the Android action bar
+                Omadi.display.largePhotoWindow.addEventListener('open', function(){
+                    Omadi.display.largePhotoWindow.activity.actionBar.hide();
+                });
+            }
+            
             // scrollView = Ti.UI.createScrollView({
                 // width: Ti.UI.FILL,
                 // height: Ti.UI.FILL,
@@ -174,6 +182,8 @@ Omadi.display.showBigImage = function(imageView) {"use strict";
                 Ti.API.debug("DISPLAYING FULL IMAGE FROM BLOB");
                 imageData = imageView.bigImg;
                 
+                
+                Ti.API.debug("Image data size: " + imageData.length);
                 // fullImage = Ti.UI.createImageView({
                   // image: imageView.bigImg,
                   // autorotate: true,
@@ -188,6 +198,7 @@ Omadi.display.showBigImage = function(imageView) {"use strict";
                 alert("Could not display large photo.");
             }
             else{
+                
                 webView = Ti.UI.createWebView({
                     data: imageData
                 });
@@ -319,6 +330,8 @@ Omadi.display.showBigImage = function(imageView) {"use strict";
                     Omadi.display.largePhotoWindow.add(webView);
                     
                     Omadi.display.largePhotoWindow.open();
+                    
+                    Ti.API.debug("large photo window showing...");
                 // }
                 // else{
                     // alert("Could not open the photo.");
@@ -326,8 +339,8 @@ Omadi.display.showBigImage = function(imageView) {"use strict";
                 // }
             }
         }
-        catch(ex){
-            Omadi.service.sendErrorReport("Exception showing large photo: " + ex);
+        catch(ex1){
+            Omadi.service.sendErrorReport("Exception showing large photo: " + ex1);
         }
     }
 };
@@ -538,6 +551,14 @@ Omadi.display.openListWindow = function(type, show_plus, filterValues, nestedWin
     });
 
     Omadi.display.loading();
+    
+    if(Ti.App.isAndroid){
+                // Hide the Android action bar
+        listWindow.addEventListener('open', function(){
+            listWindow.activity.actionBar.hide();
+        });
+    }
+    
     listWindow.addEventListener('open', Omadi.display.doneLoading);
 
     listWindow.open();
@@ -584,6 +605,14 @@ Omadi.display.openDraftsWindow = function() {"use strict";
     });
 
     Omadi.display.loading();
+    
+    if(Ti.App.isAndroid){
+        // Hide the Android action bar
+        draftsWindow.addEventListener('open', function(){
+            draftsWindow.activity.actionBar.hide();
+        });
+    }
+    
     draftsWindow.addEventListener('open', Omadi.display.doneLoading);
 
     draftsWindow.open();
@@ -621,6 +650,14 @@ Omadi.display.openJobsWindow = function() {"use strict";
             });
         
             Omadi.display.loading();
+            
+            if(Ti.App.isAndroid){
+                // Hide the Android action bar
+                Omadi.display.currentJobsWindow.addEventListener('open', function(){
+                    Omadi.display.currentJobsWindow.activity.actionBar.hide();
+                });
+            }
+            
             Omadi.display.currentJobsWindow.addEventListener('open', Omadi.display.doneLoading);
             Omadi.display.currentJobsWindow.addEventListener('close', function(){
                 Omadi.display.currentJobsWindow = null;
@@ -674,6 +711,13 @@ Omadi.display.openWebView = function(nid){"use strict";
     });
     
     webWin = Ti.UI.createWindow();
+    
+    if(Ti.App.isAndroid){
+        // Hide the Android action bar
+        webWin.addEventListener('open', function(){
+            webWin.activity.actionBar.hide();
+        });
+    }
     
     if(Ti.App.isIOS){
         backButton = Ti.UI.createButton({
@@ -835,7 +879,7 @@ Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
             Omadi.service.sendErrorReport("Exception with custom copy in dispatch: " + copyEx);
         }
         
-        if(isDispatch){
+        //if(isDispatch){
             Omadi.display.loading();
             
             Dispatch = require('ui/DispatchForm');
@@ -852,26 +896,27 @@ Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
                 Omadi.service.sendErrorReport("Could not open dispatch form window");
                 Omadi.display.doneLoading();
             }
-        }
-        else{
-            Omadi.display.loading();
             
-            Omadi.display.FormModule = require('ui/FormModule');
-            formWindow = Omadi.display.FormModule.getWindow(Omadi, type, nid, form_part, false);
-            
-            if(formWindow){
-            
-                formWindow.addEventListener('open', Omadi.display.doneLoading);
-                formWindow.open();
-                
-                // Must be called after getWindow
-                node = Omadi.display.FormModule.getNode(type);
-            }
-            else{
-                Omadi.service.sendErrorReport("Could not open regular form window");
-                Omadi.display.doneLoading();
-            }
-        }
+        // }
+        // else{
+            // Omadi.display.loading();
+//             
+            // Omadi.display.FormModule = require('ui/FormModule');
+            // formWindow = Omadi.display.FormModule.getWindow(Omadi, type, nid, form_part, false);
+//             
+            // if(formWindow){
+//             
+                // formWindow.addEventListener('open', Omadi.display.doneLoading);
+                // formWindow.open();
+//                 
+                // // Must be called after getWindow
+                // node = Omadi.display.FormModule.getNode(type);
+            // }
+            // else{
+                // Omadi.service.sendErrorReport("Could not open regular form window");
+                // Omadi.display.doneLoading();
+            // }
+        // }
         
         // Set node as viewed if it hasn't yet been viewed and it's been saved to the server
         if(nid != "new" && nid > 0 && (typeof node == 'undefined' || typeof node.viewed == 'undefined' || node.viewed == 0)){
@@ -895,6 +940,13 @@ Omadi.display.openLocalPhotosWindow = function() {"use strict";
     localPhotosWindow.addEventListener('close', Omadi.display.showNewNotificationDialog);
     localPhotosWindow.addEventListener('open', Omadi.display.doneLoading);
     Omadi.display.loading();
+    
+    if(Ti.App.isAndroid){
+        // Hide the Android action bar
+        localPhotosWindow.addEventListener('open', function(){
+            localPhotosWindow.activity.actionBar.hide();
+        });
+    }
 
     localPhotosWindow.open();
 
@@ -906,7 +958,7 @@ Omadi.display.openMainMenuWindow = function(options) {"use strict";
     
     mainMenuWindow = Titanium.UI.createWindow({
         url : '/main_windows/mainMenu.js',
-        navBarHidden : true,
+        navBarHidden : false,
         orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
     });
     
@@ -918,7 +970,15 @@ Omadi.display.openMainMenuWindow = function(options) {"use strict";
         }
     }
     
+    if(Ti.App.isAndroid){
+        // Hide the Android action bar
+        mainMenuWindow.addEventListener('open', function(){
+            mainMenuWindow.activity.actionBar.hide();
+        });
+    }
+    
     mainMenuWindow.addEventListener('open', Omadi.display.doneLoading);
+    
     Omadi.display.loading();
 
     mainMenuWindow.open();
@@ -1394,6 +1454,13 @@ Omadi.display.displayFile = function(nid, fid, title) {"use strict";
                     orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
                 });
                 
+                if(Ti.App.isAndroid){
+                    // Hide the Android action bar
+                    newWin.addEventListener('open', function(){
+                        newWin.activity.actionBar.hide();
+                    });
+                }
+                
                 newWin.addEventListener('open', function(){
                    Omadi.display.doneLoading(); 
                 });
@@ -1477,14 +1544,14 @@ Omadi.display.displayFullImage = function(imageView) {"use strict";
 
 Omadi.display.displayLargeImage = function(imageView, nid, file_id, showInImageView) {"use strict";
     try{
-        var http;
+        var http, url;
         
         if(typeof showInImageView === 'undefined'){
             showInImageView = false;
         }
     
         if (imageView.bigImg !== null) {
-            Ti.API.debug("Displaying big image");
+            Ti.API.debug("Displaying big image - already loaded.");
             Omadi.display.showBigImage(imageView);
             return;
         }
@@ -1501,22 +1568,34 @@ Omadi.display.displayLargeImage = function(imageView, nid, file_id, showInImageV
                     validatesSecureCertificate: false
                 });
                 http.setTimeout(30000);
-                http.open('GET', Omadi.DOMAIN_NAME + '/sync/file/' + nid + '/' + file_id);
+                url = Omadi.DOMAIN_NAME + '/sync/file/' + nid + '/' + file_id;
+                Ti.API.debug("Requesting " + url);
+                
+                http.open('GET', url);
     
                 Omadi.utils.setCookieHeader(http);
     
                 http.onload = function(e) {
-                    //Ti.API.info('=========== Success ========');
-                    imageView.bigImg = this.responseData;
-                    
-                    if(showInImageView){
-                        imageView.image = this.responseData;
+                    try{
+                        Ti.API.info('Download Success');
+                        
+                        imageView.bigImg = this.responseData;
+                        
+                        Ti.API.info("image size: " + this.responseData.length);
+                        
+                        if(showInImageView){
+                            imageView.image = this.responseData;
+                        }
+                        else{
+                            Omadi.display.showBigImage(imageView);
+                            Omadi.display.doneLoading();
+                        }
+                        
+                        imageView.fullImageLoaded = true;
                     }
-                    else{
-                        Omadi.display.showBigImage(imageView);
-                        Omadi.display.doneLoading();
+                    catch(ex){
+                        Omadi.service.sendErrorReport("Exception downloading image: " + ex);
                     }
-                    imageView.fullImageLoaded = true;
                 };
     
                 http.onerror = function(e) {
@@ -1584,7 +1663,8 @@ Omadi.display.openTermsOfService = function(){"use strict";
         win = Ti.UI.createWindow({
             layout: 'vertical',
             navBarHidden: true,
-            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
+            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT],
+            title: 'Omadi Terms of Service'
         });
         
         webView = Ti.UI.createWebView({
@@ -1674,6 +1754,7 @@ Omadi.display.setImageViewThumbnail = function(imageView, nid, file_id) {"use st
                 imageView.width = null;
                 imageView.isImage = true;
                 imageView.thumbnailLoaded = true;
+                imageView.bigImg = null;
             };
 
             http.onerror = function(e) {
@@ -1874,6 +1955,13 @@ Omadi.display.showLoadingIndicator = function(show, timeout) {"use strict";
         backgroundColor : '#000',
         orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
     });
+    
+    if(Ti.App.isAndroid){
+        // Hide the Android action bar
+        loadingIndicatorWindow.addEventListener('open', function(){
+            loadingIndicatorWindow.activity.actionBar.hide();
+        });
+    }
 
     // black view
     indView = Titanium.UI.createView({

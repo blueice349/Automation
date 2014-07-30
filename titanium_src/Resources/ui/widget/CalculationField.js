@@ -903,4 +903,26 @@ exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper)
     return Widget[instance.field_name];
 };
 
+exports.getView = function(OmadiObj, node, instance){"use strict";
+    var formObj, widget;
+    
+    Omadi = OmadiObj;
+    
+    formObj = {};
+    formObj.node = node;
+    formObj.nid = node.nid;
+    formObj.form_part = node.form_part;
+    formObj.formToNode = function(){
+        return node;  
+    };
+    
+    formObj.sendError = function(message){
+        Omadi.services.sendErrorReport(message);  
+    };
+    
+    widget = new CalculationFieldWidget(formObj, instance, null);
+    
+    return widget.getTableView();
+};
+
 

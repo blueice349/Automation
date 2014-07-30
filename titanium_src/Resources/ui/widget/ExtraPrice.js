@@ -1369,12 +1369,192 @@ ExtraPriceWidget.prototype.cleanUp = function(){"use strict";
     Omadi = null;
 };
 
+
+
 exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
     
     Omadi = OmadiObj;
     Widget[instance.field_name] = new ExtraPriceWidget(FormObj, instance, fieldViewWrapper);
     
     return Widget[instance.field_name];
+};
+
+exports.getView = function(Omadi, node, instance){"use strict";
+    var wrapper, row, i, numRows, desc, price, dataRow, descView, priceView, descLabel, 
+        priceLabel, totalPrice, details, jsonValue;
+    
+    numRows = 0;
+    totalPrice = 0;
+    
+    wrapper = Ti.UI.createView({
+        layout: 'vertical',
+        width: '100%',
+        height: Ti.UI.SIZE
+    });
+    
+    if ( typeof node[instance.field_name] !== 'undefined') {
+        
+        if (typeof node[instance.field_name].dbValues !== 'undefined') {
+                    
+            if(Omadi.utils.isArray(node[instance.field_name].dbValues)){
+                numRows = node[instance.field_name].dbValues.length;
+            }
+        
+            for(i = 0; i < numRows; i ++){
+                
+                desc = "";
+                details = "";
+                if(typeof node[instance.field_name].textValues[i] !== 'undefined'){
+                   
+                    jsonValue = node[instance.field_name].textValues[i];
+                  
+                    if(jsonValue.desc){
+                        desc = jsonValue.desc;
+                    }
+                    
+                    if(jsonValue.details){
+                        desc += ' - ' + jsonValue.details;
+                    }
+                }
+                
+                price = "";
+                if(typeof node[instance.field_name].dbValues[i] !== 'undefined'){
+                    price = node[instance.field_name].dbValues[i];
+                    if(!isNaN(parseFloat(price))){
+                        totalPrice += parseFloat(price);
+                    }
+                }
+                
+                price = Omadi.utils.formatCurrency(price);
+                
+                row = Ti.UI.createView({
+                    width: '100%',
+                    height: Ti.UI.SIZE,
+                    backgroundColor : '#ccc'
+                });
+                
+                descView = Ti.UI.createView({
+                    width: '75%', 
+                    height: Ti.UI.SIZE,
+                    backgroundColor : '#f3f3f3',
+                    top : 1,
+                    left: 0
+                });
+                
+                descLabel = Ti.UI.createLabel({
+                    height: Ti.UI.SIZE,
+                    wordWrap: true,
+                    text: desc,
+                    font: {
+                        fontSize: 14
+                    },
+                    ellipsize : true,
+                    backgroundColor : '#f3f3f3',
+                    textAlign : Ti.UI.TEXT_ALIGNMENT_RIGHT,
+                    right: 5,
+                    color: '#666'
+                });
+                
+                priceView = Ti.UI.createView({
+                    width: '25%', 
+                    height: Ti.UI.SIZE,
+                    backgroundColor : '#fff',
+                    top : 1,
+                    right: 0
+                });
+                
+                priceLabel = Ti.UI.createLabel({
+                    width: Ti.UI.SIZE, 
+                    height: Ti.UI.SIZE,
+                    wordWrap: true,
+                    text: price,
+                    font: {
+                        fontSize: 14
+                    },
+                    right: 5,
+                    ellipsize : true,
+                    backgroundColor : '#fff',
+                    textAlign : Ti.UI.TEXT_ALIGNMENT_RIGHT,
+                    color: '#000'
+                });
+                
+                descView.add(descLabel);
+                priceView.add(priceLabel);
+                
+                row.add(descView);
+                row.add(priceView);
+                wrapper.add(row);
+            }
+        }
+    }
+    
+    wrapper.numRows = numRows;
+    
+    if(numRows > 1){
+        row = Ti.UI.createView({
+            width: '100%',
+            height: Ti.UI.SIZE,
+            backgroundColor : '#ccc'
+        });
+        
+        descView = Ti.UI.createView({
+            width: '75%', 
+            height: Ti.UI.SIZE,
+            backgroundColor : '#ccc',
+            top : 1,
+            left: 0,
+            bottom: 1
+        });
+        
+        descLabel = Ti.UI.createLabel({
+            height: Ti.UI.SIZE,
+            wordWrap: true,
+            text: instance.label,
+            font: {
+                fontSize: 14,
+                fontWeight: 'bold'
+            },
+            ellipsize : true,
+            textAlign : Ti.UI.TEXT_ALIGNMENT_RIGHT,
+            right: 5,
+            color: '#000'
+        });
+        
+        priceView = Ti.UI.createView({
+            width: '25%', 
+            height: Ti.UI.SIZE,
+            backgroundColor : '#ddd',
+            top : 1,
+            right: 0,
+            bottom: 1
+        });
+        
+        totalPrice = parseFloat(Math.round(totalPrice * 100) / 100).toFixed(2);
+        
+        priceLabel = Ti.UI.createLabel({
+            width: Ti.UI.SIZE, 
+            height: Ti.UI.SIZE,
+            wordWrap: true,
+            text: '$' + totalPrice,
+            font: {
+                fontSize: 14,
+                fontWeight: 'bold'
+            },
+            right: 5,
+            ellipsize : true,
+            textAlign : Ti.UI.TEXT_ALIGNMENT_RIGHT,
+            color: '#000'
+        });
+        
+        descView.add(descLabel);
+        priceView.add(priceLabel);
+        
+        row.add(descView);
+        row.add(priceView);
+        wrapper.add(row);
+    }
+    
+    return wrapper;
 };
 
 
