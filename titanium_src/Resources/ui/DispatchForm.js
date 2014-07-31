@@ -584,7 +584,8 @@ DispatchForm.prototype.getWindow = function(initNewDispatch){"use strict";
                 this.commentsTab = Ti.UI.createTab({
                     title: commentsCount + ' Comment' + (commentsCount == 1 ? '' : 's'),
                     window: CommentList.getListWindow(),
-                    commentCount: commentsCount
+                    commentCount: commentsCount,
+                    icon: '/images/icon_comments_white.png'
                 });
                 
                 Ti.App.removeEventListener('incrementCommentTab', incrementCommentTab);
@@ -648,7 +649,11 @@ DispatchForm.prototype.setupMenu = function(){"use strict";
                     actionBar.onHomeIconItemSelected = function(){
                         Dispatch.exitForm();
                     };
-               
+                    
+                    if(Dispatch.dispatchTab === null && Dispatch.commentsTab === null){
+                        // When only the work tab is visible, do not show any tabs
+                        actionBar.navigationMode = Ti.Android.NAVIGATION_MODE_STANDARD;
+                    }
                 }
                 catch(ex){}
             

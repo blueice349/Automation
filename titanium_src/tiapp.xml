@@ -31,7 +31,7 @@
     </deployment-targets>
     <id>com.omadi.crm</id>
     <name>Omadi</name>
-    <version>2.9.18</version>
+    <version>2.9.19</version>
     <publisher>Omadi</publisher>
     <url>http://www.omadi.com</url>
     <description>Mobile CRM From Omadi</description>
@@ -52,7 +52,7 @@
             <service url="android_gps_event.js"/>
         </services>
         <manifest android:installLocation="preferExternal"
-            android:versionCode="84" android:versionName="2.9.18">
+            android:versionCode="84" android:versionName="2.9.19">
             <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="19"/>
             <uses-permission android:name="android.permission.READ_LOGS"/>
             <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
@@ -76,10 +76,8 @@
                 android:smallScreens="true" android:xlargeScreens="true"/>
             <application android:debuggable="false"
                 android:hardwareAccelerated="true"
-                android:icon="@drawable/appicon" 
-                android:label="Omadi"
-                android:largeHeap="true" 
-                android:name="OmadiApplication">
+                android:icon="@drawable/appicon" android:label="Omadi"
+                android:largeHeap="true" android:name="OmadiApplication">
                 <activity android:alwaysRetainTaskState="true"
                     android:clearTaskOnLaunch="false"
                     android:configChanges="keyboardHidden|orientation"

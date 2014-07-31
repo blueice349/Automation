@@ -53,7 +53,7 @@ Utils.prototype.getCookie = function(fullCookie){"use strict";
         }
     }
     catch(ex){
-        this.sendError("Exception getting cookie: " + ex);
+        this.sendErrorReport("Exception getting cookie: " + ex);
     }
     
     return cookie;
@@ -125,16 +125,131 @@ Utils.prototype.sendErrorReport = function(message){"use strict";
     }));
 };
 
+Utils.prototype.getTimeFormat = function(){"use strict";
+    var format, loginJson = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
+    format = 'g:iA';
+    
+    if(typeof loginJson.user.time_format === 'string'){
+        format = loginJson.user.time_format;
+    }
+    
+    return format;
+};
 
 
 
 
 
+exports.PHPFormatDate = function(format, timestamp){"use strict";
+    var jsDate = new Date();
+    jsDate.setTime(timestamp * 1000);
+    return jsDate.format(format);
+};
 
+exports.formatDate = function(timestamp, showTime){"use strict";
+    
+    var format = "D, M j, Y";
+    if(showTime){
+        format += ' - ' + getInstance().getTimeFormat();
+    }
+    
+    return (new Date(timestamp * 1000)).format(format);
+};
 
+exports.formatTime = function(timestamp){"use strict";
+    
+    var format = getInstance().getTimeFormat();
+    return (new Date(timestamp * 1000)).format(format);
+};
 
+exports.getTimeFormat = function(){"use strict";
+    getInstance().getTimeFormat();
+};
 
+exports.secondsToString = function(seconds) {"use strict";
+    var format, am_pm, hours, hours_str, minutes, time_string, new_hours;
+    
+    format = getInstance().getTimeFormat();
+    //Ti.API.error(format);
 
+    am_pm = (format.indexOf('H') === -1);
+
+    hours = Math.floor(seconds / 3600);
+
+    hours_str = hours;
+
+    minutes = Math.floor((seconds - (hours * 3600)) / 60);
+    if (minutes < 10) {
+        minutes = '0' + minutes;
+    }
+
+    if (am_pm) {
+        if (hours == 0) {
+            time_string = '12:' + minutes + ' AM';
+        }
+        else if (hours == 12) {
+            time_string = '12:' + minutes + ' PM';
+        }
+        else if (hours > 12) {
+            new_hours = hours - 12;
+            hours_str = new_hours;
+            time_string = hours_str + ':' + minutes + ' PM';
+        }
+        else {
+            time_string = hours_str + ':' + minutes + ' AM';
+        }
+    }
+    else {
+        time_string = hours_str + ':' + minutes;
+    }
+
+    return time_string;
+};
+
+exports.getParsedJSON = function(str){"use strict";
+    var retval;
+    
+    if (str == "" || str == null) {
+        return str;
+    }
+   
+    try {
+        retval = JSON.parse(str);
+    }
+    catch (e) {
+        return false;
+    }
+    
+    return retval;
+};
+
+exports.isEmpty = function(number){"use strict";
+    if(typeof number === 'undefined'){
+        return true;
+    }
+    
+    if(number === null){
+        return true;
+    }
+    
+    if(number === ""){
+        return true;
+    }
+    
+    if(number === "null"){
+        return true;
+    }
+    
+    if(number.toString() == "NaN"){
+        return true;
+    }
+    
+    return false;
+};
+
+exports.isArray = function(input) {"use strict";
+    return typeof (input) == 'object' && ( input instanceof Array);
+};
 
 // Return the currently logged in user
 exports.getUid = function(){"use strict";

@@ -25,6 +25,15 @@ function CommentForm(nid){"use strict";
     this.fieldRegionWrappers = {};
     this.labelViews = {};
     this.fieldObjects = {};
+    this.form_errors = [];
+    
+    this.node = Omadi.data.nodeLoad(nid);
+    
+    if(this.node){
+        this.instances = Omadi.data.getFields('comment_node_' + this.node.type);
+        
+        Ti.API.debug("Instances:   " + JSON.stringify(this.instances));
+    }
 }
 
 CommentForm.prototype.cleanup = function(){"use strict";
@@ -458,16 +467,10 @@ CommentForm.prototype.getFieldView = function(instance, fieldViewWrapper){"use s
         }
         
         if(Module){
-            Ti.API.debug("here 1");
-           Ti.API.debug(JSON.stringify(instance));
            
            this.fieldObjects[instance.field_name] = Module.getFieldObject(Omadi, this, instance, fieldViewWrapper);
-           
-           Ti.API.debug("here 2");
-           //fieldObject = Module.getFieldObject(Omadi, this, instance, fieldViewWrapper); 
+            
            fieldView = this.fieldObjects[instance.field_name].getFieldView(); 
-           
-           Ti.API.debug("here 3");
         }
     }
     catch(ex){
@@ -749,9 +752,486 @@ CommentForm.prototype.getNewCommentCid = function() {"use strict";
     return smallestCid;
 };
 
+CommentForm.prototype.getTextField = function(instance){"use strict";
+    
+    var textField, now;
+    
+    now = new Date();
+    
+    textField = Ti.UI.createTextField({
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        borderColor: '#999',
+        borderWidth: 1,
+        textAlign: Ti.UI.TEXT_ALIGNMENT_LEFT,
+        left: '4%',
+        height: 35,
+        width: '92%',
+        color: '#000',
+        autocapitalization: Ti.UI.TEXT_AUTOCAPITALIZATION_NONE,
+        autocorrect: false,
+        editable: instance.can_edit,
+        enabled: instance.can_edit,
+        font: {
+            fontSize: 16,
+            fontFamily: "Arial"
+        },
+        returnKeyType: Ti.UI.RETURNKEY_DONE,
+        
+        // Android options
+        keepScreenOn: true,
+        ellipsize: false,
+        focusable: true,
+        
+        // iOS options
+        //borderStyle: Ti.UI.INPUT_BORDERSTYLE_ROUNDED,
+        leftButtonPadding: 8,
+        suppressReturn: true,
+        
+        // Custom variables
+        fieldName: instance.field_name,
+        instance : instance,
+        lastChange: now.getTime()
+    });
+    
+    if(Ti.App.isAndroid){
+        textField.setHeight(Ti.UI.SIZE);
+    }
+    else{
+        textField.setHeight(35);
+    }
+
+    if (!instance.can_edit) {
+        
+        textField.setBackgroundColor('#ccc');
+        textField.setColor('#666');
+        
+        if (Ti.App.isAndroid) {
+            textField.setSoftKeyboardOnFocus(Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS);
+        }
+        else{
+            textField.setBorderStyle(Ti.UI.INPUT_BORDERSTYLE_NONE);
+            textField.setPaddingLeft(7);
+            textField.setPaddingRight(7);
+        }
+    }
+    
+    textField.addEventListener('focus', function(e){
+        try{
+            e.source.setBackgroundColor('#def');
+            ActiveFormObj.currentlyFocusedField = e.source;
+        }
+        catch(ex){}
+    });
+    
+    textField.addEventListener('blur', function(e){
+        try{
+            e.source.setBackgroundColor('#fff');
+        }
+        catch(ex){
+            try{
+                Omadi.service.sendErrorReport("exception in text field in form blur: " + ex);
+            }catch(ex1){}
+        }
+    });
+    
+    return textField;
+};
+
+CommentForm.prototype.getLabelField = function(instance){"use strict";
+    
+    var labelView = Titanium.UI.createLabel({
+        backgroundGradient : {
+            type : 'linear',
+            startPoint : {
+                x : '50%',
+                y : '0%'
+            },
+            endPoint : {
+                x : '50%',
+                y : '100%'
+            },
+            colors : [{
+                color : '#f3f3f3',
+                offset : 0.0
+            }, {
+                color : '#f9f9f9',
+                offset : 0.4
+            }, {
+                color : '#bbb',
+                offset : 1.0
+            }]
+        },
+        borderRadius : 10,
+        borderColor : '#999',
+        borderWidth : 1,
+        color : '#000',
+        textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER,
+        font : {
+            fontSize : 16
+        },
+        left: '4%',
+        height: 35,
+        width: '92%',
+        
+        // Android options
+        ellipsize : true,
+        wordWrap : false,
+        
+        // custom
+        fieldName : instance.field_name,
+        instance : instance
+    });
+    
+    if (!instance.can_edit) {
+        labelView.setBackgroundGradient(null);
+        labelView.setBackgroundColor('#ccc');
+        labelView.setColor('#666');
+    }
+    
+    labelView.addEventListener('click', function(e){
+        // Unfocus any fields when clicking a non-text field
+        try{
+            ActiveFormObj.unfocusField();
+        }
+        catch(ex){} 
+    });
+        
+    return labelView;
+};
+
+CommentForm.prototype.validateRequired = function(instance){"use strict";
+    var isEmpty, dbValues = [], i;
+    
+    isEmpty = true;
+    
+    try{ 
+        if(typeof this.node[instance.field_name].dbValues !== 'undefined' && 
+            this.node[instance.field_name].dbValues !== null && 
+            this.node[instance.field_name].dbValues.length > 0){
+                
+            dbValues = this.node[instance.field_name].dbValues;
+            for(i = 0; i < dbValues.length; i ++){
+                
+                switch(instance.type){
+                    case 'text':
+                    case 'text_long':
+                    case 'phone':
+                    case 'email':
+                    case 'link_field':
+                    case 'location':
+                    case 'vehicle_fields':
+                    case 'license_plate':
+                    case 'rules_field':
+                    case 'list_text':
+                        if(dbValues[i] > ""){
+                            isEmpty = false;
+                        }
+                        break;
+                        
+                    case 'number_integer':
+                    case 'number_decimal':
+                    case 'image':
+                    case 'datestamp':
+                    case 'omadi_time':
+                    case 'extra_price':
+                    
+                        if(!Omadi.utils.isEmpty(dbValues[i])){
+                            isEmpty = false;
+                        }
+                        break;
+                    
+                    case 'omadi_reference':
+                    case 'taxonomy_term_reference':
+                    case 'user_reference':
+                    case 'file':
+                    case 'auto_increment':
+                    case 'list_boolean': 
+                        if(!Omadi.utils.isEmpty(dbValues[i]) && dbValues[i] != 0){
+                            isEmpty = false;
+                        }
+                        break;
+                        
+                    case 'calculation_field':
+                        isEmpty = false;
+                        break;
+                    
+                    default: 
+                        this.sendError("Missing field type def in validate_form_data for field_name " + instance.field_name);
+                        break;
+                }
+            }
+        }
+        
+        if (((instance.is_title === true) || (instance.isRequired) || instance.isConditionallyRequired) && instance.can_view == true){
+            
+             if(isEmpty){
+                 if(instance.type == 'location'){
+                     
+                     if(instance.part == 'postal_code'){
+                         if(typeof instance.settings.require_zip !== 'undefined' && instance.settings.require_zip == 1){
+                             this.form_errors.push(instance.label + " " + instance.partLabel + " is required");
+                         }
+                     }
+                     else{
+                         this.form_errors.push(instance.label + " " + instance.partLabel + " is required");
+                     }
+                 }
+                 else{
+                            
+                     if(instance.partLabel === null){
+                         this.form_errors.push(instance.label + " is required");
+                     }
+                     else{
+                         this.form_errors.push(instance.label + " " + instance.partLabel + " is required");
+                     }
+                 }
+             }
+        }
+    }
+    catch(ex){
+        this.sendError("Exception in validate required: " + ex);
+    }
+};
+
+CommentForm.prototype.validate = function(){"use strict";
+    
+    var field_name, instance, values, isEmpty, i;
+    
+    this.form_errors = [];
+    
+    try{
+        
+        Ti.API.debug("In validate function.");
+        
+        this.formToNode();
+        
+        Ti.API.debug(JSON.stringify(this.instances));
+        
+        for(field_name in this.instances){
+            if(this.instances.hasOwnProperty(field_name)){
+                
+                instance = this.instances[field_name];
+                
+                Ti.API.debug("Validating : " + JSON.stringify(instance));
+                
+                if(instance.disabled == 0){                
+                    if(typeof this.node[field_name] !== 'undefined'){
+                        
+                        Ti.API.debug("has node value");
+                        
+                        /*** REQUIRED FIELD VALIDATION / CONDITIONALLY REQUIRED ***/
+                        this.validateRequired(instance);
+                        
+                        /*** MIN_LENGTH VALIDATION ***/
+                        switch(instance.type){
+                            case 'text_long':
+                            case 'text':
+                                this.validateMinLength(instance);
+                                break;
+                        }
+                        
+                        /*** MAX_LENGTH VALIDATION ***/
+                        switch(instance.type){
+                            case 'text':
+                                this.validateMaxLength(instance);
+                                break;
+                        }
+                        
+                        /*** MIN/MAX VALUE VALIDATION ***/
+                        switch(instance.type){
+                            case 'number_integer':
+                            case 'number_decimal':
+                                this.validateMinValue(instance);
+                                this.validateMaxValue(instance);
+                                break;
+                        }
+                        
+                        if(instance.type === 'phone'){
+                            this.validatePhone(instance);
+                        }
+                        
+                        if(instance.type === 'email'){
+                            this.validateEmail(instance);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception in comment form validation: " + ex);
+    }
+};
+
+CommentForm.prototype.validateEmail = function(instance){"use strict";
+    
+    var i, regExp;
+    try{
+        if (typeof this.node[instance.field_name] !== 'undefined' &&
+            typeof this.node[instance.field_name].dbValues !== 'undefined' &&
+            this.node[instance.field_name].dbValues !== null &&
+            this.node[instance.field_name].dbValues.length > 0) {
+            
+                for(i = 0; i < this.node[instance.field_name].dbValues.length; i ++){
+                    if (!Omadi.utils.isEmpty(this.node[instance.field_name].dbValues[i]) && !this.node[instance.field_name].dbValues[i].match(/^[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,4}$/i)) {
+                        this.form_errors.push(instance.label + " is not a valid email address.");
+                    }  
+                }
+        }
+    }
+    catch(ex){
+        this.sendError("Exception in validate email: " + ex);
+    }
+};
+
+CommentForm.prototype.validatePhone = function(instance){"use strict";
+    var i, regExp;
+    
+    try{
+        if (typeof this.node[instance.field_name] !== 'undefined' &&
+            typeof this.node[instance.field_name].dbValues !== 'undefined' &&
+            this.node[instance.field_name].dbValues !== null &&
+            this.node[instance.field_name].dbValues.length > 0) {
+            
+                for(i = 0; i < this.node[instance.field_name].dbValues.length; i ++){
+                    if (!Omadi.utils.isEmpty(this.node[instance.field_name].dbValues[i]) && !this.node[instance.field_name].dbValues[i].match(/\D*(\d*)\D*[2-9][0-8]\d\D*[2-9]\d{2}\D*\d{4}\D*\d*\D*/g)) {
+                        this.form_errors.push(instance.label + " is not a valid North American phone number. 10 digits are required.");
+                    }  
+                }
+        }
+    }
+    catch(ex){
+        this.sendError("Exception in validate phone: " + ex);
+    }
+};
+
+CommentForm.prototype.validateMinLength = function(instance){"use strict";
+    var minLength, i;
+    
+    try{
+        if (typeof this.node[instance.field_name] !== 'undefined' &&
+            typeof this.node[instance.field_name].dbValues !== 'undefined' &&
+            this.node[instance.field_name].dbValues !== null &&
+            this.node[instance.field_name].dbValues.length > 0) {
+                if (instance.settings.min_length != null) {
+                    minLength = parseInt(instance.settings.min_length, 10);
+                    if(minLength >= 0){
+                        for(i = 0; i < this.node[instance.field_name].dbValues.length; i ++){
+                            if(this.node[instance.field_name].dbValues[i] !== null && this.node[instance.field_name].dbValues[i] > ''){
+                                if (this.node[instance.field_name].dbValues[i].length < minLength) {
+                                    this.form_errors.push(instance.label + " requires at least " + minLength + " characters");
+                                }  
+                            }
+                        }
+                    }
+                }
+        }
+    }
+    catch(ex){
+        this.sendError("Exception in validate min length: " + ex);
+    }
+};
+
+CommentForm.prototype.validateMaxLength = function(instance){"use strict";
+    var maxLength, i;
+    
+    try{
+        if (typeof this.node[instance.field_name] !== 'undefined' &&
+            typeof this.node[instance.field_name].dbValues !== 'undefined' &&
+            this.node[instance.field_name].dbValues !== null &&
+            this.node[instance.field_name].dbValues.length > 0) {
+                if (instance.settings.max_length != null) {
+                    maxLength = parseInt(instance.settings.max_length, 10);
+                    if(maxLength > 0){
+                        for(i = 0; i < this.node[instance.field_name].dbValues.length; i ++){
+                            if (this.node[instance.field_name].dbValues[i].length > maxLength) {
+                                this.form_errors.push(instance.label + " cannot have more than " + maxLength + " characters.");
+                            }  
+                        }
+                    }
+                }
+        }
+    }
+    catch(ex){
+        this.sendError("Exception in validate max length: " + ex);
+    }
+};
+
+CommentForm.prototype.validateMinValue = function(instance){"use strict";
+    var minValue, absoluteMinValue, i;
+    
+    try{
+        absoluteMinValue = (instance.type == 'number_integer') ? -2147483648 : -99999999;
+        
+        if (typeof this.node[instance.field_name] !== 'undefined' &&
+            typeof this.node[instance.field_name].dbValues !== 'undefined' &&
+            this.node[instance.field_name].dbValues !== null &&
+            this.node[instance.field_name].dbValues.length > 0 &&
+            this.node[instance.field_name].dbValues[0] !== null) {
+                
+                if (instance.settings.min != null && instance.settings.min.length > 0) {
+                    minValue = parseFloat(instance.settings.min);
+                    if(minValue < absoluteMinValue){
+                        minValue = absoluteMinValue;
+                    }
+                }
+                else{
+                    minValue = absoluteMinValue;
+                }
+                
+                for(i = 0; i < this.node[instance.field_name].dbValues.length; i ++){
+                    if (this.node[instance.field_name].dbValues[i] !== null && this.node[instance.field_name].dbValues[i] < minValue) {
+                        this.form_errors.push(instance.label + " cannot be less than " + minValue + ".");
+                    }  
+                }
+        }
+    }
+    catch(ex){
+        this.sendError("Exception in validate min value: " + ex);
+    }
+};
+
+CommentForm.prototype.validateMaxValue = function(instance){"use strict";
+    var maxValue, absoluteMaxValue, i;
+    
+    try{
+        absoluteMaxValue = (instance.type == 'number_integer') ? 2147483647 : 99999999;
+        
+        if (typeof this.node[instance.field_name] !== 'undefined' &&
+            typeof this.node[instance.field_name].dbValues !== 'undefined' &&
+            this.node[instance.field_name].dbValues !== null &&
+            this.node[instance.field_name].dbValues.length > 0 &&
+            this.node[instance.field_name].dbValues[0] !== null) {
+                
+                if (instance.settings.max != null && instance.settings.max.length > 0) {
+                    maxValue = parseFloat(instance.settings.max);
+                    if(maxValue > absoluteMaxValue){
+                        maxValue = absoluteMaxValue;
+                    }
+                }
+                else{
+                    maxValue = absoluteMaxValue;
+                }
+                
+                Ti.API.debug("Max value : " + maxValue);
+                
+                for(i = 0; i < this.node[instance.field_name].dbValues.length; i ++){
+                    if (this.node[instance.field_name].dbValues[i] !== null && this.node[instance.field_name].dbValues[i] > maxValue) {
+                        this.form_errors.push(instance.label + " cannot be greater than " + maxValue + ".");
+                    }  
+                }
+        }
+    }
+    catch(ex){
+        this.sendError("Exception in validate max value: " + ex);
+    }
+};
+
 CommentForm.prototype.showFormWindow = function(parent){"use strict";
     
-    var buttonView, saveButton, cancelButton, scrollView, instance, fieldWrapper, field_name, fieldView;
+    var buttonView, saveButton, cancelButton, scrollView, instance, fieldWrapper, field_name, 
+        fieldView, allowedValues, key;
     
     this.formViewParent = parent;
     
@@ -772,19 +1252,6 @@ CommentForm.prototype.showFormWindow = function(parent){"use strict";
             width: Ti.UI.FILL,
             layout: 'vertical' 
         });
-        
-        this.instances = {};
-        this.instances.comment_body = {};
-        this.instances.comment_body.isRequired = true;
-        this.instances.comment_body.type = 'text_long';
-        this.instances.comment_body.label = 'Comment';
-        this.instances.comment_body.field_name = 'comment_body';
-        this.instances.comment_body.required = 1;
-        this.instances.comment_body.can_view = true;
-        this.instances.comment_body.can_edit = true;
-        this.instances.comment_body.settings = {
-            cardinality: 1
-        };
         
         try{
             for(field_name in this.instances){
@@ -808,6 +1275,31 @@ CommentForm.prototype.showFormWindow = function(parent){"use strict";
                         });
                         
                         try{
+                            switch(instance.field_name){
+                                case 'comment_company_name':
+                                case 'comment_posted_by_name':
+                                    // These fields are hidden on the comment form
+                                    continue;
+                                    
+                                case 'comment_update_type':
+                                    // Only allow 3 options for the form, but allow the view to display any option
+                                    if(typeof instance.settings.allowed_values !== 'undefined'){
+                                        allowedValues = {};
+                                        
+                                        for(key in instance.settings.allowed_values){
+                                            if(instance.settings.allowed_values.hasOwnProperty(key)){
+                                                if(key == '36' || key == '45' || key == '87'){
+                                                    allowedValues[key] = instance.settings.allowed_values[key];
+                                                }
+                                            }
+                                        }
+                                        
+                                        instance.settings.allowed_values = allowedValues;
+                                        this.instances[instance.field_name] = instance;
+                                    }
+                                    break;
+                            }
+                            
                             fieldView = this.getFieldView(instance, fieldWrapper);
                             
                             if(fieldView){
@@ -855,38 +1347,52 @@ CommentForm.prototype.showFormWindow = function(parent){"use strict";
         
         saveButton.addEventListener('click', function(){
             Ti.API.debug("clicked save button");
-            var saved = false;
+            var saved = false, dialog;
             
             try{
                 if(!FormObj.isFormSaving){
                     
-                    saved = FormObj.save();
+                    FormObj.validate();
                     
-                    if(saved){
+                    if(FormObj.form_errors && FormObj.form_errors.length > 0){
+                        dialog = Titanium.UI.createAlertDialog({
+                            title : 'Form Validation',
+                            buttonNames : ['OK'],
+                            message: FormObj.form_errors.join("\n")
+                        });
                         
-                        // Let the parent window know that the comments have changed, and that the list should be updated
-                        FormObj.formViewParent.fireEvent('updateView');
-                        
-                        Ti.App.fireEvent('incrementCommentTab');
-                        
-                        // Remove this view from the parent and set this view to null to deallocate memory
-                        FormObj.formViewParent.remove(FormObj.formView);
-                        FormObj.formView = null;
-                        FormObj.isFormShowing = false;
-                        FormObj.unfocusField();
-                        
-                        Ti.App.fireEvent('sendComments');
+                        dialog.show();
                     }
                     else{
-                        alert("Could not save the comment.");
+                        saved = FormObj.save();
+                        
+                        if(saved){
+                            
+                            // Let the parent window know that the comments have changed, and that the list should be updated
+                            FormObj.formViewParent.fireEvent('updateView');
+                            
+                            Ti.App.fireEvent('incrementCommentTab');
+                            
+                            // Remove this view from the parent and set this view to null to deallocate memory
+                            FormObj.formViewParent.remove(FormObj.formView);
+                            FormObj.formView = null;
+                            FormObj.isFormShowing = false;
+                            FormObj.unfocusField();
+                            
+                            Ti.App.fireEvent('sendComments');
+                        }
+                        else{
+                            alert("Could not save the comment.");
+                        }
                     }
                     
                     FormObj.isFormSaving = false;
                 }
             }
             catch(ex){
-                alert("Could not save");
+                alert("An error occurred while saving the comment. Please try again.");
                 FormObj.isFormSaving = false;
+                Omadi.service.sendErrorReport("Exception saving comment: " + ex);
             }
         });
         
@@ -933,6 +1439,7 @@ CommentForm.prototype.showFormWindow = function(parent){"use strict";
         }
     }
 };
+
 
 exports.showFormWindow = function(OmadiObj, nid, parent){"use strict";
     Omadi = OmadiObj;

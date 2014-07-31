@@ -1,6 +1,8 @@
 /*global Omadi,dbEsc*/
 /*jslint eqeq:true,plusplus:true*/
 
+var Comments = require('services/Comments');
+
 Omadi.service = Omadi.service || {};
 
 Omadi.service.fetchedJSON = null;
@@ -1745,7 +1747,8 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
 
 Omadi.service.lastCheckUpdate = 0;
 Omadi.service.checkUpdate = function(useProgressBar, userInitiated){"use strict";
-    var db, result, sendUpdates = false, timestamp, Comments;
+    var db, result, sendUpdates = false, timestamp;
+    
     Ti.API.info("Checking for sync updates.");
     
     timestamp = Omadi.utils.getUTCTimestamp();
@@ -1783,7 +1786,6 @@ Omadi.service.checkUpdate = function(useProgressBar, userInitiated){"use strict"
     }
     
     // Check for any comments that need to be uploaded
-    Comments = require('services/Comments');
     Comments.sendComments();
 };
 

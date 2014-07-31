@@ -2690,7 +2690,7 @@ Omadi.data.processFieldsJson = function(mainDB) {"use strict";
     var result, fid, field_exists, field_type, db_type, field_name, label, widgetString, 
         settingsString, region, part, queries, description, bundle, weight, required, 
         disabled, can_view, can_edit, settings, omadi_session_details, roles, 
-        permissionsString, permIdx, roleIdx, i;
+        permissionsString, permIdx, roleIdx, i, nodeBundle;
         
     try {
         queries = [];
@@ -2825,6 +2825,29 @@ Omadi.data.processFieldsJson = function(mainDB) {"use strict";
                                 }
                             }
                         }
+                        else{
+                               
+                            // The bundle does not exist, so it may be a comment field
+                            nodeBundle = bundle.replace('comment_node_', '');
+                            result = mainDB.execute("SELECT * FROM bundles WHERE bundle_name='" + nodeBundle + "'");
+                            
+                            if (result.isValidRow()) {
+                                
+                                result.close();
+                                
+                                // The node type exists, so add the column to the correct comment table
+                                result = mainDB.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='" + bundle + "'");
+                                
+                                if(!result.isValidRow()){
+                                    // The table has not yet been created, so create it
+                                    // This must be created immediately so that any other fields referencing this table will see it
+                                    mainDB.execute("CREATE TABLE '" + bundle + "' ('cid' INTEGER PRIMARY KEY NOT NULL UNIQUE )");
+                                }
+                                
+                                //Ti.API.debug("Adding comment field " + bundle + " " + field_name);
+                                queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "' " + db_type);
+                            }
+                        }
 
                         result.close();
 
@@ -2878,12 +2901,11 @@ Omadi.data.processFieldsJson = function(mainDB) {"use strict";
 };
 
 Omadi.data.processCommentJson = function(mainDB) {"use strict";
-    var i, j, queries;
+    var i, j, queries, query, fieldNames, tableName, instances, field_name, values, value;
 
     try {
         queries = [];
 
-        //Insert - Users
         if (Omadi.service.fetchedJSON.comment.insert) {
             if (Omadi.service.fetchedJSON.comment.insert.length) {
                 for ( i = 0; i < Omadi.service.fetchedJSON.comment.insert.length; i++) {
@@ -2891,9 +2913,146 @@ Omadi.data.processCommentJson = function(mainDB) {"use strict";
                         //Increment Progress Bar
                         Omadi.service.progressBar.set();
                     }
+                    
+                    tableName = Omadi.service.fetchedJSON.comment.insert[i].node_type;
+                    
+                    queries.push('INSERT OR REPLACE INTO comment (cid, nid, uid, subject, created, changed, status, name, node_type) VALUES (' + dbEsc(Omadi.service.fetchedJSON.comment.insert[i].cid) + "," + dbEsc(Omadi.service.fetchedJSON.comment.insert[i].nid) + "," + dbEsc(Omadi.service.fetchedJSON.comment.insert[i].uid) + ",'" + dbEsc(Omadi.service.fetchedJSON.comment.insert[i].subject) + "'," + dbEsc(Omadi.service.fetchedJSON.comment.insert[i].created) + "," + dbEsc(Omadi.service.fetchedJSON.comment.insert[i].changed) + "," + dbEsc(Omadi.service.fetchedJSON.comment.insert[i].status) + ",'" + dbEsc(Omadi.service.fetchedJSON.comment.insert[i].name) + "','" + dbEsc(tableName) + "')");
+                    
+                    query = 'INSERT OR REPLACE  INTO ' + tableName + ' (';
+    
+                    fieldNames = [];
+                    fieldNames.push('cid');
+                    instances = Omadi.data.getFields(tableName);
+                    
+                    for (field_name in instances) {
+                        if (instances.hasOwnProperty(field_name)) {
+                            fieldNames.push("`" + field_name + "`");
+                            
+                            if(instances[field_name].type == 'file'){
+                                fieldNames.push(field_name + "___filename");
+                            }
+                            else if(instances[field_name].type == 'extra_price'){
+                                fieldNames.push(field_name + "___data");
+                            }
+                        }
+                    }
+                    
+                    query += fieldNames.join(',');
+                    query += ') VALUES (';
 
-                    queries.push('INSERT OR REPLACE INTO comment (cid, nid, uid, subject, created, changed, status, name, body) VALUES (' + dbEsc(Omadi.service.fetchedJSON.comment.insert[i].cid) + "," + dbEsc(Omadi.service.fetchedJSON.comment.insert[i].nid) + "," + dbEsc(Omadi.service.fetchedJSON.comment.insert[i].uid) + ",'" + dbEsc(Omadi.service.fetchedJSON.comment.insert[i].subject) + "'," + dbEsc(Omadi.service.fetchedJSON.comment.insert[i].created) + "," + dbEsc(Omadi.service.fetchedJSON.comment.insert[i].changed) + "," + dbEsc(Omadi.service.fetchedJSON.comment.insert[i].status) + ",'" + dbEsc(Omadi.service.fetchedJSON.comment.insert[i].name) + "','" + dbEsc(Omadi.service.fetchedJSON.comment.insert[i].body) + "')");
+                    values = [];
+                    values.push(Omadi.service.fetchedJSON.comment.insert[i].cid);
 
+                    for (field_name in instances) {
+                        if(instances.hasOwnProperty(field_name)){
+                            
+                            if(instances[field_name].type == 'file'){
+                                
+                                if (typeof Omadi.service.fetchedJSON.comment.insert[i][field_name + "___fid"] === "undefined" || Omadi.service.fetchedJSON.comment.insert[i][field_name + "___fid"] === null) {
+                                    values.push("null");
+                                }
+                                else{
+                                    value = Omadi.service.fetchedJSON.comment.insert[i][field_name + "___fid"];
+
+                                    if ( value instanceof Array) {
+                                        values.push("'" + dbEsc(JSON.stringify(value)) + "'");
+                                    }
+                                    else {
+                                        values.push("'" + dbEsc(value) + "'");
+                                    }
+                                }
+                                
+                                if (typeof Omadi.service.fetchedJSON.comment.insert[i][field_name + "___filename"] === "undefined" || Omadi.service.fetchedJSON.comment.insert[i][field_name + "___filename"] === null) {
+                                    values.push("null");
+                                }
+                                else{
+                                    value = Omadi.service.fetchedJSON.comment.insert[i][field_name + "___filename"];
+
+                                    if ( value instanceof Array) {
+                                        values.push("'" + dbEsc(JSON.stringify(value)) + "'");
+                                    }
+                                    else {
+                                        values.push("'" + dbEsc(value) + "'");
+                                    }
+                                }
+                            }
+                            else if(instances[field_name].type == 'extra_price'){
+                                
+                                if (typeof Omadi.service.fetchedJSON.comment.insert[i][field_name + "___value"] === "undefined" || Omadi.service.fetchedJSON.comment.insert[i][field_name + "___value"] === null) {
+                                    values.push("null");
+                                }
+                                else{
+                                    value = Omadi.service.fetchedJSON.comment.insert[i][field_name + "___value"];
+                                    values.push("'" + dbEsc(value) + "'");
+                                }
+                              
+                                if (typeof Omadi.service.fetchedJSON.comment.insert[i][field_name + "___data"] === "undefined" || Omadi.service.fetchedJSON.comment.insert[i][field_name + "___data"] === null) {
+                                    values.push("null");
+                                }
+                                else{
+                                    value = Omadi.service.fetchedJSON.comment.insert[i][field_name + "___data"];
+                                    values.push("'" + dbEsc(JSON.stringify(value)) + "'");
+                                }
+                            }
+                            else if (typeof Omadi.service.fetchedJSON.comment.insert[i][field_name] === "undefined" || Omadi.service.fetchedJSON.comment.insert[i][field_name] === null) {
+                                values.push("null");
+                            }
+                            else {
+                                switch(instances[field_name].type) {
+                                    case 'number_integer':
+                                    case 'number_decimal':
+                                    case 'omadi_reference':
+                                    case 'taxonomy_term_reference':
+                                    case 'user_reference':
+                                    case 'list_boolean':
+                                    case 'datestamp':
+                                    case 'omadi_time':
+                                    case 'image':
+                                    
+                                        value = Omadi.service.fetchedJSON.comment.insert[i][field_name];
+
+                                        if (typeof value === 'number') {
+                                            values.push(value);
+                                        }
+                                        else if ( typeof value === 'string') {
+                                            value = parseInt(value, 10);
+                                            if (isNaN(value)) {
+                                                values.push('null');
+                                            }
+                                            else {
+                                                values.push(value);
+                                            }
+                                        }
+                                        else if ( value instanceof Array) {
+                                            values.push("'" + dbEsc(JSON.stringify(value)) + "'");
+                                        }
+                                        else {
+                                            values.push("null");
+                                        }
+                                        break;
+        
+                                    default:
+                                        value = Omadi.service.fetchedJSON.comment.insert[i][field_name];
+
+                                        if ( value instanceof Array) {
+                                            values.push("'" + dbEsc(JSON.stringify(value)) + "'");
+                                        }
+                                        else {
+                                            values.push("'" + dbEsc(value) + "'");
+                                        }
+                                        break;
+                                }
+                            }
+                        }
+                    }
+
+                    query += values.join(",");
+                    query += ')';
+                
+                    Ti.API.debug(query);
+                    
+                    queries.push(query);
+                    
                 }
             }
         }

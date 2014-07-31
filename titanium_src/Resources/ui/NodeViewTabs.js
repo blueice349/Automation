@@ -125,11 +125,7 @@ function openAndroidMenuItemNodeView(e){"use strict";
     var itemIndex, itemData;
     
     itemIndex = e.source.getOrder();
-    
-    Ti.API.debug(itemIndex);
     itemData = androidMenuItemData[itemIndex];
-    
-    Ti.API.debug(JSON.stringify(itemData));
     
     Ti.App.fireEvent('openFormWindow', {
         node_type: itemData.type,
@@ -144,6 +140,22 @@ NodeViewTabs.prototype.addActions = function(){"use strict";
     if(this.workNode !== null){
             
         if (Ti.App.isAndroid) {
+            
+            try{
+                var actionBar = getInstance().tabGroup.activity.actionBar;
+                actionBar.setHomeAsUp = true;
+                actionBar.onHomeIconItemSelected = function(){
+                    getInstance().close();  
+                };
+                
+                if(this.dispatchTab === null && this.commentsTab === null){
+                    // When only the work tab is visible, do not show any tabs
+                    actionBar.navigationMode = Ti.Android.NAVIGATION_MODE_STANDARD;
+                }
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception setting up action bar in view: " + ex);
+            }
             
             this.tabGroup.activity.onCreateOptionsMenu = function(e) {
                 var db, result, bundle, menu_zero, menu_edit, 
@@ -369,7 +381,8 @@ NodeViewTabs.prototype.getTabs = function(){"use strict";
                 this.commentsTab = Ti.UI.createTab({
                     title: commentsCount + ' Comment' + (commentsCount == 1 ? '' : 's'),
                     window: CommentList.getListWindow(),
-                    commentCount: commentsCount
+                    commentCount: commentsCount,
+                    icon: '/images/icon_comments_white.png'
                 });
                 
                 Ti.App.removeEventListener('incrementCommentTab', incrementCommentTab);
@@ -387,11 +400,11 @@ NodeViewTabs.prototype.getTabs = function(){"use strict";
         alert("There was a problem loading this view. Please contact support.");
     }
 
-    Ti.App.removeEventListener('loggingOut', _instance.loggingOut);
-    Ti.App.addEventListener('loggingOut', _instance.loggingOut);
+    Ti.App.removeEventListener('loggingOut', this.loggingOut);
+    Ti.App.addEventListener('loggingOut', this.loggingOut);
 
-    Ti.App.removeEventListener("savedNode", _instance.savedNode);
-    Ti.App.addEventListener("savedNode", _instance.savedNode);
+    Ti.App.removeEventListener("savedNode", this.savedNode);
+    Ti.App.addEventListener("savedNode", this.savedNode);
     
     if(Ti.App.isAndroid){
         this.tabGroup.addEventListener('open', function(){
@@ -400,11 +413,6 @@ NodeViewTabs.prototype.getTabs = function(){"use strict";
                 // Add actions after the work node has been fully loaded
                 getInstance().addActions();
                 
-                var actionBar = getInstance().tabGroup.activity.actionBar;
-                actionBar.setHomeAsUp = true;
-                actionBar.onHomeIconItemSelected = function(){
-                    getInstance().close();  
-                };
             }
             catch(ex){}
         });
@@ -414,11 +422,11 @@ NodeViewTabs.prototype.getTabs = function(){"use strict";
 };
 
 NodeViewTabs.prototype.savedNode = function(){"use strict";
-    this.close();
+    _instance.close();
 };
 
 NodeViewTabs.prototype.loggingOut = function(){"use strict";
-    this.close();
+    _instance.close();
 };
 
 NodeViewTabs.prototype.close = function(){"use strict";

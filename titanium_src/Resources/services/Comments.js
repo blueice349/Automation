@@ -5,6 +5,8 @@ var _instance = null;
 var Utils = require('lib/Utils');
 var Database = require('lib/Database');
 var Comment = require('objects/Comment');
+var Field = require('objects/Field');
+var Node = require('objects/Node');
 
 function Comments(){"use strict";
     this.sendCommentRetries = 0;
@@ -130,11 +132,10 @@ var sendOnLoad = function(e){"use strict";
 };
 
 var sendOnError = function(e){"use strict";
-    var dialog, commentsInstance;
+    var dialog, commentsInstance, commentText;
     
     try{
         //Omadi.display.doneLoading();
-        
         
         try{
             Ti.Media.vibrate();
@@ -143,12 +144,14 @@ var sendOnError = function(e){"use strict";
         
         Ti.API.error('Error Status Comment: ' + e.error + ", message: " + this.status);
         
+        commentText = Comment.viewText(this.cid); 
+        
         if (this.status == 500) {
     
             dialog = Titanium.UI.createAlertDialog({
                 title : 'Service Error',
                 buttonNames : ['OK'],
-                message : "There was a problem saving your comment to the server. The app will continue attempting to save the comment."
+                message : "There was a problem saving the following comment to the server. The app will continue attempting to save the comment: \n\n\"" + commentText + "\""
             });
     
             dialog.show();
@@ -160,7 +163,7 @@ var sendOnError = function(e){"use strict";
             dialog = Titanium.UI.createAlertDialog({
                 title : 'Service Error',
                 buttonNames : ['OK'],
-                message : "The comment is invalid and will be deleted. Details: " + e.error
+                message : "The following comment is invalid and will be deleted. Details: " + e.error + " \n\nComment: \"" + commentText + "\""
             });
     
             dialog.show();
@@ -172,7 +175,7 @@ var sendOnError = function(e){"use strict";
             dialog = Titanium.UI.createAlertDialog({
                 title : 'Service Error',
                 buttonNames : ['OK'],
-                message : "The comment could not be posted because you do not have permissions to the form."
+                message : "The following comment could not be posted because you do not have permissions to the form: \n\n\"" + commentText + "\""
             });
     
             dialog.show();
@@ -200,6 +203,8 @@ var sendOnError = function(e){"use strict";
             dialog.show();
         }
         
+        Database.query("UPDATE comment set sync_attempts = (sync_attempts + 1) WHERE cid = " + this.cid);
+        
         //Omadi.service.setSendingData(false);
         //Ti.App.fireEvent("doneSendingComment");
     }
@@ -221,14 +226,31 @@ Comments.prototype.sendComments = function(){"use strict";
 };
 
 Comments.prototype.processJson = function(){"use strict";
-    var Comment;
+    var Comment, comment, instances, fieldName, origData;
     
     Ti.API.debug("Processing comment JSON");
     
     if(this.fetchedJSON !== null){
         if(typeof this.fetchedJSON.comment !== 'undefined'){
             Comment = require('objects/Comment');
-            Comment.save(this.fetchedJSON.comment);
+            
+            comment = this.fetchedJSON.comment;
+            
+            Ti.API.debug("Returned JSON: " + JSON.stringify(comment));
+            
+            instances = Field.getFields(comment.node_type);
+            for(fieldName in instances){
+                if(instances.hasOwnProperty(fieldName)){
+                    if(typeof comment[fieldName] !== 'undefined'){
+                        origData = comment[fieldName];
+                        comment[fieldName] = {};
+                        comment[fieldName].dbValues = [origData];
+                        comment[fieldName].textValues = [origData];
+                    }
+                }
+            }
+            
+            Comment.save(comment);
             
             if(typeof this.fetchedJSON.orig_cid !== 'undefined'){
                 Comment.remove(this.fetchedJSON.orig_cid);
@@ -296,13 +318,10 @@ Comments.prototype.sendComment = function(cid) {"use strict";
 Comments.prototype.getNextCidToUpload = function(){"use strict";
     var result, cid = null;
     
-    // Sync the highest negative number first, since it was created first
-    result = Database.query("SELECT cid FROM comment WHERE cid < 0 ORDER BY cid DESC LIMIT 1");
-    
-    Ti.API.debug("executed query");
+    // Sync first comments that have not attempted to be uploaded, then highest negative number first, since it was created first
+    result = Database.query("SELECT cid FROM comment WHERE cid < 0 ORDER BY sync_attempts ASC, cid DESC LIMIT 1");
     
     if(result.isValidRow()){
-        Ti.API.debug("Valid cid row");
         cid = result.field(0, Ti.Database.FIELD_TYPE_INT);
     }
     Database.close();
@@ -312,20 +331,7 @@ Comments.prototype.getNextCidToUpload = function(){"use strict";
 
 Comments.prototype.getUpdatedCommentJSON = function(cid) {"use strict";
     /*jslint eqeq:true,plusplus:true*/
-    var db, result, obj, nid, tid, nids, comment, instances, field_name, i, v_result, output, hasComment;
-    
-    instances = {};
-    instances.comment_body = {};
-    instances.comment_body.isRequired = true;
-    instances.comment_body.type = 'text_long';
-    instances.comment_body.label = 'Comment';
-    instances.comment_body.field_name = 'comment_body';
-    instances.comment_body.required = 1;
-    instances.comment_body.can_view = true;
-    instances.comment_body.can_edit = true;
-    instances.comment_body.settings = {
-        cardinality: 1
-    };
+    var db, result, obj, nid, tid, nids, comment, instances, field_name, i, v_result, output, hasComment, nodeType;
     
     hasComment = false;
     
@@ -344,21 +350,21 @@ Comments.prototype.getUpdatedCommentJSON = function(cid) {"use strict";
             hasComment = true;
         }
         result.close();
-        // Make sure the db is closed before commentLoad is called or any other function that opens the db
-        Database.close();
         
         if(!hasComment){
             return null;
         }
         
         if (hasComment) {
-            
             comment = Comment.load(cid);
-            //comment = Omadi.data.commentLoad(cid);
             
-            Ti.API.debug(JSON.stringify(comment));
+            Ti.API.debug("JSON comment: " + JSON.stringify(comment));
             
-            //instances = Omadi.data.getFields(node.type);
+            nodeType = Node.getNodeType(comment.nid);
+            
+            Ti.API.debug("Node type: " + nodeType);
+            
+            instances = Field.getFields('comment_node_' + nodeType);
 
             obj.comment = comment;
 
@@ -384,15 +390,9 @@ Comments.prototype.getUpdatedCommentJSON = function(cid) {"use strict";
         
         alert("There was a problem packaging your comment, so it has been saved as a draft.");
         Utils.sendErrorReport("Exception in JSON comment creation: " + ex);
-        
-        try {
-            db.close();
-        }
-        catch(nothing1){
-            Ti.API.error("db would not close");
-            Utils.sendErrorReport("DB WOULD NOT CLOSE in COMMENT");
-        }
     }
+    
+    Database.close();
     
     output = "";
     try{
@@ -409,9 +409,6 @@ Comments.prototype.getUpdatedCommentJSON = function(cid) {"use strict";
 
 
 
-
-
 exports.sendComments = function(){"use strict";
-    
     getInstance().sendComments();
 };
