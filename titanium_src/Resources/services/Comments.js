@@ -362,32 +362,37 @@ Comments.prototype.getUpdatedCommentJSON = function(cid) {"use strict";
             
             nodeType = Node.getNodeType(comment.nid);
             
-            Ti.API.debug("Node type: " + nodeType);
-            
-            instances = Field.getFields('comment_node_' + nodeType);
-
-            obj.comment = comment;
-
-            for (field_name in instances) {
-                if (instances.hasOwnProperty(field_name)) {
-                    
-                    if ( typeof comment[field_name] !== 'undefined' && typeof comment[field_name].dbValues !== 'undefined' && comment[field_name].dbValues.length > 0) {
-                        if (comment[field_name].dbValues.length > 1) {
-                            obj.comment[field_name] = comment[field_name].dbValues;
+            if(nodeType === null){
+                alert("An error occurred sending the comment, and it was not saved. Please try again.");
+                Utils.sendErrorReport("nodeType was null in getting comment json.");
+            }
+            else{
+                Ti.API.debug("Node type: " + nodeType);
+                
+                instances = Field.getFields('comment_node_' + nodeType);
+    
+                obj.comment = comment;
+    
+                for (field_name in instances) {
+                    if (instances.hasOwnProperty(field_name)) {
+                        
+                        if ( typeof comment[field_name] !== 'undefined' && typeof comment[field_name].dbValues !== 'undefined' && comment[field_name].dbValues.length > 0) {
+                            if (comment[field_name].dbValues.length > 1) {
+                                obj.comment[field_name] = comment[field_name].dbValues;
+                            }
+                            else {
+                                obj.comment[field_name] = comment[field_name].dbValues[0];
+                            }
                         }
                         else {
-                            obj.comment[field_name] = comment[field_name].dbValues[0];
+                            obj.comment[field_name] = null;
                         }
-                    }
-                    else {
-                        obj.comment[field_name] = null;
                     }
                 }
             }
         }        
     }
     catch(ex) {
-        
         alert("There was a problem packaging your comment, so it has been saved as a draft.");
         Utils.sendErrorReport("Exception in JSON comment creation: " + ex);
     }

@@ -1246,6 +1246,10 @@ CommentForm.prototype.showFormWindow = function(parent){"use strict";
             left: 0
         });
         
+        if(Ti.App.isIOS){
+            this.formView.top = 20;
+        }
+        
         scrollView = Ti.UI.createScrollView({
             bottom: 40,
             top: 0,

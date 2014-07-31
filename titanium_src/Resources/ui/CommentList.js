@@ -1,4 +1,5 @@
 /*jslint eqeq:true,plusplus:true*/
+
 var Omadi, commentList;
 
 function CommentList(nid){"use strict";
@@ -368,6 +369,10 @@ CommentList.prototype.getListWindow = function(){"use strict";
         right: 0,
         left: 0
     });
+    
+    if(Ti.App.isIOS){
+        this.listWin.top = 20;
+    }
     
     if(this.comments === null){
         this.initComments();

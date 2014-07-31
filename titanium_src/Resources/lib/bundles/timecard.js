@@ -1,5 +1,4 @@
 /*jslint eqeq:true*/
-
 Omadi.bundles.timecard = {};
 
 Omadi.bundles.timecard.askClockOutLogout = function(){"use strict";
@@ -188,18 +187,23 @@ Omadi.bundles.timecard.getLastClockInNid = function(){"use strict";
     uid = Omadi.utils.getUid();
     db = Omadi.utils.openMainDatabase();
     
-    result = db.execute("SELECT t.nid, MAX(t.clock_in_time) FROM timecard t WHERE t.user_0 = " + uid + " LIMIT 1");
-    
-    if(result.isValidRow()){
-        try{
-            nid = result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT);
+    try{
+        result = db.execute("SELECT t.nid, MAX(t.clock_in_time) FROM timecard t WHERE t.user_0 = " + uid + " LIMIT 1");
+        
+        if(result.isValidRow()){
+            try{
+                nid = result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT);
+            }
+            catch(ex){
+                nid = 0;
+                // the result is null, no clockins exist
+            }
         }
-        catch(ex){
-            nid = 0;
-            // the result is null, no clockins exist
-        }
+        result.close();
     }
-    result.close();
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception getting lastclockinnid: " + ex);
+    }
     
     db.close();
     

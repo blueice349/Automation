@@ -244,6 +244,137 @@ NodeViewTabs.prototype.addActions = function(){"use strict";
     }
 };
 
+NodeViewTabs.prototype.addIOSToolbar = function(){"use strict";
+    var back, space, label, edit, arr, toolbar;
+    
+    back = Ti.UI.createButton({
+        title : 'Back',
+        style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+    });
+    
+    back.addEventListener('click', function() {
+        getInstance().close();
+    });
+
+    space = Titanium.UI.createButton({
+        systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
+    });
+    
+    label = Titanium.UI.createButton({
+        title : curWin.nameSelected,
+        color : '#fff',
+        ellipsize : true,
+        wordwrap : false,
+        width : 200,
+        style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
+    });
+
+    edit = Ti.UI.createButton({
+        title : 'Actions',
+        style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+    });
+
+    edit.addEventListener('click', function() {
+        var db, result, bundle, btn_tt, btn_id, form_part, postDialog, to_type, to_bundle;
+        try{
+            bundle = Omadi.data.getBundle(curWin.type);
+            
+            db = Omadi.utils.openMainDatabase();
+            result = db.execute('SELECT form_part FROM node WHERE nid=' + curWin.nid);
+            form_part = result.fieldByName('form_part', Ti.Database.FIELD_TYPE_INT);
+            result.close();
+            db.close();
+    
+    
+            btn_tt = [];
+            btn_id = [];
+            
+            if (bundle.data.form_parts != null && bundle.data.form_parts != "") {
+    
+                if (bundle.data.form_parts.parts.length >= form_part + 2) {
+                   
+                    btn_tt.push(bundle.data.form_parts.parts[form_part + 1].label);
+                    btn_id.push(form_part + 1);
+                }
+            }
+    
+            btn_tt.push('Edit');
+            btn_id.push(form_part);
+            
+            if(Omadi.print.canPrintReceipt(curWin.nid)){
+                
+                btn_tt.push('Print');
+                btn_id.push('_print');
+            }
+    
+            if(typeof bundle.data.custom_copy !== 'undefined'){
+                for(to_type in bundle.data.custom_copy){
+                    if(bundle.data.custom_copy.hasOwnProperty(to_type)){
+                        to_bundle = Omadi.data.getBundle(to_type);
+                        if(to_bundle){
+                            btn_tt.push("Copy to " + to_bundle.label);
+                            btn_id.push(to_type);
+                        }
+                    }
+                }
+            }
+            
+    
+            btn_tt.push('Cancel');
+    
+            postDialog = Titanium.UI.createOptionDialog();
+            postDialog.options = btn_tt;
+            postDialog.cancel = btn_tt.length - 1;
+            postDialog.show();
+    
+            postDialog.addEventListener('click', function(ev) {
+                var formPart;
+                try{
+                    if (ev.index == ev.source.cancel) {
+                        Ti.API.info("Fix this logic");
+                    }
+                    else if (ev.index != -1) {
+                        
+                        formPart = btn_id[ev.index];
+                        
+                        if(formPart == '_print'){
+                            Omadi.print.printReceipt(curWin.nid);
+                        }
+                        else{
+                            
+                            Ti.App.fireEvent('openFormWindow', {
+                                node_type: curWin.type,
+                                nid: curWin.nid,
+                                form_part: formPart 
+                            });
+                        }
+                    }
+                }
+                catch(ex){
+                    Omadi.service.sendErrorReport("Exception with action click on view: " + ex);
+                }
+            });
+        }
+        catch(ex){
+            Omadi.service.sendErrorReport("Exception with viewing actions on view: " + ex);
+        }
+    });
+
+    //Check is node editable or not
+    arr = (isEditEnabled == true) ? [back, space, label, space, edit] : ((Ti.Platform.osname == 'ipad') ? [back, space, label, space] : [back, label, space]);
+
+    // create and add toolbar
+    toolbar = Ti.UI.iOS.createToolbar({
+        items : arr,
+        top : 20,
+        borderTop : false,
+        borderBottom : true
+    });
+    
+    
+    this.tabGroup.add(toolbar);
+};
+
 NodeViewTabs.prototype.getTabs = function(){"use strict";
     var dispatchWin, workWin, allowRecover, openDispatch, workBundle, db, result, 
         tempDispatchNid, iconFile, tempFormPart, origNid, copyToBundle, commentsCount;
@@ -259,6 +390,10 @@ NodeViewTabs.prototype.getTabs = function(){"use strict";
             title: 'View'
         });
         
+        if(Ti.App.isIOS){
+            this.addIOSToolbar();
+        }
+        
         this.workNode = Omadi.data.nodeLoad(this.nid);
         this.dispatchNode = null;
         
@@ -269,6 +404,7 @@ NodeViewTabs.prototype.getTabs = function(){"use strict";
             if (this.workNode.type == 'dispatch') {
                 this.dispatchNode = this.workNode;
                 this.workNode = Omadi.data.nodeLoad(this.dispatchNode.dispatch_nid);
+                
                 if(this.workNode){
                     this.currentWorkFormPart = this.workNode.form_part;
                 }
@@ -358,7 +494,10 @@ NodeViewTabs.prototype.getTabs = function(){"use strict";
         }
          
         if(openDispatch && this.dispatchNode){
-            this.tabGroup.addTab(this.dispatchTab);
+            if(this.dispatchTab){
+                this.tabGroup.addTab(this.dispatchTab);
+            }
+            
             if(this.workTab){
                 this.tabGroup.addTab(this.workTab);
             }
@@ -367,8 +506,13 @@ NodeViewTabs.prototype.getTabs = function(){"use strict";
            if(this.workTab){
                this.tabGroup.addTab(this.workTab);
            }
-           this.tabGroup.addTab(this.dispatchTab);
+           
+           if(this.dispatchTab){
+               this.tabGroup.addTab(this.dispatchTab);
+           }
         }
+        
+        Ti.API.debug("Added first tabs");
         
         if(this.workTab && this.workNode && this.workNode.nid && this.workNode.nid > 0){
             // The node is already saved and on the server

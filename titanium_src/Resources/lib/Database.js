@@ -96,8 +96,15 @@ Database.prototype.escape = function(string){"use strict";
 
 
 
-
 // Publicly exposed methods
+
+exports.reset = function(){"use strict";
+    if(_instance !== null){
+        _instance.closeDatabases();
+    }
+    
+    _instance = new Database();
+};
 
 exports.query = function(sql){"use strict"; 
     try{ 

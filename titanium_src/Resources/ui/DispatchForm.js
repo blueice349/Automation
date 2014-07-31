@@ -638,9 +638,7 @@ DispatchForm.prototype.setupMenu = function(){"use strict";
     Ti.API.debug("In Setup menu");
     
     try {
-        
         if(Ti.App.isAndroid){
-            
             
             this.tabGroup.addEventListener('open', function(){
                 try{

@@ -3,6 +3,10 @@ var Omadi;
 
 Ti.include("/lib/functions.js");
 
+var Database = require('lib/Database');
+// Make sure the database is reset so it's not using old data from another session
+Database.reset();
+
 var ImageFactory = null;
 
 if (Ti.App.isIOS) {
