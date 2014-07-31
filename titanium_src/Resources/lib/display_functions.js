@@ -2071,6 +2071,10 @@ Omadi.display.ProgressBar = function(current, max) {"use strict";
         this.pb_install.show();
         this.max = value;
     };
+    
+    this.setMessage = function(message){
+      this.pb_download.setMessage(message);
+    };
 
     this.set = function() {
         this.current++;
@@ -2089,9 +2093,93 @@ Omadi.display.ProgressBar = function(current, max) {"use strict";
             }
         }
     };
+    
+    this.increment = function() {
+        this.current++;
+
+        if (this.max <= 0) {
+            this.pb_install.value = 100;
+        }
+        else {
+            //Only one page case
+            if ((this.current === 0) && (this.max === 1)) {
+                this.pb_install.value = 50;
+            }
+            else {
+                var perc = parseInt((this.current * 100) / this.max, 10);
+                this.pb_install.value = perc;
+            }
+        }
+    };
+    
+    this.add = function(amount){
+        this.current += amount;
+        this.pb_install.value = parseInt((this.current * 100) / this.max, 10);
+    };
 
     this.set_download = function(value) {
         this.pb_download.value = value;
+    };
+
+    this.close = function() {
+        Ti.UI.currentWindow.remove(this.progressView);
+    };
+};
+
+
+Omadi.display.DefaultProgressBar = function(max, message) {"use strict";
+    /*jslint plusplus: true*/
+
+    this.current = 1;
+    this.max = max;
+
+    this.progressView = Titanium.UI.createView({
+        height : 45,
+        width : '100%',
+        backgroundColor : '#111',
+        opacity : 1,
+        top : 0, //-1 * Ti.Platform.displayCaps.platformHeight * 0.14
+        zIndex : 100
+    });
+    
+    if(Ti.App.isIOS7){
+        this.progressView.top += 20;
+    }
+
+    Ti.UI.currentWindow.add(this.progressView);
+
+    this.bar = Titanium.UI.createProgressBar({
+        width : "96%",
+        min : 0,
+        max : max,
+        top : 2,
+        value : 1,
+        color : '#fff',
+        message : message,
+        font: {
+          fontSize: 14  
+        },
+        style : (Ti.App.isIOS) ? Titanium.UI.iPhone.ProgressBarStyle.PLAIN : ''
+    });
+
+    this.progressView.add(this.bar);
+    this.bar.show();
+
+    this.bar.setValue(this.current);
+    
+    this.increment = function() {
+        this.current ++;
+        this.bar.setValue(this.current);       
+    };
+    
+    this.add = function(amount){
+        this.current += amount;
+        this.bar.setValue(this.current);
+    };
+    
+    this.set = function(current){
+        this.current = current;
+        this.bar.setValue(this.current);
     };
 
     this.close = function() {

@@ -20,6 +20,7 @@ exports.getNodeType = function(nid){"use strict";
         result = Database.query("SELECT table_name FROM node WHERE nid = " + nid);
         
         if(result.isValidRow()){
+            Ti.API.debug("is valid row");
             type = result.fieldByName('table_name');
         }
         

@@ -515,188 +515,195 @@ Comment.prototype.save = function(comment){"use strict";
     
     nodeType = Node.getNodeType(this.comment.nid);
     
-    tableName = 'comment_node_' + nodeType;
-    
-    try{
-        query = "INSERT OR REPLACE INTO comment (cid, nid, uid, subject, created, changed, status, name, node_type, sync_status) VALUES ";
-        query += "(" + this.comment.cid + "," + this.comment.nid + "," + this.comment.uid + ",''," + this.comment.created + "," + this.comment.changed + ",1,'','" + Database.escape(tableName) + "',1)"; 
+    if(nodeType === null){
+        alert("An error occurred saving the comment. Please try again.");
+        Ti.API.error("Node type is null, could not save the comment");
+    }
+    else{
         
-        Ti.API.debug(query);
+        tableName = 'comment_node_' + nodeType;
         
-        Database.query(query);
+        try{
+            query = "INSERT OR REPLACE INTO comment (cid, nid, uid, subject, created, changed, status, name, node_type, sync_status) VALUES ";
+            query += "(" + this.comment.cid + "," + this.comment.nid + "," + this.comment.uid + ",''," + this.comment.created + "," + this.comment.changed + ",1,'','" + Database.escape(tableName) + "',1)"; 
+            
+            Ti.API.debug(query);
+            
+            Database.query(query);
+            
+            instances = Field.getFields(tableName);
         
-        instances = Field.getFields(tableName);
-    
-        fieldNames = [];
-    
-        for (field_name in instances) {
-            if (instances.hasOwnProperty(field_name)) {
-                if (field_name != null && typeof instances[field_name] !== 'undefined') {
-                    
-                    // Don't save anything for rules_field, as they are read-only for mobile devices
-                    if(instances[field_name].type != 'rules_field'){
-                        fieldNames.push(field_name);
+            fieldNames = [];
+        
+            for (field_name in instances) {
+                if (instances.hasOwnProperty(field_name)) {
+                    if (field_name != null && typeof instances[field_name] !== 'undefined') {
                         
-                        if(instances[field_name].type == 'extra_price'){
-                            // Must check if data exists in node to add the extra field since the same
-                            // check is done later on to add the data.
-                            // This this is wrong, the column vs value count could be off.
-                            if ( typeof comment[field_name] !== 'undefined') {
-                                fieldNames.push(field_name + "___data");
+                        // Don't save anything for rules_field, as they are read-only for mobile devices
+                        if(instances[field_name].type != 'rules_field'){
+                            fieldNames.push(field_name);
+                            
+                            if(instances[field_name].type == 'extra_price'){
+                                // Must check if data exists in node to add the extra field since the same
+                                // check is done later on to add the data.
+                                // This this is wrong, the column vs value count could be off.
+                                if ( typeof comment[field_name] !== 'undefined') {
+                                    fieldNames.push(field_name + "___data");
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-        
-        if(fieldNames.length > 0){
-            query = "INSERT OR REPLACE INTO " + tableName + " (cid, `";
-            query += fieldNames.join('`,`');
-            query += '`) VALUES (' + comment.cid + ',';
-    
-            insertValues = [];
             
-            for (j = 0; j < fieldNames.length; j++) {
-                field_name = fieldNames[j];
+            if(fieldNames.length > 0){
+                query = "INSERT OR REPLACE INTO " + tableName + " (cid, `";
+                query += fieldNames.join('`,`');
+                query += '`) VALUES (' + comment.cid + ',';
+        
+                insertValues = [];
                 
-                if (instances[field_name] != null) {
-                    instance = instances[field_name];
-    
-                    value_to_insert = null;
-                    if ( typeof comment[field_name] !== 'undefined') {
-    
-                        //Build cardinality for fields
-                        if (instance.settings.cardinality == -1 || instance.settings.cardinality > 1) {
-    
-                            has_data = false;
-    
-                            for ( k = 0; k < comment[field_name].dbValues.length; k++) {
-                                if (comment[field_name].dbValues[k] !== null) {
-                                    has_data = true;
+                for (j = 0; j < fieldNames.length; j++) {
+                    field_name = fieldNames[j];
+                    
+                    if (instances[field_name] != null) {
+                        instance = instances[field_name];
+        
+                        value_to_insert = null;
+                        if ( typeof comment[field_name] !== 'undefined') {
+        
+                            //Build cardinality for fields
+                            if (instance.settings.cardinality == -1 || instance.settings.cardinality > 1) {
+        
+                                has_data = false;
+        
+                                for ( k = 0; k < comment[field_name].dbValues.length; k++) {
+                                    if (comment[field_name].dbValues[k] !== null) {
+                                        has_data = true;
+                                    }
+                                }
+        
+                                if (has_data) {
+                                    value_to_insert = JSON.stringify(comment[field_name].dbValues);
                                 }
                             }
-    
-                            if (has_data) {
-                                value_to_insert = JSON.stringify(comment[field_name].dbValues);
-                            }
-                        }
-                        else if(instance.type == 'extra_price'){
-                            priceTotal = 0;
-                            priceData = [];
-                            
-                            // Add up all the prices and save the total amount
-                            if(comment[field_name].dbValues.length > 0){
+                            else if(instance.type == 'extra_price'){
+                                priceTotal = 0;
+                                priceData = [];
                                 
-                                for(priceIdx = 0; priceIdx < comment[field_name].dbValues.length; priceIdx ++){
+                                // Add up all the prices and save the total amount
+                                if(comment[field_name].dbValues.length > 0){
                                     
-                                    if(!isNaN(parseFloat(comment[field_name].dbValues[priceIdx]))){
-                                        priceTotal += parseFloat(comment[field_name].dbValues[priceIdx]);
+                                    for(priceIdx = 0; priceIdx < comment[field_name].dbValues.length; priceIdx ++){
                                         
-                                        try{
-                                            if(typeof comment[field_name].textValues[priceIdx] !== 'undefined'){
-                                                jsonValue = JSON.parse(comment[field_name].textValues[priceIdx]);
+                                        if(!isNaN(parseFloat(comment[field_name].dbValues[priceIdx]))){
+                                            priceTotal += parseFloat(comment[field_name].dbValues[priceIdx]);
+                                            
+                                            try{
+                                                if(typeof comment[field_name].textValues[priceIdx] !== 'undefined'){
+                                                    jsonValue = JSON.parse(comment[field_name].textValues[priceIdx]);
+                                                }
+                                                else{
+                                                    jsonValue = {};
+                                                }
                                             }
-                                            else{
-                                                jsonValue = {};
+                                            catch(exJSON){
+                                                Utils.sendErrorReport("Could not parse JSON for extra_price: " + comment[field_name].textValues[priceIdx]);
                                             }
-                                        }
-                                        catch(exJSON){
-                                            Utils.sendErrorReport("Could not parse JSON for extra_price: " + comment[field_name].textValues[priceIdx]);
-                                        }
-                                        if(jsonValue != null){
-                                            priceData.push(jsonValue);
+                                            if(jsonValue != null){
+                                                priceData.push(jsonValue);
+                                            }
                                         }
                                     }
                                 }
+                                
+                                Ti.API.error("In comment save...");
+                                Ti.API.error(JSON.stringify(priceData));
+                                
+                                insertValues.push(priceTotal);
+                                value_to_insert = JSON.stringify(priceData);
+                                
+                                if(priceTotal != 0){
+                                    nodeHasData = true;
+                                }
                             }
-                            
-                            Ti.API.error("In comment save...");
-                            Ti.API.error(JSON.stringify(priceData));
-                            
-                            insertValues.push(priceTotal);
-                            value_to_insert = JSON.stringify(priceData);
-                            
-                            if(priceTotal != 0){
-                                nodeHasData = true;
+                            else {
+                                if (comment[field_name].dbValues.length == 1) {
+                                    value_to_insert = comment[field_name].dbValues[0];
+                                }
+                                
                             }
+                        }
+        
+                        if (value_to_insert === null) {
+                            insertValues.push('null');
                         }
                         else {
-                            if (comment[field_name].dbValues.length == 1) {
-                                value_to_insert = comment[field_name].dbValues[0];
-                            }
-                            
-                        }
-                    }
-    
-                    if (value_to_insert === null) {
-                        insertValues.push('null');
-                    }
-                    else {
-                        switch(instance.type) {
-    
-                            case 'user_reference':
-                            case 'taxonomy_term_reference':
-                            case 'omadi_reference':
-                            case 'datestamp':
-                            case 'omadi_time':
-                            case 'auto_increment':
-                            case 'image':
-                            case 'file':
-    
-                                if (Utils.isEmpty(value_to_insert)) {
-                                    value_to_insert = "null";
-                                }
-                                else{
-                                    nodeHasData = true;
-                                }
-    
-                                insertValues.push("'" + Database.escape(value_to_insert) + "'");
-                                break;
-    
-                            case 'number_decimal':
-                            case 'number_integer':
-                            case 'list_boolean':
-                            case 'calculation_field':
-                            case 'extra_price':
-    
-                                if (Utils.isEmpty(value_to_insert) && value_to_insert != 0) {
-                                    insertValues.push('null');
-                                }
-                                else {
+                            switch(instance.type) {
+        
+                                case 'user_reference':
+                                case 'taxonomy_term_reference':
+                                case 'omadi_reference':
+                                case 'datestamp':
+                                case 'omadi_time':
+                                case 'auto_increment':
+                                case 'image':
+                                case 'file':
+        
+                                    if (Utils.isEmpty(value_to_insert)) {
+                                        value_to_insert = "null";
+                                    }
+                                    else{
+                                        nodeHasData = true;
+                                    }
+        
                                     insertValues.push("'" + Database.escape(value_to_insert) + "'");
-                                    nodeHasData = true;
-                                }
-                                break;
-    
-                            default:
-                                
-                                if(("".toString() + value_to_insert).length > 0){
-                                    nodeHasData = true;    
-                                }
-                                
-                                insertValues.push("'" + Database.escape(value_to_insert) + "'");
-                                break;
+                                    break;
+        
+                                case 'number_decimal':
+                                case 'number_integer':
+                                case 'list_boolean':
+                                case 'calculation_field':
+                                case 'extra_price':
+        
+                                    if (Utils.isEmpty(value_to_insert) && value_to_insert != 0) {
+                                        insertValues.push('null');
+                                    }
+                                    else {
+                                        insertValues.push("'" + Database.escape(value_to_insert) + "'");
+                                        nodeHasData = true;
+                                    }
+                                    break;
+        
+                                default:
+                                    
+                                    if(("".toString() + value_to_insert).length > 0){
+                                        nodeHasData = true;    
+                                    }
+                                    
+                                    insertValues.push("'" + Database.escape(value_to_insert) + "'");
+                                    break;
+                            }
                         }
                     }
                 }
+        
+                query += insertValues.join(',');
+                query += ")";
+                
+                Ti.API.debug("QUERY: " + query);
             }
-    
-            query += insertValues.join(',');
-            query += ")";
             
-            Ti.API.debug("QUERY: " + query);
+            Database.query(query);
+            
+            saved = true;
+            
+            Ti.API.info("Saved comment");
         }
-        
-        Database.query(query);
-        
-        saved = true;
-        
-        Ti.API.info("Saved comment");
-    }
-    catch(ex){
-        alert("An error occurred saving the comment. Please try again.");
-        this.sendError("Exception saving the comment: " + ex);
+        catch(ex){
+            alert("An error occurred saving the comment. Please try again.");
+            this.sendError("Exception saving the comment: " + ex);
+        }
     }
     
     Database.close();

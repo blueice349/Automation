@@ -216,6 +216,8 @@ Omadi.bundles.inspection.askToCreateInspection = function(showLogout){"use stric
             }
             catch(ex){
                 Omadi.service.sendErrorReport("exception ask to create inspection: " + ex);
+                // Make sure the user can always log out
+                Omadi.display.showLogoutDialog();
             }
         });
         

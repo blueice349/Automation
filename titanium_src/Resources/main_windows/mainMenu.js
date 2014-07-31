@@ -42,11 +42,7 @@ Omadi.data.setUpdating(false);
 Omadi.service.setSendingData(false);
 
 var listView;
-
 var jsonLogin = JSON.parse(Ti.App.Properties.getString("Omadi_session_details"));
-
-//Ti.API.debug(jsonLogin);
-
 var name = jsonLogin.user.realname;
 var roles = jsonLogin.user.roles;
 

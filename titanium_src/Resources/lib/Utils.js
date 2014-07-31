@@ -261,7 +261,7 @@ exports.getUTCTimestamp = function(){"use strict";
 };
 
 exports.sendErrorReport = function(message) {"use strict";
-    return getInstance().sendErrorReport();
+    return getInstance().sendErrorReport(message);
 };
 
 exports.setCookieHeader = function(http){"use strict";
