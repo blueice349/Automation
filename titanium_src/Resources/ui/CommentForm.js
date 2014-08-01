@@ -1,6 +1,8 @@
 /*jslint eqeq:true,plusplus:true*/
 var Omadi, FormObj;
 
+var Utils = require('lib/Utils');
+
 function CommentForm(nid){"use strict";
     //create module instance
     
@@ -235,7 +237,7 @@ CommentForm.prototype.setConditionallyRequiredLabelForInstance = function(instan
                             case 'user_reference':
         
                                 search_values = [];
-                                if (!Omadi.utils.isArray(search_value)) {
+                                if (!Utils.isArray(search_value)) {
                                     for (i in search_value) {
                                         if (search_value.hasOwnProperty(i)) {
                                             search_values.push(i);
@@ -474,7 +476,7 @@ CommentForm.prototype.getFieldView = function(instance, fieldViewWrapper){"use s
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in creating a field on a comment form: " + ex);
+        Utils.sendErrorReport("Exception in creating a field on a comment form: " + ex);
     }
     return fieldView;
 };
@@ -527,14 +529,14 @@ CommentForm.prototype.getRegularLabelView = function(instance){"use strict";
 CommentForm.prototype.sendError = function(message){"use strict";
     message += JSON.stringify(this.node);
     Ti.API.error(message);
-    Omadi.service.sendErrorReport(message);
+    Utils.sendErrorReport(message);
 };
 
 CommentForm.prototype.initNewNode = function(){"use strict";
 
     var uid, now;
     try{
-        uid = Omadi.utils.getUid();
+        uid = Utils.getUid();
         now = Omadi.utils.getUTCTimestampServerCorrected();
         
         this.node = {};
@@ -548,8 +550,7 @@ CommentForm.prototype.initNewNode = function(){"use strict";
         this.node.changed = now;
     }
     catch(ex){
-        Ti.API.error("Exception initializing a new comment: " + ex);
-        Omadi.service.sendErrorReport("Exception initializing a new comment: " + ex);
+        Utils.sendErrorReport("Exception initializing a new comment: " + ex);
     }
 };
 
@@ -612,7 +613,7 @@ CommentForm.prototype.getDBValues = function(fieldWrapper){"use strict";
                     dbValues = children[i].dbValue;
                 }
                 else{
-                    dbValues.push(Omadi.utils.trimWhiteSpace(children[i].dbValue));
+                    dbValues.push(Utils.trimWhiteSpace(children[i].dbValue));
                 }
             }
             else if(children[i].getChildren().length > 0){
@@ -625,7 +626,7 @@ CommentForm.prototype.getDBValues = function(fieldWrapper){"use strict";
                             dbValues = subChildren[j].dbValue;
                         }
                         else{
-                            dbValues.push(Omadi.utils.trimWhiteSpace(subChildren[j].dbValue));
+                            dbValues.push(Utils.trimWhiteSpace(subChildren[j].dbValue));
                         }
                     }
                     else if(subChildren[j].getChildren().length > 0){
@@ -636,7 +637,7 @@ CommentForm.prototype.getDBValues = function(fieldWrapper){"use strict";
                                     dbValues = subSubChildren[k].dbValue;
                                 }
                                 else{
-                                    dbValues.push(Omadi.utils.trimWhiteSpace(subSubChildren[k].dbValue));
+                                    dbValues.push(Utils.trimWhiteSpace(subSubChildren[k].dbValue));
                                 }
                             }
                             else if(subSubChildren[k].getChildren().length > 0){
@@ -647,7 +648,7 @@ CommentForm.prototype.getDBValues = function(fieldWrapper){"use strict";
                                             dbValues = subSubSubChildren[m].dbValue;
                                         }
                                         else{
-                                            dbValues.push(Omadi.utils.trimWhiteSpace(subSubSubChildren[m].dbValue));
+                                            dbValues.push(Utils.trimWhiteSpace(subSubSubChildren[m].dbValue));
                                         }
                                     }
                                 }
@@ -742,7 +743,7 @@ CommentForm.prototype.getNewCommentCid = function() {"use strict";
     }
     catch(ex){
         Ti.API.error("Exception in getNewCommentCid: " + ex);
-        Omadi.service.sendErrorReport("Exception in getNewCommentCid: " + ex);   
+        Utils.sendErrorReport("Exception in getNewCommentCid: " + ex);   
         try{
             db.close();
         }
@@ -819,7 +820,7 @@ CommentForm.prototype.getTextField = function(instance){"use strict";
     textField.addEventListener('focus', function(e){
         try{
             e.source.setBackgroundColor('#def');
-            ActiveFormObj.currentlyFocusedField = e.source;
+            FormObj.currentlyFocusedField = e.source;
         }
         catch(ex){}
     });
@@ -830,7 +831,7 @@ CommentForm.prototype.getTextField = function(instance){"use strict";
         }
         catch(ex){
             try{
-                Omadi.service.sendErrorReport("exception in text field in form blur: " + ex);
+                Utils.sendErrorReport("exception in text field in form blur: " + ex);
             }catch(ex1){}
         }
     });
@@ -892,7 +893,7 @@ CommentForm.prototype.getLabelField = function(instance){"use strict";
     labelView.addEventListener('click', function(e){
         // Unfocus any fields when clicking a non-text field
         try{
-            ActiveFormObj.unfocusField();
+            FormObj.unfocusField();
         }
         catch(ex){} 
     });
@@ -936,7 +937,7 @@ CommentForm.prototype.validateRequired = function(instance){"use strict";
                     case 'omadi_time':
                     case 'extra_price':
                     
-                        if(!Omadi.utils.isEmpty(dbValues[i])){
+                        if(!Utils.isEmpty(dbValues[i])){
                             isEmpty = false;
                         }
                         break;
@@ -947,7 +948,7 @@ CommentForm.prototype.validateRequired = function(instance){"use strict";
                     case 'file':
                     case 'auto_increment':
                     case 'list_boolean': 
-                        if(!Omadi.utils.isEmpty(dbValues[i]) && dbValues[i] != 0){
+                        if(!Utils.isEmpty(dbValues[i]) && dbValues[i] != 0){
                             isEmpty = false;
                         }
                         break;
@@ -1060,7 +1061,7 @@ CommentForm.prototype.validate = function(){"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in comment form validation: " + ex);
+        Utils.sendErrorReport("Exception in comment form validation: " + ex);
     }
 };
 
@@ -1074,7 +1075,7 @@ CommentForm.prototype.validateEmail = function(instance){"use strict";
             this.node[instance.field_name].dbValues.length > 0) {
             
                 for(i = 0; i < this.node[instance.field_name].dbValues.length; i ++){
-                    if (!Omadi.utils.isEmpty(this.node[instance.field_name].dbValues[i]) && !this.node[instance.field_name].dbValues[i].match(/^[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,4}$/i)) {
+                    if (!Utils.isEmpty(this.node[instance.field_name].dbValues[i]) && !this.node[instance.field_name].dbValues[i].match(/^[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,4}$/i)) {
                         this.form_errors.push(instance.label + " is not a valid email address.");
                     }  
                 }
@@ -1095,7 +1096,7 @@ CommentForm.prototype.validatePhone = function(instance){"use strict";
             this.node[instance.field_name].dbValues.length > 0) {
             
                 for(i = 0; i < this.node[instance.field_name].dbValues.length; i ++){
-                    if (!Omadi.utils.isEmpty(this.node[instance.field_name].dbValues[i]) && !this.node[instance.field_name].dbValues[i].match(/\D*(\d*)\D*[2-9][0-8]\d\D*[2-9]\d{2}\D*\d{4}\D*\d*\D*/g)) {
+                    if (!Utils.isEmpty(this.node[instance.field_name].dbValues[i]) && !this.node[instance.field_name].dbValues[i].match(/\D*(\d*)\D*[2-9][0-8]\d\D*[2-9]\d{2}\D*\d{4}\D*\d*\D*/g)) {
                         this.form_errors.push(instance.label + " is not a valid North American phone number. 10 digits are required.");
                     }  
                 }
@@ -1228,8 +1229,120 @@ CommentForm.prototype.validateMaxValue = function(instance){"use strict";
     }
 };
 
-CommentForm.prototype.showFormWindow = function(parent){"use strict";
+CommentForm.prototype.setupIOSToolbar = function(){"use strict";
+    var back, space, label, save, toolbar;
     
+    back = Ti.UI.createButton({
+        title : 'Back',
+        style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+    });
+    
+    back.addEventListener('click', function() {
+        try{
+            FormObj.close();
+        }
+        catch(ex){
+            Utils.sendErrorReport("Exception in back click for comment form: " + ex);
+        }
+    });
+
+    space = Titanium.UI.createButton({
+        systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
+    });
+    
+    label = Titanium.UI.createLabel({
+        text : 'New Comment',
+        right: 5,
+        font: {
+            fontWeight: 'bold'
+        },
+        style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
+    });
+    
+    label.color = '#333';
+    
+    save = Ti.UI.createButton({
+        title : 'Save Comment',
+        style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+    });
+    
+    save.addEventListener('click', function(){
+        FormObj.saveComment();
+    });
+    
+    // create and add toolbar
+    toolbar = Ti.UI.iOS.createToolbar({
+        items : [back, space, label, space, save],
+        top : 0,
+        borderTop : false,
+        borderBottom : false,
+        height: Ti.UI.SIZE
+    });
+    
+    this.formView.add(toolbar);  
+};
+
+CommentForm.prototype.saveComment = function(){"use strict";
+
+    Ti.API.debug("saving comment");
+    var saved = false, dialog;
+    
+    try{
+        if(!this.isFormSaving){
+            this.validate();
+            
+            if(this.form_errors && this.form_errors.length > 0){
+                dialog = Titanium.UI.createAlertDialog({
+                    title : 'Form Validation',
+                    buttonNames : ['OK'],
+                    message: FormObj.form_errors.join("\n")
+                });
+                
+                dialog.show();
+            }
+            else{
+                saved = this.save();
+                
+                if(saved){
+                    
+                    // Let the parent window know that the comments have changed, and that the list should be updated
+                    this.formViewParent.fireEvent('updateView');
+                    
+                    Ti.App.fireEvent('incrementCommentTab');
+                    
+                    // Remove this view from the parent and set this view to null to deallocate memory
+                    this.formViewParent.remove(this.formView);
+                    this.formView = null;
+                    this.isFormShowing = false;
+                    this.unfocusField();
+                    
+                    Ti.App.fireEvent('sendComments');
+                }
+                else{
+                    alert("Could not save the comment.");
+                }
+            }
+            
+            this.isFormSaving = false;
+        }
+    }
+    catch(ex){
+        alert("An error occurred while saving the comment. Please try again.");
+        this.isFormSaving = false;
+        Utils.sendErrorReport("Exception saving comment: " + ex);
+    }
+};
+
+CommentForm.prototype.close = function(){"use strict";
+    Ti.API.debug("closing comment view");
+    
+    this.formViewParent.remove(this.formView);
+    this.formView = null;
+    
+    this.isFormShowing = false;
+};
+
+CommentForm.prototype.showFormWindow = function(parent){"use strict";
     var buttonView, saveButton, cancelButton, scrollView, instance, fieldWrapper, field_name, 
         fieldView, allowedValues, key;
     
@@ -1246,16 +1359,19 @@ CommentForm.prototype.showFormWindow = function(parent){"use strict";
             left: 0
         });
         
-        if(Ti.App.isIOS){
-            this.formView.top = 20;
-        }
-        
         scrollView = Ti.UI.createScrollView({
             bottom: 40,
             top: 0,
             width: Ti.UI.FILL,
             layout: 'vertical' 
         });
+        
+        if(Ti.App.isIOS){
+            this.setupIOSToolbar();
+            scrollView.top = 40;
+        }
+        
+        scrollView.add(this.getSpacerView());
         
         try{
             for(field_name in this.instances){
@@ -1314,18 +1430,18 @@ CommentForm.prototype.showFormWindow = function(parent){"use strict";
                                 scrollView.add(fieldWrapper);
                             }
                             else{
-                                Omadi.service.sendErrorReport("Could not create comment field: " + JSON.stringify(instance));
+                                Utils.sendErrorReport("Could not create comment field: " + JSON.stringify(instance));
                             }
                         }
                         catch(elementEx){
-                            Omadi.service.sendErrorReport("Error adding field in comment form: " + elementEx + " " + JSON.stringify(instance));
+                            Utils.sendErrorReport("Error adding field in comment form: " + elementEx + " " + JSON.stringify(instance));
                         }
                     }
                 }
             }  
         }
         catch(fieldEx){
-            Omadi.service.sendErrorReport("Error setting up fields in comment form: " + fieldEx);
+            Utils.sendErrorReport("Error setting up fields in comment form: " + fieldEx);
         }
         
         buttonView = Ti.UI.createView({
@@ -1350,54 +1466,7 @@ CommentForm.prototype.showFormWindow = function(parent){"use strict";
         });
         
         saveButton.addEventListener('click', function(){
-            Ti.API.debug("clicked save button");
-            var saved = false, dialog;
-            
-            try{
-                if(!FormObj.isFormSaving){
-                    
-                    FormObj.validate();
-                    
-                    if(FormObj.form_errors && FormObj.form_errors.length > 0){
-                        dialog = Titanium.UI.createAlertDialog({
-                            title : 'Form Validation',
-                            buttonNames : ['OK'],
-                            message: FormObj.form_errors.join("\n")
-                        });
-                        
-                        dialog.show();
-                    }
-                    else{
-                        saved = FormObj.save();
-                        
-                        if(saved){
-                            
-                            // Let the parent window know that the comments have changed, and that the list should be updated
-                            FormObj.formViewParent.fireEvent('updateView');
-                            
-                            Ti.App.fireEvent('incrementCommentTab');
-                            
-                            // Remove this view from the parent and set this view to null to deallocate memory
-                            FormObj.formViewParent.remove(FormObj.formView);
-                            FormObj.formView = null;
-                            FormObj.isFormShowing = false;
-                            FormObj.unfocusField();
-                            
-                            Ti.App.fireEvent('sendComments');
-                        }
-                        else{
-                            alert("Could not save the comment.");
-                        }
-                    }
-                    
-                    FormObj.isFormSaving = false;
-                }
-            }
-            catch(ex){
-                alert("An error occurred while saving the comment. Please try again.");
-                FormObj.isFormSaving = false;
-                Omadi.service.sendErrorReport("Exception saving comment: " + ex);
-            }
+            FormObj.saveComment();
         });
         
         cancelButton = Ti.UI.createLabel({
@@ -1414,11 +1483,7 @@ CommentForm.prototype.showFormWindow = function(parent){"use strict";
         });
         
         cancelButton.addEventListener('click', function(){
-            Ti.API.debug("clicked cancel button");
-            FormObj.formViewParent.remove(FormObj.formView);
-            FormObj.formView = null;
-            
-            FormObj.isFormShowing = false;
+            FormObj.close();
         });
         
         buttonView.add(cancelButton);

@@ -2,6 +2,8 @@
 
 var Omadi, commentList;
 
+var Utils = require('lib/Utils');
+
 function CommentList(nid){"use strict";
     //create module instance
     
@@ -12,6 +14,7 @@ function CommentList(nid){"use strict";
     this.formView = null;
     this.numCommentsLabel = null;
     this.scrollView = null;
+    this.tabObj = null;
 }
 
 CommentList.prototype.back = function(){"use strict";
@@ -341,7 +344,7 @@ CommentList.prototype.initComments = function(){"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception loading comments: " + ex);
+        Utils.sendErrorReport("Exception loading comments: " + ex);
     }
 };
 
@@ -355,6 +358,48 @@ CommentList.prototype.getCommentCount = function(){"use strict";
 
 CommentList.prototype.setNumCommentsLabel = function(){"use strict";
     this.numCommentsLabel.setText(this.comments.length + " comment" + (this.comments.length == 1 ? '' : 's'));
+};
+
+CommentList.prototype.setupIOSToolbar = function(){"use strict";
+    var back, space, label, edit, arr, toolbar, canEdit;
+    
+    back = Ti.UI.createButton({
+        title : 'Back',
+        style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+    });
+    
+    back.addEventListener('click', function() {
+        try{
+            commentList.tabObj.close();
+        }
+        catch(ex){
+            Utils.sendErrorReport("Exception closing iOS back node view: " + ex);
+        }
+    });
+
+    space = Titanium.UI.createButton({
+        systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
+    });
+    
+    label = Titanium.UI.createButton({
+        title : 'Comments',
+        color : '#fff',
+        ellipsize : true,
+        wordwrap : false,
+        width : 200,
+        style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
+    });
+
+    // create and add toolbar
+    toolbar = Ti.UI.iOS.createToolbar({
+        items : [back, space, label, space],
+        top : 0,
+        borderTop : false,
+        borderBottom : true,
+        height: Ti.UI.SIZE
+    });
+    
+    this.listWin.add(toolbar);
 };
 
 CommentList.prototype.getListWindow = function(){"use strict";
@@ -385,6 +430,11 @@ CommentList.prototype.getListWindow = function(){"use strict";
         top: 0,
         left: 0
     });
+    
+    if(Ti.App.isIOS){
+        headerView.top = 40;
+        this.setupIOSToolbar();
+    }
     
     this.numCommentsLabel = Ti.UI.createLabel({
        text: '',
@@ -463,6 +513,10 @@ CommentList.prototype.setScrollView = function(){"use strict";
         layout: 'vertical',
         scrollType: 'vertical'
     });
+    
+    if(Ti.App.isIOS){
+        this.scrollView.top = 85;
+    }
     
     if(this.comments.length > 0){
         
@@ -620,6 +674,9 @@ exports.getCommentCount = function(){"use strict";
     return commentList.getCommentCount();
 };
 
-exports.getListWindow = function(){"use strict";
+exports.getListWindow = function(tabObject){"use strict";
+    commentList.tabObj = tabObject;
+    
     return commentList.getListWindow();
 };
+

@@ -1,4 +1,4 @@
-/*jslint eqeq:true,plusplus:true,nomen:true*/
+/*jslint eqeq:true,plusplus:true,nomen:true,bitwise:true*/
 
 var Omadi, _instance = null;
 
@@ -135,14 +135,14 @@ function openAndroidMenuItemNodeView(e){"use strict";
 }
 
 NodeViewTabs.prototype.addActions = function(){"use strict";
-    var isEditEnabled, db1, result;
+    var isEditEnabled, db1, result, actionBar;
     
     if(this.workNode !== null){
             
         if (Ti.App.isAndroid) {
             
             try{
-                var actionBar = getInstance().tabGroup.activity.actionBar;
+                actionBar = getInstance().tabGroup.activity.actionBar;
                 actionBar.setHomeAsUp = true;
                 actionBar.onHomeIconItemSelected = function(){
                     getInstance().close();  
@@ -220,11 +220,26 @@ NodeViewTabs.prototype.addActions = function(){"use strict";
                         if(bundle.data.custom_copy.hasOwnProperty(to_type)){
                             to_bundle = Omadi.data.getBundle(to_type);
                             if(to_bundle && to_bundle.can_create == 1){
-                                customCopy = e.menu.add({
-                                    title : "Copy to " + to_bundle.label,
-                                    order : order,
-                                    showAsAction : (Ti.Android.SHOW_AS_ACTION_NEVER | Ti.Android.SHOW_AS_ACTION_WITH_TEXT)
-                                });
+                                
+                                
+                                if(typeof bundle.data.custom_copy[to_type] !== 'undefined' && 
+                                    typeof bundle.data.custom_copy[to_type].conversion_type !== 'undefined' &&
+                                    bundle.data.custom_copy[to_type].conversion_type == 'change'){
+                                    
+                                        customCopy = e.menu.add({
+                                            title : "Change to " + to_bundle.label,
+                                            order : order,
+                                            showAsAction : (Ti.Android.SHOW_AS_ACTION_NEVER | Ti.Android.SHOW_AS_ACTION_WITH_TEXT)
+                                        }); 
+                                }
+                                else{
+                                    customCopy = e.menu.add({
+                                        title : "Copy to " + to_bundle.label,
+                                        order : order,
+                                        showAsAction : (Ti.Android.SHOW_AS_ACTION_NEVER | Ti.Android.SHOW_AS_ACTION_WITH_TEXT)
+                                    });
+                                }
+                                
                                 
                                 androidMenuItemData[order] = {
                                     type: node.type,
@@ -244,136 +259,7 @@ NodeViewTabs.prototype.addActions = function(){"use strict";
     }
 };
 
-NodeViewTabs.prototype.addIOSToolbar = function(){"use strict";
-    var back, space, label, edit, arr, toolbar;
-    
-    back = Ti.UI.createButton({
-        title : 'Back',
-        style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
-    });
-    
-    back.addEventListener('click', function() {
-        getInstance().close();
-    });
 
-    space = Titanium.UI.createButton({
-        systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
-    });
-    
-    label = Titanium.UI.createButton({
-        title : curWin.nameSelected,
-        color : '#fff',
-        ellipsize : true,
-        wordwrap : false,
-        width : 200,
-        style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
-    });
-
-    edit = Ti.UI.createButton({
-        title : 'Actions',
-        style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
-    });
-
-    edit.addEventListener('click', function() {
-        var db, result, bundle, btn_tt, btn_id, form_part, postDialog, to_type, to_bundle;
-        try{
-            bundle = Omadi.data.getBundle(curWin.type);
-            
-            db = Omadi.utils.openMainDatabase();
-            result = db.execute('SELECT form_part FROM node WHERE nid=' + curWin.nid);
-            form_part = result.fieldByName('form_part', Ti.Database.FIELD_TYPE_INT);
-            result.close();
-            db.close();
-    
-    
-            btn_tt = [];
-            btn_id = [];
-            
-            if (bundle.data.form_parts != null && bundle.data.form_parts != "") {
-    
-                if (bundle.data.form_parts.parts.length >= form_part + 2) {
-                   
-                    btn_tt.push(bundle.data.form_parts.parts[form_part + 1].label);
-                    btn_id.push(form_part + 1);
-                }
-            }
-    
-            btn_tt.push('Edit');
-            btn_id.push(form_part);
-            
-            if(Omadi.print.canPrintReceipt(curWin.nid)){
-                
-                btn_tt.push('Print');
-                btn_id.push('_print');
-            }
-    
-            if(typeof bundle.data.custom_copy !== 'undefined'){
-                for(to_type in bundle.data.custom_copy){
-                    if(bundle.data.custom_copy.hasOwnProperty(to_type)){
-                        to_bundle = Omadi.data.getBundle(to_type);
-                        if(to_bundle){
-                            btn_tt.push("Copy to " + to_bundle.label);
-                            btn_id.push(to_type);
-                        }
-                    }
-                }
-            }
-            
-    
-            btn_tt.push('Cancel');
-    
-            postDialog = Titanium.UI.createOptionDialog();
-            postDialog.options = btn_tt;
-            postDialog.cancel = btn_tt.length - 1;
-            postDialog.show();
-    
-            postDialog.addEventListener('click', function(ev) {
-                var formPart;
-                try{
-                    if (ev.index == ev.source.cancel) {
-                        Ti.API.info("Fix this logic");
-                    }
-                    else if (ev.index != -1) {
-                        
-                        formPart = btn_id[ev.index];
-                        
-                        if(formPart == '_print'){
-                            Omadi.print.printReceipt(curWin.nid);
-                        }
-                        else{
-                            
-                            Ti.App.fireEvent('openFormWindow', {
-                                node_type: curWin.type,
-                                nid: curWin.nid,
-                                form_part: formPart 
-                            });
-                        }
-                    }
-                }
-                catch(ex){
-                    Omadi.service.sendErrorReport("Exception with action click on view: " + ex);
-                }
-            });
-        }
-        catch(ex){
-            Omadi.service.sendErrorReport("Exception with viewing actions on view: " + ex);
-        }
-    });
-
-    //Check is node editable or not
-    arr = (isEditEnabled == true) ? [back, space, label, space, edit] : ((Ti.Platform.osname == 'ipad') ? [back, space, label, space] : [back, label, space]);
-
-    // create and add toolbar
-    toolbar = Ti.UI.iOS.createToolbar({
-        items : arr,
-        top : 20,
-        borderTop : false,
-        borderBottom : true
-    });
-    
-    
-    this.tabGroup.add(toolbar);
-};
 
 NodeViewTabs.prototype.getTabs = function(){"use strict";
     var dispatchWin, workWin, allowRecover, openDispatch, workBundle, db, result, 
@@ -387,12 +273,9 @@ NodeViewTabs.prototype.getTabs = function(){"use strict";
             activeTabBackgroundImage: '/images/blue_button1.png',
             tabsTintColor: '#fff',
             activeTabIconTint: '#fff',
-            title: 'View'
+            title: 'View',
+            backgroundColor: '#eee'
         });
-        
-        if(Ti.App.isIOS){
-            this.addIOSToolbar();
-        }
         
         this.workNode = Omadi.data.nodeLoad(this.nid);
         this.dispatchNode = null;
@@ -449,8 +332,12 @@ NodeViewTabs.prototype.getTabs = function(){"use strict";
                 }
             }
             
-            this.workNode.form_part = this.form_part;
-
+            if(typeof this.form_part !== 'undefined'){
+                this.workNode.form_part = this.form_part;    
+            }
+            else{
+                this.form_part = this.workNode.form_part;
+            }
         }
         else{
             alert("A problem occurred loading this dispatch. Omadi support has been notified about this issue.");
@@ -464,12 +351,18 @@ NodeViewTabs.prototype.getTabs = function(){"use strict";
         
         if(this.dispatchNode){
         
-            this.dispatchWindow = NodeView.getWindow(Omadi, 'dispatch', this.dispatchNode.nid);
+            this.dispatchWindow = NodeView.getWindow(Omadi, this, 'dispatch', this.dispatchNode.nid);
             this.dispatchTab = Ti.UI.createTab({
                 title: 'Dispatch',
                 window: this.dispatchWindow,
                 icon: '/images/icon_dispatch_white.png'
             });
+            
+            if(Ti.App.isIOS){
+                this.dispatchWindow.addEventListener('closeNodeView', function(){
+                    getInstance().close();
+                });
+            }
         }
         
         //this.dispatchObj.win.dispatchTabGroup = this.tabGroup;
@@ -482,13 +375,19 @@ NodeViewTabs.prototype.getTabs = function(){"use strict";
             
             workBundle = Omadi.data.getBundle(this.workNode.type);
             
-            this.workWindow = NodeView.getWindow(Omadi, this.workNode.type, this.workNode.nid);
+            this.workWindow = NodeView.getWindow(Omadi, this, this.workNode.type, this.workNode.nid);
             
             this.workTab = Ti.UI.createTab({
                 title: workBundle.label,
                 window: this.workWindow,
                 icon: '/images/icon_truck_white.png'
             });
+            
+            if(Ti.App.isIOS){
+                this.workWindow.addEventListener('closeNodeView', function(){
+                    getInstance().close();
+                });
+            }
             
             //this.workObj.win.dispatchTabGroup = this.tabGroup;
         }
@@ -524,7 +423,7 @@ NodeViewTabs.prototype.getTabs = function(){"use strict";
                 
                 this.commentsTab = Ti.UI.createTab({
                     title: commentsCount + ' Comment' + (commentsCount == 1 ? '' : 's'),
-                    window: CommentList.getListWindow(),
+                    window: CommentList.getListWindow(this),
                     commentCount: commentsCount,
                     icon: '/images/icon_comments_white.png'
                 });
@@ -577,10 +476,12 @@ NodeViewTabs.prototype.close = function(){"use strict";
     try{
         if(this.dispatchWindow !== null){
             this.dispatchWindow.close();
+            this.dispatchWindow = null;
         }
         
         if(this.workWindow !== null){
             this.workWindow.close();
+            this.workWindow = null;
         }
     }
     catch(ex){}
@@ -588,6 +489,7 @@ NodeViewTabs.prototype.close = function(){"use strict";
     try{
         if(this.tabGroup !== null){
             this.tabGroup.close();
+            this.tabGroup = null;
         }
     }
     catch(ex1){}

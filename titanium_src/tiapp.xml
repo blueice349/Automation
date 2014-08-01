@@ -20,7 +20,7 @@
     <property name="ti.android.httpclient.maxbuffersize" type="int">2097152</property>
     <!-- We need to use the useLegacyWindow to make sure the dispatch windows work correctly for now -->
     <!-- <property name="ti.android.useLegacyWindow" type="bool">true</property> -->
-    <sdk-version>3.3.0.GA</sdk-version>
+    <sdk-version>3.2.1.GA</sdk-version>
     <deployment-targets>
         <target device="tizen">false</target>
         <target device="mobileweb">false</target>

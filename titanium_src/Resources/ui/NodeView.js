@@ -1,7 +1,12 @@
 /*jslint nomen:true,eqeq:true,plusplus:true*/
 
+var Utils = require('lib/Utils');
+
+
 var _instances = {};
 var Omadi;
+var ActiveObj = null;
+
 
 var ROLE_ID_ADMIN = 3;
 var ROLE_ID_MANAGER = 4;
@@ -61,7 +66,170 @@ function NodeView(type, nid){"use strict";
     
     this.regions = {};
     this.instances = {};
+    
+    this.nodeViewTabsObj = null; 
 }
+
+NodeView.prototype.addIOSToolbar = function(){"use strict";
+    var back, space, label, edit, arr, toolbar, canEdit;
+    
+    back = Ti.UI.createButton({
+        title : 'Back',
+        style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+    });
+    
+    back.addEventListener('click', function() {
+        try{
+            ActiveObj.nodeViewTabsObj.close();
+        }
+        catch(ex){
+            Utils.sendErrorReport("Exception closing iOS back node view: " + ex);
+        }
+    });
+
+    space = Titanium.UI.createButton({
+        systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
+    });
+    
+    label = Titanium.UI.createButton({
+        title : 'View',
+        color : '#fff',
+        ellipsize : true,
+        wordwrap : false,
+        width : 200,
+        style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
+    });
+
+    edit = Ti.UI.createButton({
+        title : 'Actions',
+        style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+    });
+
+    edit.addEventListener('click', function() {
+        var db, result, bundle, btn_tt, btn_id, form_part, postDialog, to_type, to_bundle, nodeViewTabsObj;
+        
+        try{
+            nodeViewTabsObj = ActiveObj.nodeViewTabsObj;
+            
+            bundle = Omadi.data.getBundle(nodeViewTabsObj.workNode.type);
+            
+            form_part = nodeViewTabsObj.workNode.form_part;
+            
+            Ti.API.debug("The node: " + JSON.stringify(nodeViewTabsObj.workNode));
+            
+            Ti.API.debug("The form part: " + form_part);
+            
+            
+            btn_tt = [];
+            btn_id = [];
+            
+            if (bundle.data.form_parts != null && bundle.data.form_parts != "") {
+    
+                if (bundle.data.form_parts.parts.length >= form_part + 2) {
+                   
+                    btn_tt.push(bundle.data.form_parts.parts[form_part + 1].label);
+                    btn_id.push(form_part + 1);
+                }
+            }
+    
+            btn_tt.push('Edit');
+            btn_id.push(form_part);
+            
+            if(Omadi.print.canPrintReceipt(nodeViewTabsObj.workNode.nid)){
+                
+                btn_tt.push('Print');
+                btn_id.push('_print');
+            }
+    
+            if(typeof bundle.data.custom_copy !== 'undefined'){
+                for(to_type in bundle.data.custom_copy){
+                    if(bundle.data.custom_copy.hasOwnProperty(to_type)){
+                        to_bundle = Omadi.data.getBundle(to_type);
+                        if(to_bundle && to_bundle.can_create == 1){
+                            
+                            if(typeof bundle.data.custom_copy[to_type] !== 'undefined' && 
+                                typeof bundle.data.custom_copy[to_type].conversion_type !== 'undefined' &&
+                                bundle.data.custom_copy[to_type].conversion_type == 'change'){
+                                
+                                    btn_tt.push("Change to " + to_bundle.label);
+                                    btn_id.push(to_type); 
+                            }
+                            else{
+                                btn_tt.push("Copy to " + to_bundle.label);
+                                btn_id.push(to_type);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            btn_tt.push('Cancel');
+    
+            postDialog = Titanium.UI.createOptionDialog();
+            postDialog.options = btn_tt;
+            postDialog.cancel = btn_tt.length - 1;
+            postDialog.show();
+    
+            postDialog.addEventListener('click', function(ev) {
+                var formPart, nodeViewTabsObj;
+                
+                try{
+                    nodeViewTabsObj = ActiveObj.nodeViewTabsObj;
+                    
+                    if (ev.index == ev.source.cancel) {
+                        Ti.API.info("Fix this logic");
+                    }
+                    else if (ev.index != -1) {
+                        
+                        formPart = btn_id[ev.index];
+                        
+                        if(formPart == '_print'){
+                            Omadi.print.printReceipt(nodeViewTabsObj.workNode.nid);
+                        }
+                        else{
+                            
+                            Ti.App.fireEvent('openFormWindow', {
+                                node_type: nodeViewTabsObj.workNode.type,
+                                nid: nodeViewTabsObj.workNode.nid,
+                                form_part: formPart 
+                            });
+                        }
+                    }
+                }
+                catch(ex){
+                    Utils.sendErrorReport("Exception with action click on view: " + ex);
+                }
+            });
+        }
+        catch(ex){
+            Utils.sendErrorReport("Exception with viewing actions on view: " + ex);
+        }
+    });
+    
+    canEdit = false;
+    try{
+        if(this.nodeViewTabsObj.workNode.perm_edit == 1){
+            canEdit = true;
+        }
+    }
+    catch(ex){
+        Utils.sendErrorReport("Exception checking edit perm in node view: " + ex);
+    }
+
+    //Check is node editable or not
+    arr = (canEdit) ? [back, space, label, space, edit] : ((Ti.Platform.osname == 'ipad') ? [back, space, label, space] : [back, label, space]);
+    
+    // create and add toolbar
+    toolbar = Ti.UI.iOS.createToolbar({
+        items : arr,
+        top : 20,
+        borderTop : false,
+        borderBottom : true,
+        height: Ti.UI.SIZE
+    });
+    
+    this.win.add(toolbar);
+};
 
 NodeView.prototype.init = function(){"use strict";
     var db, result, reg_settings, region_name, field_desc, unsorted_res, 
@@ -160,9 +328,7 @@ NodeView.prototype.init = function(){"use strict";
                 field_desc.can_view = field_desc.can_edit = true;
             }
         
-            this.instances[field_desc.field_name] = field_desc;
-        
-           
+            this.instances[field_desc.field_name] = field_desc;   
         
             for (region_name in this.regions) {
                 if (this.regions.hasOwnProperty(region_name) && region_name == field_desc.settings.region) {
@@ -170,15 +336,13 @@ NodeView.prototype.init = function(){"use strict";
                 }
             }
         
-           
-        
             result.next();
         }
         
         result.close();
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception initializing fields/regions in view: " + ex);
+        Utils.sendErrorReport("Exception initializing fields/regions in view: " + ex);
     }
     finally{
         try{
@@ -192,13 +356,6 @@ NodeView.prototype.init = function(){"use strict";
 NodeView.prototype.addRegion = function(regionObj) {"use strict";
 
     var i, partsFieldsDone = {}, field_name, field_parts, top;
-    
-    if(this.regionCount == 0 && Ti.App.isIOS){
-        top = 20;   
-    }
-    else{
-        top = 0;
-    }
     
     this.scrollView.add(Ti.UI.createLabel({
         text : regionObj.label.toUpperCase(),
@@ -234,7 +391,7 @@ NodeView.prototype.addRegion = function(regionObj) {"use strict";
         },
         ellipsize : true,
         wordWrap : false,
-        top: top
+        top: 0
     }));
 
     if ( typeof regionObj.fields !== 'undefined') {
@@ -724,7 +881,7 @@ NodeView.prototype.getWindow = function(){"use strict";
     
     this.win = Ti.UI.createWindow({
         navBarHidden: true,
-        backgroundColor:'#0f0',
+        backgroundColor:'#eee',
         top: 0,
         bottom: 0,
         right: 0,
@@ -738,6 +895,11 @@ NodeView.prototype.getWindow = function(){"use strict";
         showVerticalScrollIndicator : true,
         layout : 'vertical'
     });
+    
+    if(Ti.App.isIOS){
+        this.addIOSToolbar();
+        this.scrollView.top = 60;
+    }
     
     for (regionName in this.regions) {
         if (this.regions.hasOwnProperty(regionName)) {
@@ -838,9 +1000,15 @@ NodeView.prototype.getWindow = function(){"use strict";
     return this.win;
 };
 
-exports.getWindow = function(OmadiObj, type, nid){"use strict";
+exports.getWindow = function(OmadiObj, nodeViewTabsObj, type, nid){"use strict";
     Omadi = OmadiObj;
     
     _instances[type] = new NodeView(type, nid);
+    _instances[type].nodeViewTabsObj = nodeViewTabsObj;
+    
+    //Ti.API.debug("work node: " + JSON.stringify(nodeViewTabsObj.workNode));
+    
+    ActiveObj = _instances[type];
+    
     return _instances[type].getWindow();
 };

@@ -267,3 +267,22 @@ exports.sendErrorReport = function(message) {"use strict";
 exports.setCookieHeader = function(http){"use strict";
     return getInstance().setCookieHeader(http);
 };
+
+exports.trimWhiteSpace = function(string) {"use strict";
+    
+    if(typeof string === 'undefined'){
+        return null;
+    }
+    
+    if(typeof string === 'number'){
+        return string;
+    }
+    
+    if(string === null){
+        return null;
+    }
+    
+    string += "".toString();
+    
+    return string.replace(/^\s+|\s+$/g, "");
+};

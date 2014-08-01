@@ -300,6 +300,7 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
         this.elements[0].clickedAutocomplete = false;
         this.elements[0].touched = false;
         this.elements[0].blurred = true;
+        this.elements[0].lastChange = 0;
         
         if(dbValue > 0){
             this.elements[0].setColor('#060');
@@ -359,18 +360,12 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
                     Ti.API.debug("autocomplete clicked");
                     
                     if ( typeof widget.onChangeCallbacks !== 'undefined') {
-                        Ti.API.debug("has change callbacks");
-                        Ti.API.debug(JSON.stringify(widget.onChangeCallbacks));
                         
                         if (widget.onChangeCallbacks.length > 0) {
-                            Ti.API.debug("greater than 0");
                             
                             for ( i = 0; i < widget.onChangeCallbacks.length; i++) {
-                                Ti.API.debug("In on change");
                                 callback = widget.onChangeCallbacks[i].callback;
                                 widget.formObj[callback](widget.onChangeCallbacks[i].args);
-                                
-                                Ti.API.debug("after on change");
                             }
                         }
                     }
@@ -422,124 +417,136 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
             // });
     
             this.elements[0].addEventListener('change', function(e) {
-                var possibleValues, tableData, i, j, regEx, row, upperCaseValue, callback, street, widget, sanitized;
+                var possibleValues, tableData, i, j, regEx, row, upperCaseValue, 
+                    callback, street, widget, sanitized, now, milliseconds, timeChange;
+                
+                Ti.API.debug("In autocomplete element change");
                 
                 try{
                     
-                    widget = Widget[e.source.instance.field_name];
-                    if(Ti.App.isAndroid && e.source.clickedAutocomplete){
-                        widget.elements[0].clickedAutocomplete = false;
-                        Ti.API.debug("IN clicked auto");
-                        return;
-                    }
+                    now = new Date();
+                    milliseconds = now.getTime();
+                    timeChange = milliseconds - e.source.lastChange;
                     
-                    if (widget.elements[0].touched === true) {
-                         
-                        widget.elements[0].dbValue = null;
-                        widget.elements[0].textValue = widget.elements[0].value;
+                    if(e.source.lastValue != e.source.value && (timeChange > 20)){
+                        e.source.lastChange = milliseconds;
+                    
+                        widget = Widget[e.source.instance.field_name];
                         
-                        widget.elements[0].setColor('#ee0000');
-                        widget.addressLabel.setHeight(0);
+                        if(Ti.App.isAndroid && e.source.clickedAutocomplete){
+                            widget.elements[0].clickedAutocomplete = false;
+                            Ti.API.debug("IN clicked auto");
+                            return;
+                        }
                         
-                        if (widget.elements[0].lastValue != widget.elements[0].value && widget.elements[0].value != '') {
-                            possibleValues = widget.elements[0].possibleValues;
-        
-                            upperCaseValue = widget.elements[0].value.toUpperCase();
-                            tableData = [];
-        
-                            for ( i = 0; i < possibleValues.length; i++) {
-                                
-                                sanitized = "".toString() + widget.elements[0].value;
-                                sanitized = sanitized.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
-                                
-                                regEx = new RegExp(sanitized, 'i');
-                                if (possibleValues[i].title.search(regEx) != -1) {
-                                    //Check match
-                                    if (upperCaseValue == possibleValues[i].title.toUpperCase()) {
-                                        widget.elements[0].dbValue = possibleValues[i].nid;
-                                        
-                                        widget.setChildDefaultValues(e.source);
-                                        
-                                        widget.autocomplete_table.setHeight(0);
-                                        widget.autocomplete_table.setBorderWidth(0);
-                                        widget.autocomplete_table.setVisible(false);
-                                        
-                                        street = widget.getFirstStreetAddress(widget.elements[0].dbValue);
-                                        if(street != ""){
-                                            street += ' - ';
+                        if (widget.elements[0].touched === true) {
+                             
+                            widget.elements[0].dbValue = null;
+                            widget.elements[0].textValue = widget.elements[0].value;
+                            
+                            widget.elements[0].setColor('#ee0000');
+                            widget.addressLabel.setHeight(0);
+                            
+                            if (widget.elements[0].lastValue != widget.elements[0].value && widget.elements[0].value != '') {
+                                possibleValues = widget.elements[0].possibleValues;
+            
+                                upperCaseValue = widget.elements[0].value.toUpperCase();
+                                tableData = [];
+            
+                                for ( i = 0; i < possibleValues.length; i++) {
+                                    
+                                    sanitized = "".toString() + widget.elements[0].value;
+                                    sanitized = sanitized.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|'"]/g, "\\$&");
+                                    
+                                    regEx = new RegExp(sanitized, 'i');
+                                    if (possibleValues[i].title.search(regEx) != -1) {
+                                        //Check match
+                                        if (upperCaseValue == possibleValues[i].title.toUpperCase()) {
+                                            widget.elements[0].dbValue = possibleValues[i].nid;
+                                            
+                                            widget.setChildDefaultValues(e.source);
+                                            
+                                            widget.autocomplete_table.setHeight(0);
+                                            widget.autocomplete_table.setBorderWidth(0);
+                                            widget.autocomplete_table.setVisible(false);
+                                            
+                                            street = widget.getFirstStreetAddress(widget.elements[0].dbValue);
+                                            if(street != ""){
+                                                street += ' - ';
+                                            }
+                                            street += 'touch to view';
+                                            
+                                            widget.addressLabel.text = street;
+                                            widget.addressLabel.height = 20;
+                                            
+                                            widget.elements[0].setColor('#006600');
+                                            
+                                            if (widget.onChangeCallbacks.length > 0) {
+                                                for ( j = 0; j < widget.onChangeCallbacks.length; j++) {
+                                                    callback = widget.onChangeCallbacks[j].callback;
+                                                    widget.formObj[callback](widget.onChangeCallbacks[j].args);
+                                                }
+                                            }
                                         }
-                                        street += 'touch to view';
-                                        
-                                        widget.addressLabel.text = street;
-                                        widget.addressLabel.height = 20;
-                                        
-                                        widget.elements[0].setColor('#006600');
-                                        
-                                        if (widget.onChangeCallbacks.length > 0) {
-                                            for ( j = 0; j < widget.onChangeCallbacks.length; j++) {
-                                                callback = widget.onChangeCallbacks[j].callback;
-                                                widget.formObj[callback](widget.onChangeCallbacks[j].args);
+                                        else {
+                                            widget.elements[0].dbValue = null;
+                                            
+                                             //Create partial matching row
+                                            row = Ti.UI.createTableViewRow({
+                                                height : 38,
+                                                title : possibleValues[i].title,
+                                                nid : possibleValues[i].nid,
+                                                color : '#000',
+                                                fieldName: widget.instance.field_name
+                                            });
+                                            
+                                            //Ti.API.debug(possibleValues[i].title);
+                
+                                            // apply rows to data array
+                                            tableData.push(row);
+                
+                                            if (tableData.length >= 4) {
+                                                break;
                                             }
                                         }
                                     }
-                                    else {
-                                        widget.elements[0].dbValue = null;
-                                        
-                                         //Create partial matching row
-                                        row = Ti.UI.createTableViewRow({
-                                            height : 38,
-                                            title : possibleValues[i].title,
-                                            nid : possibleValues[i].nid,
-                                            color : '#000000',
-                                            fieldName: widget.instance.field_name
-                                        });
-                                        
-                                        //Ti.API.debug(possibleValues[i].title);
+                                }
+                                
+                                widget.autocomplete_table.setData(tableData);
             
-                                        // apply rows to data array
-                                        tableData.push(row);
-            
-                                        if (tableData.length >= 4) {
-                                            break;
-                                        }
-                                    }
+                                if (tableData.length == 0) {
+                                    widget.autocomplete_table.setBorderWidth(0);
+                                    widget.autocomplete_table.setHeight(0);
+                                    widget.autocomplete_table.setVisible(false);
+                                }
+                                else {
+                                    widget.autocomplete_table.setBorderWidth(1);
+                                    widget.autocomplete_table.setHeight(38 * tableData.length);
+                                    widget.autocomplete_table.setVisible(true);
+                                }
+                                
+                                if(widget.elements[0].blurred){
+                                    widget.elements[0].blurred = false;
+                                    widget.formObj.scrollToField(e);
                                 }
                             }
-        
-                            widget.autocomplete_table.setData(tableData);
-        
-                            if (tableData.length == 0) {
+                            else {
                                 widget.autocomplete_table.setBorderWidth(0);
                                 widget.autocomplete_table.setHeight(0);
                                 widget.autocomplete_table.setVisible(false);
                             }
-                            else {
-                                widget.autocomplete_table.setBorderWidth(1);
-                                widget.autocomplete_table.setHeight(38 * tableData.length);
-                                widget.autocomplete_table.setVisible(true);
-                            }
-                            
-                            if(widget.elements[0].blurred){
-                                widget.elements[0].blurred = false;
-                                widget.formObj.scrollToField(e);
+                        }
+                        
+                        if(widget.elements[0].check_conditional_fields.length > 0){
+                            if(typeof widget.elements[0].lastValue === 'undefined' || typeof widget.elements[0].value === 'undefined' || 
+                                      widget.elements[0].lastValue == "" || widget.elements[0].value == ""){
+                                Ti.API.debug("Checking conditionally required");
+                                widget.formObj.setConditionallyRequiredLabels(widget.elements[0].instance, widget.elements[0].check_conditional_fields);
                             }
                         }
-                        else {
-                            widget.autocomplete_table.setBorderWidth(0);
-                            widget.autocomplete_table.setHeight(0);
-                            widget.autocomplete_table.setVisible(false);
-                        }
-                    }
                     
-                    if(widget.elements[0].check_conditional_fields.length > 0){
-                        if(typeof widget.elements[0].lastValue === 'undefined' || typeof widget.elements[0].value === 'undefined' || 
-                                  widget.elements[0].lastValue == "" || widget.elements[0].value == ""){
-                            Ti.API.debug("Checking conditionally required");
-                            widget.formObj.setConditionallyRequiredLabels(widget.elements[0].instance, widget.elements[0].check_conditional_fields);
-                        }
+                        widget.elements[0].lastValue = widget.elements[0].value;
                     }
-                
-                    widget.elements[0].lastValue = widget.elements[0].value;
                 }
                 catch(ex){
                     Omadi.service.sendErrorReport("Exception in omadi reference change event: " + ex);

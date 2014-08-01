@@ -303,6 +303,8 @@ function FormModule(type, nid, form_part, usingDispatch) {"use strict";
     this.scrollView = null;
     this.fieldObjects = {};
     
+    this.parentTabObj = null;
+    
     this.win = Ti.UI.createWindow({
         navBarHidden: true,
         backgroundColor:'#eee',
@@ -312,7 +314,9 @@ function FormModule(type, nid, form_part, usingDispatch) {"use strict";
         left: 0
     });
     
-    this.win.addEventListener("android:back", this.cancelOpt);
+    if(Ti.App.isAndroid){
+        this.win.addEventListener("android:back", this.cancelOpt);
+    }
     
     Ti.App.saveContinually = true;
     
@@ -2579,27 +2583,14 @@ FormModule.prototype.cancelOpt = function(e){"use strict";
         message: 'All changes will be lost.'
     });
 
-    dialog.addEventListener('click', function(e) {
+    dialog.addEventListener('click', function(e1) {
         var windowNid;
         
         try{
-            if(ActiveFormObj.usingDispatch){
-                if (e.index == 0) {
-                    // Dispatch doesn't go through the regular closewindow, so close delete the continuous nodes now
-                    Omadi.data.deleteContinuousNodes();
-                    ActiveFormObj.win.dispatchTabGroup.close();
-                }
-            }
-            else{
-                if (e.index == 0) {
-                    
-                    windowNid = parseInt(ActiveFormObj.nid, 10);
-                    if(isNaN(windowNid)){
-                      windowNid = 0;   
-                    }
-                    
-                    ActiveFormObj.adjustFileTable();
-                }      
+            if (e1.index == 0) {
+                // Dispatch doesn't go through the regular closewindow, so close delete the continuous nodes now
+                Omadi.data.deleteContinuousNodes();
+                ActiveFormObj.win.dispatchTabGroup.close();
             }
         }
         catch(ex){
@@ -2607,7 +2598,7 @@ FormModule.prototype.cancelOpt = function(e){"use strict";
         }
     });
 
-    dialog.show(); 
+    dialog.show();
 };
 
 FormModule.prototype.getFormFieldValues = function(field_name){"use strict";
@@ -3191,6 +3182,73 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
    }
 };
 
+FormModule.prototype.setupIOSToolbar = function(){"use strict";
+    var back, space, bundle, labelScrollView, label, actions, toolbar;
+    
+    back = Ti.UI.createButton({
+        title : 'Back',
+        style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+    });
+    
+    back.addEventListener('click', function() {
+        try{
+            ActiveFormObj.cancelOpt();
+        }
+        catch(ex){
+            Omadi.service.sendErrorReport("Exception in back click for form: " + ex);
+        }
+    });
+
+    space = Titanium.UI.createButton({
+        systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
+    });
+    
+    bundle = Omadi.data.getBundle(this.type);
+    
+    labelScrollView = Ti.UI.createScrollView({
+        layout: 'horizontal',
+        width: Ti.UI.FILL,
+        height: Ti.UI.SIZE
+    });
+    
+    label = Titanium.UI.createLabel({
+        text : (this.node.nid == 'new' ? 'New ' : 'Update ') + bundle.label,
+        right: 5,
+        font: {
+            fontWeight: 'bold'
+        },
+        style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
+    });
+    
+    labelScrollView.add(label);
+    
+    label.color = '#333';
+    
+    actions = Ti.UI.createButton({
+        title : 'Actions',
+        style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+    });
+    
+    if(ActiveFormObj.parentTabObj.dispatchTab !== null || this.type == 'dispatch'){
+        actions.title = 'Save';
+        actions.addEventListener('click', ActiveFormObj.parentTabObj.doDispatchSave);
+    }
+    else{
+        actions.addEventListener('click', ActiveFormObj.showActionsOptions);
+    }
+
+    // create and add toolbar
+    toolbar = Ti.UI.iOS.createToolbar({
+        items : [back, space, labelScrollView, space, actions],
+        top : 0,
+        borderTop : false,
+        borderBottom : false,
+        height: Ti.UI.SIZE
+    });
+    
+    this.wrapperView.add(toolbar);  
+};
+
 FormModule.prototype.getWindow = function(){"use strict";
     
     var i, regionWrappers, field_name, widgetView, 
@@ -3198,27 +3256,16 @@ FormModule.prototype.getWindow = function(){"use strict";
         regionName, widget, resetFields, resetRegions, doneButton, doneButtonWrapper, doContSave;
     
     try{
-        
         this.wrapperView = Ti.UI.createView({
-           layout: 'vertical',
            bottom: 0,
            top: 0,
            right: 0,
            left: 0 
         });
-        // Setup the menu early in case something crashes, at least iOS will have a back button
-        //this.setupMenu();
-        
-        if(Ti.App.isIOS7){
-            this.wrapperView.top = 20;   
-        }
         
         // Do not let the app log this user out while on the form screen
         // Allow again when the node is saved
         Ti.App.allowBackgroundLogout = false;
-        
-        omadi_session_details = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
-        roles = omadi_session_details.user.roles;
         
         this.scrollView = Ti.UI.createScrollView({
             contentHeight : 'auto',
@@ -3229,6 +3276,17 @@ FormModule.prototype.getWindow = function(){"use strict";
             height: Ti.UI.FILL,
             width: '100%'
         });
+        
+        if(Ti.App.isIOS){
+            this.wrapperView.top = 20;
+            // Setup the menu early in case something crashes, at least iOS will have a back button
+            this.setupIOSToolbar();   
+            this.scrollView.top = 40;
+        }
+        
+        // Setup roles for use in displaying fields
+        omadi_session_details = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
+        roles = omadi_session_details.user.roles;
         
         this.instances = Omadi.data.getFields(this.type);
         this.regions = Omadi.data.getRegions(this.type);

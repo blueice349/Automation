@@ -47,26 +47,6 @@ DispatchForm.prototype.showActionsOptions = function(e){"use strict";
     btn_tt.push('Save');
     btn_id.push('normal');
 
-    // //Ti.API.info('BUNDLE: ' + JSON.stringify(bundle));
-    // if(bundle.can_create == 1){
-        // btn_tt.push("Save + New");
-        // btn_id.push("new");
-    // }
-//     
-    // if (bundle.data.form_parts != null && bundle.data.form_parts != "") {
-//         
-        // windowFormPart = this.workObj.form_part;
-//         
-        // if (bundle.data.form_parts.parts.length >= windowFormPart + 2) {
-// 
-            // btn_tt.push("Save + " + bundle.data.form_parts.parts[windowFormPart + 1].label);
-            // btn_id.push('next');
-        // }
-    // }
-//     
-    // btn_tt.push('Save as Draft');
-    // btn_id.push('draft');
-//     
     btn_tt.push('Cancel');
     btn_id.push('cancel');
 
@@ -94,7 +74,7 @@ DispatchForm.prototype.showActionsOptions = function(e){"use strict";
                     
                     if(form_errors.length > 0){
                         dialog = Titanium.UI.createAlertDialog({
-                            title : 'Dispatch Validation',
+                            title : 'Form Validation',
                             buttonNames : ['OK'],
                             message: form_errors.join("\n")
                         });
@@ -164,7 +144,7 @@ DispatchForm.prototype.doDispatchSave = function(saveType){"use strict";
                     Omadi.display.doneLoading();
                     
                     dialog = Titanium.UI.createAlertDialog({
-                        title : 'Dispatch Validation',
+                        title : 'Form Validation',
                         buttonNames : ['OK'],
                         message: form_errors.join("\n")
                     });
@@ -186,7 +166,6 @@ DispatchForm.prototype.doDispatchSave = function(saveType){"use strict";
                     // Then this module will detect that everything saved correctly and close itself
                 }
             }
-            
         }
         else{
             alert("The form data was saved correctly, but this screen didn't close for some reason. You can exit safely.");
@@ -282,7 +261,8 @@ DispatchForm.prototype.getWindow = function(initNewDispatch){"use strict";
             tabsBackgroundImage: '/images/black_button1.png',
             activeTabBackgroundImage: '/images/blue_button1.png',
             tabsTintColor: '#fff',
-            activeTabIconTint: '#fff'
+            activeTabIconTint: '#fff',
+            backgroundColor: '#eee'
         });
         
         title = '';
@@ -387,8 +367,13 @@ DispatchForm.prototype.getWindow = function(initNewDispatch){"use strict";
                         usingDispatch = true;
                     }
                 }
-                
-                this.workNode.form_part = this.form_part;
+
+                if(typeof this.form_part !== 'undefined'){
+                    this.workNode.form_part = this.form_part;    
+                }
+                else{
+                    this.form_part = this.workNode.form_part;
+                }
                 
                 // Recover from a crash with the correct work node if the work node was never looked at
                 if(allowRecover){   
@@ -439,7 +424,7 @@ DispatchForm.prototype.getWindow = function(initNewDispatch){"use strict";
         
         // Setup the title of the tabgroup
         title = '';
-        if(usingDispatch){
+        if(usingDispatch && this.dispatchNode){
             if(this.dispatchNode.nid == 'new'){
                 title = 'New Dispatch';
             }
@@ -583,7 +568,7 @@ DispatchForm.prototype.getWindow = function(initNewDispatch){"use strict";
                 
                 this.commentsTab = Ti.UI.createTab({
                     title: commentsCount + ' Comment' + (commentsCount == 1 ? '' : 's'),
-                    window: CommentList.getListWindow(),
+                    window: CommentList.getListWindow(this),
                     commentCount: commentsCount,
                     icon: '/images/icon_comments_white.png'
                 });
@@ -605,7 +590,9 @@ DispatchForm.prototype.getWindow = function(initNewDispatch){"use strict";
         
         this.tabGroup.addEventListener("omadi:dispatch:savedDispatchNode", Dispatch.savedDispatchNode);
         
-        this.tabGroup.addEventListener("android:back", this.exitForm);
+        this.tabGroup.addEventListener("android:back", function(){
+            Dispatch.close();
+        });
         
         
         this.setupMenu();
@@ -645,12 +632,12 @@ DispatchForm.prototype.setupMenu = function(){"use strict";
                     var actionBar = Dispatch.tabGroup.activity.actionBar;
                     actionBar.setHomeAsUp = true;
                     actionBar.onHomeIconItemSelected = function(){
-                        Dispatch.exitForm();
+                        Dispatch.close();
                     };
                     
                     if(Dispatch.dispatchTab === null && Dispatch.commentsTab === null){
                         // When only the work tab is visible, do not show any tabs
-                        actionBar.navigationMode = Ti.Android.NAVIGATION_MODE_STANDARD;
+                        //actionBar.navigationMode = Ti.Android.NAVIGATION_MODE_STANDARD;
                     }
                 }
                 catch(ex){}
@@ -742,70 +729,7 @@ DispatchForm.prototype.setupMenu = function(){"use strict";
             });
         }
         else{
-            var back, space, bundle, labelScrollView, label, actions, toolbar;
-            
-            back = Ti.UI.createButton({
-                title : 'Back',
-                style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
-            });
-            
-            back.addEventListener('click', function() {
-                try{
-                    Dispatch.cancelOpt();
-                }
-                catch(ex){
-                    Omadi.service.sendErrorReport("Exception in back click for form: " + ex);
-                }
-            });
-    
-            space = Titanium.UI.createButton({
-                systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
-            });
-            
-            bundle = Omadi.data.getBundle(this.type);
-            
-            labelScrollView = Ti.UI.createScrollView({
-                layout: 'horizontal',
-                width: Ti.UI.FILL,
-                height: Ti.UI.SIZE
-            });
-            
-            label = Titanium.UI.createLabel({
-                text : (this.node.nid == 'new' ? 'New ' : 'Update ') + bundle.label,
-                right: 5,
-                font: {
-                    fontWeight: 'bold'
-                },
-                style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
-            });
-            
-            labelScrollView.add(label);
-            
-            label.color = '#333';
-            
-            actions = Ti.UI.createButton({
-                title : 'Actions',
-                style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
-            });
-            
-            if(this.dispatchTab){
-                actions.title = 'Save';
-                actions.addEventListener('click', Dispatch.doDispatchSave);
-            }
-            else{
-                actions.addEventListener('click', Dispatch.workObj.showActionsOptions);
-            }
-    
-            // create and add toolbar
-            toolbar = Ti.UI.iOS.createToolbar({
-                items : [back, space, labelScrollView, space, actions],
-                top : 0,
-                borderTop : false,
-                borderBottom : false,
-                height: Ti.UI.SIZE
-            });
-            
-            this.wrapperView.add(toolbar);
+            // iOS adds the toolbar within each window
         }
     }
     catch(evt) {
@@ -813,7 +737,7 @@ DispatchForm.prototype.setupMenu = function(){"use strict";
     }
 };
 
-DispatchForm.prototype.exitForm = function(){"use strict";
+DispatchForm.prototype.close = function(){"use strict";
     var dialog, photoNids;
 
     dialog = Ti.UI.createAlertDialog({
