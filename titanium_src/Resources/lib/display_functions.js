@@ -78,7 +78,7 @@ Omadi.display.showBigImage = function(imageView) {"use strict";
             if(Ti.App.isAndroid){
                 // Hide the Android action bar
                 Omadi.display.largePhotoWindow.addEventListener('open', function(){
-                    Omadi.display.largePhotoWindow.activity.actionBar.hide();
+                    //Omadi.display.largePhotoWindow.activity.actionBar.hide();
                 });
             }
             
@@ -555,7 +555,7 @@ Omadi.display.openListWindow = function(type, show_plus, filterValues, nestedWin
     if(Ti.App.isAndroid){
                 // Hide the Android action bar
         listWindow.addEventListener('open', function(){
-            listWindow.activity.actionBar.hide();
+            //listWindow.activity.actionBar.hide();
         });
     }
     
@@ -609,7 +609,7 @@ Omadi.display.openDraftsWindow = function() {"use strict";
     if(Ti.App.isAndroid){
         // Hide the Android action bar
         draftsWindow.addEventListener('open', function(){
-            draftsWindow.activity.actionBar.hide();
+            //draftsWindow.activity.actionBar.hide();
         });
     }
     
@@ -654,7 +654,7 @@ Omadi.display.openJobsWindow = function() {"use strict";
             if(Ti.App.isAndroid){
                 // Hide the Android action bar
                 Omadi.display.currentJobsWindow.addEventListener('open', function(){
-                    Omadi.display.currentJobsWindow.activity.actionBar.hide();
+                    //Omadi.display.currentJobsWindow.activity.actionBar.hide();
                 });
             }
             
@@ -715,7 +715,7 @@ Omadi.display.openWebView = function(nid){"use strict";
     if(Ti.App.isAndroid){
         // Hide the Android action bar
         webWin.addEventListener('open', function(){
-            webWin.activity.actionBar.hide();
+            //webWin.activity.actionBar.hide();
         });
     }
     
@@ -944,7 +944,7 @@ Omadi.display.openLocalPhotosWindow = function() {"use strict";
     if(Ti.App.isAndroid){
         // Hide the Android action bar
         localPhotosWindow.addEventListener('open', function(){
-            localPhotosWindow.activity.actionBar.hide();
+            //localPhotosWindow.activity.actionBar.hide();
         });
     }
 
@@ -958,7 +958,7 @@ Omadi.display.openMainMenuWindow = function(options) {"use strict";
     
     mainMenuWindow = Titanium.UI.createWindow({
         url : '/main_windows/mainMenu.js',
-        navBarHidden : false,
+        navBarHidden : true,
         orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
     });
     
@@ -973,7 +973,7 @@ Omadi.display.openMainMenuWindow = function(options) {"use strict";
     if(Ti.App.isAndroid){
         // Hide the Android action bar
         mainMenuWindow.addEventListener('open', function(){
-            mainMenuWindow.activity.actionBar.hide();
+            //mainMenuWindow.activity.actionBar.hide();
         });
     }
     
@@ -1457,7 +1457,7 @@ Omadi.display.displayFile = function(nid, fid, title) {"use strict";
                 if(Ti.App.isAndroid){
                     // Hide the Android action bar
                     newWin.addEventListener('open', function(){
-                        newWin.activity.actionBar.hide();
+                        //newWin.activity.actionBar.hide();
                     });
                 }
                 
@@ -1959,7 +1959,7 @@ Omadi.display.showLoadingIndicator = function(show, timeout) {"use strict";
     if(Ti.App.isAndroid){
         // Hide the Android action bar
         loadingIndicatorWindow.addEventListener('open', function(){
-            loadingIndicatorWindow.activity.actionBar.hide();
+            //loadingIndicatorWindow.activity.actionBar.hide();
         });
     }
 

@@ -494,7 +494,7 @@ function setupBottomButtons() {"use strict";
                 if(Ti.App.isAndroid){
                     // Hide the Android action bar
                     alertsWindow.addEventListener('open', function(){
-                        alertsWindow.activity.actionBar.hide();
+                        //alertsWindow.activity.actionBar.hide();
                     });
                 }
                 
@@ -594,7 +594,7 @@ function setupBottomButtons() {"use strict";
             if(Ti.App.isAndroid){
                 // Hide the Android action bar
                 recentWindow.addEventListener('open', function(){
-                    recentWindow.activity.actionBar.hide();
+                    //recentWindow.activity.actionBar.hide();
                 });
             }
             

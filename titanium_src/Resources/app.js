@@ -16,7 +16,7 @@
    
    if(Ti.Platform.name === 'android'){
        loginWindow.addEventListener('open', function(){
-          loginWindow.activity.actionBar.hide(); 
+          //loginWindow.activity.actionBar.hide(); 
        });
    }
    

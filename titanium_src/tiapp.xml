@@ -19,7 +19,7 @@
     <property name="ti.android.threadstacksize" type="int">49152</property>
     <property name="ti.android.httpclient.maxbuffersize" type="int">2097152</property>
     <!-- We need to use the useLegacyWindow to make sure the dispatch windows work correctly for now -->
-    <!-- <property name="ti.android.useLegacyWindow" type="bool">true</property> -->
+    <property name="ti.android.useLegacyWindow" type="bool">true</property>
     <sdk-version>3.2.1.GA</sdk-version>
     <deployment-targets>
         <target device="tizen">false</target>
@@ -31,7 +31,7 @@
     </deployment-targets>
     <id>com.omadi.crm</id>
     <name>Omadi</name>
-    <version>2.9.19</version>
+    <version>2.9.20</version>
     <publisher>Omadi</publisher>
     <url>http://www.omadi.com</url>
     <description>Mobile CRM From Omadi</description>
@@ -52,7 +52,7 @@
             <service url="android_gps_event.js"/>
         </services>
         <manifest android:installLocation="preferExternal"
-            android:versionCode="85" android:versionName="2.9.19">
+            android:versionCode="85" android:versionName="2.9.20">
             <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="19"/>
             <uses-permission android:name="android.permission.READ_LOGS"/>
             <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>

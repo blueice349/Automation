@@ -3,6 +3,8 @@
 var Omadi, _instance = null;
 
 var NodeView = require('ui/NodeView');
+var Utils = require('lib/Utils');
+
 var CommentList = null;
 
 var androidMenuItemData = [];
@@ -108,17 +110,22 @@ function getInstance(){"use strict";
             // }
         // }
         // catch(ex){
-            // Omadi.service.sendErrorReport("Exception in dispatch form dispatch post dialog click: " + ex);
+            // Utils.sendErrorReport("Exception in dispatch form dispatch post dialog click: " + ex);
         // }
     // });
 // };
 
 function incrementCommentTab(e){"use strict";
     var count, title;
-    count = _instance.commentsTab.commentCount + 1;
-    title = count + ' Comment' + (count == 1 ? '' : 's');
-    _instance.commentsTab.setTitle(title);
-    _instance.commentsTab.commentCount = count;  
+    try{
+        count = _instance.commentsTab.commentCount + 1;
+        title = count + ' Comment' + (count == 1 ? '' : 's');
+        _instance.commentsTab.setTitle(title);
+        _instance.commentsTab.commentCount = count; 
+    }
+    catch(ex){
+        Utils.sendErrorReport("Exception incrementing comment count in view tab: " + ex);
+    } 
 }
 
 function openAndroidMenuItemNodeView(e){"use strict";
@@ -142,19 +149,19 @@ NodeViewTabs.prototype.addActions = function(){"use strict";
         if (Ti.App.isAndroid) {
             
             try{
-                actionBar = getInstance().tabGroup.activity.actionBar;
-                actionBar.setHomeAsUp = true;
-                actionBar.onHomeIconItemSelected = function(){
-                    getInstance().close();  
-                };
-                
-                if(this.dispatchTab === null && this.commentsTab === null){
-                    // When only the work tab is visible, do not show any tabs
-                    actionBar.navigationMode = Ti.Android.NAVIGATION_MODE_STANDARD;
-                }
+                // actionBar = getInstance().tabGroup.activity.actionBar;
+                // actionBar.setHomeAsUp = true;
+                // actionBar.onHomeIconItemSelected = function(){
+                    // getInstance().close();  
+                // };
+//                 
+                // if(this.dispatchTab === null && this.commentsTab === null){
+                    // // When only the work tab is visible, do not show any tabs
+                    // actionBar.navigationMode = Ti.Android.NAVIGATION_MODE_STANDARD;
+                // }
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception setting up action bar in view: " + ex);
+                Utils.sendErrorReport("Exception setting up action bar in view: " + ex);
             }
             
             this.tabGroup.activity.onCreateOptionsMenu = function(e) {
@@ -274,7 +281,7 @@ NodeViewTabs.prototype.getTabs = function(){"use strict";
             tabsTintColor: '#fff',
             activeTabIconTint: '#fff',
             title: 'View',
-            backgroundColor: '#eee'
+            navBarHidden: true     // IMPORTANT!!!: regardless of what the docs say, if this property does not exist, our autocompletes crash in 2.3.x
         });
         
         this.workNode = Omadi.data.nodeLoad(this.nid);
@@ -341,7 +348,7 @@ NodeViewTabs.prototype.getTabs = function(){"use strict";
         }
         else{
             alert("A problem occurred loading this dispatch. Omadi support has been notified about this issue.");
-            Omadi.service.sendErrorReport("The work node passed into the dispatch form is invalid: " + this.nid);   
+            Utils.sendErrorReport("The work node passed into the dispatch form is invalid: " + this.nid);   
         }
         
         
@@ -439,7 +446,7 @@ NodeViewTabs.prototype.getTabs = function(){"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Could not open view window: " + ex);
+        Utils.sendErrorReport("Could not open view window: " + ex);
         alert("There was a problem loading this view. Please contact support.");
     }
 
@@ -498,7 +505,7 @@ NodeViewTabs.prototype.close = function(){"use strict";
 NodeViewTabs.prototype.sendError = function(message){"use strict";
     message += JSON.stringify(this.node);
     Ti.API.error(message);
-    Omadi.service.sendErrorReport(message);
+    Utils.sendErrorReport(message);
 };
 
 

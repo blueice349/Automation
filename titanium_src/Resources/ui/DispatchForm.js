@@ -2,6 +2,8 @@
 var Dispatch, Omadi;
 var CommentList = null;
 
+var Utils = require('lib/Utils');
+
 function DispatchForm(type, nid, form_part){"use strict";
     var tempFormPart, origNid;
     
@@ -91,7 +93,7 @@ DispatchForm.prototype.showActionsOptions = function(e){"use strict";
             }
         }
         catch(ex){
-            Omadi.service.sendErrorReport("Exception in dispatch form dispatch post dialog click: " + ex);
+            Utils.sendErrorReport("Exception in dispatch form dispatch post dialog click: " + ex);
         }
     });
 };
@@ -118,7 +120,6 @@ DispatchForm.prototype.doDispatchSave = function(saveType){"use strict";
                     // iOS won't show the loading screen unless it's on the tabgroup
                     Omadi.display.loading("Saving...", Dispatch.tabGroup);
                 }
-                
                 
                 Dispatch.workObj.formToNode();
                 if(Dispatch.dispatchTab){
@@ -169,20 +170,25 @@ DispatchForm.prototype.doDispatchSave = function(saveType){"use strict";
         }
         else{
             alert("The form data was saved correctly, but this screen didn't close for some reason. You can exit safely.");
-            Omadi.service.sendErrorReport("User got the dispatch screen did not close alert.");
+            Utils.sendErrorReport("User got the dispatch screen did not close alert.");
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Could not dodispatchsave: " + ex);
+        Utils.sendErrorReport("Could not dodispatchsave: " + ex);
     }
 };
 
 function incrementCommentTab(e){"use strict";
     var count, title;
-    count = Dispatch.commentsTab.commentCount + 1;
-    title = count + ' Comment' + (count == 1 ? '' : 's');
-    Dispatch.commentsTab.setTitle(title);
-    Dispatch.commentsTab.commentCount = count;  
+    try{
+        count = Dispatch.commentsTab.commentCount + 1;
+        title = count + ' Comment' + (count == 1 ? '' : 's');
+        Dispatch.commentsTab.setTitle(title);
+        Dispatch.commentsTab.commentCount = count;  
+    }
+    catch(ex){
+        Utils.sendErrorReport("Exception incrementing the comment count: " + ex);
+    }
 }
 
 //******** loadCustomCopyNode ****************************************************
@@ -243,7 +249,7 @@ DispatchForm.prototype.loadCustomCopyNode = function(originalNode, from_type, to
     }
     else{
         Ti.API.error("No bundle found for " + from_type);
-        Omadi.service.sendErrorReport("No bundle found for " + from_type);
+        Utils.sendErrorReport("No bundle found for " + from_type);
     }
     
     return newNode;
@@ -262,7 +268,7 @@ DispatchForm.prototype.getWindow = function(initNewDispatch){"use strict";
             activeTabBackgroundImage: '/images/blue_button1.png',
             tabsTintColor: '#fff',
             activeTabIconTint: '#fff',
-            backgroundColor: '#eee'
+            navBarHidden: true     // IMPORTANT!!!: regardless of what the docs say, if this property does not exist, our autocompletes crash in 2.3.x - should be removed when upgrading to 3.3.0
         });
         
         title = '';
@@ -392,7 +398,7 @@ DispatchForm.prototype.getWindow = function(initNewDispatch){"use strict";
             }
             else{
                 alert("A problem occurred loading this dispatch. Omadi support has been notified about this issue.");
-                Omadi.service.sendErrorReport("The work node passed into the dispatch form is invalid: " + this.nid);   
+                Utils.sendErrorReport("The work node passed into the dispatch form is invalid: " + this.nid);   
             }
         }
         
@@ -499,7 +505,7 @@ DispatchForm.prototype.getWindow = function(initNewDispatch){"use strict";
                 }
             }
             catch(copyEx){
-                Omadi.service.sendErrorReport("Exception with custom copy in dispatch: " + copyEx);
+                Utils.sendErrorReport("Exception with custom copy in dispatch: " + copyEx);
             }
             
             this.workObj = this.FormModule.getDispatchObject(Omadi, this.workNode.type, this.workNode.nid, this.workNode.form_part, this, usingDispatch);
@@ -538,7 +544,7 @@ DispatchForm.prototype.getWindow = function(initNewDispatch){"use strict";
             }
         }
         catch(copyEx1){
-            Omadi.service.sendErrorReport("Exception with custom copy in dispatch: " + copyEx1);
+            Utils.sendErrorReport("Exception with custom copy in dispatch: " + copyEx1);
         }
         
         if(openDispatch){
@@ -611,7 +617,7 @@ DispatchForm.prototype.getWindow = function(initNewDispatch){"use strict";
         // }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Could not open dispatch window: " + ex);
+        Utils.sendErrorReport("Could not open dispatch window: " + ex);
         alert("There was a problem loading this dispatch. Please contact support.");
     }
     
@@ -629,16 +635,16 @@ DispatchForm.prototype.setupMenu = function(){"use strict";
             
             this.tabGroup.addEventListener('open', function(){
                 try{
-                    var actionBar = Dispatch.tabGroup.activity.actionBar;
-                    actionBar.setHomeAsUp = true;
-                    actionBar.onHomeIconItemSelected = function(){
-                        Dispatch.close();
-                    };
-                    
-                    if(Dispatch.dispatchTab === null && Dispatch.commentsTab === null){
-                        // When only the work tab is visible, do not show any tabs
-                        //actionBar.navigationMode = Ti.Android.NAVIGATION_MODE_STANDARD;
-                    }
+                    // var actionBar = Dispatch.tabGroup.activity.actionBar;
+                    // actionBar.setHomeAsUp = true;
+                    // actionBar.onHomeIconItemSelected = function(){
+                        // Dispatch.close();
+                    // };
+//                     
+                    // if(Dispatch.dispatchTab === null && Dispatch.commentsTab === null){
+                        // // When only the work tab is visible, do not show any tabs
+                        // //actionBar.navigationMode = Ti.Android.NAVIGATION_MODE_STANDARD;
+                    // }
                 }
                 catch(ex){}
             
@@ -779,7 +785,7 @@ DispatchForm.prototype.close = function(){"use strict";
             }
         }
         catch(ex){
-            Omadi.service.sendErrorReport("Exception in really exit dialog form?: " + ex);
+            Utils.sendErrorReport("Exception in really exit dialog form?: " + ex);
         }
     });
 
@@ -870,7 +876,7 @@ DispatchForm.prototype.updateDispatchStatus = function(){"use strict";
                                                         }   
                                                     }
                                                     catch(timestampEx){
-                                                        Omadi.service.sendErrorReport("Could not set timestamp for dispatch status: " + updateToStatus + " " + timestampEx);
+                                                        Utils.sendErrorReport("Could not set timestamp for dispatch status: " + updateToStatus + " " + timestampEx);
                                                     }
                                                     
                                                     textValue = 'Updated Status';
@@ -889,7 +895,7 @@ DispatchForm.prototype.updateDispatchStatus = function(){"use strict";
                                     }
                                 }
                                 catch(ex1){
-                                    Omadi.service.sendErrorReport("Exception updating status on dispatch screen: " + ex1);
+                                    Utils.sendErrorReport("Exception updating status on dispatch screen: " + ex1);
                                 }
                                 
                                 if(sendStatusUpdate){
@@ -904,7 +910,7 @@ DispatchForm.prototype.updateDispatchStatus = function(){"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception updating dispatch status in form: " + ex);
+        Utils.sendErrorReport("Exception updating dispatch status in form: " + ex);
     }
 };
 
@@ -1013,7 +1019,7 @@ DispatchForm.prototype.towTypeChanged = function(e) {"use strict";
 DispatchForm.prototype.sendError = function(message){"use strict";
     message += JSON.stringify(this.node);
     Ti.API.error(message);
-    Omadi.service.sendErrorReport(message);
+    Utils.sendErrorReport(message);
 };
 
 exports.getNode = function(){"use strict";
