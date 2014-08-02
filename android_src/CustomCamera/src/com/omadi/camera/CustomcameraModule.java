@@ -67,7 +67,7 @@ public class CustomcameraModule extends KrollModule
 	public void openCamera(KrollDict options)
 	{
 		eve = (Object) options.get("event");
-		imageCallback = (KrollFunction)options.get("abc");
+		imageCallback = (KrollFunction)options.get("callbackFnc");
 		
 		Intent i = new Intent(this.getActivity(), DgCamActivity.class);
 		this.getActivity().startActivity(i);

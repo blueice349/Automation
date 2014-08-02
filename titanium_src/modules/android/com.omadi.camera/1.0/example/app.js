@@ -21,7 +21,7 @@ label.text = customcamera.example();
 Ti.API.info("module exampleProp is => " + customcamera.exampleProp);
 customcamera.exampleProp = "This is a test value";
 
-if (Ti.Platform.name == "android") {
+if (Ti.Platform.name === "android") {
 	var proxy = customcamera.createExample({
 		message: "Creating an example Proxy",
 		backgroundColor: "red",
@@ -31,9 +31,6 @@ if (Ti.Platform.name == "android") {
 		left: 150
 	});
 
-	proxy.printMessage("Hello world!");
-	proxy.message = "Hi world!.  It's me again.";
-	proxy.printMessage("Hello world!");
 	win.add(proxy);
 }
 

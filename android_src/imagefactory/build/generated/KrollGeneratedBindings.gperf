@@ -1,0 +1,16 @@
+%define lookup-function-name lookupGeneratedInit
+%define class-name ImageFactoryBindings
+%{
+
+#include <string.h>
+#include <v8.h>
+#include <KrollBindings.h>
+
+#include "ti.imagefactory.ImageFactoryModule.h"
+
+
+%}
+struct titanium::bindings::BindEntry;
+%%
+ti.imagefactory.ImageFactoryModule, ::ti::imagefactory::ImageFactoryModule::bindProxy, ::ti::imagefactory::ImageFactoryModule::dispose
+%%
