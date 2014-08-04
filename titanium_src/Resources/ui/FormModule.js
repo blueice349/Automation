@@ -1995,6 +1995,10 @@ FormModule.prototype.displayDuplicateWarnings = function(warningJSON, value, sav
                left: 0,
                right: 0
             });
+
+			if(Ti.App.isIOS7){
+			    wrapper.top = 20;
+			}
             
             scrollView = Ti.UI.createScrollView({
                top: 40,
