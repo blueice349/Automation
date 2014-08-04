@@ -4,7 +4,7 @@ var CommentList = null;
 
 var Utils = require('lib/Utils');
 
-function DispatchForm(type, nid, form_part){"use strict";
+function FormTabs(type, nid, form_part){"use strict";
     var tempFormPart, origNid;
     
     //create module instance
@@ -39,7 +39,7 @@ function DispatchForm(type, nid, form_part){"use strict";
     this.lastSaveTime = 0;
 }
 
-DispatchForm.prototype.showActionsOptions = function(e){"use strict";
+FormTabs.prototype.showActionsOptions = function(e){"use strict";
     var bundle, btn_tt, btn_id, postDialog, windowFormPart;
     
     bundle = Omadi.data.getBundle(Dispatch.workObj.type);
@@ -98,7 +98,7 @@ DispatchForm.prototype.showActionsOptions = function(e){"use strict";
     });
 };
 
-DispatchForm.prototype.doDispatchSave = function(saveType){"use strict";
+FormTabs.prototype.doDispatchSave = function(saveType){"use strict";
     var form_errors, dialog, i, now;
     
     now = (new Date()).getTime();
@@ -195,7 +195,7 @@ function incrementCommentTab(e){"use strict";
 // Pass in original node, from node type, and to node type
 // Return a modified node with the new type initialized with correct data transfer
 //********************************************************************************
-DispatchForm.prototype.loadCustomCopyNode = function(originalNode, from_type, to_type){"use strict";
+FormTabs.prototype.loadCustomCopyNode = function(originalNode, from_type, to_type){"use strict";
     var fromBundle, newNode, to_field_name, from_field_name, index;
     
     fromBundle = Omadi.data.getBundle(from_type);
@@ -255,7 +255,7 @@ DispatchForm.prototype.loadCustomCopyNode = function(originalNode, from_type, to
     return newNode;
 };
 
-DispatchForm.prototype.getWindow = function(initNewDispatch){"use strict";
+FormTabs.prototype.getWindow = function(initNewDispatch){"use strict";
     var dispatchWin, workWin, allowRecover, openDispatch, workBundle, db, result, 
         tempDispatchNid, iconFile, tempFormPart, origNid, copyToBundle, commentsCount, usingDispatch, title;
     
@@ -626,7 +626,7 @@ DispatchForm.prototype.getWindow = function(initNewDispatch){"use strict";
     return this.tabGroup;
 };
 
-DispatchForm.prototype.setupMenu = function(){"use strict";
+FormTabs.prototype.setupMenu = function(){"use strict";
     
     Ti.API.debug("In Setup menu");
     
@@ -743,8 +743,8 @@ DispatchForm.prototype.setupMenu = function(){"use strict";
     }
 };
 
-DispatchForm.prototype.close = function(){"use strict";
-    var dialog, photoNids;
+FormTabs.prototype.close = function(callback){"use strict";
+    var dialog, photoNids, self = this;
 
     dialog = Ti.UI.createAlertDialog({
         cancel : 1,
@@ -754,34 +754,35 @@ DispatchForm.prototype.close = function(){"use strict";
     });
 
     dialog.addEventListener('click', function(e) {
-        var db, result, numPhotos, secondDialog, negativeNid, query, continuousId, photoNids, types, dialogTitle, dialogMessage, messageParts, windowNid;
+        var db, result, numPhotos, negativeNid, query, continuousId, photoNids, types, dialogTitle, dialogMessage, messageParts, windowNid;
         try{
             if (e.index == 0) {
-                
-                if(Dispatch.dispatchObj !== null){
-                    Dispatch.dispatchObj.closeWindow();
-                }
-                
-                if(Dispatch.workObj !== null){
-                    Dispatch.workObj.closeWindow();
-                }
-                
-                // Remove any fully-saved nodes that may not have been linked
-                db = Omadi.utils.openMainDatabase();
-                db.execute("BEGIN IMMEDIATE TRANSACTION");
-                db.execute("DELETE FROM node WHERE flag_is_updated = 5");
-                db.execute("COMMIT TRANSACTION");
-                db.close();
-                
-                if(this.setSendingData){
-                    // This screen set sending data to true, so free it up in case it's still set
-                    // which would be the case for one node validating and the other not validating
-                    Omadi.service.setSendingData(false);
-                }
-                
-                Omadi.data.deleteContinuousNodes();
-                
-                Dispatch.tabGroup.close();
+                self.handleUnsavedPhotos(function(){
+                	if(Dispatch.dispatchObj !== null){
+	                    Dispatch.dispatchObj.closeWindow();
+	                }
+	                
+	                if(Dispatch.workObj !== null){
+	                    Dispatch.workObj.closeWindow();
+	                }
+	                
+	                // Remove any fully-saved nodes that may not have been linked
+	                db = Omadi.utils.openMainDatabase();
+	                db.execute("BEGIN IMMEDIATE TRANSACTION");
+	                db.execute("DELETE FROM node WHERE flag_is_updated = 5");
+	                db.execute("COMMIT TRANSACTION");
+	                db.close();
+	                
+	                if(self.setSendingData){
+	                    // This screen set sending data to true, so free it up in case it's still set
+	                    // which would be the case for one node validating and the other not validating
+	                    Omadi.service.setSendingData(false);
+	                }
+	                
+	                Omadi.data.deleteContinuousNodes();
+	                
+	               	Dispatch.tabGroup.close();
+                });
             }
         }
         catch(ex){
@@ -792,7 +793,267 @@ DispatchForm.prototype.close = function(){"use strict";
     dialog.show();
 };
 
-DispatchForm.prototype.getTimestampFieldName = function(status){"use strict";
+FormTabs.prototype.handleUnsavedPhotos = function(callback){"use strict";
+    var fileNids, db, query, numPhotos, result, types, dialogTitle,
+        dialogMessage, messageParts, dialog, continuousId;
+    
+    Ti.API.debug("In handle unsaved photos");
+    
+    try{
+        continuousId = this.workObj.continuous_nid;
+        
+        if(typeof continuousId !== 'undefined'){
+            continuousId = parseInt(continuousId, 10);
+            if(isNaN(continuousId)){
+                continuousId = 0;
+            }
+        }
+        else{
+            continuousId = 0;
+        }
+        
+        if(this.workObj.node.flag_is_updated == 3){
+            // The original node is a draft
+            if(this.workObj.node.nid != 0){
+                // Add any newly created/removed photos to the draft so they aren't lost
+                fileNids = [0];
+                if(continuousId != 0){
+                    fileNids.push(continuousId);
+                }
+                
+                db = Omadi.utils.openListDatabase();
+                db.execute("UPDATE _files SET nid = " + this.workObj.node.nid + " WHERE nid IN (" + fileNids.join(",") + ")");
+                db.close();
+            }
+            callback();
+        }
+        else if(Omadi.utils.getPhotoWidget() == 'choose'){
+            // This is not a draft, and we don't care about the taken photos
+            // Nothing to delete with the choose widget
+            // Photos should be managed externally except when uploaded successfully
+
+			callback();
+        }
+        else{
+            
+            if(this.workObj.node.nid > 0){
+                // On an update
+                fileNids = [0];
+            }
+            else{
+                // When not a draft (above)
+                // When continuous
+                // When new
+                
+                fileNids = [0];
+                if(continuousId < 0){
+                    // Don't do anything with the photos with a positive nid
+                    fileNids.push(continuousId);
+                }
+            }
+            
+            query = "SELECT COUNT(*) FROM _files WHERE nid IN (" + fileNids.join(',') + ")";
+            
+            numPhotos = 0;
+    
+            db = Omadi.utils.openListDatabase();
+            
+            result = db.execute(query);
+            if(result.isValidRow()){
+                numPhotos = result.field(0, Ti.Database.FIELD_TYPE_INT);
+            }
+            result.close();
+            
+            types = {};
+            
+            if(numPhotos > 0){
+                
+                result = db.execute(query);
+                while(result.isValidRow()){
+                    
+                    if(typeof types[result.fieldByName('type')] === 'undefined'){
+                        types[result.fieldByName('type')] = 1;
+                    }
+                    else{
+                        types[result.fieldByName('type')] ++;
+                    }
+                    
+                    result.next();
+                }
+                result.close();
+                
+                if(Omadi.utils.count(types) > 1){
+                    dialogTitle = 'Delete ' + numPhotos + ' Files';
+                    dialogMessage = 'Do you want to delete the ';
+                    messageParts = [];
+                    
+                    if(typeof types.image !== 'undefined'){
+                        if(types.image == 1){
+                            messageParts.push('photo');
+                        }
+                        else{
+                            messageParts.push(types.image + ' photos');
+                        }
+                    }
+                    if(typeof types.video !== 'undefined'){
+                        if(types.video == 1){
+                            messageParts.push('video');
+                        }
+                        else{
+                            messageParts.push(types.video + ' videos');
+                        }
+                    }
+                    if(typeof types.signature !== 'undefined'){
+                        if(types.signature == 1){
+                            messageParts.push('signature');
+                        }
+                        else{
+                            messageParts.push(types.signature + ' signature');
+                        }
+                    }
+                    if(typeof types.file !== 'undefined'){
+                        if(types.file == 1){
+                            messageParts.push('1 file');
+                        }
+                        else{
+                            messageParts.push(types.file + ' files');
+                        }
+                    }
+                    
+                    dialogMessage += messageParts.join(' and ') + "?";
+                }
+                else{
+                    if(numPhotos == 1){
+                        dialogTitle = 'Delete 1 ';
+                        dialogMessage = 'Do you want to delete the ';
+                        if(typeof types.image !== 'undefined'){
+                            dialogTitle += 'Photo';
+                            dialogMessage += 'photo you just took?';
+                        }
+                        else if(typeof types.video !== 'undefined'){
+                            dialogTitle += 'Video';
+                            dialogMessage += 'video you just attached?';
+                        }
+                        else if(typeof types.signature !== 'undefined'){
+                            dialogTitle += 'Signature';
+                            dialogMessage += 'signature?';
+                        }
+                        else{
+                            dialogTitle += 'File';
+                            dialogMessage += 'file just selected?';
+                        }
+                    }
+                    else{
+                        dialogTitle = 'Delete ' + numPhotos + ' ';
+                        dialogMessage = 'Do you want to delete the ' + numPhotos + ' ';
+                        if(typeof types.image !== 'undefined'){
+                            dialogTitle += 'Photos';
+                            dialogMessage += 'photos you just took?';
+                        }
+                        else if(typeof types.video !== 'undefined'){
+                            dialogTitle += 'Videos';
+                            dialogMessage += 'videos you just attached?';
+                        }
+                        else if(typeof types.signature !== 'undefined'){
+                            dialogTitle += 'Signatures';
+                            dialogMessage += 'signatures?';
+                        }
+                        else{
+                            dialogTitle += 'Files';
+                            dialogMessage += 'files just selected?';
+                        }
+                    }
+                }
+            }
+                
+            db.close();
+            
+            if(numPhotos > 0){
+                dialog = Ti.UI.createAlertDialog({
+                    cancel : 1,
+                    buttonNames : ['Delete', 'Keep', 'Cancel'],
+                    message : dialogMessage,
+                    title : dialogTitle,
+                    continuousId : continuousId
+                });
+    
+                dialog.addEventListener('click', function(e) {
+                    var db_toDeleteImage, deleteResult, file, fileNids, 
+                    continuousId, thumbFile, thumbPath;
+                    
+                    try{
+                        continuousId = e.source.continuousId;
+                        
+                        fileNids = [0];
+                        if(continuousId != 0){
+                            fileNids.push(continuousId);
+                        }
+                        
+                        if(e.index === 0 || e.index === 1){
+                            
+                            db_toDeleteImage = Omadi.utils.openListDatabase();
+                            
+                            if (e.index === 0) {
+                                
+                                deleteResult = db_toDeleteImage.execute("SELECT file_path, thumb_path FROM _files WHERE nid IN (" + fileNids.join(',') + ")");
+                                
+                                while(deleteResult.isValidRow()){
+                                    
+                                    // Delete the regular photo file
+                                    file = Ti.Filesystem.getFile(deleteResult.fieldByName("file_path"));
+                                    if(file.exists()){
+                                        file.deleteFile();
+                                    }
+                                    
+                                    // Delete the thumbnail file
+                                    thumbPath = deleteResult.fieldByName("thumb_path");
+                                    if(thumbPath){
+                                        thumbFile = Ti.Filesystem.getFile(thumbPath);
+                                        if(thumbFile.exists()){
+                                            thumbFile.deleteFile();
+                                        }
+                                    }
+                                    
+                                    deleteResult.next();
+                                }
+                                
+                                deleteResult.close();
+                                
+                                db_toDeleteImage.execute("DELETE FROM _files WHERE nid IN (" + fileNids.join(",") + ")");
+                                
+                            }
+                            else if(e.index === 1){
+                                // Set the nid of the photos to save to -1000000, so they won't be deleted by deletion of other photos, 
+                                // and so it isn't automatically used by other new nodes
+                                db_toDeleteImage.execute("UPDATE _files SET nid = -1000000 WHERE nid IN (" + fileNids.join(",") + ")");
+                            }
+                            
+                            db_toDeleteImage.close();
+                            
+                    		callback();
+                        }
+                    }
+                    catch(ex){
+                        Omadi.service.sendErrorReport("Exception in form second dialog click: " + ex);
+                    	callback();
+                    }
+                });
+                
+                dialog.show();
+            }
+            else {
+            	callback();
+            }
+        }
+    }
+    catch(ex){
+        this.workObj.sendError("Exception handling unsaved photos: " + ex);
+        callback();
+    }
+};
+
+
+FormTabs.prototype.getTimestampFieldName = function(status){"use strict";
 
     switch(status){
         case 'call_received': return 'time_of_call_0';
@@ -808,7 +1069,7 @@ DispatchForm.prototype.getTimestampFieldName = function(status){"use strict";
     return null;
 };
 
-DispatchForm.prototype.updateDispatchStatus = function(){"use strict";
+FormTabs.prototype.updateDispatchStatus = function(){"use strict";
     var savedFormPart, windowFormPart, updateToStatus, workBundle, textValue, i, timestampFieldName, sendStatusUpdate, origStatus;
     
     sendStatusUpdate = false;
@@ -852,7 +1113,7 @@ DispatchForm.prototype.updateDispatchStatus = function(){"use strict";
                                                     
                                                     try{
                                                         // Update the timestamp for the status update
-                                                        timestampFieldName = DispatchForm.prototype.getTimestampFieldName(updateToStatus);
+                                                        timestampFieldName = FormTabs.prototype.getTimestampFieldName(updateToStatus);
                                                         if(typeof this.dispatchObj.fieldObjects[timestampFieldName] !== 'undefined'){
                                                             
                                                             // Only allow the timestamp update if one was not already saved
@@ -914,7 +1175,7 @@ DispatchForm.prototype.updateDispatchStatus = function(){"use strict";
     }
 };
 
-DispatchForm.prototype.savedDispatchNode = function(e){"use strict";
+FormTabs.prototype.savedDispatchNode = function(e){"use strict";
     var workNid, dispatchNid, sendUpdates, db, localOnly, singleSaveNid, isFinalSave, setFlag;
     
     localOnly = (e.isContinuous || e.isDraft);
@@ -973,7 +1234,7 @@ DispatchForm.prototype.savedDispatchNode = function(e){"use strict";
     }
 };
 
-DispatchForm.prototype.towTypeChanged = function(e) {"use strict";
+FormTabs.prototype.towTypeChanged = function(e) {"use strict";
     var newNodeType, newBundle, windowTop, workNode;
     
     try{
@@ -1016,7 +1277,7 @@ DispatchForm.prototype.towTypeChanged = function(e) {"use strict";
     }
 };
 
-DispatchForm.prototype.sendError = function(message){"use strict";
+FormTabs.prototype.sendError = function(message){"use strict";
     message += JSON.stringify(this.node);
     Ti.API.error(message);
     Utils.sendErrorReport(message);
@@ -1034,7 +1295,7 @@ exports.getNode = function(){"use strict";
 exports.getWindow = function(OmadiObj, type, nid, form_part, initNewDispatch){"use strict";
     Omadi = OmadiObj;
     
-    Dispatch = new DispatchForm(type, nid, form_part);
+    Dispatch = new FormTabs(type, nid, form_part);
     return Dispatch.getWindow(initNewDispatch);
 };
 

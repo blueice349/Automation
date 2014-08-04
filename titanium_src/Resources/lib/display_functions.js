@@ -882,7 +882,7 @@ Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
         //if(isDispatch){
             Omadi.display.loading();
             
-            Dispatch = require('ui/DispatchForm');
+            Dispatch = require('ui/FormTabs');
             formWindow = Dispatch.getWindow(Omadi, type, nid, form_part, initNewDispatch);
             
             if(formWindow){
