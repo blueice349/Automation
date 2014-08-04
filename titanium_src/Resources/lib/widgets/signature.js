@@ -103,9 +103,8 @@ Omadi.widgets.signature = {
         sigLine = Ti.UI.createView({
             width:'90%',
             height:2,
-            backgroundColor:'#000',
-            bottom:70,
-            opacity: 0.5
+            backgroundColor:'#999',
+            bottom:70
         });
 
         thex = Ti.UI.createLabel({
@@ -114,10 +113,9 @@ Omadi.widgets.signature = {
             width:'auto',
             height:'auto',
             font:{fontFamily:'Arial',fontSize:24},
-            color:'#000',
+            color:'#999',
             bottom:75,
-            left:20,
-            opacity: 0.5
+            left:20
         });
 
         
@@ -140,26 +138,7 @@ Omadi.widgets.signature = {
             Omadi.widgets.signature.openSignatureView(node, instance, widgetView);
         });
         
-        // eraseButton.addEventListener('click', function(e){
-//             
-            // e.source.imageView.dbValue = null;
-            // e.source.imageView.image = null;
-        // });
-        
-        // imageNid = Ti.UI.currentWindow.nid;
-        // if(typeof Ti.UI.currentWindow.origNid !== 'undefined'){
-            // imageNid = Ti.UI.currentWindow.origNid;
-        // }
-        
         numImagesShowing = 1;
-        
-        
-        // if (instance.can_edit && (instance.settings.cardinality == -1 || (numImagesShowing < instance.settings.cardinality))) {
-//             
-            // widgetView.add(Omadi.widgets.image.getImageView(widgetView, numImagesShowing, null, null, 0));
-//         
-            // contentWidth += 110;
-        // }
         
         widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
         
@@ -181,48 +160,81 @@ Omadi.widgets.signature = {
     openSignatureView : function(node, instance, widgetView){"use strict";
     
         var win, thex, sigLine, screenShadow, wrapper, outsideWrapper, wrapperShadow, 
-            doneButton, clearButton, cancelButton, paintView, buttonView;
+            doneButton, clearButton, cancelButton, paintView, buttonView, 
+            scrollView, textView, textLabel, overlayButton, overlayLabel, hasText;
         
         win = Ti.UI.createWindow({  
-            
+            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT],
+            modal: true,
+            navBarHidden: true
         });
+        
+        hasText = false;
+        
+        if(typeof instance.settings.signature_text !== 'undefined' && 
+            instance.settings.signature_text.length != null && 
+            instance.settings.signature_text.length != ""){
+            
+            hasText = true;
+            
+            scrollView = Ti.UI.createScrollView({
+                contentHeight: 'auto',
+                contentWidth: '100%',
+                height: Ti.UI.FILL,
+                width: Ti.UI.FILL,
+                scrollType: 'vertical',
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                scrollingEnabled: true
+            });
+        }
+        else{
+            
+            // The scrollview must be initialized with scrollingenabled = false
+            // It seems there is a bug in the Titanium code
+            // This and the above scroll view should be identical except for scrollingEnabled
+            
+            scrollView = Ti.UI.createScrollView({
+                contentHeight: 'auto',
+                contentWidth: '100%',
+                height: Ti.UI.FILL,
+                width: Ti.UI.FILL,
+                scrollType: 'vertical',
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                scrollingEnabled: false
+            });
+        }
         
         screenShadow = Ti.UI.createView({
            top: 0,
            bottom: 0,
            left: 0,
-           right: 0,
-           backgroundColor: '#ddd',
-           opacity: 0.8 
+           right: 0
         });
-        
-        win.add(screenShadow);
         
         outsideWrapper = Ti.UI.createView({
            width: '95%',
            height: Ti.UI.SIZE,
-           layout: 'vertical',
-           opacity: 1.0
+           layout: 'vertical'
         });
         
         wrapper = Ti.UI.createView({
             width:'100%',
-            height: 250,
-            borderColor:'#aaa',
-            borderWidth:2,
-            backgroundColor:'#fff',
-            opacity: 1.0
+            height: 220,
+            borderColor: '#aaa',
+            borderWidth: 2,
+            backgroundColor: '#fff'
         });
-        
-        screenShadow.add(outsideWrapper);
-        outsideWrapper.add(wrapper);
         
         buttonView = Ti.UI.createView({
             backgroundColor: '#666',
             height: 50
         });
-        
-        outsideWrapper.add(buttonView);
         
         doneButton = Ti.UI.createLabel({
             backgroundImage:'/images/blue_button2.png',
@@ -255,9 +267,6 @@ Omadi.widgets.signature = {
             }
         });
          
-        buttonView.add(doneButton);
-        buttonView.add(clearButton);
-         
         cancelButton = Ti.UI.createLabel({
             backgroundImage:'/images/black_button2.png',
             color: '#fff',
@@ -273,14 +282,11 @@ Omadi.widgets.signature = {
             win: win
         });
          
-        buttonView.add(cancelButton);
-        
         sigLine = Ti.UI.createView({
             width:'90%',
             height:2,
-            backgroundColor:'#000',
-            bottom:70,
-            opacity: 0.5
+            backgroundColor:'#999',
+            bottom:70
         });
 
         thex = Ti.UI.createLabel({
@@ -289,10 +295,9 @@ Omadi.widgets.signature = {
             width:'auto',
             height:'auto',
             font:{fontFamily:'Arial',fontSize:24},
-            color:'#000',
+            color:'#999',
             bottom:75,
-            left:20,
-            opacity: 0.5
+            left:20
         });
         
         paintView = Paint.createPaintView({
@@ -302,33 +307,83 @@ Omadi.widgets.signature = {
             instance : instance,
             strokeWidth: 4,
             strokeColor: '#666',
-            opacity: 1.0,
             touchEnabled: true,
             backgroundColor: '#fff'
         });
         
-        // paintView.addEventListener('touchmove', function(){
-           // //alert("paint move");
-           // Ti.API.info('move'); 
-        // });
-//         
-        // paintView.addEventListener('touchstart', function(){
-            // Ti.API.info('start');
-           // alert("paint start"); 
-        // });
-        // paintView.addEventListener('touchesended',function(){
-            // alert('paint end');
-            // doneButton.show();
-        // });
-//         
-        // paintView.addEventListener('mouseup',function(){
-            // alert('mouse end');
-            // doneButton.show();
-        // });
-// 
-        // paintView.addEventListener('click', function(){
-           // alert('paint click') ;
-        // });
+        if(hasText){
+            
+            textView = Ti.UI.createView({
+                height: Ti.UI.SIZE,
+                width: '100%',
+                backgroundColor: '#fff',
+                borderWidth: 2,
+                borderColor: '#ccc',
+                scrollView: scrollView
+            });
+            
+            textLabel = Ti.UI.createLabel({
+                text: instance.settings.signature_text,
+                wordWrap: true,
+                width: '96%',
+                height: Ti.UI.SIZE,
+                top: 12,
+                bottom: 12,
+                touchEnabled: false,
+                color: '#333',
+                font: {
+                    fontSize: 16
+                }
+            });
+            
+            overlayButton = Ti.UI.createView({
+                width: '100%',
+                bottom: 0,
+                top: 0,
+                backgroundColor: '#999',
+                wrapper: wrapper,
+                scrollView: scrollView
+            });
+            
+            overlayLabel = Ti.UI.createLabel({
+                text: 'Touch to Sign',
+                color: '#fff',
+                font: {
+                    fontSize: 26,
+                    fontWeight: 'bold'
+                },
+                touchEnabled: false
+            });
+            
+            textView.overlayButton = overlayButton;
+            
+            textView.addEventListener('click', function(e){
+                if(!e.source.scrollView.scrollingEnabled){
+                    e.source.scrollView.scrollingEnabled = true;
+                    e.source.scrollView.scrollTo(0, 0);
+                    e.source.overlayButton.height = Ti.UI.FILL;
+                    e.source.overlayButton.width = '100%';
+                }
+            });
+            
+            textView.add(textLabel);
+            outsideWrapper.add(textView);
+            
+            overlayButton.add(overlayLabel);
+            overlayButton.addEventListener('click', function(e){
+               e.source.width = 0;
+               e.source.height = 0; 
+               e.source.scrollView.scrollToBottom();
+               e.source.scrollView.scrollingEnabled = false;
+            });
+        }
+        
+        scrollView.add(outsideWrapper);
+        outsideWrapper.add(wrapper);
+        outsideWrapper.add(buttonView);
+        buttonView.add(doneButton);
+        buttonView.add(clearButton);
+        buttonView.add(cancelButton);
         
         wrapper.add(paintView);
         
@@ -336,20 +391,32 @@ Omadi.widgets.signature = {
 
         wrapper.add(thex);
         
+        if(hasText){
+            wrapper.add(overlayButton);
+        }
+        
         doneButton.addEventListener('click',function(e){
-            var blob = paintView.toImage();
+            var blob;
             
-            Omadi.widgets.signature.removePreviousSignature(instance);
-            
-            e.source.widgetView.imageView.setImage(blob);
-            e.source.widgetView.imageWrapper.setVisible(true);
-            e.source.widgetView.imageWrapper.setHeight(Ti.UI.SIZE);
-            
-            // This waiting is really only for the Android devices, but it's not a hugely back thing
-            // To leave for a possibly slow iOS device
-            setTimeout(function(){
-                Omadi.widgets.signature.saveSignature(e.source);
-            }, 1000);
+            try{
+                blob = paintView.toImage();
+                
+                Omadi.widgets.signature.removePreviousSignature(instance);
+                
+                e.source.widgetView.imageView.setImage(blob);
+                e.source.widgetView.imageWrapper.setVisible(true);
+                e.source.widgetView.imageWrapper.setHeight(Ti.UI.SIZE);
+                
+                // This waiting is really only for the Android devices, but it's not a hugely back thing
+                // To leave for a possibly slow iOS device
+
+                setTimeout(function(){
+                    Omadi.widgets.signature.saveSignature(e.source);
+                }, 1000);
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception getting signature image: " + ex);
+            }
             
             e.source.win.close();
         });
@@ -364,6 +431,9 @@ Omadi.widgets.signature = {
             //doneButton.hide();
         });
         
+        win.add(screenShadow);
+        win.add(scrollView);
+        
         win.open();
     },
     saveSignature : function(doneButton){"use strict";
@@ -376,8 +446,9 @@ Omadi.widgets.signature = {
         filePath = file.getNativePath();
         
         doneButton.widgetView.imageView.filePath = filePath;
-     
+
         if(file){
+
             blob = doneButton.widgetView.imageView.toBlob();
             file.write(blob);
 
@@ -396,8 +467,8 @@ Omadi.widgets.signature = {
         if(typeof Ti.UI.currentWindow.nid !== 'undefined'){
             nid = Ti.UI.currentWindow.nid;
             
-            db = Omadi.utils.openMainDatabase();
-            db.execute("DELETE FROM _photos WHERE nid = 0 AND field_name = '" + dbEsc(instance.field_name) + "'");
+            db = Omadi.utils.openListDatabase();
+            db.execute("DELETE FROM _files WHERE nid = 0 AND field_name = '" + dbEsc(instance.field_name) + "'");
             db.close();
         }
     }

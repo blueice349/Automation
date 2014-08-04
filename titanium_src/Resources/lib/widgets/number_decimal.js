@@ -47,14 +47,23 @@ Omadi.widgets.number_decimal = {
 
         if (settings.cardinality == -1) {
             addAnotherItemButton = Ti.UI.createButton({
-                title : 'Add another item',
+                title : ' Add another item ',
                 right : 15,
-                instance : instance
+                instance : instance,
+                style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
+                backgroundGradient: Omadi.display.backgroundGradientGray,
+                borderColor: '#999',
+                borderWidth: 1,
+                width: 180,
+                borderRadius: 10,
+                color: '#eee',
+                top: 10
             });
 
             addAnotherItemButton.addEventListener('click', function(e) {
                 var instance = e.source.instance;
                 instance.numVisibleFields++;
+                Omadi.widgets.unfocusField();
                 Omadi.widgets.shared.redraw(instance);
             });
 
@@ -106,7 +115,7 @@ Omadi.widgets.number_decimal = {
         widgetView.dbValue = dbValue;
         widgetView.textValue = textValue;
         widgetView.setValue(textValue);
-        widgetView.setKeyboardType(Ti.UI.KEYBOARD_NUMBERS_PUNCTUATION);
+        widgetView.setKeyboardType(Ti.UI.KEYBOARD_DEFAULT);
             
         if (settings.max != null) {
             widgetView.maxValue = settings.max;
@@ -126,21 +135,29 @@ Omadi.widgets.number_decimal = {
             var tempValue;
             /*global setConditionallyRequiredLabels*/
             /*jslint regexp: true*/
-
-            if (e.source.lastValue != e.source.value) {
+            Ti.API.debug(e.source.value);
+            Ti.API.debug(e.source.lastValue);
+            
+            // Must compare as strings since 4. and 4 would need to be different, but wouldn't be for a number
+            if ((e.source.lastValue + "".toString()) != (e.source.value + "".toString())) {
                 tempValue = "";
                 if(e.source.value !== null){
-                    tempValue = (e.source.value + "".toString()).replace(/[^0-9\.\-]/g, '');
+                    if((e.source.value + "".toString()).match(/^-?\d*\.?\d*$/)){
+                        tempValue = e.source.value;
+                    }
+                    else{
+                        tempValue = e.source.lastValue;
+                    }
                 }
                 
                 if (tempValue != e.source.value) {
                     e.source.value = tempValue;
-                    if (Ti.App.isAndroid) {
+                    if (Ti.App.isAndroid && e.source.value != null && typeof e.source.value.length !== 'undefined') {
                         e.source.setSelection(e.source.value.length, e.source.value.length);
                     }
                 }
 
-                if (e.source.value.length > 0) {
+                if (e.source.value != null && typeof e.source.value.length !== 'undefined' && e.source.value.length > 0) {
                     e.source.dbValue = parseFloat(e.source.value);
                 }
                 else {

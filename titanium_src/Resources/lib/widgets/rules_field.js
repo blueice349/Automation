@@ -52,7 +52,12 @@ Omadi.widgets.rules_field = {
             widget = instance.widget;
         }
         else {
-            widget = JSON.parse(instance.widget);
+            try{
+                widget = JSON.parse(instance.widget);
+            }
+            catch(ex){
+                widget = null;
+            }
         }
 
         settings = instance.settings;
@@ -73,7 +78,12 @@ Omadi.widgets.rules_field = {
             switch(widget.type) {
                 case 'rules_field_violations':
                     if(typeof nodeValue === 'string'){
-                        nodeValue = JSON.parse(nodeValue);
+                        try{
+                            nodeValue = JSON.parse(nodeValue);
+                        }
+                        catch(ex1){
+                            nodeValue = null;
+                        }
                     }
                     
                     //Ti.API.debug(nodeValue);
@@ -101,7 +111,9 @@ Omadi.widgets.rules_field = {
                                     for (key in nodeValue[i].node_types) {
                                         if (nodeValue[i].node_types.hasOwnProperty(key)) {
                                             result = db.execute('SELECT display_name FROM bundles WHERE bundle_name="' + key + '"');
-                                            formTypes.push(result.fieldByName('display_name'));
+                                            if(result.isValidRow()){
+                                                formTypes.push(result.fieldByName('display_name'));
+                                            }
                                             result.close();
                                         }
                                     }
@@ -116,7 +128,7 @@ Omadi.widgets.rules_field = {
                                 row.image = Ti.UI.createImageView({
                                     image : '/images/arrow.png',
                                     height : 23,
-                                    width : 23,
+                                    width : '10%',
                                     details : nodeValue[i],
                                     formTypes : formTypes,
                                     text : violation_name
@@ -127,13 +139,13 @@ Omadi.widgets.rules_field = {
                                     height : Ti.UI.SIZE,
                                     color : '#000',
                                     font : {
-                                        fontSize : 15,
-                                        fontFamily : 'Helvetica Neue'
+                                        fontSize : 15
                                     },
                                     ellipsize : true,
                                     wordWrap : false,
                                     details : nodeValue[i],
-                                    formTypes : formTypes
+                                    formTypes : formTypes,
+                                    width: '90%'
                                 });
 
                                 row.add(row.image);
@@ -166,23 +178,28 @@ Omadi.widgets.rules_field = {
         return view;
     },
     showDetail : function(e) {"use strict";
-        var detail_popup, translucent, table_format_bg, headerRow0, headerRowLabel, headerRow, forms, desc, detail_row, dttm, formsView, formsViewLabel, detailsVal, forms_str, i, dttmViewLabel, dttmView, descView, descViewLabel;
+        var detail_popup, translucent, table_format_bg, headerRow0, headerRowLabel, 
+            headerRow, forms, desc, detail_row, dttm, formsView, formsViewLabel, detailsVal, 
+            forms_str, i, dttmViewLabel, dttmView, descView, descViewLabel, closeLabel;
 
         if (Ti.App.isAndroid) {
             Ti.UI.Android.hideSoftKeyboard();
             //Ti.API.info("hide keyboard in row click listener");
         }
 
-        detail_popup = Ti.UI.createView({
-            backgroundColor : '#00000000'
+        detail_popup = Ti.UI.createWindow({
+            modal: true,
+            navBarHidden: true,
+            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
         });
-        detail_popup.left = detail_popup.right = detail_popup.top = detail_popup.bottom = 0;
 
         translucent = Ti.UI.createView({
-            opacity : 0.5,
-            backgroundColor : '#000'
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0
         });
-        translucent.left = translucent.right = translucent.top = translucent.bottom = 0;
+        
         detail_popup.add(translucent);
 
         table_format_bg = Ti.UI.createView({
@@ -191,7 +208,7 @@ Omadi.widgets.rules_field = {
             borderWidth : 1,
             left : 4,
             right : 4,
-            height : '250'
+            height : 290
             //layout: 'vertical'
         });
         detail_popup.add(table_format_bg);
@@ -201,7 +218,7 @@ Omadi.widgets.rules_field = {
             height : 30,
             width : Ti.Platform.displayCaps.platformWidth - 8,
             layout : 'horizontal',
-            backgroundImage : '/images/header.png'
+            backgroundGradient: Omadi.display.backgroundGradientBlue
         });
 
         headerRowLabel = Ti.UI.createLabel({
@@ -234,7 +251,7 @@ Omadi.widgets.rules_field = {
             text : 'Forms',
             height : 38,
             width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
-            backgroundImage : '/images/header.png',
+            backgroundGradient: Omadi.display.backgroundGradientGray,
             font : {
                 fontSize : 16,
                 fontWeight : 'bold'
@@ -245,10 +262,10 @@ Omadi.widgets.rules_field = {
         headerRow.add(forms);
 
         dttm = Ti.UI.createLabel({
-            text : 'Date/Time Rules',
+            text : 'Time Rules',
             height : 38,
             width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
-            backgroundImage : '/images/header.png',
+            backgroundGradient: Omadi.display.backgroundGradientGray,
             font : {
                 fontSize : 16,
                 fontWeight : 'bold'
@@ -263,7 +280,7 @@ Omadi.widgets.rules_field = {
             text : 'Description',
             height : 38,
             width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
-            backgroundImage : '/images/header.png',
+            backgroundGradient: Omadi.display.backgroundGradientGray,
             font : {
                 fontFamily : 'Helvetica Neue',
                 fontSize : 16,
@@ -282,6 +299,26 @@ Omadi.widgets.rules_field = {
             layout : 'horizontal'
         });
         table_format_bg.add(detail_row);
+        
+        closeLabel = Ti.UI.createLabel({
+           text: 'Close',
+           color: '#eee',
+           backgroundGradient: Omadi.display.backgroundGradientBlue,
+           font: {
+               fontSize: 18,
+               fontWeight: 'bold'
+           },
+           width: Ti.UI.FILL,
+           top: 250,
+           height: 40,
+           textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
+        });
+        
+        closeLabel.addEventListener('click', function(){
+            detail_popup.close();
+        });
+        
+        table_format_bg.add(closeLabel);
 
         formsView = Ti.UI.createScrollView({
             height : 175,
@@ -308,15 +345,19 @@ Omadi.widgets.rules_field = {
         detailsVal = e.source.details;
         forms_str = '- All -';
 
-        if (typeof e.source.formTypes !== 'undefined' && e.source.formTypes.length < 4 && e.source.formTypes.length > 0) {
-            forms_str = '';
-            for ( i = 0; i < e.source.formTypes.length; i++) {
-                forms_str += e.source.formTypes[i] + ((i == e.source.formTypes.length - 1) ? "" : ", ");
+        if (typeof e.source.formTypes !== 'undefined' && typeof e.source.formTypes.length !== 'undefined'){
+            
+            if(e.source.formTypes.length < 4 && e.source.formTypes.length > 0) {
+                forms_str = '';
+                for (i = 0; i < e.source.formTypes.length; i++) {
+                    forms_str += e.source.formTypes[i] + ((i == e.source.formTypes.length - 1) ? "" : ", ");
+                }
             }
         }
-        else if (e.source.formTypes.length == 0) {
+        else{
             forms_str = '- NONE -';
         }
+        
         formsViewLabel.text = forms_str;
 
         dttmView = Ti.UI.createScrollView({
@@ -327,21 +368,26 @@ Omadi.widgets.rules_field = {
             width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
             left : 1
         });
+        
         detail_row.add(dttmView);
-        dttmViewLabel = Ti.UI.createLabel({
-            top : 0,
-            left : 5,
-            right : 5,
-            text : Omadi.widgets.rules_field.getTimeRulesText(detailsVal.time_rules),
-            height : Ti.UI.SIZE,
-            color : '#1c1c1c',
-            font : {
-                fontFamily : 'Helvetica Neue',
-                fontSize : 16
-            },
-            textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT
-        });
-        dttmView.add(dttmViewLabel);
+        
+        if(typeof detailsVal.time_rules !== 'undefined'){
+            dttmViewLabel = Ti.UI.createLabel({
+                top : 0,
+                left : 5,
+                right : 5,
+                text : Omadi.widgets.rules_field.getTimeRulesText(detailsVal.time_rules),
+                height : Ti.UI.SIZE,
+                color : '#1c1c1c',
+                font : {
+                    fontFamily : 'Helvetica Neue',
+                    fontSize : 16
+                },
+                textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT
+            });
+            
+            dttmView.add(dttmViewLabel);
+        }
 
         descView = Ti.UI.createScrollView({
             height : 175,
@@ -352,25 +398,30 @@ Omadi.widgets.rules_field = {
             width : (Ti.Platform.displayCaps.platformWidth - 20) / 3
         });
         detail_row.add(descView);
-        descViewLabel = Ti.UI.createLabel({
-            top : 0,
-            left : 5,
-            right : 5,
-            text : detailsVal.description,
-            height : Ti.UI.SIZE,
-            color : '#1c1c1c',
-            font : {
-                fontSize : 16
-            },
-            textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT
-        });
-        descView.add(descViewLabel);
+        
+        if(typeof detailsVal.description !== 'undefined'){
+            descViewLabel = Ti.UI.createLabel({
+                top : 0,
+                left : 5,
+                right : 5,
+                text : detailsVal.description,
+                height : Ti.UI.SIZE,
+                color : '#1c1c1c',
+                font : {
+                    fontSize : 16
+                },
+                textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT
+            });
+            descView.add(descViewLabel);
+        }
+        
+        detail_popup.open();
+        
+        //Ti.UI.currentWindow.add(detail_popup);
 
-        Ti.UI.currentWindow.add(detail_popup);
-
-        translucent.addEventListener('click', function(ent) {
-            Ti.UI.currentWindow.remove(detail_popup);
-        });
+        // translucent.addEventListener('click', function(ent) {
+            // Ti.UI.currentWindow.remove(detail_popup);
+        // });
     },
     getTimeRulesText : function(timeValue) {"use strict";
         var timeStrings = [], dayStrings = [], times = [], returnVal, rows, i, row, values, day, time, timeString, startDay, currentDay, lastConsecutive, dayPatrolStrings, day_index;
@@ -400,11 +451,11 @@ Omadi.widgets.rules_field = {
                             times['All Day'].push(i);
                         }
                         else {
-                            if (times[Omadi.widgets.omadi_time.secondsToString(values[2]) + '-' + Omadi.widgets.omadi_time.secondsToString(values[3])] == null) {
-                                times[Omadi.widgets.omadi_time.secondsToString(values[2]) + '-' + Omadi.widgets.omadi_time.secondsToString(values[3])] = [];
+                            if (times[Omadi.utils.secondsToString(values[2]) + '-' + Omadi.utils.secondsToString(values[3])] == null) {
+                                times[Omadi.utils.secondsToString(values[2]) + '-' + Omadi.utils.secondsToString(values[3])] = [];
                             }
 
-                            times[Omadi.widgets.omadi_time.secondsToString(values[2]) + '-' + Omadi.widgets.omadi_time.secondsToString(values[3])].push(i);
+                            times[Omadi.utils.secondsToString(values[2]) + '-' + Omadi.utils.secondsToString(values[3])].push(i);
                         }
                     }
                 }

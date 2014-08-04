@@ -47,14 +47,25 @@ Omadi.widgets.email = {
 
         if (settings.cardinality == -1) {
             addAnotherItemButton = Ti.UI.createButton({
-                title : 'Add another item',
+                title : ' Add another item ',
                 right : 15,
-                instance : instance
+                instance : instance,
+                style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
+                backgroundGradient: Omadi.display.backgroundGradientGray,
+                borderColor: '#999',
+                borderWidth: 1,
+                width: 180,
+                borderRadius: 10,
+                color: '#eee',
+                top: 10
             });
 
             addAnotherItemButton.addEventListener('click', function(e) {
                 var instance = e.source.instance;
                 instance.numVisibleFields++;
+                Omadi.widgets.unfocusField();
+                
+                
                 Omadi.widgets.shared.redraw(instance);
             });
 
@@ -99,11 +110,11 @@ Omadi.widgets.email = {
         widgetView.dbValue = dbValue;
         widgetView.textValue = textValue;
         widgetView.setValue(textValue);
+        widgetView.maxLength = 255;
         
         // Got to be at least a@a.co, additional validation is happening later
         widgetView.minLength = 6;
        
-
         widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
 
         widgetView.addEventListener('change', function(e) {

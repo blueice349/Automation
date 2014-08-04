@@ -26,9 +26,9 @@ function addiOSToolbar() {"use strict";
     space = Titanium.UI.createButton({
         systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
     });
-    label = Titanium.UI.createButton({
-        title : 'Dispatched Jobs',
-        color : '#fff',
+    label = Titanium.UI.createLabel({
+        text : 'Dispatched Jobs',
+        color : '#333',
         ellipsize : true,
         wordwrap : false,
         width : Ti.UI.SIZE,
@@ -46,9 +46,10 @@ function addiOSToolbar() {"use strict";
     wrapperView.add(toolbar);
 }
 
-function refreshJobsTable(){"use strict";
+function refreshJobsTable(firstTimeThrough){"use strict";
     var newJobsSection, currentUserJobsSection, newJobs, backgroundColor, row, textView,
-        i, rowImg, titleLabel, currentUserJobs, dispatchBundle, newJobsHeader, currentJobsHeader;
+        i, rowImg, titleLabel, currentUserJobs, dispatchBundle, newJobsHeader, 
+        currentJobsHeader, discontinuedView, discontinuedLabel, isDiscontinued;
     
     dispatchBundle = Omadi.data.getBundle('dispatch');
     newJobs = Omadi.bundles.dispatch.getNewJobs();
@@ -134,16 +135,6 @@ function refreshJobsTable(){"use strict";
         headerView: currentJobsHeader
     });
     
-   
-    
-    // separator = ' - ';
-    // if ( typeof dispatchBundle.data.title_fields !== 'undefined' && typeof dispatchBundle.data.title_fields.separator !== 'undefined') {
-        // separator = dispatchBundle.data.title_fields.separator;
-    // }
-//     
-    // whiteSpaceTest = Omadi.utils.trimWhiteSpace(separator);
-
-    
     if(newJobs.length){
         
         for(i = 0; i < newJobs.length; i ++){
@@ -164,18 +155,19 @@ function refreshJobsTable(){"use strict";
             
             textView = Ti.UI.createView({
                 right: 1,
-                left: 45,
+                left: 50,
                 top: 0,
                 height: Ti.UI.SIZE,
                 layout: 'vertical'
             });            
             
             rowImg = Ti.UI.createImageView({
-                image: Omadi.display.getNodeTypeImagePath(newJobs[i].type),
+                image: Omadi.display.getIconFile(newJobs[i].type),
                 top: 5,
-                left: 1,
+                left: 5,
                 width: 35,
-                height: 35
+                height: 35,
+                bottom: 5
             });
             
             titleLabel = Ti.UI.createLabel({
@@ -194,6 +186,41 @@ function refreshJobsTable(){"use strict";
             
             //textView.add(timeLabel);
             row.add(textView);
+            
+            if(newJobs[i].isDiscontinued){
+                Ti.API.debug("New Job Is Discontinued");
+                discontinuedView = Ti.UI.createView({
+                    top: 0,
+                    height: 45,
+                    left: 0,
+                    right: 0,
+                    width: '100%',
+                    backgroundColor: '#fed',
+                    opacity: 0.7,
+                    zIndex: 5,
+                    bubbleParent: false
+                });
+                
+                discontinuedLabel = Ti.UI.createLabel({
+                    text: 'DISCONTINUED',
+                    textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+                    color: '#900',
+                    font: {
+                        fontWeight: 'bold',
+                        fontSize: 20
+                    },
+                    touchEnabled: false,
+                    bubbleParent: false
+                });
+                
+                discontinuedView.addEventListener('click', function(e){
+                    e.cancelBubble = true; 
+                });
+            
+                discontinuedView.add(discontinuedLabel);
+                row.add(discontinuedView);
+            }
+            
             newJobsSection.add(row);
         }
     }
@@ -225,16 +252,17 @@ function refreshJobsTable(){"use strict";
             
             textView = Ti.UI.createView({
                 right: 1,
-                left: 45,
+                left: 50,
                 top: 0,
                 height: Ti.UI.SIZE,
                 layout: 'vertical'
             });            
             
             rowImg = Ti.UI.createImageView({
-                image: Omadi.display.getNodeTypeImagePath(currentUserJobs[i].type),
+                image: Omadi.display.getIconFile(currentUserJobs[i].type),
                 top: 5,
-                left: 1,
+                left: 5,
+                bottom: 5,
                 width: 35,
                 height: 35
             });
@@ -252,8 +280,41 @@ function refreshJobsTable(){"use strict";
             
             row.add(rowImg);
             textView.add(titleLabel);
-            //textView.add(timeLabel);
             row.add(textView);
+            
+            if(currentUserJobs[i].isDiscontinued){
+                Ti.API.debug("Current Job Is Discontinued");
+                discontinuedView = Ti.UI.createView({
+                    top: 0,
+                    height: 45,
+                    left: 0,
+                    right: 0,
+                    width: '100%',
+                    backgroundColor: '#fed',
+                    opacity: 0.7,
+                    zIndex: 5,
+                    bubbleParent: false
+                });
+                
+                discontinuedLabel = Ti.UI.createLabel({
+                    text: 'DISCONTINUED',
+                    textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+                    color: '#900',
+                    font: {
+                        fontWeight: 'bold',
+                        fontSize: 20
+                    },
+                    touchEnabled: false,
+                    bubbleParent: false
+                });
+                
+                discontinuedView.addEventListener('click', function(e){
+                    e.cancelBubble = true; 
+                });
+            
+                discontinuedView.add(discontinuedLabel);
+                row.add(discontinuedView);
+            }
             
             currentUserJobsSection.add(row);
         }
@@ -272,19 +333,12 @@ function refreshJobsTable(){"use strict";
 
 function savedNodeJobs(){"use strict";
         
-    if(Ti.App.isAndroid){
-        Ti.UI.currentWindow.close();
-    }
-    else{
-        Ti.UI.currentWindow.hide();
-        // Close the window after the maximum timeout for a node save
-        setTimeout(Ti.UI.currentWindow.close, 65000);
-    }
+    Ti.UI.currentWindow.close();
 }
 
 function finishedDataSyncJobs(){"use strict";
     
-     refreshJobsTable();
+     refreshJobsTable(false);
 }
 
 function loggingOutJobs(){"use strict";
@@ -295,10 +349,15 @@ function loggingOutJobs(){"use strict";
 (function(){"use strict";
     var newJobs, data, i, row, textView, rowImg, titleLabel, backgroundColor, 
         newJobsSection, sections, currentUserJobsSection, currentUserJobs, 
-        dispatchBundle, separator, whiteSpaceTest;
+        dispatchBundle, separator, whiteSpaceTest, validJobs;
     
+    Ti.App.removeEventListener("savedNode", savedNodeJobs);
     Ti.App.addEventListener("savedNode", savedNodeJobs);
-    Ti.App.addEventListener('finishedDataSync', finishedDataSyncJobs);
+    
+    Ti.App.removeEventListener('omadi:finishedDataSync', finishedDataSyncJobs);
+    Ti.App.addEventListener('omadi:finishedDataSync', finishedDataSyncJobs);
+    
+    Ti.App.removeEventListener('loggingOut', loggingOutJobs);
     Ti.App.addEventListener('loggingOut', loggingOutJobs);
     
     wrapperView = Ti.UI.createView({
@@ -314,6 +373,9 @@ function loggingOutJobs(){"use strict";
     }
     else{
         addiOSToolbar();
+        if(Ti.App.isIOS7){
+            wrapperView.top = 20;
+        }
     }
     
     tableView = Ti.UI.createTableView({
@@ -322,32 +384,53 @@ function loggingOutJobs(){"use strict";
         scrollable: true
     });
     
-    refreshJobsTable();
+    refreshJobsTable(true);
     
     tableView.addEventListener('click', function(e) {
-        if(e.row.type == 'newJob'){
-            Omadi.display.showDialogFormOptions(e, [{
-                text: 'Accept Job',
-                callback: Omadi.bundles.dispatch.acceptJob,
-                callbackArgs: [e.row.nid]
-            },{
-                text: 'Driving Directions',
-                callback: Omadi.bundles.dispatch.getDrivingDirections,
-                callbackArgs: [e.row.nid]
-            }]);
-        }
-        else{
-            Omadi.display.showDialogFormOptions(e, [{
-                text: 'Update Status',
-                callback: Omadi.bundles.dispatch.showUpdateStatusDialog,
-                callbackArgs: [e.row.nid]
-            },{
-                text: 'Driving Directions',
-                callback: Omadi.bundles.dispatch.getDrivingDirections,
-                callbackArgs: [e.row.nid]
-            }]);
-        }
+        var extraOptions, dispatchInstances, hasEditPermissions, discontinuedInstance;
         
+        try{
+            if(e.row.type == 'newJob'){
+                Omadi.display.showDialogFormOptions(e, [{
+                    text: 'Accept Job',
+                    callback: Omadi.bundles.dispatch.acceptJob,
+                    callbackArgs: [e.row.nid]
+                },{
+                    text: 'Driving Directions',
+                    callback: Omadi.bundles.dispatch.getDrivingDirections,
+                    callbackArgs: [e.row.nid]
+                }]);
+            }
+            else{
+                
+                extraOptions = [{
+                    text: 'Update Status',
+                    callback: Omadi.bundles.dispatch.showUpdateStatusDialog,
+                    callbackArgs: [e.row.nid]
+                },{
+                    text: 'Driving Directions',
+                    callback: Omadi.bundles.dispatch.getDrivingDirections,
+                    callbackArgs: [e.row.nid]
+                }];
+                
+                dispatchInstances = Omadi.data.getFields('dispatch');
+                if(typeof dispatchInstances.job_discontinued !== 'undefined'){
+                    
+                    if(typeof dispatchInstances.job_discontinued.can_edit !== 'undefined' && dispatchInstances.job_discontinued.can_edit){
+                        extraOptions.push({
+                            text: 'Discontinue Job',
+                            callback: Omadi.bundles.dispatch.showDiscontinueJobDialog,
+                            callbackArgs: [e.row.nid]
+                        });
+                    }
+                }
+                
+                Omadi.display.showDialogFormOptions(e, extraOptions);
+            }
+        }
+        catch(ex){
+            Omadi.service.sendErrorReport("Exception with jobs tableview click: " + ex);
+        }
     });
     
     wrapperView.add(tableView);
@@ -356,7 +439,7 @@ function loggingOutJobs(){"use strict";
     
     Ti.UI.currentWindow.addEventListener('close', function(){
         Ti.App.removeEventListener("savedNode", savedNodeJobs);
-        Ti.App.removeEventListener('finishedDataSync', finishedDataSyncJobs);
+        Ti.App.removeEventListener('omadi:finishedDataSync', finishedDataSyncJobs);
         Ti.App.removeEventListener('loggingOut', loggingOutJobs);
         
         // Clean up memory

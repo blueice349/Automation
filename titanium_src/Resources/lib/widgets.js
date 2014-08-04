@@ -1,5 +1,5 @@
-Ti.include('/lib/functions.js');
 
+Ti.include('/lib/functions.js');
 
 Omadi.widgets = Omadi.widgets || {};
 
@@ -25,6 +25,7 @@ Ti.include('/lib/widgets/auto_increment.js');
 Ti.include('/lib/widgets/omadi_time.js');
 Ti.include('/lib/widgets/file.js');
 Ti.include('/lib/widgets/list_text.js');
+Ti.include('/lib/widgets/extra_price.js');
 
 /*jslint eqeq: true, plusplus: true, nomen: true*/
 /*global  Omadi*/
@@ -77,6 +78,8 @@ Omadi.widgets.getFieldView = function (node, instance){"use strict";
             fieldView = Omadi.widgets.file.getFieldView(node, instance); break;
         case 'list_text':
             fieldView = Omadi.widgets.list_text.getFieldView(node, instance); break;
+        case 'extra_price':
+            fieldView = Omadi.widgets.extra_price.getFieldView(node, instance); break;
     }
     
     return fieldView;
@@ -92,53 +95,55 @@ Omadi.widgets.fontSize = 16;
 Omadi.widgets.getDBValues = function(fieldWrapper){"use strict";
     var dbValues = [], i, j, k, m, children, subChildren, subSubChildren, subSubSubChildren;
     
-    children = fieldWrapper.getChildren();
-    
-    // Find the dbValue up to 4 levels deep in the UI elements
-    // The only one going 4 levels deep is the image field with widget signature
-    
-    for(i = 0; i < children.length; i ++){
-        if(typeof children[i].dbValue !== 'undefined'){
-            if(typeof children[i].dbValue === 'object' && children[i].dbValue instanceof Array){
-                dbValues = children[i].dbValue;
-            }
-            else{
-                dbValues.push(Omadi.utils.trimWhiteSpace(children[i].dbValue));
-            }
-        }
-        else if(children[i].getChildren().length > 0){
-            subChildren = children[i].getChildren();
-            for(j = 0; j < subChildren.length; j ++){
-                if(typeof subChildren[j].dbValue !== 'undefined'){
-                    
-                    if(typeof subChildren[j].dbValue === 'object' && subChildren[j].dbValue instanceof Array){
-                        //Ti.API.debug(JSON.stringify(subChildren[j].dbValue));
-                        dbValues = subChildren[j].dbValue;
-                    }
-                    else{
-                        dbValues.push(Omadi.utils.trimWhiteSpace(subChildren[j].dbValue));
-                    }
+    if(typeof fieldWrapper !== 'undefined'){
+        children = fieldWrapper.getChildren();
+        
+        // Find the dbValue up to 4 levels deep in the UI elements
+        // The only one going 4 levels deep is the image field with widget signature
+        
+        for(i = 0; i < children.length; i ++){
+            if(typeof children[i].dbValue !== 'undefined'){
+                if(typeof children[i].dbValue === 'object' && children[i].dbValue instanceof Array){
+                    dbValues = children[i].dbValue;
                 }
-                else if(subChildren[j].getChildren().length > 0){
-                    subSubChildren = subChildren[j].getChildren();
-                    for(k = 0; k < subSubChildren.length; k ++){
-                        if(typeof subSubChildren[k].dbValue !== 'undefined'){
-                            if(typeof subSubChildren[k].dbValue === 'object' && subSubChildren[k].dbValue instanceof Array){
-                                dbValues = subSubChildren[k].dbValue;
-                            }
-                            else{
-                                dbValues.push(Omadi.utils.trimWhiteSpace(subSubChildren[k].dbValue));
-                            }
+                else{
+                    dbValues.push(Omadi.utils.trimWhiteSpace(children[i].dbValue));
+                }
+            }
+            else if(children[i].getChildren().length > 0){
+                subChildren = children[i].getChildren();
+                for(j = 0; j < subChildren.length; j ++){
+                    if(typeof subChildren[j].dbValue !== 'undefined'){
+                        
+                        if(typeof subChildren[j].dbValue === 'object' && subChildren[j].dbValue instanceof Array){
+                            //Ti.API.debug(JSON.stringify(subChildren[j].dbValue));
+                            dbValues = subChildren[j].dbValue;
                         }
-                        else if(subSubChildren[k].getChildren().length > 0){
-                            subSubSubChildren = subSubChildren[k].getChildren();
-                            for(m = 0; m < subSubSubChildren.length; m ++){
-                                if(typeof subSubSubChildren[m].dbValue !== 'undefined'){
-                                    if(typeof subSubSubChildren[m].dbValue === 'object' && subSubSubChildren[m].dbValue instanceof Array){
-                                        dbValues = subSubSubChildren[m].dbValue;
-                                    }
-                                    else{
-                                        dbValues.push(Omadi.utils.trimWhiteSpace(subSubSubChildren[m].dbValue));
+                        else{
+                            dbValues.push(Omadi.utils.trimWhiteSpace(subChildren[j].dbValue));
+                        }
+                    }
+                    else if(subChildren[j].getChildren().length > 0){
+                        subSubChildren = subChildren[j].getChildren();
+                        for(k = 0; k < subSubChildren.length; k ++){
+                            if(typeof subSubChildren[k].dbValue !== 'undefined'){
+                                if(typeof subSubChildren[k].dbValue === 'object' && subSubChildren[k].dbValue instanceof Array){
+                                    dbValues = subSubChildren[k].dbValue;
+                                }
+                                else{
+                                    dbValues.push(Omadi.utils.trimWhiteSpace(subSubChildren[k].dbValue));
+                                }
+                            }
+                            else if(subSubChildren[k].getChildren().length > 0){
+                                subSubSubChildren = subSubChildren[k].getChildren();
+                                for(m = 0; m < subSubSubChildren.length; m ++){
+                                    if(typeof subSubSubChildren[m].dbValue !== 'undefined'){
+                                        if(typeof subSubSubChildren[m].dbValue === 'object' && subSubSubChildren[m].dbValue instanceof Array){
+                                            dbValues = subSubSubChildren[m].dbValue;
+                                        }
+                                        else{
+                                            dbValues.push(Omadi.utils.trimWhiteSpace(subSubSubChildren[m].dbValue));
+                                        }
                                     }
                                 }
                             }
@@ -148,7 +153,6 @@ Omadi.widgets.getDBValues = function(fieldWrapper){"use strict";
             }
         }
     }
-    
     return dbValues;
 };
 
@@ -213,56 +217,13 @@ Omadi.widgets.setValueWidgetProperty = function(field_name, property, value, set
         value = value + "".toString();
     }
     
-    children = fieldWrappers[field_name].getChildren();
-    
-    if(setIndex == -1){
-        for(i = 0; i < children.length; i ++){
-            if(typeof children[i].dbValue !== 'undefined'){
-               
-                if(property.length == 1){
-                    fieldWrappers[field_name].children[i][property[0]] = value;
-                }
-                else if(property.length == 2){
-                    fieldWrappers[field_name].children[i][property[0]][property[1]] = value;
-                }
-            }
-            
-            if(children[i].getChildren().length > 0){
-                subChildren = children[i].getChildren();
-                for(j = 0; j < subChildren.length; j ++){
-                    if(typeof subChildren[j].dbValue !== 'undefined'){
-                        //Ti.API.debug(field_name + " " + property[0] + " sub children");
-                        if(property.length == 1){
-                            fieldWrappers[field_name].children[i].children[j][property[0]] = value;
-                        }
-                        else if(property.length == 2){
-                            fieldWrappers[field_name].children[i].children[j][property[0]][property[1]] = value;
-                        }
-                    }
-                    
-                    if(subChildren[j].getChildren().length > 0){
-                        subSubChildren = subChildren[j].getChildren();
-                        for(k = 0; k < subSubChildren.length; k ++){
-                            if(typeof subSubChildren[k].dbValue !== 'undefined'){
-                                //Ti.API.debug(field_name + " " + property[0] + " sub sub children");
-                                if(property.length == 1){
-                                    //Ti.API.debug('value: ' + value);
-                                    fieldWrappers[field_name].children[i].children[j].children[k][property[0]] = value;
-                                }
-                                else if(property.length == 2){
-                                    fieldWrappers[field_name].children[i].children[j].children[k][property[0]][property[1]] = value;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    else{
-        for(i = 0; i < children.length; i ++){
-            if(typeof children[i].dbValue !== 'undefined'){
-                if(i == setIndex){
+    if(typeof fieldWrappers[field_name] !== 'undefined'){
+        children = fieldWrappers[field_name].getChildren();
+        
+        if(setIndex == -1){
+            for(i = 0; i < children.length; i ++){
+                if(typeof children[i].dbValue !== 'undefined'){
+                   
                     if(property.length == 1){
                         fieldWrappers[field_name].children[i][property[0]] = value;
                     }
@@ -270,13 +231,12 @@ Omadi.widgets.setValueWidgetProperty = function(field_name, property, value, set
                         fieldWrappers[field_name].children[i][property[0]][property[1]] = value;
                     }
                 }
-            }
-            
-            if(children[i].getChildren().length > 0){
-                subChildren = children[i].getChildren();
-                for(j = 0; j < subChildren.length; j ++){
-                    if(typeof subChildren[j].dbValue !== 'undefined'){
-                        if(j == setIndex){
+                
+                if(children[i].getChildren().length > 0){
+                    subChildren = children[i].getChildren();
+                    for(j = 0; j < subChildren.length; j ++){
+                        if(typeof subChildren[j].dbValue !== 'undefined'){
+                            //Ti.API.debug(field_name + " " + property[0] + " sub children");
                             if(property.length == 1){
                                 fieldWrappers[field_name].children[i].children[j][property[0]] = value;
                             }
@@ -284,18 +244,64 @@ Omadi.widgets.setValueWidgetProperty = function(field_name, property, value, set
                                 fieldWrappers[field_name].children[i].children[j][property[0]][property[1]] = value;
                             }
                         }
-                    }
-                    
-                    if(subChildren[j].getChildren().length > 0){
-                        subSubChildren = subChildren[j].getChildren();
-                        for(k = 0; k < subSubChildren.length; k ++){
-                            if(typeof subSubChildren[k].dbValue !== 'undefined'){
-                                if(k == setIndex){
+                        
+                        if(subChildren[j].getChildren().length > 0){
+                            subSubChildren = subChildren[j].getChildren();
+                            for(k = 0; k < subSubChildren.length; k ++){
+                                if(typeof subSubChildren[k].dbValue !== 'undefined'){
+                                    //Ti.API.debug(field_name + " " + property[0] + " sub sub children");
                                     if(property.length == 1){
+                                        //Ti.API.debug('value: ' + value);
                                         fieldWrappers[field_name].children[i].children[j].children[k][property[0]] = value;
                                     }
                                     else if(property.length == 2){
                                         fieldWrappers[field_name].children[i].children[j].children[k][property[0]][property[1]] = value;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else{
+            for(i = 0; i < children.length; i ++){
+                if(typeof children[i].dbValue !== 'undefined'){
+                    if(i == setIndex){
+                        if(property.length == 1){
+                            fieldWrappers[field_name].children[i][property[0]] = value;
+                        }
+                        else if(property.length == 2){
+                            fieldWrappers[field_name].children[i][property[0]][property[1]] = value;
+                        }
+                    }
+                }
+                
+                if(children[i].getChildren().length > 0){
+                    subChildren = children[i].getChildren();
+                    for(j = 0; j < subChildren.length; j ++){
+                        if(typeof subChildren[j].dbValue !== 'undefined'){
+                            if(j == setIndex){
+                                if(property.length == 1){
+                                    fieldWrappers[field_name].children[i].children[j][property[0]] = value;
+                                }
+                                else if(property.length == 2){
+                                    fieldWrappers[field_name].children[i].children[j][property[0]][property[1]] = value;
+                                }
+                            }
+                        }
+                        
+                        if(subChildren[j].getChildren().length > 0){
+                            subSubChildren = subChildren[j].getChildren();
+                            for(k = 0; k < subSubChildren.length; k ++){
+                                if(typeof subSubChildren[k].dbValue !== 'undefined'){
+                                    if(k == setIndex){
+                                        if(property.length == 1){
+                                            fieldWrappers[field_name].children[i].children[j].children[k][property[0]] = value;
+                                        }
+                                        else if(property.length == 2){
+                                            fieldWrappers[field_name].children[i].children[j].children[k][property[0]][property[1]] = value;
+                                        }
                                     }
                                 }
                             }
@@ -399,11 +405,12 @@ Omadi.widgets.shared = {
         
         node = formToNode();
         
+        Ti.API.debug(JSON.stringify(node));
+        
         fieldView = instance.fieldView;
         children = fieldView.getChildren();
         
         wrapper = fieldView.wrapper;
-        wrapper.startLayout();
         
         instance.dbValues = Omadi.widgets.getDBValues(wrapper);
         instance.textValues = Omadi.widgets.getTextValues(wrapper);
@@ -424,12 +431,6 @@ Omadi.widgets.shared = {
         for(i = children.length - 1; i >= 0; i --){
             wrapper.remove(children[i]);
         }
-        
-        // for(i = children.length - 1; i >= 0; i --){
-            // fieldView.remove(children[i]);
-        // }
-        
-        wrapper.finishLayout();
     }
 };
 
@@ -561,7 +562,8 @@ Omadi.widgets.getTextField = function(instance){"use strict";
         focusable: true,
         
         // iOS options
-        borderStyle: Ti.UI.INPUT_BORDERSTYLE_ROUNDED,
+        //borderStyle: Ti.UI.INPUT_BORDERSTYLE_ROUNDED,
+        leftButtonPadding: 8,
         suppressReturn: true,
         
         // Custom variables
@@ -592,14 +594,24 @@ Omadi.widgets.getTextField = function(instance){"use strict";
     }
     
     textField.addEventListener('focus', function(e){
+        e.source.setBackgroundColor('#def');
         Omadi.widgets.currentlyFocusedField = e.source; 
     });
     
-    //Ti.App.addEventListener('customCopy')
+    textField.addEventListener('blur', function(e){
+        e.source.setBackgroundColor('#fff');
+    });
     
     return textField;
 };
 
+Omadi.widgets.unfocusField = function(){"use strict";
+    if(typeof Omadi.widgets.currentlyFocusedField !== 'undefined'){
+        if(Omadi.widgets.currentlyFocusedField != null && typeof Omadi.widgets.currentlyFocusedField.blur !== 'undefined'){
+            Omadi.widgets.currentlyFocusedField.blur();
+        }
+    }
+};
 
 Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
         
@@ -624,30 +636,29 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
         color_unset = "#fff";
         
         popupWin = Ti.UI.createWindow({
-            
+            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT],
+            modal: true,
+            navBarHidden: true
         });
         
         opacView = Ti.UI.createView({
             left : 0,
             right : 0,
             top : 0,
-            bottom : 0,
-            backgroundColor : '#000000',
-            opacity : 0.5
+            bottom : 0
         });
         
         numItemsSelected = 0;
         popupWin.add(opacView);
     
         wrapperView = Ti.UI.createView({
-            backgroundColor : '#FFFFFF',
+            backgroundColor : '#fff',
             left : '5%',
             right : '5%',
             height: Ti.UI.SIZE,
             borderRadius : 10,
             borderWidth : 2,
-            borderColor : '#FFFFFF',
-            opacity: 1,
+            borderColor : '#fff',
             layout: 'vertical'
         });
         popupWin.add(wrapperView);
@@ -667,8 +678,6 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
             height: listHeight,
             options: options
         });
-        
-        //scrollView.add(listView);
         
         dbValues = buttonView.dbValue;
         

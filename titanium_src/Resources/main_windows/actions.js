@@ -1,3 +1,4 @@
+
 Ti.include('/lib/functions.js');
 
 /*global Omadi*/
@@ -27,9 +28,9 @@ function createIOSToolbar() {"use strict";
         systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
     });
 
-    label = Titanium.UI.createButton({
-        title : 'Actions',
-        color : '#fff',
+    label = Titanium.UI.createLabel({
+        text : 'Actions',
+        color : '#333',
         ellipsize : true,
         wordwrap : false,
         width : Ti.UI.SIZE,
@@ -119,13 +120,13 @@ function addClockInClockOut() {"use strict";
                     y : '100%'
                 },
                 colors : [{
-                    color : '#246',
+                    color : '#2BC4F3',
                     offset : 0.0
                 }, {
-                    color : '#468',
+                    color : '#00AEEE',
                     offset : 0.33
                 }, {
-                    color : '#024',
+                    color : '#0095DA',
                     offset : 1.0
                 }]
             },
@@ -140,6 +141,7 @@ function addClockInClockOut() {"use strict";
             borderColor: '#333',
             borderWidth: 1,
             top: 3,
+            bottom: 3,
             textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
         });
         
@@ -184,11 +186,10 @@ function addClockInClockOut() {"use strict";
         });
         
         image = Ti.UI.createImageView({
-           image: Omadi.display.getNodeTypeImagePath('timecard'),
+           image: Omadi.display.getIconFile('timecard'),
            top: 9,
            left: '3%',
-           height: Ti.UI.SIZE,
-           width: Ti.UI.SIZE
+           width: 48
         });
         
         wrapper.add(image);
@@ -253,13 +254,13 @@ function addCompanyVehicle(){"use strict";
                     y : '100%'
                 },
                 colors : [{
-                    color : '#246',
+                    color : '#2BC4F3',
                     offset : 0.0
                 }, {
-                    color : '#468',
+                    color : '#00AEEE',
                     offset : 0.33
                 }, {
-                    color : '#024',
+                    color : '#0095DA',
                     offset : 1.0
                 }]
             },
@@ -274,6 +275,7 @@ function addCompanyVehicle(){"use strict";
             borderColor: '#333',
             borderWidth: 1,
             top: 3,
+            bottom: 3,
             textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
         });
         
@@ -309,11 +311,10 @@ function addCompanyVehicle(){"use strict";
         });
         
         image = Ti.UI.createImageView({
-           image: Omadi.display.getNodeTypeImagePath('company_vehicle'),
+           image: Omadi.display.getIconFile('company_vehicle'),
            top: 9,
            left: '3%',
-           height: Ti.UI.SIZE,
-           width: Ti.UI.SIZE
+           width: 48
         });
         
         wrapper.add(image);
@@ -365,13 +366,13 @@ function addDrafts(){"use strict";
                     y : '100%'
                 },
                 colors : [{
-                    color : '#246',
+                    color : '#2BC4F3',
                     offset : 0.0
                 }, {
-                    color : '#468',
+                    color : '#00AEEE',
                     offset : 0.33
                 }, {
-                    color : '#024',
+                    color : '#0095DA',
                     offset : 1.0
                 }]
             },
@@ -386,6 +387,7 @@ function addDrafts(){"use strict";
             borderColor: '#333',
             borderWidth: 1,
             top: 3,
+            bottom: 3,
             text: 'View My Drafts',
             textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
         });
@@ -395,11 +397,10 @@ function addDrafts(){"use strict";
         });
         
         image = Ti.UI.createImageView({
-           image: '/images/drafts.png',
+           image: '/images/drafts_color.png',
            top: 9,
            left: '3%',
-           height: Ti.UI.SIZE,
-           width: Ti.UI.SIZE
+           width: 48
         });
         
         wrapper.add(image);
@@ -451,13 +452,13 @@ function addLocalPhotos(){"use strict";
                     y : '100%'
                 },
                 colors : [{
-                    color : '#246',
+                    color : '#2BC4F3',
                     offset : 0.0
                 }, {
-                    color : '#468',
+                    color : '#00AEEE',
                     offset : 0.33
                 }, {
-                    color : '#024',
+                    color : '#0095DA',
                     offset : 1.0
                 }]
             },
@@ -472,6 +473,7 @@ function addLocalPhotos(){"use strict";
             borderColor: '#333',
             borderWidth: 1,
             top: 3,
+            bottom: 3,
             text: 'Photos Not Uploaded',
             textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
         });
@@ -481,11 +483,10 @@ function addLocalPhotos(){"use strict";
         });
         
         image = Ti.UI.createImageView({
-           image: '/images/camera_icon.png',
+           image: '/images/camera_icon_color.png',
            top: 9,
            left: '3%',
-           height: Ti.UI.SIZE,
-           width: Ti.UI.SIZE
+           width: 48
         });
         
         wrapper.add(image);
@@ -527,13 +528,13 @@ function addDeleteAll(){"use strict";
                 y : '100%'
             },
             colors : [{
-                color : '#800',
+                color : '#F37E5F',
                 offset : 0.0
             }, {
-                color : '#a00',
+                color : '#EC1C24',
                 offset : 0.33
             }, {
-                color : '#600',
+                color : '#D12128',
                 offset : 1.0
             }]
         },
@@ -548,6 +549,7 @@ function addDeleteAll(){"use strict";
         borderColor: '#333',
         borderWidth: 1,
         top: 3,
+        bottom: 3,
         text: 'Reset All Data',
         textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
     });
@@ -555,9 +557,9 @@ function addDeleteAll(){"use strict";
     button.addEventListener('click', function(e) {
         dialog = Ti.UI.createAlertDialog({
             cancel : 1,
-            buttonNames : ['Yes', 'No'],
+            buttonNames : ['Delete It', 'Cancel'],
             message : 'This will delete any data not uploaded to the server, and this cannot be undone! Are you sure?',
-            title : 'Reset All Data'
+            title : 'Really Reset Everything?'
         });
     
         dialog.addEventListener('click', function(e) {
@@ -578,11 +580,100 @@ function addDeleteAll(){"use strict";
     });
     
     image = Ti.UI.createImageView({
-       image: '/images/delete_all_icon.png',
+       image: '/images/delete_all_icon_color.png',
        top: 2,
        left: '3%',
+       width: 48
+    });
+    
+    wrapper.add(image);
+    
+    textButton.add(button);
+    
+    wrapper.add(textButton);
+    currentWinWrapper.add(wrapper);
+    addSeparator();
+
+}
+
+function addDebug(){"use strict";
+    var wrapper, button, dialog, image, textButton;
+    
+   
+    wrapper = Ti.UI.createView({
        height: Ti.UI.SIZE,
-       width: Ti.UI.SIZE
+       width: Ti.UI.FILL
+    });
+    
+    textButton = Ti.UI.createView({
+        layout: 'vertical',
+        height: Ti.UI.SIZE,
+        left: 48,
+        right: 0
+    });
+    
+    button = Ti.UI.createLabel({
+        style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
+        backgroundGradient : {
+            type : 'linear',
+            startPoint : {
+                x : '50%',
+                y : '0%'
+            },
+            endPoint : {
+                x : '50%',
+                y : '100%'
+            },
+            colors : [{
+                color : '#A7A9AC',
+                offset : 0.0
+            }, {
+                color : '#6D6E71',
+                offset : 0.33
+            }, {
+                color : '#58595B',
+                offset : 1.0
+            }]
+        },
+        color: '#fff',
+        borderRadius: 7,
+        width: 200,
+        height: 35,
+        font: {
+            fontWeight: 'bold',
+            fontSize: 16
+        },
+        borderColor: '#333',
+        borderWidth: 1,
+        top: 3,
+        bottom: 3,
+        text: 'Send Debug Data',
+        textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
+    });
+    
+    button.addEventListener('click', function(e) {
+        dialog = Ti.UI.createAlertDialog({
+            cancel : 1,
+            buttonNames : ['Send Data', 'Cancel'],
+            title : 'Really Send Debug Data?'
+        });
+    
+        dialog.addEventListener('click', function(e) {
+            var db, result;
+            
+            if(e.index === 0) {
+                Omadi.data.sendDebugData(true);
+            }
+        });
+        
+        dialog.show();
+    });
+    
+    image = Ti.UI.createImageView({
+       image: '/images/settings_color.png',
+       top: 2,
+       left: '3%',
+       width: 48
     });
     
     wrapper.add(image);
@@ -656,13 +747,13 @@ function addRefresh(){"use strict";
                 y : '100%'
             },
             colors : [{
-                color : '#777',
+                color : '#A7A9AC',
                 offset : 0.0
             }, {
-                color : '#999',
+                color : '#6D6E71',
                 offset : 0.33
             }, {
-                color : '#666',
+                color : '#58595B',
                 offset : 1.0
             }]
         },
@@ -677,6 +768,7 @@ function addRefresh(){"use strict";
         borderColor: '#333',
         borderWidth: 1,
         top: 3,
+        bottom: 3,
         text: 'Refresh / Sync Data',
         textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
     });
@@ -685,21 +777,19 @@ function addRefresh(){"use strict";
         Omadi.display.loading('Refreshing...');
         Omadi.service.checkUpdate();
         
-        Ti.App.removeEventListener('finishedDataSync', refreshCallbackDraft);
-        
-        Ti.App.addEventListener('finishedDataSync', refreshCallbackDraft);
+        Ti.App.removeEventListener('omadi:finishedDataSync', refreshCallbackDraft);
+        Ti.App.addEventListener('omadi:finishedDataSync', refreshCallbackDraft);
         
         Ti.UI.currentWindow.addEventListener('close', function(){
-            Ti.App.removeEventListener('finishedDataSync', refreshCallbackDraft);
+            Ti.App.removeEventListener('omadi:finishedDataSync', refreshCallbackDraft);
         });
     });
     
     image = Ti.UI.createImageView({
-       image: '/images/refresh.png',
+       image: '/images/refresh_light_blue.png',
        top: 10,
        left: '3%',
-       height: Ti.UI.SIZE,
-       width: Ti.UI.SIZE
+       width: 48
     });
     
     wrapper.add(image);
@@ -741,13 +831,13 @@ function addLogout(){"use strict";
                 y : '100%'
             },
             colors : [{
-                color : '#777',
+                color : '#A7A9AC',
                 offset : 0.0
             }, {
-                color : '#999',
+                color : '#6D6E71',
                 offset : 0.33
             }, {
-                color : '#666',
+                color : '#58595B',
                 offset : 1.0
             }]
         },
@@ -762,6 +852,7 @@ function addLogout(){"use strict";
         borderColor: '#333',
         borderWidth: 1,
         top: 3,
+        bottom: 3,
         text: 'Logout Now',
         textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
     });
@@ -771,11 +862,10 @@ function addLogout(){"use strict";
     });
     
     image = Ti.UI.createImageView({
-       image: '/images/logout_icon.png',
+       image: '/images/logout_icon_color.png',
        top: 2,
        left: '3%',
-       height: Ti.UI.SIZE,
-       width: Ti.UI.SIZE
+       width: 48
     });
     
     wrapper.add(image);
@@ -817,13 +907,13 @@ function addAbout(){"use strict";
                 y : '100%'
             },
             colors : [{
-                color : '#777',
+                color : '#A7A9AC',
                 offset : 0.0
             }, {
-                color : '#999',
+                color : '#6D6E71',
                 offset : 0.33
             }, {
-                color : '#666',
+                color : '#58595B',
                 offset : 1.0
             }]
         },
@@ -838,6 +928,7 @@ function addAbout(){"use strict";
         borderColor: '#333',
         borderWidth: 1,
         top: 3,
+        bottom: 3,
         text: 'About',
         textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
     });
@@ -847,11 +938,10 @@ function addAbout(){"use strict";
     });
     
     image = Ti.UI.createImageView({
-       image: '/images/info_icon.png',
+       image: '/images/about_color.png',
        top: 2,
        left: '3%',
-       height: Ti.UI.SIZE,
-       width: Ti.UI.SIZE
+       width: 48
     });
     
     wrapper.add(image);
@@ -865,6 +955,81 @@ function addAbout(){"use strict";
 
 }
 
+function addSettings(){"use strict";
+    var wrapper, button, dialog, image, textButton;
+   
+    wrapper = Ti.UI.createView({
+       height: Ti.UI.SIZE,
+       width: Ti.UI.FILL
+    });
+    
+    textButton = Ti.UI.createView({
+        layout: 'vertical',
+        height: Ti.UI.SIZE,
+        left: 48,
+        right: 0
+    });
+    
+    button = Ti.UI.createLabel({
+        style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
+        backgroundGradient : {
+            type : 'linear',
+            startPoint : {
+                x : '50%',
+                y : '0%'
+            },
+            endPoint : {
+                x : '50%',
+                y : '100%'
+            },
+            colors : [{
+                color : '#A7A9AC',
+                offset : 0.0
+            }, {
+                color : '#6D6E71',
+                offset : 0.33
+            }, {
+                color : '#58595B',
+                offset : 1.0
+            }]
+        },
+        color: '#fff',
+        borderRadius: 7,
+        width: 200,
+        height: 35,
+        font: {
+            fontWeight: 'bold',
+            fontSize: 16
+        },
+        borderColor: '#333',
+        borderWidth: 1,
+        top: 3,
+        bottom: 3,
+        text: 'Settings',
+        textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
+    });
+    
+    button.addEventListener('click', function(e) {
+        Omadi.display.openSettingsWindow();
+    });
+    
+    image = Ti.UI.createImageView({
+       image: '/images/settings_color.png',
+       top: 2,
+       left: '3%',
+       width: 48
+    });
+    
+    wrapper.add(image);
+    
+    textButton.add(button);
+    
+    wrapper.add(textButton);
+    currentWinWrapper.add(wrapper);
+    
+    addSeparator();
+}
+
 ( function() {"use strict";
 
         curWin.setBackgroundColor('#eee');
@@ -876,6 +1041,10 @@ function addAbout(){"use strict";
             bottom : 0,
             right : 0
         });
+        
+        if(Ti.App.isIOS7){
+            currentWinWrapper.top = 20;
+        }
 
         if (Ti.App.isAndroid) {
             curWin.addEventListener('android:back', function() {
@@ -902,7 +1071,11 @@ function addAbout(){"use strict";
         
         addAbout();
         
+        addSettings();
+        
         addDeleteAll();
+        
+        addDebug();
    
 
         curWin.add(currentWinWrapper);

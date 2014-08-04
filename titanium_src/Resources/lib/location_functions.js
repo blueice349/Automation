@@ -1,4 +1,5 @@
 /*jslint eqeq:true, plusplus: true*/
+
 Omadi.location = Omadi.location || {};
 
 Omadi.location.isLocationEnabled = function(){"use strict";
@@ -43,25 +44,47 @@ Omadi.location.isLocationEnabled = function(){"use strict";
     return retval;
 };
 
-Omadi.location.getLastLocation = function(){"use strict";
-    var db, result, location = {};
+Omadi.location.getLastLocation = function(expire){"use strict";
+    var db, result, location, now, expireTimestamp;
     
-    db = Omadi.utils.openGPSDatabase();
+    // Setup return value
+    location = {};
+    location.latitude = 0;
+    location.longitude = 0;
+    location.accuracy = 0;
     
-    result = db.execute("SELECT longitude, latitude, accuracy FROM user_location ORDER BY timestamp DESC LIMIT 1");
-    
-    if(result.isValidRow()){
-        location.latitude = result.fieldByName('latitude');
-        location.longitude = result.fieldByName('longitude');
-        location.accuracy = result.fieldByName('accuracy');
+    try{
+        if(typeof expire === 'undefined'){
+            // last 10 minutes
+            expire = 600;
+        }
+        else{
+            expire = parseInt(expire, 10);
+        }
+        
+        db = Omadi.utils.openGPSDatabase();
+        
+        if(!isNaN(expire) && expire > 0){
+            now = Omadi.utils.getUTCTimestamp();
+            expireTimestamp = now - expire;
+            result = db.execute("SELECT longitude, latitude, accuracy FROM user_location WHERE timestamp >= " + expireTimestamp + " ORDER BY timestamp DESC LIMIT 1");
+        }
+        else{
+            result = db.execute("SELECT longitude, latitude, accuracy FROM user_location ORDER BY timestamp DESC LIMIT 1");
+        }
+        
+        if(result.isValidRow()){
+            location.latitude = result.fieldByName('latitude');
+            location.longitude = result.fieldByName('longitude');
+            location.accuracy = result.fieldByName('accuracy');
+        }
+        
+        result.close();
+        db.close();
     }
-    else{
-        location.latitude = 0;
-        location.longitude = 0;
-        location.accuracy = 0;
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception in getLastLocation: " + ex);
     }
-    
-    db.close();
     
     return location;
 };
@@ -157,13 +180,16 @@ Omadi.location.uploadGPSCoordinates = function() {"use strict";
                 }
                 json += "], \"current_time\": \" " + Omadi.utils.getUTCTimestamp() + "\" }";
 
-                http = Ti.Network.createHTTPClient();
+                http = Ti.Network.createHTTPClient({
+                    enableKeepAlive: false,
+                    validatesSecureCertificate: false
+                });
                 //Timeout until error:
                 http.setTimeout(30000);
-
+                
                 //Opens address to retrieve contact list
                 http.open('POST', Omadi.DOMAIN_NAME + '/js-location/mobile_location.json');
-
+                
                 //Header parameters
                 http.setRequestHeader("Content-Type", "application/json");
                 Omadi.utils.setCookieHeader(http);
@@ -182,7 +208,6 @@ Omadi.location.uploadGPSCoordinates = function() {"use strict";
                 Ti.API.debug("FETCHING CURRENT POSITION");
 
                 createNotification("No coordinates saved... " + Omadi.utils.PHPFormatDate('g:i a', Number(Omadi.utils.getUTCTimestamp())));
-
             }
         }
     }
@@ -207,12 +232,6 @@ Omadi.location.uploadSuccess = function(e) {"use strict";
     /*global isJsonString*/
 
     var i, j, responseObj, db, sqlArray, nids, now_timestamp, result;
-
-    //Parses response into strings
-    //Ti.API.info('onLoad for GPS coordiates reached! Here is the reply: ');
-    //Ti.API.info(this.responseText);
-    //Ti.API.info('Requested: ');
-    //Ti.API.info(json);
 
     if (isJsonString(this.responseText) === true) {
         now_timestamp = Omadi.utils.getUTCTimestamp();

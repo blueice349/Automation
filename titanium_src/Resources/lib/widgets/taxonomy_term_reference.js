@@ -1,3 +1,4 @@
+
 /*jslint eqeq:true, plusplus: true*/
 /*global setConditionallyRequiredLabelForInstance,affectsAnotherConditionalField, dbEsc*/
 
@@ -74,12 +75,12 @@ Omadi.widgets.taxonomy_term_reference = {
         if (instance.settings.cardinality == -1) {
             dbValue = [];
             textValue = '';
-            if ( typeof node[instance.field_name] !== 'undefined') {
-                if ( typeof node[instance.field_name].dbValues !== 'undefined') {
+            if (typeof node[instance.field_name] !== 'undefined') {
+                if (typeof node[instance.field_name].dbValues !== 'undefined') {
                     dbValue = node[instance.field_name].dbValues;
                 }
 
-                if ( typeof node[instance.field_name].textValues !== 'undefined') {
+                if (typeof node[instance.field_name].textValues !== 'undefined') {
                     textValue = node[instance.field_name].textValues;
                     if (textValue.length > 0) {
                         textValue = textValue.join(', ');
@@ -101,12 +102,12 @@ Omadi.widgets.taxonomy_term_reference = {
         else {
             dbValue = null;
             textValue = "";
-            if ( typeof node[instance.field_name] !== 'undefined') {
-                if ( typeof node[instance.field_name].dbValues !== 'undefined' && typeof node[instance.field_name].dbValues[index] !== 'undefined') {
+            if (typeof node[instance.field_name] !== 'undefined') {
+                if (typeof node[instance.field_name].dbValues !== 'undefined' && typeof node[instance.field_name].dbValues[index] !== 'undefined') {
                     dbValue = node[instance.field_name].dbValues[index];
                 }
 
-                if ( typeof node[instance.field_name].textValues !== 'undefined' && typeof node[instance.field_name].textValues[index] !== 'undefined') {
+                if (typeof node[instance.field_name].textValues !== 'undefined' && typeof node[instance.field_name].textValues[index] !== 'undefined') {
                     textValue = node[instance.field_name].textValues[index];
                 }
             }
@@ -193,16 +194,23 @@ Omadi.widgets.taxonomy_term_reference = {
             widgetView.addEventListener('click', Omadi.widgets.taxonomy_term_reference.scrollUp);
     
             widgetView.addEventListener('blur', function(e) {
-                e.source.autocomplete_table.setBorderWidth(0);
-                e.source.autocomplete_table.setHeight(0);
-                e.source.autocomplete_table.setVisible(false);
-                
-                if(typeof e.source.instance.settings.restrict_new_autocomplete_terms !== 'undefined' && 
-                    e.source.instance.settings.restrict_new_autocomplete_terms == 1 && 
-                    e.source.dbValue === null && 
-                    e.source.value > ""){
-                        
-                        alert("The value \"" + e.source.value + "\" will not be saved for the \"" + e.source.instance.label + "\" field because new items have been disabled by the administrator.");
+                try{
+                    e.source.autocomplete_table.setBorderWidth(0);
+                    e.source.autocomplete_table.setHeight(0);
+                    e.source.autocomplete_table.setVisible(false);
+                    
+                    if(typeof e.source.instance.settings.restrict_new_autocomplete_terms !== 'undefined' && 
+                        e.source.instance.settings.restrict_new_autocomplete_terms == 1 && 
+                        e.source.dbValue === null && 
+                        e.source.value > ""){
+                            
+                            alert("The value \"" + e.source.value + "\" will not be saved for the \"" + e.source.instance.label + "\" field because new items have been disabled by the administrator.");
+                    }
+                }
+                catch(ex){
+                    try{
+                        Omadi.service.sendErrorReport("exception in omadi reference blur: " + ex);
+                    }catch(ex1){}
                 }
             });
             
@@ -356,9 +364,14 @@ Omadi.widgets.taxonomy_term_reference = {
 
         return wrapperView;
     },
-    getOptions : function(instance) {"use strict";
+    getOptions : function(instance, useNone) {"use strict";
 
         var db, result, vid, options;
+        
+        if(typeof useNone === 'undefined'){
+            useNone = true;
+        }
+        
         db = Omadi.utils.openMainDatabase();
         
         options = [];
@@ -372,7 +385,7 @@ Omadi.widgets.taxonomy_term_reference = {
     
            
     
-            if (instance.settings.cardinality != -1 && instance.required == 0) {
+            if (instance.settings.cardinality != -1 && instance.required == 0 && useNone) {
                 options.push({
                     title : '- None -',
                     dbValue : null

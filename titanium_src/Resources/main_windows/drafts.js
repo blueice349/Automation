@@ -32,12 +32,12 @@ function addiOSToolbar() {"use strict";
     space = Titanium.UI.createButton({
         systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
     });
-    label = Titanium.UI.createButton({
-        title : 'Drafts',
-        color : '#fff',
+    label = Titanium.UI.createLabel({
+        text : 'Drafts',
+        color : '#333',
         ellipsize : true,
         wordwrap : false,
-        width : 200,
+        width : Ti.UI.SIZE,
         style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
     });
 
@@ -49,6 +49,7 @@ function addiOSToolbar() {"use strict";
         borderBottom : false,
         height: Ti.UI.SIZE
     });
+    
     wrapperView.add(toolbar);
 }
 
@@ -58,18 +59,22 @@ Drafts.deleteDraft = function(nid){"use strict";
     var dialog;
     
     dialog = Ti.UI.createAlertDialog({
-       title: 'Confirm Delete',
-       message: 'Are you sure you want to delete the draft?',
-       buttonNames: ['Yes', 'Cancel'],
+       title: 'Really Delete Draft?',
+       buttonNames: ['Delete', 'Cancel'],
        cancel: 1,
        nid: nid
     });
     
     dialog.addEventListener('click', function(e){
-        if(e.index == 0){
-            Ti.API.debug("DELETING nid " + e.source.nid);
-            Omadi.data.deleteNode(e.source.nid);
-            Drafts.refreshDrafts();
+        try{
+            if(e.index == 0){
+                Ti.API.debug("DELETING nid " + e.source.nid);
+                Omadi.data.deleteNode(e.source.nid);
+                Drafts.refreshDrafts();
+            }
+        }
+        catch(ex){
+            Omadi.service.sendErrorReport("exception in click for draft delete: " + ex);
         }
     });
     
@@ -105,16 +110,17 @@ Drafts.refreshDrafts = function(){"use strict";
             
             textView = Ti.UI.createView({
                 right: 1,
-                left: 45,
+                left: 50,
                 top: 0,
                 height: Ti.UI.SIZE,
                 layout: 'vertical'
             });
             
             rowImg = Ti.UI.createImageView({
-                image: Omadi.display.getNodeTypeImagePath(result.fieldByName('table_name')),
-                left: 1,
+                image: Omadi.display.getIconFile(result.fieldByName('table_name')),
+                left: 5,
                 top: 5,
+                bottom: 5,
                 width: 35,
                 height: 35
             });
@@ -190,10 +196,8 @@ Drafts.refreshDrafts = function(){"use strict";
         search = Ti.UI.createSearchBar({
             hintText : 'Search...',
             autocorrect : false,
-            barColor : '#666',
             showCancel: true,
-            color: '#000',
-            backgroundColor: '#666'
+            barColor: '#111'
         });
         
         if(Ti.App.isAndroid){
@@ -274,49 +278,49 @@ Drafts.refreshDrafts = function(){"use strict";
         //When the user clicks on a certain contact, it opens individual_contact.js
         tableView.addEventListener('click', function(e) {
             //Hide keyboard when returning
+            try{            
+                if(e.row.nid != null){
+                    Omadi.display.showDialogFormOptions(e, [{
+                        text: 'Delete Draft',
+                        callback: Drafts.deleteDraft,
+                        callbackArgs: [e.row.nid]
+                    }]);
+                }
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("exception in drafts tableview click: " + ex);
+            }
+        });
+
+        // tableView.addEventListener('longclick', function(e) {
 // 
             // if (e.row.nid != null) {
-                // Omadi.display.openFormWindow(e.row.node_type, e.row.nid, e.row.form_part);
+//                 
+                // Titanium.Media.vibrate();
+// 
+                // dialog = Titanium.UI.createAlertDialog({
+                    // title : 'Omadi',
+                    // buttonNames : ['Yes', 'No'],
+                    // cancel : 1,
+                    // click_index : e.index,
+                    // sec_obj : e.section,
+                    // row_obj : e.row
+                // });
+// 
+                // dialog.message = 'Are you sure you want to delete the draft "' + e.row.searchValue + '" ?';
+                // dialog.show();
+// 
+                // dialog.addEventListener('click', function(e) {
+                    // if (e.cancel === false) {
+//                        
+                        // tableView.deleteRow(tableView.data[0][e.source.click_index]);
+                        // var db = Omadi.utils.openMainDatabase();
+                        // db.execute('UPDATE node SET flag_is_updated = 4 WHERE nid=' + e.source.row_obj.nid);
+                        // db.close();
+                    // }
+                // });
             // }
-            
-            if(e.row.nid != null){
-                Omadi.display.showDialogFormOptions(e, [{
-                    text: 'Delete Draft',
-                    callback: Drafts.deleteDraft,
-                    callbackArgs: [e.row.nid]
-                }]);
-            }
-        });
-
-        tableView.addEventListener('longclick', function(e) {
-
-            if (e.row.nid != null) {
-                
-                Titanium.Media.vibrate();
-
-                dialog = Titanium.UI.createAlertDialog({
-                    title : 'Omadi',
-                    buttonNames : ['Yes', 'No'],
-                    cancel : 1,
-                    click_index : e.index,
-                    sec_obj : e.section,
-                    row_obj : e.row
-                });
-
-                dialog.message = 'Are you sure you want to delete the draft "' + e.row.searchValue + '" ?';
-                dialog.show();
-
-                dialog.addEventListener('click', function(e) {
-                    if (e.cancel === false) {
-                       
-                        tableView.deleteRow(tableView.data[0][e.source.click_index]);
-                        var db = Omadi.utils.openMainDatabase();
-                        db.execute('UPDATE node SET flag_is_updated = 4 WHERE nid=' + e.source.row_obj.nid);
-                        db.close();
-                    }
-                });
-            }
-        });
+        // });
 
         //Adds contact list container to the UI
         wrapperView.add(tableView);
@@ -334,14 +338,16 @@ Drafts.refreshDrafts = function(){"use strict";
     db.close();
 };
 
+function closeDraftsWindow(){"use strict";   
+    Ti.UI.currentWindow.close();
+}
+
 (function() {"use strict";
 
     var db, result, i, count, section, fullName, row, 
         empty, search, formWindow, dialog, textView, titleLabel, rowImg, timeLabel;
     //Current window's instance
-
-    curWin.setOrientationModes([Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
-    
+ 
     wrapperView = Ti.UI.createView({
        layout: 'vertical',
        bottom: 0,
@@ -350,6 +356,10 @@ Drafts.refreshDrafts = function(){"use strict";
        left: 0 
     });
     
+    if(Ti.App.isIOS7){
+        wrapperView.top = 20;
+    }
+    
     //When back button on the phone is pressed, it opens mainMenu.js and close the current window
     curWin.addEventListener('android:back', function() {
         //Enable background updates
@@ -357,21 +367,11 @@ Drafts.refreshDrafts = function(){"use strict";
         curWin.close();
     });
     
-    Ti.App.addEventListener('loggingOut', function(){
-        Ti.UI.currentWindow.close();
-    });
+    Ti.App.removeEventListener('loggingOut', closeDraftsWindow);
+    Ti.App.addEventListener('loggingOut', closeDraftsWindow);
     
-    Ti.App.addEventListener("savedNode", function(){
-        
-        if(Ti.App.isAndroid){
-            Ti.UI.currentWindow.close();
-        }
-        else{
-            Ti.UI.currentWindow.hide();
-            // Close the window after the maximum timeout for a node save
-            setTimeout(Ti.UI.currentWindow.close, 65000);
-        }
-    });
+    Ti.App.removeEventListener("savedNode", closeDraftsWindow);
+    Ti.App.addEventListener("savedNode", closeDraftsWindow);
     
     Drafts.refreshDrafts();
     

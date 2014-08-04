@@ -40,6 +40,7 @@ Ti.Geolocation.Android.addLocationRule(gpsRuleNetword);
 
 Ti.Geolocation.addEventListener('location', updateCurrentLocation);
 
+Ti.App.removeEventListener("stopGPS", stopGPS);
 Ti.App.addEventListener("stopGPS", stopGPS);
 
 function stopGPS(){"use strict";

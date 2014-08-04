@@ -46,14 +46,23 @@ Omadi.widgets.datestamp = {
 
         if (settings.cardinality == -1) {
             addAnotherItemButton = Ti.UI.createButton({
-                title : 'Add another item',
+                title : ' Add another item ',
                 right : 15,
-                instance : instance
+                instance : instance,
+                style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
+                backgroundGradient: Omadi.display.backgroundGradientGray,
+                borderColor: '#999',
+                borderWidth: 1,
+                width: 180,
+                borderRadius: 10,
+                color: '#eee',
+                top: 10
             });
 
             addAnotherItemButton.addEventListener('click', function(e) {
                 var instance = e.source.instance;
                 instance.numVisibleFields++;
+                Omadi.widgets.unfocusField();
                 Omadi.widgets.shared.redraw(instance);
             });
 
@@ -191,20 +200,17 @@ Omadi.widgets.datestamp = {
             Ti.UI.Android.hideSoftKeyboard();
         }
         
-        dateWindow = Ti.UI.createWindow();
-        
-        if(Ti.App.isAndroid){
-            dateWindow.modal = true;
-            dateWindow.navBarHidden = true;
-        }
+        dateWindow = Ti.UI.createWindow({
+            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT],
+            modal: true,
+            navBarHidden: true
+        });
 
         opacView = Ti.UI.createView({
             left : 0,
             right : 0,
             top : 0,
-            bottom : 0,
-            backgroundColor : '#000000',
-            opacity : 0.5
+            bottom : 0
         });
 
         dateWindow.add(opacView);
@@ -212,15 +218,13 @@ Omadi.widgets.datestamp = {
         // Use a scrollview with ios as the time picker isn't shown in landscape mode
         wrapperView = Ti.UI.createView({
            width: Ti.UI.SIZE,
-           height: Ti.UI.SIZE,
-           backgroundColor: '#000'
+           height: Ti.UI.SIZE
         });
     
         innerWrapperView = Ti.UI.createView({
             layout : 'vertical',
             height : Ti.UI.SIZE,
             width : Ti.UI.FILL,
-            opacity : 1,
             top: 50
         });
      

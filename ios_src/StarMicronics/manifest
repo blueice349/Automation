@@ -1,0 +1,18 @@
+#
+# this is your module manifest and used by Titanium
+# during compilation, packaging, distribution, etc.
+#
+version: 0.1
+apiversion: 2
+description: Star Micronics Printer Interface
+author: Chris Oakeson
+license: None
+copyright: Copyright (c) 2014 by Omadi, LLC
+
+
+# these should not be edited
+name: StarMicronics
+moduleid: com.omadi.starmicronics
+guid: 66dfd7dc-2fdc-4fcd-b995-dec2316c4cd6
+platform: iphone
+minsdk: 3.1.3.GA

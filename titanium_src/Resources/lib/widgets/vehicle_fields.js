@@ -192,10 +192,17 @@ Omadi.widgets.vehicle_fields = {
         });
 
         widgetView.addEventListener('blur', function(e) {
-            e.source.autocomplete_table.setBorderWidth(0);
-            e.source.autocomplete_table.setHeight(0);
-            e.source.autocomplete_table.setVisible(false);
-            e.source.blurred = true;
+            try{
+                e.source.autocomplete_table.setBorderWidth(0);
+                e.source.autocomplete_table.setHeight(0);
+                e.source.autocomplete_table.setVisible(false);
+                e.source.blurred = true;
+            }
+            catch(ex){
+                try{
+                    Omadi.service.sendErrorReport("exception in vehicle fields blur: " + ex);
+                }catch(ex1){}
+            }
         });
 
         widgetView.addEventListener('change', function(e) {
@@ -210,12 +217,6 @@ Omadi.widgets.vehicle_fields = {
             }
             
             if (e.source.touched === true) {
-                
-                if (Ti.App.isAndroid) {
-                    if (e.source.value.length > e.source.maxLength) {
-                        e.source.value = e.source.value.substring(0, e.source.maxLength);
-                    }
-                }
 
                 e.source.textValue = e.source.dbValue = e.source.value;
 

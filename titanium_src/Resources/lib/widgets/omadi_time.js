@@ -46,14 +46,23 @@ Omadi.widgets.omadi_time = {
 
         if (settings.cardinality == -1) {
             addAnotherItemButton = Ti.UI.createButton({
-                title : 'Add another item',
+                title : ' Add another item ',
                 right : 15,
-                instance : instance
+                instance : instance,
+                style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
+                backgroundGradient: Omadi.display.backgroundGradientGray,
+                borderColor: '#999',
+                borderWidth: 1,
+                width: 180,
+                borderRadius: 10,
+                color: '#eee',
+                top: 10
             });
 
             addAnotherItemButton.addEventListener('click', function(e) {
                 var instance = e.source.instance;
                 instance.numVisibleFields++;
+                Omadi.widgets.unfocusField();
                 Omadi.widgets.shared.redraw(instance);
             });
 
@@ -130,16 +139,16 @@ Omadi.widgets.omadi_time = {
         }
 
         dateWindow = Ti.UI.createWindow({
-
+            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT],
+            modal: true,
+            navBarHidden: true
         });
 
         opacView = Ti.UI.createView({
             left : 0,
             right : 0,
             top : 0,
-            bottom : 0,
-            backgroundColor : '#000000',
-            opacity : 0.5
+            bottom : 0
         });
 
         dateWindow.add(opacView);
@@ -147,8 +156,7 @@ Omadi.widgets.omadi_time = {
         wrapperView = Ti.UI.createView({
             layout : 'vertical',
             height : Ti.UI.SIZE,
-            width : Ti.UI.SIZE,
-            opacity : 1
+            width : Ti.UI.SIZE
         });
 
         topButtonsView = Ti.UI.createView({
@@ -382,45 +390,6 @@ Omadi.widgets.omadi_time = {
         }
 
         return seconds;
-    },
-    secondsToString : function(seconds) {"use strict";
-        var format, am_pm, hours, hours_str, minutes, time_string, new_hours;
-        
-        format = Omadi.utils.getTimeFormat();
-        Ti.API.error(format);
-
-        am_pm = (format.indexOf('H') === -1);
-
-        hours = Math.floor(seconds / 3600);
-
-        hours_str = hours;
-
-        minutes = Math.floor((seconds - (hours * 3600)) / 60);
-        if (minutes < 10) {
-            minutes = '0' + minutes;
-        }
-
-        if (am_pm) {
-            if (hours == 0) {
-                time_string = '12:' + minutes + ' AM';
-            }
-            else if (hours == 12) {
-                time_string = '12:' + minutes + ' PM';
-            }
-            else if (hours > 12) {
-                new_hours = hours - 12;
-                hours_str = new_hours;
-                time_string = hours_str + ':' + minutes + ' PM';
-            }
-            else {
-                time_string = hours_str + ':' + minutes + ' AM';
-            }
-        }
-        else {
-            time_string = hours_str + ':' + minutes;
-        }
-
-        return time_string;
     }
 };
 

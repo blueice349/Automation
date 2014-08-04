@@ -1,8 +1,9 @@
-/*jslint eqeq:true, plusplus: true*/
+
+/*jslint eqeq:true,plusplus:true*/
+/*global Omadi*/
 
 Ti.include('/lib/functions.js');
 
-/*global Omadi*/
 
 var bundle, curWin, search, instances, filterValues, filterFields, win_new;
 
@@ -20,7 +21,6 @@ var wrapperView;
 
 curWin = Ti.UI.currentWindow;
 curWin.setBackgroundColor('#eee');
-Ti.UI.currentWindow.setOrientationModes([Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
 
 wrapperView = Ti.UI.createView({
    layout: 'vertical',
@@ -30,10 +30,15 @@ wrapperView = Ti.UI.createView({
    left: 0 
 });
 
+if(Ti.App.isIOS7){
+    wrapperView.top += 20;
+}
+
 function closeWindowObjects(){"use strict";
     Ti.UI.currentWindow.close();   
 }
 
+Ti.App.removeEventListener('loggingOut', closeWindowObjects);
 Ti.App.addEventListener('loggingOut', closeWindowObjects);
 
 // Do not close this window when a node is saved as it could close a next form part unexpectedly
@@ -190,7 +195,7 @@ function setTableData() {"use strict";
         label1, label2, db, db_result, title, separator, whiteSpaceTest, 
         backgroundColor, numTitleRows, fullWidth, text_values, text_value, 
         values, safeValues, subResult, tableIndex, resultCount, appendData, 
-        countSQL, dbValue;
+        countSQL, dbValue, allowedValue, allowedValues;
 
     tableIndex = 0;
     appendData = [];
@@ -315,7 +320,6 @@ function setTableData() {"use strict";
         db = Omadi.utils.openMainDatabase();
         db_result = db.execute(sql);
         
-        
         while (db_result.isValidRow()) {
             
             //Ti.API.debug(lastFilterField);
@@ -391,6 +395,29 @@ function setTableData() {"use strict";
                 }
                 else{
                     text_values[safeValues[i]] = 'No - ' + lastFilterField.label;
+                }
+            }
+        }
+        else if (lastFilterField.type == 'list_text'){
+            
+            Ti.API.debug(JSON.stringify(lastFilterField));
+            
+            if(typeof lastFilterField.settings !== 'undefined'){
+                if(typeof lastFilterField.settings.instance_allowed_values !== 'undefined'){
+                    if(lastFilterField.settings.instance_allowed_values != null && lastFilterField.settings.instance_allowed_values != ''){
+                        allowedValues = lastFilterField.settings.instance_allowed_values.split("\n");
+                        if (allowedValues.length > 0) {
+                            for (i = 0; i < allowedValues.length; i ++) {
+                                allowedValue = Omadi.utils.trimWhiteSpace(allowedValues[i]);
+                                if(allowedValue != ""){
+                                    allowedValue = allowedValue.split('|');
+                                    if(allowedValue.length == 2){
+                                        text_values[allowedValue[0]] = allowedValue[1];
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -571,36 +598,20 @@ function setTableData() {"use strict";
             listLabel.left = 10;
         }
 
-        var showAllButton = Ti.UI.createButton({
-            title : 'Show All',
+        var showAllButton = Ti.UI.createLabel({
+            text : 'Show All',
             top : 5,
             right : 10,
             width : 100,
             height : 35,
-            style : (Ti.App.isIOS ? Titanium.UI.iPhone.SystemButtonStyle.BORDERED : ''),
-            backgroundGradient : {
-                type : 'linear',
-                startPoint : {
-                    x : '50%',
-                    y : '0%'
-                },
-                endPoint : {
-                    x : '50%',
-                    y : '100%'
-                },
-                colors : [{
-                    color : '#ccc',
-                    offset : 0.0
-                }, {
-                    color : '#ddd',
-                    offset : 0.25
-                }, {
-                    color : '#aaa',
-                    offset : 1.0
-                }]
-            },
+            backgroundGradient : Omadi.display.backgroundGradientBlue,
             borderRadius : 5,
-            color : '#000'
+            color : '#eee',
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+            font: {
+                fontSize: 16,
+                fontWeight: 'bold'
+            }
         });
 
         if (showFinalResults) {
@@ -608,13 +619,21 @@ function setTableData() {"use strict";
             search = Ti.UI.createSearchBar({
                 hintText : 'Search...',
                 autocorrect : false,
-                barColor : '#666',
-                color : '#000',
-                focusable : false
+                focusable : false,
+                barColor: '#111'
             });
             
             if(Ti.App.isAndroid){
                 search.height = 45;
+                
+                search.hide();
+                
+                //Hiding on Android makes it so the keyboard doesn't automatically pop up
+                // Showing it 1/2 second later will then show the search field, but not bring up the keyboard
+                setTimeout(function(){
+                    search.show(); 
+                }, 500);
+                
             }
             else{
                 search.height = 35;
@@ -700,8 +719,8 @@ function setTableData() {"use strict";
             var items = [];
 
             var plusButton = Titanium.UI.createButton({
-                backgroundImage : '/images/plus_btn.png',
-                backgroundSelectedImage : '/images/plus_btn_selected.png',
+                backgroundImage : '/images/newicons/plus_btn_grey.png',
+                backgroundSelectedImage : '/images/newicons/plus_btn_light_blue.png',
                 width : 54,
                 height : 38,
                 right : 1,
@@ -710,7 +729,12 @@ function setTableData() {"use strict";
 
             plusButton.addEventListener('click', function() {
                 search.blur();
-                Omadi.display.openFormWindow(curWin.type, 'new', 0);
+                
+                Ti.App.fireEvent('openFormWindow', {
+                    node_type: curWin.type,
+                    nid: 'new',
+                    form_part: 0 
+                });
             });
 
             items.push(back);
@@ -720,6 +744,9 @@ function setTableData() {"use strict";
             }
 
             listLabel.color = '#fff';
+            if(Ti.App.isIOS7){
+                listLabel.color = '#333';
+            }
             listLabel.textAlign = Ti.UI.TEXT_ALIGNMENT_CENTER;
             items.push(space);
 
@@ -761,8 +788,7 @@ function setTableData() {"use strict";
                 topBar.add(showAllButton);
             }
 
-            var activity = curWin.activity;
-            activity.onCreateOptionsMenu = function(e) {
+            Ti.Android.currentActivity.onCreateOptionsMenu = function(e) {
 
                 var menu = e.menu;
 
@@ -782,9 +808,14 @@ function setTableData() {"use strict";
                         order : 1
                     });
 
-                    newItem.setIcon("/images/plus_btn.png");
+                    newItem.setIcon("/images/newiconds/plus_btn_grey.png");
                     newItem.addEventListener("click", function(e) {
-                        Omadi.display.openFormWindow(curWin.type, 'new', 0);
+                        
+                        Ti.App.fireEvent('openFormWindow', {
+                            node_type: curWin.type,
+                            nid: 'new',
+                            form_part: 0 
+                        });
                     });
                 }
             };
@@ -975,10 +1006,10 @@ function setTableData() {"use strict";
            
            // Clean up memory references
            
-           wrapperView.remove(filterTableView);
+           //wrapperView.remove(filterTableView);
            filterTableView = null;
            
-           curWin.remove(wrapperView);
+           //curWin.remove(wrapperView);
            wrapperView = null; 
            curWin = null;
            

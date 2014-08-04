@@ -47,31 +47,42 @@ Omadi.widgets.image = {
         
         Ti.UI.currentWindow.addEventListener('close', function(){
             var i, j;
-            
-            for(i = 0; i < instance.elements.length; i ++){
-                
-                if(instance.elements[i].children.length > 0){
-                    for(j = instance.elements[i].children.length -1; j >= 0; j --){
-                        instance.elements[i].remove(instance.elements[i].children[j]);
-                        instance.elements[i].children[j] = null;
+            try{
+                for(i = 0; i < instance.elements.length; i ++){
+                    
+                    if(instance.elements[i].children.length > 0){
+                        for(j = instance.elements[i].children.length -1; j >= 0; j --){
+                            instance.elements[i].remove(instance.elements[i].children[j]);
+                            instance.elements[i].children[j] = null;
+                        }
                     }
+                    
+                    fieldView.remove(instance.elements[i]);
+                    instance.elements[i] = null;
+                    
+                    
+                    
                 }
+            }
+            catch(nothing){
                 
-                fieldView.remove(instance.elements[i]);
-                instance.elements[i] = null;
             }
             
             instance.fieldView = null;
+            instance = null;
         });  
 
         return fieldView;
     },
     getNewElement : function(node, instance) {"use strict";
-        var settings, widgetView, dbValue, imageData, degreeData, i, numImagesShowing = 0, contentWidth, imageNid;
+        var settings, widgetView, dbValue, imageData, degreeData, i, j, localDelta, 
+            numImagesShowing = 0, contentWidth, imageNid, deltaData, imageDataAdded, thumbData;
 
         dbValue = [];
         imageData = [];
         degreeData = [];
+        deltaData = [];
+        thumbData = [];
 
         if ( typeof node[instance.field_name] !== 'undefined') {
             if ( typeof node[instance.field_name].dbValues !== 'undefined') {
@@ -80,6 +91,8 @@ Omadi.widgets.image = {
             if ( typeof node[instance.field_name].imageData !== 'undefined') {
                 imageData = node[instance.field_name].imageData;
                 degreeData = node[instance.field_name].degrees;
+                deltaData = node[instance.field_name].deltas;
+                thumbData = node[instance.field_name].thumbData;
             }
         }
 
@@ -87,7 +100,7 @@ Omadi.widgets.image = {
         Ti.API.debug("Creating image field");
 
         widgetView = Ti.UI.createScrollView({
-            width : '96%',
+            width : '92%',
             //***** Don't set contentWidth to anything here.  It is set further down ******/
             //contentWidth : 'auto',
             contentHeight : 100,
@@ -103,31 +116,59 @@ Omadi.widgets.image = {
         if(typeof Ti.UI.currentWindow.origNid !== 'undefined'){
             imageNid = Ti.UI.currentWindow.origNid;
         }
+        
+        imageDataAdded = [];
+        numImagesShowing = 0;
 
         if (Omadi.utils.isArray(dbValue)) {
             for ( i = 0; i < dbValue.length; i++) {
                 if (dbValue[i] > 0) {
                     Ti.API.debug("Adding image to scroll view");
-                     
-                    widgetView.add(Omadi.widgets.image.getImageView(widgetView, i, imageNid, dbValue[i], 0));
+                    
+                    // See if any non-uploaded photos need to replace the "Uploading photo thumbnail"
+                    localDelta = null;
+                    for(j = 0; j < deltaData.length; j ++){
+                        if(deltaData[j] == i){
+                            localDelta = j;
+                            break;
+                        }
+                    }
+                    
+                    if(localDelta === null){
+                        Ti.API.debug("Uploaded index: " + i);
+                        widgetView.add(Omadi.widgets.image.getImageView(widgetView, i, imageNid, dbValue[i], null, null, 0));
+                    }
+                    else{
+                        Ti.API.debug("Local delta index: " + localDelta + " and index: " + i);
+                        widgetView.add(Omadi.widgets.image.getImageView(widgetView, i, imageNid, null, imageData[localDelta], thumbData[localDelta], degreeData[localDelta]));
+                        imageDataAdded.push(localDelta);
+                    }
+                    
+                    numImagesShowing ++;   
                 }
             }
-            numImagesShowing = dbValue.length;
         }
 
-        if (Omadi.utils.isArray(imageData)) {
+        Ti.API.debug("Num images showing 1 : " + numImagesShowing);
+    
+        if (Omadi.utils.isArray(imageData) && imageDataAdded.length < imageData.length) {
 
             for ( i = 0; i < imageData.length; i++) {
-                widgetView.add(Omadi.widgets.image.getImageView(widgetView, numImagesShowing + i, imageNid, imageData[i], degreeData[i]));
+                if(imageDataAdded.indexOf(i) == -1){
+                    Ti.API.debug("Adding local image index: " + numImagesShowing);
+                    widgetView.add(Omadi.widgets.image.getImageView(widgetView, numImagesShowing, imageNid, null, imageData[i], thumbData[i], degreeData[i]));
+                    numImagesShowing ++;
+                }
             }
-            numImagesShowing += imageData.length;
         }
+        
+        Ti.API.debug("Num images showing: " + numImagesShowing);
 
         contentWidth = numImagesShowing * 110;
 
         if (instance.can_edit && (instance.settings.cardinality == -1 || (numImagesShowing < instance.settings.cardinality))) {
             
-            widgetView.add(Omadi.widgets.image.getImageView(widgetView, numImagesShowing, null, null, 0));
+            widgetView.add(Omadi.widgets.image.getImageView(widgetView, numImagesShowing, null, null, null, null, 0));
 
             contentWidth += 110;
         }
@@ -151,15 +192,8 @@ Omadi.widgets.image = {
 
         return widgetView;
     },
-    getImageView : function(widgetView, index, nid, fid, degrees) {"use strict";
-        var imageView, transform, rotateDegrees, image, widgetType, isFilePath;
-        
-        isFilePath = false;
-        
-        if (fid !== null && typeof fid !== 'number') {
-            
-            isFilePath = true;
-        }
+    getImageView : function(widgetView, index, nid, fid, filePath, thumbPath, degrees) {"use strict";
+        var imageView, transform, rotateDegrees, image, widgetType;
         
         widgetType = Ti.App.Properties.getString("photoWidget", 'take');
         if(widgetType == 'choose'){
@@ -169,19 +203,34 @@ Omadi.widgets.image = {
             }
         }
         
-        if(fid === null){
+        if(fid === null && filePath == null){
             if(widgetType == 'choose'){
                 image = '/images/choose-a-photo.png';
             }
             else{
-                image = '/images/take-a-photo.png';
+                image = '/images/take_photo.png';
             }   
         }
         else if(typeof fid === 'number'){
-            image = '/images/photo-loading.png';
+            image = '/images/photo_loading.png';
+        }
+        else if(filePath !== null){
+            
+            if(Ti.App.Properties.getBool('omadi:image:skipThumbnail', false)){
+                image = '/images/video_selected.png';
+            }
+            else{
+                if(thumbPath === null || thumbPath == ''){
+                    image = filePath;
+                }
+                else{
+                    image = thumbPath;
+                }
+            }
         }
         else{
-            image = fid;
+            Ti.API.error("Error in creating imageview, fid = " + fid);
+            Omadi.service.sendErrorReport("Error in creating imageview, fid = " + fid);
         }
 
         imageView = Ti.UI.createImageView({
@@ -202,31 +251,14 @@ Omadi.widgets.image = {
             dbValue : fid,
             instance : widgetView.instance,
             parentView : widgetView,
-            degrees: degrees
+            degrees: degrees,
+            filePath : filePath
         });
 
-        if (isFilePath) {
+        if (filePath !== null) {
             imageView.fullImageLoaded = true;
             imageView.isImageData = true;
             imageView.dbValue = -1;
-            imageView.filePath = fid;
-                           
-            // if(Ti.App.isAndroid && degrees > 0){
-                // transform = Ti.UI.create2DMatrix();
-//                 
-                // rotateDegrees = degrees;
-                // if(rotateDegrees == 270){
-                    // rotateDegrees = 90;
-                // }
-                // else if(rotateDegrees == 90){
-                    // rotateDegrees = 270;
-                // }
-//                 
-                // transform = transform.rotate(rotateDegrees);
-//                 
-                // imageView.setTransform(transform);
-            // }
-    
         }
         else if ( typeof fid === 'number') {
             Omadi.display.setImageViewThumbnail(imageView, nid, fid);
@@ -237,7 +269,7 @@ Omadi.widgets.image = {
                 imageView.addEventListener('click', function(e) {
                     var dialog;
                     
-                    if(e.source.fid === null){
+                    if(e.source.fid === null && e.source.filePath === null){
                         e.source.setTouchEnabled(false);
                         Omadi.display.loading();
                         Omadi.widgets.image.openPictureChooser(e.source);
@@ -256,7 +288,7 @@ Omadi.widgets.image = {
             else{
                 imageView.addEventListener('click', function(e) {
                     
-                    if (e.source.fid === null) {
+                    if (e.source.fid === null && e.source.filePath === null) {
                         e.source.setTouchEnabled(false);
                         Omadi.display.loading();
                         Omadi.widgets.image.openCamera(e.source);
@@ -329,16 +361,34 @@ Omadi.widgets.image = {
             });
             
             dialog.addEventListener('click', function(e2){  
+                var filePath = null, imageViews, newPhotoView;
                 /*global save_form_data*/              
                 if(e2.index === 0){
                     
-                    // Remove the image from the scroll view
+                    if(typeof e2.source.imageView.filePath !== 'undefined' && e2.source.imageView.filePath != null){
+                        filePath = e2.source.imageView.filePath;   
+                    }
+                    
+                    imageViews = e2.source.imageView.parentView.children;
+                    
+                    if(imageViews.length > 1){
+                        newPhotoView = imageViews[imageViews.length - 1];
+                        if(newPhotoView.nid === null && newPhotoView.fid === null){
+                            Ti.API.debug("Moving the new photo delta down one");
+                            newPhotoView.imageIndex --;
+                        }
+                    }
+                    
+                    // Remove the image from the scroll view before the file reference or data is deleted
                     e2.source.imageView.parentView.remove(e2.source.imageView);
                     
-                    if(typeof e2.source.imageView.filePath !== 'undefined' && e2.source.imageView.filePath != null){
-                        Ti.API.debug("Removing file reference in DB: " + e2.source.imageView.filePath + " " + e2.source.isDeletePhoto);
+                    if(filePath !== null){
+                        Ti.API.debug("Removing file reference in DB: " + filePath + " " + e2.source.isDeletePhoto);
                         // Do the removal for an image stored on the phone
-                        Omadi.data.deletePhotoUploadByPath(e2.source.imageView.filePath, e2.source.isDeletePhoto); 
+                        Omadi.data.deletePhotoUploadByPath(filePath, e2.source.isDeletePhoto); 
+                    }
+                    else{
+                        Omadi.service.sendErrorReport("Trying to remove image, filepath is null");
                     }
                     
                     // Make sure the photo data is saved
@@ -375,7 +425,7 @@ Omadi.widgets.image = {
         allUsedFileNames = [];
         
         for(i = 0; i < allImageViews.length; i ++){
-            if(typeof allImageViews[i].filePath !== 'undefined' && allImageViews[i].filePath.length > 0){
+            if(typeof allImageViews[i].filePath !== 'undefined' && allImageViews[i].filePath !== null && allImageViews[i].filePath.length > 0){
                 filename = allImageViews[i].filePath.replace(/^.*[\\\/]/, '');
                 allUsedFileNames.push(filename);
                 Ti.API.debug("used: " + filename);
@@ -446,14 +496,14 @@ Omadi.widgets.image = {
                             Ti.API.debug(file.getNativePath());
                             dbPath = file.getNativePath();
                             
-                            Omadi.widgets.image.saveFileInfo(localImageView, dbPath, "", 0);
+                            Omadi.widgets.image.saveFileInfo(localImageView, dbPath, "", 0, file.getSize(), 'image');
                             
                             //localImageView.setImage(rows[i].photoFile);
                             localImageView.filePath = dbPath;
                             
                             if (localImageView.instance.settings.cardinality == -1 || (localImageView.imageIndex + 1) < localImageView.instance.settings.cardinality) {
-                                newImageView = Omadi.widgets.image.getImageView(localImageView.parentView, localImageView.imageIndex, null, dbPath, 0);
-                                chooseNextImageView = Omadi.widgets.image.getImageView(localImageView.parentView, localImageView.imageIndex + 1, null, null, 0);
+                                newImageView = Omadi.widgets.image.getImageView(localImageView.parentView, localImageView.imageIndex, null, null, dbPath, null, 0);
+                                chooseNextImageView = Omadi.widgets.image.getImageView(localImageView.parentView, localImageView.imageIndex + 1, null, null, null, null, 0);
                                 
                                 localImageView.parentView.add(newImageView);
                                 localImageView.parentView.add(chooseNextImageView);
@@ -521,6 +571,7 @@ Omadi.widgets.image = {
                 });
                 
                 for(i = 0; i < imageStrings.length; i ++){
+                    // Get the filename from the path
                     filename = imageStrings[i].replace(/^.*[\\\/]/, '');
                     
                     if(allUsedFileNames.indexOf(filename) == -1){
@@ -642,7 +693,8 @@ Omadi.widgets.image = {
     openCamera : function(imageView) {"use strict";
         /*global cameraAndroid, save_form_data*/
         var blankOverlay, storageDirectory, storageDirectoryFile,
-            overlayView, captureButton, doneButton, flexible, flashMode, flashButton, navBar;
+            overlayView, captureButton, doneButton, flexible, 
+            flashMode, flashButton, navBar, maxPhotos, cardinality;
         
         if (Ti.App.isAndroid) {
             if (Ti.Media.isCameraSupported) {
@@ -652,87 +704,197 @@ Omadi.widgets.image = {
                 storageDirectoryFile = Ti.Filesystem.getFile(Ti.Filesystem.getExternalStorageDirectory());
                 storageDirectory = storageDirectoryFile.getNativePath();
                 
+                maxPhotos = -1;
+                if(typeof imageView.instance.settings.cardinality !== 'undefined'){
+                    cardinality = parseInt(imageView.instance.settings.cardinality, 10);
+                    if(!isNaN(cardinality) && cardinality > 0){
+                        maxPhotos = cardinality - imageView.imageIndex;
+                    }
+                }
+                
                 cameraAndroid.showCamera({
-                    
-                    finished : function(event){
-                        var newImageView, tmpImageView, blob, maxDiff, newHeight, newWidth,
+                    maxPhotos : maxPhotos,
+                    //currentPhotos: 0,
+                    // finished : function(event){
+                        // var newImageView, tmpImageView, blob, maxDiff, newHeight, newWidth,
+                            // uploadImageView, filePath, file, degrees, transform, animation, 
+                            // rotateDegrees, takeNextPhotoView, thumbPath;
+//                         
+                        // Omadi.display.loading("Saving Photo...");
+//                         
+                        // filePath = "file://" + event.filePath;
+                        // thumbPath = ''; //"file://" + event.thumbPath;
+                        // degrees = event.degrees;
+//                         
+                        // imageView.filePath = filePath;
+                        // file = Ti.Filesystem.getFile(filePath);
+                        // // Allow the imageView to be touched again with an event
+                        // imageView.setTouchEnabled(true);
+//                         
+                        // Omadi.widgets.image.saveFileInfo(imageView, filePath, thumbPath, degrees, file.getSize(), 'image');
+//                         
+                        // // Save a draft of this image in case a crash happens soon
+                        // if(Ti.UI.currentWindow.saveContinually && typeof save_form_data !== 'undefined'){
+                            // save_form_data('continuous');
+                        // }
+//                         
+                        // try{
+                            // if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
+//                                 
+                                // newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex, null, null, filePath, thumbPath, degrees);
+                                // takeNextPhotoView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null, null, null, 0);
+//                                 
+                                // //imageView.image = filePath;
+//                                 
+                                // imageView.hide();
+                                // imageView.setWidth(0);
+                                // imageView.setLeft(0);
+                                // imageView.parentView.add(newImageView);
+                                // imageView.parentView.add(takeNextPhotoView);
+//                                 
+                                // imageView.parentView.setContentWidth(imageView.parentView.getContentWidth() + 110);
+                                // //imageView.parentView.remove(imageView);
+                                // //imageView = null;
+//                                 
+                                // // Allow the newImageView time to show up, and then click it
+                                // setTimeout(function(){
+                                     // try{
+                                        // takeNextPhotoView.fireEvent('click');
+                                     // }
+                                     // catch(ex){
+                                         // Omadi.service.sendErrorReport("Exception firing click event " + ex);
+                                     // }
+                                     // Omadi.display.doneLoading();
+                                // }, 150);
+//                                 
+                                // setTimeout(function(){
+                                    // try{
+                                        // imageView.parentView.remove(imageView);
+                                    // }
+                                    // catch(ex2){
+                                        // Omadi.service.sendErrorReport("Exception removing image view 1 " + ex2);
+                                    // }
+                                // }, 1000);
+                            // }
+                            // else{
+//                                
+                                // newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex, null, null, filePath, thumbPath, degrees);
+//                                 
+                                // //imageView.image = filePath;
+                                // imageView.hide();
+                                // imageView.setWidth(0);
+                                // imageView.setLeft(0);
+//                                 
+                                // imageView.parentView.add(newImageView);
+//                                 
+//                                 
+                                // setTimeout(function(){
+                                    // try{
+                                        // imageView.parentView.remove(imageView);
+                                    // }
+                                    // catch(ex3){
+                                        // Omadi.service.sendErrorReport("Exception removing image view 2 " + ex3);
+                                    // }
+                                // }, 1000);
+                                // //imageView = null;
+//                                 
+                                // Omadi.display.doneLoading();
+                            // }
+                        // }
+                        // catch(imageViewEx){
+                            // Omadi.service.sendErrorReport("Android imageview error: " + imageViewEx);
+                        // }  
+                    // },
+                    addedPhoto : function(event){
+                        
+                       var newImageView, tmpImageView, blob, maxDiff, newHeight, newWidth,
                             uploadImageView, filePath, file, degrees, transform, animation, 
-                            rotateDegrees, takeNextPhotoView;
+                            rotateDegrees, takeNextPhotoView, thumbPath, startIndex, index, photoIndex;
                         
-                        Omadi.display.loading("Saving Photo...");
+                        //Omadi.display.loading("Saving Photo...");
                         
-                        filePath = "file://" + event.filePath;
+                        filePath = event.filePath;
+                        thumbPath = ''; //"file://" + event.thumbPath;
                         degrees = event.degrees;
                         
+                        startIndex = imageView.imageIndex;
+                        photoIndex = event.photoIndex;
                         
+                        index = startIndex + photoIndex;
                         
-                        //imageView.setImage(filePath);
                         imageView.filePath = filePath;
-                        
+                        file = Ti.Filesystem.getFile(filePath);
                         // Allow the imageView to be touched again with an event
                         imageView.setTouchEnabled(true);
                         
-                        // if(degrees > 0){
-                            // transform = Ti.UI.create2DMatrix();
-//                             
-                            // rotateDegrees = degrees;
-                            // if(rotateDegrees == 270){
-                                // rotateDegrees = 90;
-                            // }
-                            // else if(rotateDegrees == 90){
-                                // rotateDegrees = 270;
-                            // }
-//                             
-                            // transform = transform.rotate(rotateDegrees);
-//                             
-                            // imageView.setTransform(transform);
-                        // }
-                        
-                        //imageView.fullImageLoaded = true;
-                        
-                        Omadi.widgets.image.saveFileInfo(imageView, filePath, '', degrees);
-                        
-                        // Save a draft of this image in case a crash happens soon
-                        if(Ti.UI.currentWindow.saveContinually && typeof save_form_data !== 'undefined'){
-                            save_form_data('continuous');
+                        if(typeof imageView.addedPhotos === 'undefined'){
+                            imageView.addedPhotos = [];
                         }
                         
-                        if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
-                            
-                            newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex, null, filePath, degrees);
-                            takeNextPhotoView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null, 0);
-                            
-                            imageView.parentView.add(newImageView);
-                            imageView.parentView.add(takeNextPhotoView);
-                            
-                            imageView.parentView.setContentWidth(imageView.parentView.getContentWidth() + 110);
-                            imageView.parentView.remove(imageView);
-                            imageView = null;
-                            
-                            // newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null, 0);
-                            // imageView.parentView.setContentWidth(imageView.parentView.getContentWidth() + 110);
-                            // imageView.parentView.add(newImageView);
-                            
-                            // Allow the newImageView time to show up, and then click it
-                            setTimeout(function(){
-                                 takeNextPhotoView.fireEvent('click');
-                                 Omadi.display.doneLoading();
-                            }, 100);
-                        }
-                        else{
-                            
-                            newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex, null, filePath, degrees);
-                            
-                            imageView.parentView.add(newImageView);
-                            imageView.parentView.remove(imageView);
-                            imageView = null;
-                            
-                            Omadi.display.doneLoading();
-                        }
+                        imageView.addedPhotos.push({
+                            filePath: filePath,
+                            degrees: degrees,
+                            imageIndex: index
+                        });
+                        
+                        Ti.API.debug("File: " + filePath);
+                        Ti.API.debug("Saving to delta: " + index);
+                        
+                        Omadi.widgets.image.saveAndroidFileInfo(imageView.instance.field_name, index, filePath, thumbPath, degrees, file.getSize(), 'image');
                         
                     },
                     success : function(event) {
-                        Ti.API.info('CAMERA SUCCESS');
+                        Ti.API.info('Photo complete success in JS');
+                         
+                         var startIndex, newImageView, i, addedPhoto, takeNextPhotoView, lastIndex, cardinality;
+                         
+                         if(typeof imageView.addedPhotos !== 'undefined'){
+                            
+                            imageView.hide();
+                            imageView.setWidth(0);
+                            imageView.setLeft(0);
+                            
+                            lastIndex = 0;
+                             
+                            for(i = 0; i < imageView.addedPhotos.length; i ++){
+                                addedPhoto = imageView.addedPhotos[i];
+                                
+                                newImageView = Omadi.widgets.image.getImageView(imageView.parentView, addedPhoto.imageIndex, null, null, addedPhoto.filePath, "", addedPhoto.degrees);
+                                
+                                imageView.parentView.add(newImageView);
+                                
+                                lastIndex = addedPhoto.imageIndex;  
+                            }    
+                            
+                            cardinality = -1;
+                            if(typeof imageView.instance.settings.cardinality !== 'undefined'){
+                                cardinality = parseInt(imageView.instance.settings.cardinality, 10);
+                                if(isNaN(cardinality)){
+                                    cardinality = -1;
+                                }
+                            }
+                            
+                            Ti.API.debug("Cardinality: " + cardinality);
+                            Ti.API.debug("last Index: " + lastIndex);
+                            
+                            if(cardinality == -1 || (lastIndex + 1) < cardinality){
+                                takeNextPhotoView = Omadi.widgets.image.getImageView(imageView.parentView, lastIndex + 1, null, null, null, null, 0);
+                                imageView.parentView.add(takeNextPhotoView);
+                            }
+                            
+                            imageView.parentView.setContentWidth(imageView.parentView.getContentWidth() + (imageView.addedPhotos.length * 110));
+                            
+                            // Remove the original imageView from the parent
+                            setTimeout(function(){
+                                try{
+                                    imageView.parentView.remove(imageView);
+                                }
+                                catch(ex2){
+                                    Omadi.service.sendErrorReport("Exception removing image view 1 " + ex2);
+                                }
+                            }, 1000);                           
+                         }
+                         
                     },
                     error : function(error) {
                         Omadi.service.sendErrorReport("Error capturing a photo" + JSON.stringify(error));
@@ -741,8 +903,12 @@ Omadi.widgets.image = {
                         imageView.setTouchEnabled(true);
                         
                         Ti.API.info('Captured Image - Error: ' + error.code + " :: " + error.message);
-                        if (error.code == Titanium.Media.NO_CAMERA) {
+                        if (typeof error.code == Titanium.Media.NO_CAMERA) {
                             alert('No Camera in device');
+                        }
+                        else{
+                            alert(error.message);
+                            Omadi.service.sendErrorReport("Photo error: " + error.code + ": " + error.message);
                         }
                     },
                     // Currently, an overlay must exist to not show the default camera
@@ -846,9 +1012,9 @@ Omadi.widgets.image = {
                         thumbFile.write(thumbBlob);
                         thumbFile.setRemoteBackup(false);
                         
-                        imageView.setImage(thumbPath);
+                        //imageView.setImage(thumbPath);
                                 
-                        Omadi.widgets.image.saveFileInfo(imageView, filePath, thumbPath, 0);
+                        Omadi.widgets.image.saveFileInfo(imageView, filePath, thumbPath, 0, event.media.length, 'image');
                         
                         // Save a draft of this image in case a crash happens soon
                         if(Ti.UI.currentWindow.saveContinually && typeof save_form_data !== 'undefined'){
@@ -857,8 +1023,8 @@ Omadi.widgets.image = {
                        
                         if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
                             
-                            newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex, null, filePath, 0);
-                            takeNextPhotoView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null, 0);
+                            newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex, null, null, filePath, thumbPath, 0);
+                            takeNextPhotoView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null, null, null, 0);
                             
                             imageView.parentView.add(newImageView);
                             imageView.parentView.add(takeNextPhotoView);
@@ -866,10 +1032,6 @@ Omadi.widgets.image = {
                             imageView.parentView.setContentWidth(imageView.parentView.getContentWidth() + 110);
                             imageView.parentView.remove(imageView);
                             imageView = null;
-                            
-                            // newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null, 0);
-                            // imageView.parentView.setContentWidth(imageView.parentView.getContentWidth() + 110);
-                            // imageView.parentView.add(newImageView);
                             
                             // Allow the newImageView time to show up, and then click it
                             setTimeout(function(){
@@ -879,7 +1041,7 @@ Omadi.widgets.image = {
                         }
                         else{
                             
-                            newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex, null, filePath, 0);
+                            newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex, null, null, filePath, thumbPath, 0);
                             
                             imageView.parentView.add(newImageView);
                             imageView.parentView.remove(imageView);
@@ -890,9 +1052,14 @@ Omadi.widgets.image = {
                     },
                     error : function(error) {
                         
-                        Ti.API.info('Captured Image - Error: ' + error.code + " :: " + error.message);
+                        Omadi.service.sendErrorReport("Problem opening iOS camera: " + JSON.stringify(error));
+                        
+                        Ti.API.error('Captured Image - Error: ' + error.code + " :: " + error.message);
                         if (error.code == Titanium.Media.NO_CAMERA) {
                             alert('No Camera in device');
+                        }
+                        else{
+                            alert("Problem opening camera: " + error.message);
                         }
                     },
                     saveToPhotoGallery : false,
@@ -911,42 +1078,18 @@ Omadi.widgets.image = {
                 }
                 catch(ex) {
                     Ti.API.error("Flash: " + ex);
+                    Omadi.service.sendErrorReport("iOS flash error: " + ex);
                 }
             }
             catch(wrapperEx) {
                 Ti.API.error("Wrapper: " + wrapperEx);
+                Omadi.service.sendErrorReport("iOS camera error: " + wrapperEx);
             }
         }
     },
-    saveImageInDb : function(imageView, blob) {"use strict";
-        var nid, db, encodedImage, mime, imageName, timestamp, fieldName, imageIndex, location;
-
-        try {
-            nid = 0;
-            Ti.API.debug('before encoded');
-            encodedImage = Ti.Utils.base64encode(blob);
-            Ti.API.debug('after encoded');
-            
-            mime = imageView.mimeType;
-            imageName = 'image.jpg';
-            imageView.dbValue = '-1';
-            
-            timestamp = Omadi.utils.getUTCTimestamp();
-            fieldName = imageView.instance.field_name;
-            imageIndex = imageView.imageIndex;
-            
-            location = Omadi.location.getLastLocation();
-
-            db = Omadi.utils.openMainDatabase();
-            db.execute("INSERT INTO _photos (nid, timestamp, file_data , field_name, file_name, delta, latitude, longitude, accuracy) VALUES ('0','" + timestamp + "','" + encodedImage + "','" + fieldName + "','" + imageName + "'," + imageIndex + ",'" + location.latitude + "','" + location.longitude + "'," + location.accuracy + ")");
-            db.close();
-        }
-        catch(ex) {
-            alert("Problem saving the photo to the database: " + ex);
-        }
-    },
-    saveFileInfo : function(imageView, filePath, thumbPath, degrees) {"use strict";
-        var nid, db, encodedImage, mime, imageName, timestamp, fieldName, imageIndex, location;
+    saveFileInfo : function(imageView, filePath, thumbPath, degrees, filesize, type) {"use strict";
+        var nid, db, encodedImage, mime, imageName, timestamp, fieldName, 
+            imageIndex, location, uid, clientAccount;
 
         try {
             nid = 0;
@@ -955,9 +1098,9 @@ Omadi.widgets.image = {
             // Ti.API.debug('after encoded');
             
             mime = imageView.mimeType;
-            imageName = 'image.jpg';//filePath;
-            imageView.dbValue = '-1';
-            imageView.fid = '-1';
+            imageName = filePath.replace(/^.*[\\\/]/, '');
+            imageView.dbValue = -1;
+            imageView.fid = -1;
             imageView.degrees = degrees;
             imageView.filePath = filePath;   
             imageView.thumbPath = thumbPath;
@@ -966,11 +1109,42 @@ Omadi.widgets.image = {
             fieldName = imageView.instance.field_name;
             imageIndex = imageView.imageIndex;
             
+            Ti.API.debug("Saved Path: " + filePath);
             
             location = Omadi.location.getLastLocation();
+            
+            uid = Omadi.utils.getUid();
+            clientAccount = Omadi.utils.getClientAccount();
 
-            db = Omadi.utils.openMainDatabase();
-            db.execute("INSERT INTO _photos (nid, timestamp, file_data, field_name, file_name, delta, latitude, longitude, accuracy, degrees, thumb_path) VALUES ('0','" + timestamp + "','" + filePath + "','" + fieldName + "','" + imageName + "'," + imageIndex + ",'" + location.latitude + "','" + location.longitude + "'," + location.accuracy + "," + degrees + ",'" + thumbPath + "')");
+            db = Omadi.utils.openListDatabase();
+            db.execute("INSERT INTO _files (nid, timestamp, file_path, field_name, file_name, delta, latitude, longitude, accuracy, degrees, thumb_path, filesize, bytes_uploaded, type, uid, client_account) VALUES ('0','" + timestamp + "','" + filePath + "','" + fieldName + "','" + imageName + "'," + imageIndex + ",'" + location.latitude + "','" + location.longitude + "'," + location.accuracy + "," + degrees + ",'" + thumbPath + "'," + filesize + ",0,'" + type + "'," + uid + ",'" + clientAccount + "')");
+            db.close();
+        }
+        catch(ex) {
+            alert("Problem saving the photo to the database: " + ex);
+        }
+    },
+    saveAndroidFileInfo : function(fieldName, imageIndex, filePath, thumbPath, degrees, filesize) {"use strict";
+        var nid, db, imageName, timestamp, location, uid, clientAccount, sql;
+
+        try {
+            nid = 0;
+            
+            imageName = filePath.replace(/^.*[\\\/]/, '');
+            timestamp = Omadi.utils.getUTCTimestamp();
+            
+            Ti.API.debug("Saved Android Path: " + filePath);
+            
+            location = Omadi.location.getLastLocation();
+            
+            uid = Omadi.utils.getUid();
+            clientAccount = Omadi.utils.getClientAccount();
+            sql = "INSERT INTO _files (nid, timestamp, file_path, field_name, file_name, delta, latitude, longitude, accuracy, degrees, thumb_path, filesize, bytes_uploaded, type, uid, client_account) VALUES ('0','" + timestamp + "','" + filePath + "','" + fieldName + "','" + imageName + "'," + imageIndex + ",'" + location.latitude + "','" + location.longitude + "'," + location.accuracy + "," + degrees + ",'" + thumbPath + "'," + filesize + ",0,'" + 'image' + "'," + uid + ",'" + clientAccount + "')";
+            
+            Ti.API.info(sql);
+            
+            db = Omadi.utils.openListDatabase();
+            db.execute(sql);
             db.close();
         }
         catch(ex) {

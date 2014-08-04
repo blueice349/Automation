@@ -49,14 +49,23 @@ Omadi.widgets.text = {
         
         if(settings.cardinality == -1){
             addAnotherItemButton = Ti.UI.createButton({
-               title: 'Add another item',
+               title: ' Add another item ',
                right: 15,
-               instance: instance
+               instance: instance,
+               style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
+                backgroundGradient: Omadi.display.backgroundGradientGray,
+                borderColor: '#999',
+                borderWidth: 1,
+                width: 180,
+                borderRadius: 10,
+                color: '#eee',
+                top: 10
             });
             
             addAnotherItemButton.addEventListener('click', function(e){
                 var instance = e.source.instance;
                 instance.numVisibleFields ++;
+                Omadi.widgets.unfocusField();
                 Omadi.widgets.shared.redraw(instance);
             });
         
@@ -68,6 +77,7 @@ Omadi.widgets.text = {
             var i;
             
             for(i = 0; i < instance.elements.length; i ++){
+                Ti.API.debug("Cleaning up an element");
                 fieldView.remove(instance.elements[i]);
                 instance.elements[i] = null;
             }
@@ -76,6 +86,9 @@ Omadi.widgets.text = {
         });  
        
         return fieldView;
+    },
+    cleanup : function(instance, fieldView){"use strict";
+        
     },
     getNewElement: function(node, instance, index){"use strict";
         
@@ -138,21 +151,12 @@ Omadi.widgets.text = {
                 
                 Ti.API.debug("text value changed: " + e.source.lastValue + " -> " + e.source.value);
                 
-                if(Ti.App.isAndroid && typeof e.source.maxLength !== 'undefined'){
-                    // For some weird reason, e.source.maxLength is at times -1. I don't know how it gets set that way. Keep the maxlength > 0
-                    if(e.source.maxLength > 0 && e.source.value.length > e.source.maxLength){
-                        Ti.API.debug("Max: " + e.source.maxLength);
-                        e.source.value = e.source.value.substring(0, e.source.maxLength);
-                        e.source.setSelection(e.source.value.length, e.source.value.length);
-                    }
-                }
-                
                 if(typeof e.source.capitalization !== 'undefined'){
                     if(e.source.capitalization == 'all_caps' && e.source.value !== null){
                       
                         e.source.value = (e.source.value + "".toString()).toUpperCase();
                       
-                        if(Ti.App.isAndroid){
+                        if (Ti.App.isAndroid && e.source.value != null && typeof e.source.value.length !== 'undefined') {
                             e.source.setSelection(e.source.value.length, e.source.value.length);
                         }
                     }

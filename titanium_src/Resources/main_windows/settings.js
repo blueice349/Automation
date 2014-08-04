@@ -4,60 +4,18 @@ Ti.include('/lib/functions.js');
 
 /*global  Omadi*/
 
-// This window is currently only used on Android
-
+var scrollView, wrapperView;
 
 function errorCameraPhoto(){"use strict";
     alert("Camera action error");
 }
 
-(function(){
-    'use strict';
-    
-    var curWin, wrapperView, scrollView, photoOptionLabel, currentPhotoOption, photoOptionButton,
-        photoOptions, photoTakeOption, photoChooseOption, currentPhotoOptionString, topBar, 
-        currentPhotoOptionIndex, chooseSettingsView, deletePhotoOnUploadLabel, deletePhotoOnUploadButton,
-        currentDeleteOption, currentDeleteOptionString, currentDeleteIndex;
-    
-    Ti.UI.currentWindow.backgroundColor = '#eee';
-    Ti.UI.currentWindow.setOrientationModes([Titanium.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
-    
-    wrapperView = Ti.UI.createView({
-       layout: 'vertical',
-       bottom: 0,
-       top: 0,
-       right: 0,
-       left: 0 
-    });
-    
-    Ti.UI.currentWindow.add(wrapperView);
-    
-    Ti.App.addEventListener('loggingOut', function(){
-        Ti.UI.currentWindow.close();
-    });
-    
-    scrollView = Ti.UI.createScrollView({
-        scrollType: 'vertical',
-        height: Ti.UI.FILL,
-        width: '100%',
-        layout: 'vertical'
-    });
-    
-    topBar = Ti.UI.createLabel({
-       backgroundColor: '#666',
-       color: '#fff',
-       font: {
-           fontSize: 14,
-           fontWeight: 'bold'
-       },
-       text: 'Personal Settings',
-       left: 0,
-       right: 0,
-       textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
-    });
-    
-    wrapperView.add(scrollView);
-    
+function addPhotoWidgetOptions(){"use strict";
+    var photoOptionLabel, currentPhotoOption, photoOptionButton,photoOptions, photoTakeOption, 
+        photoChooseOption, currentPhotoOptionString, currentPhotoOptionIndex, chooseSettingsView, 
+        deletePhotoOnUploadLabel, deletePhotoOnUploadButton, currentDeleteOption, 
+        currentDeleteOptionString, currentDeleteIndex;
+        
     photoOptionLabel = Ti.UI.createLabel({
        text: 'Photo Widget',
        font: {
@@ -79,6 +37,7 @@ function errorCameraPhoto(){"use strict";
     currentPhotoOption = Omadi.utils.getPhotoWidget();
     currentPhotoOptionString = 'Take photos in the app';
     currentPhotoOptionIndex = 0;
+    
     if(currentPhotoOption == 'choose'){
         currentPhotoOptionString = 'Choose photos from gallery';
         currentPhotoOptionIndex = 1;
@@ -286,12 +245,12 @@ function errorCameraPhoto(){"use strict";
                                 width = e.media.width;
                                 height = e.media.height;
                                 
-                                if(width > 1200 || height > 1200){
+                                if(width > 1280 || height > 1280){
                                 
                                     dialog = Ti.UI.createAlertDialog({
                                        title: 'WHOA THERE!',
                                        buttonNames: ['I Understand'],
-                                       message: 'Your camera app resolution is set to ' + width + 'x' + height + ', and that is a little too high. \n\nPlease set your camera resolution to a lower setting (ie. 800x480). \n\nSide effects of very high resolution:\n1. Thumbnails may not show up.\n2. Up to 10x more bandwidth may be used on your data plan.\n3. As much as 10x more time is required to upload photos.\n4. More memory will be used on your phone, so a crash is more likely.'                                
+                                       message: 'Your camera app resolution is set to ' + width + 'x' + height + ', and that is a little too high. \n\nPlease set your camera resolution to a lower setting (ie. 1280x720). \n\nSide effects of very high resolution:\n1. Thumbnails may not show up.\n2. Up to 10x more bandwidth may be used on your data plan.\n3. As much as 10x more time is required to upload photos.\n4. More memory will be used on your phone, so a crash is more likely.'                                
                                     });
                                     dialog.show();
                                 }
@@ -321,8 +280,184 @@ function errorCameraPhoto(){"use strict";
         });
     });
     
-    scrollView.add(topBar);
     scrollView.add(photoOptionLabel);
     scrollView.add(photoOptionButton);
     scrollView.add(chooseSettingsView);
+}
+
+function addiOSToolbarSettings() {"use strict";
+    var backButton, space, label, items, toolbar;
+
+    backButton = Ti.UI.createButton({
+        title : 'Back',
+        style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+    });
+
+    backButton.addEventListener('click', function() {
+        Ti.UI.currentWindow.close();
+    });
+
+    space = Titanium.UI.createButton({
+        systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
+    });
+
+    label = Titanium.UI.createLabel({
+        text : 'Settings',
+        color : '#333',
+        ellipsize : true,
+        wordwrap : false,
+        width : Ti.UI.SIZE,
+        focusable : false,
+        touchEnabled : false,
+        style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
+    });
+
+    items = [backButton, space, label, space];
+
+    // create and add toolbar
+    toolbar = Ti.UI.iOS.createToolbar({
+        items : items,
+        top : 0,
+        borderTop : false,
+        borderBottom : false,
+        height : Ti.UI.SIZE
+    });
+
+    scrollView.add(toolbar);
+}
+
+function addVideoSettings(){"use strict";
+    var radio, wrapper, label;
+    
+    radio = Ti.UI.createSwitch({
+        value: Ti.App.Properties.getBool('allowVideoMobileNetwork', false),
+        top: 5,
+        bottom: 5,
+        height: Ti.UI.SIZE,
+        left: '2%'
+    });
+    
+    radio.addEventListener('change', function(e){
+        Ti.App.Properties.setBool('allowVideoMobileNetwork', e.value);
+    });
+    
+    label = Ti.UI.createLabel({
+        text: "Allow video uploads on mobile network",
+        color: '#999',
+        font: {
+            fontSize: 15,
+            fontWeight: 'bold'
+        },
+        left: '2%',
+        width: '75%'
+    });
+    
+    wrapper = Ti.UI.createView({
+        height: Ti.UI.SIZE,
+        width: Ti.UI.FILL,
+        layout: 'horizontal',
+        top: 10
+    }); 
+    
+    wrapper.add(radio);
+    wrapper.add(label);
+    
+    scrollView.add(wrapper);
+}
+
+function addPhotoThumbnailOptions(){"use strict";
+    var radio, wrapper, label;
+    
+    radio = Ti.UI.createSwitch({
+        value: Ti.App.Properties.getBool('omadi:image:skipThumbnail', false),
+        top: 5,
+        bottom: 5,
+        height: Ti.UI.SIZE,
+        left: '2%'
+    });
+    
+    radio.addEventListener('change', function(e){
+        Ti.App.Properties.setBool('omadi:image:skipThumbnail', e.value);
+    });
+    
+    label = Ti.UI.createLabel({
+        text: "Speed up photos or solve memory problems by not loading thumbnails on forms",
+        color: '#999',
+        font: {
+            fontSize: 15,
+            fontWeight: 'bold'
+        },
+        left: '2%',
+        width: '75%'
+    });
+    
+    wrapper = Ti.UI.createView({
+        height: Ti.UI.SIZE,
+        width: Ti.UI.FILL,
+        layout: 'horizontal',
+        top: 10
+    }); 
+    
+    wrapper.add(radio);
+    wrapper.add(label);
+    
+    scrollView.add(wrapper);
+}
+
+(function(){'use strict';
+    
+    var topBar;
+    
+    Ti.UI.currentWindow.backgroundColor = '#eee';
+    
+    wrapperView = Ti.UI.createView({
+       layout: 'vertical',
+       bottom: 0,
+       top: 0,
+       right: 0,
+       left: 0 
+    });
+    
+    if(Ti.App.isIOS7){
+        wrapperView.top = 20;
+    }
+    
+    Ti.UI.currentWindow.add(wrapperView);
+    
+    Ti.App.addEventListener('loggingOut', function(){
+        Ti.UI.currentWindow.close();
+    });
+    
+    scrollView = Ti.UI.createScrollView({
+        scrollType: 'vertical',
+        height: Ti.UI.FILL,
+        width: '100%',
+        layout: 'vertical'
+    });
+    
+    wrapperView.add(scrollView);
+    
+    if(Ti.App.isAndroid){
+        topBar = Ti.UI.createLabel({
+           backgroundColor: '#666',
+           color: '#fff',
+           font: {
+               fontSize: 14,
+               fontWeight: 'bold'
+           },
+           text: 'Settings',
+           left: 0,
+           right: 0,
+           textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
+        });
+        
+        scrollView.add(topBar);
+        addPhotoThumbnailOptions();
+        addPhotoWidgetOptions();
+    }
+    else{
+        addiOSToolbarSettings();
+        addVideoSettings();
+    }
+    
 }());

@@ -11,10 +11,6 @@ var currentOrderField = 'changed';
 var wrapperView;
 var search;
 
-
-curWin.setOrientationModes([Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
-curWin.setBackgroundColor('#eee');
-
 wrapperView = Ti.UI.createView({
    layout: 'vertical',
    bottom: 0,
@@ -22,6 +18,10 @@ wrapperView = Ti.UI.createView({
    right: 0,
    left: 0 
 });
+
+if(Ti.App.isIOS7){
+    wrapperView.top = 20;
+}
 
 function getRecentNodeData(orderField){"use strict";
     var db, result, nodes = [], sql;
@@ -83,7 +83,7 @@ function getTableViewData(orderField){"use strict";
             
             textView = Ti.UI.createView({
                 right: 1,
-                left: 45,
+                left: 50,
                 top: 0,
                 height: Ti.UI.SIZE,
                 layout: 'vertical'
@@ -92,9 +92,10 @@ function getTableViewData(orderField){"use strict";
             rowImg = Ti.UI.createImageView({
                 image: Omadi.display.getNodeTypeImagePath(nodeData[i].type),
                 top: 5,
-                left: 1,
+                left: 5,
                 width: 35,
-                height: 35
+                height: 35,
+                bottom: 5
             });
             
             titleLabel = Ti.UI.createLabel({
@@ -143,7 +144,6 @@ function createiOSToolbar(){"use strict";
         
         back.addEventListener('click', function() {
             curWin.close();
-            //tabGroup.close();
         });
         
         space = Ti.UI.createButton({
@@ -160,17 +160,22 @@ function createiOSToolbar(){"use strict";
         });
         
         buttonBar.addEventListener('click', function(e){
-            if(e.index == 0){
-                currentOrderField = 'changed';
+            try{
+                if(e.index == 0){
+                    currentOrderField = 'changed';
+                }
+                else{
+                    currentOrderField = 'viewed';
+                }
+                
+                tableView.setData(getTableViewData(currentOrderField));  
+                
+                tableView.scrollToIndex(0);
+                search.setValue('');
             }
-            else{
-                currentOrderField = 'viewed';
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception in button bar click in recent: " + ex);
             }
-            
-            tableView.setData(getTableViewData(currentOrderField));  
-            
-            tableView.scrollToIndex(0);
-            search.setValue('');
         });
         
         items = [back, space, buttonBar, space];
@@ -201,7 +206,7 @@ function createAndroidTabs(){"use strict";
                fontSize: 16,
                fontWeight: 'bold'               
            },
-           backgroundColor: '#444',
+           backgroundColor: '#00AEEE',
            color: '#fff',
            width: '49%',
            height: 40,
@@ -213,15 +218,20 @@ function createAndroidTabs(){"use strict";
         });
         
         savedTab.addEventListener('click', function(e){
-            if(currentOrderField != 'changed'){
-                currentOrderField = 'changed';
-                savedTab.setBackgroundColor('#444');
-                viewedTab.setBackgroundColor('#777');
-                tableView.setData(getTableViewData(currentOrderField));
-            }  
-            
-            tableView.scrollToIndex(0);
-            search.setValue('');
+            try{
+                if(currentOrderField != 'changed'){
+                    currentOrderField = 'changed';
+                    savedTab.setBackgroundColor('#00AEEE');
+                    viewedTab.setBackgroundColor('#444');
+                    tableView.setData(getTableViewData(currentOrderField));
+                }  
+                
+                tableView.scrollToIndex(0);
+                search.setValue('');
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception with recent saved tab click: " + ex);
+            }
         });
         
         viewedTab = Ti.UI.createLabel({
@@ -231,7 +241,7 @@ function createAndroidTabs(){"use strict";
                fontSize: 16,
                fontWeight: 'bold'               
            },
-           backgroundColor: '#777',
+           backgroundColor: '#444',
            color: '#fff',
            width: '49%',
            height: 40,
@@ -243,14 +253,19 @@ function createAndroidTabs(){"use strict";
         });
         
         viewedTab.addEventListener('click', function(e){
-            if(currentOrderField != 'viewed'){
-                currentOrderField = 'viewed';
-                viewedTab.setBackgroundColor('#444');
-                savedTab.setBackgroundColor('#777');
-                tableView.setData(getTableViewData(currentOrderField));
-            }  
-            tableView.scrollToIndex(0);
-            search.setValue('');
+            try{
+                if(currentOrderField != 'viewed'){
+                    currentOrderField = 'viewed';
+                    viewedTab.setBackgroundColor('#00AEEE');
+                    savedTab.setBackgroundColor('#444');
+                    tableView.setData(getTableViewData(currentOrderField));
+                }  
+                tableView.scrollToIndex(0);
+                search.setValue('');
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception with viewed tab click in recent: " + ex);
+            }
         });
         
         // create and add toolbar
@@ -272,24 +287,30 @@ function loggingOutRecent(){"use strict";
 }
 
 function savedNodeRecent(){"use strict";
-    if(Ti.App.isAndroid){
-        Ti.UI.currentWindow.close();
-    }
-    else{
-        Ti.UI.currentWindow.hide();
-        // Close the window after the maximum timeout for a node save
-        setTimeout(Ti.UI.currentWindow.close, 65000);
-    }
+    Ti.UI.currentWindow.close();
+}
+
+function searchAndroidFocusHandler(){"use strict";
+    
+    search.setSoftKeyboardOnFocus(Ti.UI.Android.SOFT_KEYBOARD_SHOW_ON_FOCUS);
+    search.removeEventListener('click', searchAndroidFocusHandler);
+    
+    search.focus();
 }
 
 (function(){"use strict";
     var recentlySavedTab, recentlySavedWindow, recentlyViewedTab, recentlyViewedWindow;
     
     curWin.addEventListener("android:back", function(){
-       curWin.close(); 
+       if(curWin){
+          curWin.close();
+       } 
     });
     
+    Ti.App.removeEventListener('loggingOut', loggingOutRecent);
     Ti.App.addEventListener('loggingOut', loggingOutRecent);
+    
+    Ti.App.removeEventListener("savedNode", savedNodeRecent);
     Ti.App.addEventListener("savedNode", savedNodeRecent);
     
     if(Ti.App.isAndroid){
@@ -302,12 +323,17 @@ function savedNodeRecent(){"use strict";
     search = Ti.UI.createSearchBar({
         hintText : 'Search...',
         autocorrect : false,
-        barColor : '#666',
         showCancel: true,
         height : 35,
-        color: '#000',
-        backgroundColor: '#666'
+        barColor: '#111'
     });
+    
+    // if(Ti.App.isAndroid){
+//         
+        // search.softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
+//         
+        // search.addEventListener('click', searchAndroidFocusHandler);
+    // }
     
     if(Ti.App.isAndroid){
         search.height = 45;
@@ -379,10 +405,20 @@ function savedNodeRecent(){"use strict";
         Ti.App.removeEventListener("savedNode", savedNodeRecent);
         
         // Clean up memory
-        Ti.UI.currentWindow.remove(wrapperView);
+        //Ti.UI.currentWindow.remove(wrapperView);
         wrapperView = null;
         curWin = null;
     });
+    
+    if(Ti.App.isAndroid){
+        search.hide();
+        
+        //Hiding on Android makes it so the keyboard doesn't automatically pop up
+        // Showing it 1/2 second later will then show the search field, but not bring up the keyboard
+        setTimeout(function(){
+            search.show(); 
+        }, 500);
+    }
     
 }());
 

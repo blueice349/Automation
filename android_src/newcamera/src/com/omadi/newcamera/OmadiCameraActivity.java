@@ -1,5 +1,6 @@
 package com.omadi.newcamera;
 
+import java.awt.image.BufferedImage;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -8,10 +9,12 @@ import java.util.List;
 
 import org.appcelerator.titanium.TiBaseActivity;
 import org.appcelerator.titanium.proxy.TiViewProxy;
+import org.appcelerator.kroll.KrollObject;
 
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
@@ -32,6 +35,15 @@ import android.view.SurfaceView;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import ti.modules.titanium.media.android.AndroidModule.MediaScannerClient;
+import android.os.Environment;
+import android.provider.MediaStore.Images;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 
 public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder.Callback, SensorEventListener {
 	private static final String LCAT = "OmadiCameraActivity";
@@ -43,6 +55,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 	private FrameLayout previewLayout;
 	private int orientation;
 	private int degrees;
+	private int currentPhotos;
 
 	public static TiViewProxy overlayProxy = null;
 	public static OmadiCameraActivity cameraActivity = null;
@@ -51,8 +64,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 	
 	private int deviceHeight;
 	private int deviceWidth;
-	//RelativeLayout rootlayout;
-	//RelativeLayout enerlayout;
+	
 	FrameLayout frameCameraViewContainer;
 	private ImageView rotatingImage;
 	private ImageView done;
@@ -61,9 +73,13 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 	private boolean isPreviewRunning = false;
 	
 	public static ToolsOverlay toolsOverlay = null;
-	//VerticalSeekBar zoomControls;
+	
+	private int photosTaken = 0;
+	
 	private SensorManager sensorManager = null;
 	Bitmap bitmap = null;
+	
+	public static KrollObject callbackContext;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -105,66 +121,91 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 	public static void setCameraParameters(Camera.Parameters params){
 		camera.setParameters(params);
 	}
-
+	
+	private void stopPreview(){
+		if(camera == null || !isPreviewRunning){
+			return;
+		}
+		
+		try{
+			camera.stopPreview();
+		}
+		catch(Exception e){
+			// Don't worry about this
+		}
+		
+		isPreviewRunning = false;
+	}
+	
+	private void startPreview(SurfaceHolder previewHolder){
+		if(camera == null){
+			return;
+		}
+		
+		if(isPreviewRunning){
+			stopPreview();
+		}
+		
+		try{
+			camera.setPreviewDisplay(previewHolder);
+			isPreviewRunning = true;
+			camera.startPreview();
+		}
+		catch(Exception e){
+			
+			HashMap<String, Object> hm = new HashMap<String, Object>();
+			hm.put("message", e.getMessage());
+			hm.put("code", 14);
+			
+			NewcameraModule.errorCallback.callAsync(NewcameraModule.getInstance().getKrollObject(), hm);
+		}
+	}
+	
 	public void surfaceChanged(SurfaceHolder previewHolder, int format, int width, int height) {
 		
 		Log.d("CAMERA", "CAMERA SURFACE CHANGED");
 		
-		if (isPreviewRunning) {
-			if(camera != null){
-				camera.stopPreview();
-			}
-	    }
-		
-	    try{
-		    Camera.Parameters p = camera.getParameters();
-		    if(p!=null){
+		Camera.Parameters p = camera.getParameters();
+	    
+		if(p!=null){
+	    	
+		    Size optimalSize = getOptimalPreviewSize(p, height);
+		    if(optimalSize != null){
 		    	
-			    List<Size> sizes = p.getSupportedPreviewSizes();
-			    Size optimalSize = getOptimalPreviewSize(sizes, width, height);
-			    if(optimalSize != null){
-			    	
-			    	p.setPreviewSize(optimalSize.width, optimalSize.height);
-			    }
-			    
-			    List<Size> pictureSizes = p.getSupportedPictureSizes();
-			    Size optimalPictureSize = getOptimalPictureSize(pictureSizes);
-			    if(optimalPictureSize != null){
-			    	
-			    	Log.d("CAMERA", "CAMERA OPTIMAL PICTURE SIZE: " + optimalPictureSize.width + "x" + optimalPictureSize.height);
-			    	p.setPictureSize(optimalPictureSize.width, optimalPictureSize.height);
-			    }
-			    
-			    // Set to 90% quality
-			    p.setJpegQuality(90);
-			    p.setPictureFormat(ImageFormat.JPEG);
-			    
-			    camera.setParameters(p);
-			    
-		
-			    camera.setPreviewDisplay(previewHolder);
-			    camera.startPreview();
+		    	p.setPreviewSize(optimalSize.width, optimalSize.height);
 		    }
-	    } 
-	    catch (IOException e) {
-	        // TODO Auto-generated catch block
-	        e.printStackTrace();
+		    
+		    Size optimalPictureSize = getOptimalPictureSize(p);
+		    if(optimalPictureSize != null){
+		    	
+		    	Log.d("CAMERA", "CAMERA OPTIMAL PICTURE SIZE: " + optimalPictureSize.width + "x" + optimalPictureSize.height);
+		    	p.setPictureSize(optimalPictureSize.width, optimalPictureSize.height);
+		    }
+		    
+		    // Set to 90% quality
+		    p.setJpegQuality(90);
+		    p.setPictureFormat(ImageFormat.JPEG);
+		    
+		    camera.setParameters(p);
 	    }
-
-	    isPreviewRunning = true;
 		
+		startPreview(previewHolder);
+	   
 		toolsOverlay.cameraInitialized(camera);
 	}
 	
-	private Size getOptimalPictureSize(List<Size> pictureSizes){
+	private Size getOptimalPictureSize(Camera.Parameters p){
+		
+		List<Size> pictureSizes = p.getSupportedPictureSizes();
 		Size optimalSize = null;
 		
 	    if(pictureSizes.size() > 0){
-		    int target = 1000;
+		    int target = 1280;
 		    int minDiff = Integer.MAX_VALUE;
 		    
 		    for (Size pictureSize : pictureSizes) {
 		    	Log.d("CAMERA", "CAMERA SIZE: " + pictureSize.width + "x" + pictureSize.height);
+		    	
 		    	if(pictureSize.width > pictureSize.height){
 		    		// Make sure it's in landscape mode
 		    		if(pictureSize.width <= target){
@@ -197,10 +238,11 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 	    return optimalSize;
 	}
 	
-	private Size getOptimalPreviewSize(List<Size> sizes, int w, int h) {
-	    
+	private Size getOptimalPreviewSize(Camera.Parameters p, int h) {
+		List<Size> sizes = p.getSupportedPreviewSizes();
+		Size photoSize = this.getOptimalPictureSize(p);
 	    final double ASPECT_TOLERANCE = 0.05;
-	    double targetRatio = (double) w / h;
+	    double targetRatio = (double)photoSize.width / (double)photoSize.height;
 	    if (sizes == null) return null;
 
 	    Size optimalSize = null;
@@ -242,62 +284,110 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 	public void surfaceCreated(SurfaceHolder previewHolder) {
 		Log.d("CAMERA", "CAMERA SURFACE CREATED");
 		
-    try{
-      camera = Camera.open();
+		try{
+			camera.setPreviewDisplay(previewHolder);
 		}
-    catch(Exception e){
-      Log.e("CAMERA", "Could not open camera: " + e.getMessage());
-    }
-		/*
-		 * Disabling this since it can end up picking a bad preview
-		 * size which can create stretching issues (TIMOB-8151).
-		 * Original words of wisdom left by some unknown person:
-		 * "using default preview size may be causing problem on some devices, setting dimensions manually"
-		 * We may want to expose camera parameters to the developer for extra control.
-		Parameters cameraParams = camera.getParameters();
-		Camera.Size previewSize = cameraParams.getSupportedPreviewSizes().get((cameraParams.getSupportedPreviewSizes().size()) - 1);
-		cameraParams.setPreviewSize(previewSize.width, previewSize.height );
-		camera.setParameters(cameraParams);
-		*/
-//
-//		try {
-//			Log.i(LCAT, "setting preview display");
-//			camera.setPreviewDisplay(previewHolder);
-//		} catch(IOException e) {
-//			e.printStackTrace();
-//		}
-		
-		//toolsOverlay.cam
+	    catch(Exception e){
+	    	Log.e("CAMERA", "CAMERA Could not start preview: " + e.getMessage());
+	    	
+	    	HashMap<String, Object> hm = new HashMap<String, Object>();
+			hm.put("message", e.getMessage());
+			hm.put("code", 15);
+			
+			NewcameraModule.errorCallback.callAsync(NewcameraModule.getInstance().getKrollObject(), hm);
+	    }
 	}
 
 	// make sure to call release() otherwise you will have to force kill the app before 
 	// the built in camera will open
 	public void surfaceDestroyed(SurfaceHolder previewHolder) {
-		camera.release();
-		camera = null;
+		
+		stopPreview();
+		
+		if(camera != null){
+			try{
+				camera.release();
+			}
+			catch(Exception e){
+				Log.e("CAMERA", "CAMERA exception releasing: " + e.getMessage());
+			}
+			camera = null;
+		}
 	}
+	
+	private void openCamera(){
+		String exceptionMessage = "No exception";
+		
+		Log.d("CAMERA", "CAMERA in open camera");
+		
+		if (isPreviewRunning) {
+			stopPreview();
+		}
+		
+		Log.d("CAMERA", "CAMERA preview stopped");
 
+		if (camera != null) {
+			try{
+				camera.release();
+			}
+			catch(Exception e){
+				Log.e("CAMERA", "CAMERA exception releasing: " + e.getMessage());
+			}
+			camera = null;
+		}
+		
+		Log.d("CAMERA", "CAMERA released");
+
+		try{
+			camera = Camera.open();
+		}
+		catch(Exception e){
+			exceptionMessage = e.getMessage();
+		}
+		
+		Log.d("CAMERA", "CAMERA after open: " + exceptionMessage);
+		
+		if (camera == null) {
+			
+			Log.d("CAMERA", "CAMERA released");
+			
+			HashMap<String, Object> hm = new HashMap<String, Object>();
+			hm.put("message", "Could not open camera.");
+			hm.put("code", 15);
+			
+			NewcameraModule.errorCallback.callAsync(NewcameraModule.getInstance().getKrollObject(), hm);
+		}
+	}
+	
+	// Onresume is the only place to open the camera
 	@Override
 	protected void onResume() {
 		super.onResume();
 		
 		Log.d("CAMERA", "CAMERA ON RESUME");
 		
-		cameraActivity = this;
-		previewLayout.addView(preview);
+		openCamera();
 		
-		//previewLayout.addView(localOverlayProxy.getOrCreateView().getNativeView(), new FrameLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+		if(camera != null){
 		
-		//if(camera != null){
-			//toolsOverlay.cameraInitialized();
-		//}
-		
-		previewLayout.addView(toolsOverlay);
-		
-		// Register this class as a listener for the accelerometer sensor
-		sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL);
-		
-		Log.d("CAMERA", "Sensor Registered");
+			Log.d("CAMERA", "CAMERA Opened");
+			
+			cameraActivity = this;
+			
+			try{
+				
+				previewLayout.addView(preview);
+				previewLayout.addView(toolsOverlay);
+				
+				// Register this class as a listener for the accelerometer sensor
+				sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL);
+			}
+			catch(Exception e){
+				NewcameraModule.sendError("Could not open the camera preview.", e.getMessage());
+			}
+			
+			Log.d("CAMERA", "CAMERA Sensor Registered");
+		}
 	}
 
 	@Override
@@ -306,13 +396,15 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 		
 		Log.d("CAMERA", "CAMERA ON PAUSE");
 		
-		previewLayout.removeView(toolsOverlay);
-		
-		previewLayout.removeView(preview);
-		
-		//previewLayout.removeView(localOverlayProxy.getOrCreateView().getNativeView());
-
-		sensorManager.unregisterListener(this);
+		try{
+			stopPreview();
+			previewLayout.removeView(toolsOverlay);
+			previewLayout.removeView(preview);
+			sensorManager.unregisterListener(this);
+		}
+		catch(Exception e){
+			// do nothing
+		}
 		
 		try {
 			if(camera != null){
@@ -321,168 +413,194 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 			}
 		}
 		catch (Throwable t) {
-			Log.d("CAMERA", "camera is not open, unable to release: " + t.getMessage());
+			Log.d("CAMERA", "CAMERA is not open, unable to release: " + t.getMessage());
 			t.printStackTrace();
 		}
 
 		cameraActivity = null;
 		
-		Log.d("CAMERA", "Sensor unregistered");
+		Log.d("CAMERA", "CAMERA Sensor unregistered");
 	}
-	
-	
-//	/**
-//	 * Calculating the degrees needed to rotate the image imposed on the button
-//	 * so it is always facing the user in the right direction
-//	 *
-//	 * @param toDegrees
-//	 * @return
-//	 */
-//	private RotateAnimation getRotateAnimation(float toDegrees) {
-//		float compensation = 0;
-//
-//		if (Math.abs(degrees - toDegrees) > 180) {
-//			compensation = 360;
-//		}
-//
-//		// When the device is being held on the left side (default position for
-//		// a camera) we need to add, not subtract from the toDegrees.
-//		if (toDegrees == 0) {
-//			compensation = -compensation;
-//		}
-//
-//		// Creating the animation and the RELATIVE_TO_SELF means that he image
-//		// will rotate on it center instead of a corner.
-//		RotateAnimation animation = new RotateAnimation(degrees, toDegrees
-//				- compensation, Animation.RELATIVE_TO_SELF, 0.5f,
-//				Animation.RELATIVE_TO_SELF, 0.5f);
-//
-//		// Adding the time needed to rotate the image
-//		animation.setDuration(250);
-//
-//		// Set the animation to stop after reaching the desired position. With
-//		// out this it would return to the original state.
-//		animation.setFillAfter(true);
-//
-//		return animation;
-//	}
 
 	public void takePicture() {
-		Log.d("CAMERA", "Taking picture");
-		camera.takePicture(null, null, jpegCallback);
+		Log.d("CAMERA", "CAMERA Taking picture");
+		
+		if(camera != null){
+			try{
+				camera.takePicture(null, null, jpegCallback);
+			}
+			catch(Exception e){
+				Log.d("CAMERA", "CAMERA could not take picture: " + e.getMessage());
+				autoFinishActivityWithError("Could not take photo: " + e.getMessage());
+			}
+		}
+		else{
+			Log.e("CAMERA", "CAMERA is null, could not take picture");
+			autoFinishActivityWithError("Camera could not be found.");
+		}
 	}
-
-	// support user defined callback for this in the future?
-//	static ShutterCallback shutterCallback = new ShutterCallback() {
-//		public void onShutter() {
-//		}
-//	};
-//
-//	// support user defined callback for this in the future?
-//	static PictureCallback rawCallback = new PictureCallback() {
-//		public void onPictureTaken(byte[] data, Camera camera) {
-//		}
-//	};
 	
 	public PictureCallback jpegCallback = new PictureCallback() {
 
 		public void onPictureTaken(byte[] data, Camera camera) {
 			try {
-				Log.d("CAMERA", "JPEG generated");
-				//toolsOverlay.pictureTaken();
+				Log.d("CAMERA", "CAMERA JPEG generated");
 				
 				FileOutputStream outputStream = null;
+				FileOutputStream thumbOutputStream = null;
 				
 				try {
 					
 					String filePath = cameraActivity.storageUri.getPath();
 					
-					//java.util.Date date = new java.util.Date();
-					
-					//String filePath = OmadiCameraActivity.storageDirectory + "/p_" + System.currentTimeMillis() + ".jpg";
-					
-					// Titanium passes in the string with file:// included, so remove it
-					//filePath = filePath.replaceFirst("file://", "");
-					
-					//URI fileURI = URI.create(filePath);
-					
-					//Log.i("CHRIS", "PATH: " + filePath);
-					//Log.i("CHRIS", "PATH URI: " + fileURI.getPath());
-					
-					// get the degrees before the file is saved
-					Message msg = Message.obtain();
-					Bundle messageVars = new Bundle();
-					messageVars.putInt("degrees", toolsOverlay.getDegreesAtCapture());
-					messageVars.putString("filePath", filePath);
-					
-					//Log.i("CHRIS", "degrees: " + degrees);
+					File imageFile = new File(filePath);
 					
 					// write photo to storage
 					outputStream = new FileOutputStream(filePath);
 					outputStream.write(data);
 					outputStream.close();
 					
-					int orientation = ExifInterface.ORIENTATION_NORMAL;
-					switch(toolsOverlay.getDegreesAtCapture()){
-					case 90:
-						orientation = ExifInterface.ORIENTATION_ROTATE_270;
-						break;
-					case 270:
-						orientation = ExifInterface.ORIENTATION_ROTATE_90;
-						break;
-					case 180:
-						orientation = ExifInterface.ORIENTATION_ROTATE_180;
-						break;
+					try{
+						int orientation = ExifInterface.ORIENTATION_NORMAL;
+						switch(toolsOverlay.getDegreesAtCapture()){
+						case 90:
+							orientation = ExifInterface.ORIENTATION_ROTATE_270;
+							break;
+						case 270:
+							orientation = ExifInterface.ORIENTATION_ROTATE_90;
+							break;
+						case 180:
+							orientation = ExifInterface.ORIENTATION_ROTATE_180;
+							break;
+						}
+						
+						// Save orientation to photo
+						ExifInterface exif = new ExifInterface(filePath);
+						exif.setAttribute(ExifInterface.TAG_ORIENTATION, orientation + "");
+						exif.saveAttributes();
+					}
+					catch(Exception e){
+						// do nothing, don't worry abou tthis
 					}
 					
-					ExifInterface exif = new ExifInterface(filePath);
-					exif.setAttribute(ExifInterface.TAG_ORIENTATION, orientation + "");
-					exif.saveAttributes();
-	
-					cameraActivity.setResult(Activity.RESULT_OK);
-					cameraActivity.finish();
+					File rootsd = Environment.getExternalStorageDirectory();
+					String localPath = rootsd.getAbsolutePath() + "/dcim/Camera/o_" + photosTaken + imageFile.getName();
 					
-					//messageVars.putByteArray("media", data);
-					msg.setData(messageVars);
-					messageHandler.sendMessage(msg);
+					moveImage(imageFile.getAbsolutePath(), localPath);
+					String localUrl = "file://" + localPath;
 					
-					Log.d("CAMERA", "Image saved Correctly");
+					//String thumbPath = filePath.replaceAll(".jpg$", "_thumb.jpg");
 					
+					HashMap<String, Object> hm = new HashMap<String, Object>();
+					hm.put("filePath", localUrl);
+					hm.put("thumbPath", "");
+					hm.put("degrees", toolsOverlay.getDegreesAtCapture());
+					hm.put("photoIndex", photosTaken);
+					
+					photosTaken ++;
+					
+					NewcameraModule.addedPhotoCallback.callAsync(NewcameraModule.getInstance().getKrollObject(), hm);
+					
+					//cameraActivity.setResult(Activity.RESULT_OK);
+					
+					try{
+						MediaScannerClient mediaScanner = new MediaScannerClient(cameraActivity, new String[] {localPath}, null, null);
+						mediaScanner.scan();
+					}
+					catch(Exception e){
+						// Don't worry about this failing
+					}
+					
+					Log.d("CAMERA", "CAMERA Image saved Correctly");
+					
+					if(photosTaken < NewcameraModule.maxPhotos || NewcameraModule.maxPhotos == -1){
+						toolsOverlay.photoSaved();
+						//toolsOverlay.resetCaptureButton();
+						camera.startPreview();
+					}
+					else{
+						cameraActivity.setResult(Activity.RESULT_OK);
+						cameraActivity.finish();
+					}
 				} 
 				catch (FileNotFoundException e) {
 					e.printStackTrace();
+					autoFinishActivityWithError(e.getMessage());
 				} 
 				catch (IOException e) {
 					e.printStackTrace();
+					autoFinishActivityWithError(e.getMessage());
 				}
 			
 			}
 			catch (Exception ex) {
 				ex.printStackTrace();
+				autoFinishActivityWithError(ex.getMessage());
 			}
-
 		}
 	};
+	
+	private void autoFinishActivityWithError(String message){
+		NewcameraModule.errorMessage = message;
+		
+		cameraActivity.setResult(13);
+		cameraActivity.finish();
+	}
+	
+	private void moveImage(String source, String dest)
+	{
+		try {
+
+			BufferedInputStream bis = null;
+			BufferedOutputStream bos = null;
+
+			File src = new File(source);
+			File dst = new File(dest);
+
+			try {
+				bis = new BufferedInputStream(new FileInputStream(src), 8096);
+				bos = new BufferedOutputStream(new FileOutputStream(dst), 8096);
+
+				byte[] buf = new byte[8096];
+				int len = 0;
+
+				while ((len = bis.read(buf)) != -1) {
+					bos.write(buf, 0, len);
+				}
+
+			} finally {
+				if (bis != null) {
+					bis.close();
+				}
+
+				if (bos != null) {
+					bos.close();
+				}
+			}
+			src.delete();
+
+		} catch (IOException e) {
+			Log.e("CAMERA", "Unable to move file: " + e.getMessage(), e);
+		}
+	}
 	
 	static Handler messageHandler = new Handler() {
 		@Override
 		public void dispatchMessage(Message msg) {
-//			KrollDict eventData = new KrollDict();
-//			eventData.put("source", CustomcameraModule.eve);
-//			eventData.put("media", msg.obj);
-//			CustomcameraModule.getInstance().fireEvent("successCameraCapture",
-//					eventData);
-
-			HashMap<String, Object> hm = new HashMap<String, Object>();
 			
-			Bundle messageVars = msg.getData();
-			
-			//hm.put("source", NewcameraModule.eve);
-			hm.put("filePath", messageVars.getString("filePath"));
-			hm.put("degrees", messageVars.getInt("degrees"));
-			//hm.put("media", messageVars.getByteArray("media"));
-
-			NewcameraModule.finishedCallback.callAsync(NewcameraModule.getInstance().getKrollObject(), hm);
+			if(NewcameraModule.addedPhotoCallback != null){
+				NewcameraModule instance = NewcameraModule.getInstance();
+				
+				if(instance != null){
+					HashMap<String, Object> hm = new HashMap<String, Object>();
+					Bundle messageVars = msg.getData();
+					hm.put("filePath", messageVars.getString("filePath"));
+					hm.put("thumbPath", messageVars.getString("thumbPath"));
+					hm.put("degrees", messageVars.getInt("degrees"));
+					
+					NewcameraModule.addedPhotoCallback.callAsync(callbackContext, hm);
+				}
+			}
 		}
 	};
 
@@ -511,11 +629,10 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 	 * something changes.
 	 */
 	public void onSensorChanged(SensorEvent event) {
-		//Log.i("CHRIS", "IN SENSOR");
+		
 		try{
 			synchronized (this) {
 				if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-					//RotateAnimation animation = null;
 					
 					int lastDegrees = degrees;
 					
@@ -523,14 +640,10 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 						
 						if (event.values[1] > 0 && orientation != ExifInterface.ORIENTATION_ROTATE_90) {
 							// UP
-							//orientation = ExifInterface.ORIENTATION_ROTATE_90;
-							//animation = getRotateAnimation(270);
 							degrees = 270;
 						} 
 						else if (event.values[1] < 0 && orientation != ExifInterface.ORIENTATION_ROTATE_270) {
 							// UP SIDE DOWN
-							//orientation = ExifInterface.ORIENTATION_ROTATE_270;
-							//animation = getRotateAnimation(90);
 							degrees = 90;
 						}
 						
@@ -539,14 +652,10 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 						
 						if (event.values[0] > 0 && orientation != ExifInterface.ORIENTATION_NORMAL) {
 							// LEFT
-							//orientation = ExifInterface.ORIENTATION_NORMAL;
-							//animation = getRotateAnimation(0);
 							degrees = 0;
 						} 
 						else if (event.values[0] < 0 && orientation != ExifInterface.ORIENTATION_ROTATE_180) {
 							// RIGHT
-							//orientation = ExifInterface.ORIENTATION_ROTATE_180;
-							//animation = getRotateAnimation(180);
 							degrees = 180;
 						}
 						
@@ -555,12 +664,11 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 					if(lastDegrees != degrees){
 						toolsOverlay.degreesChanged(degrees);
 					}
-					
 				}
 			}
 		}
 		catch(Exception e){
-			Log.d("CAMERA", "Exception onsensor change: " + e.getMessage());
+			Log.d("CAMERA", "CAMERA Exception onsensor change: " + e.getMessage());
 		}
 	}
 	

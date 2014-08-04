@@ -68,6 +68,23 @@ Omadi.widgets.list_text = {
 
         options = Omadi.widgets.list_text.getOptions(instance);
         
+        // This is a specialty section for only dispatch forms
+        // Do not allow the work form to change if it has already been saved
+        if(instance.field_name == 'field_tow_type'){
+            if(dbValue !== null && typeof node.dispatch_nid !== 'undefined' && node.dispatch_nid != 0){
+                instance.can_edit = false;
+            }
+            else if(typeof Ti.UI.currentWindow.field_tow_type !== 'undefined' && Ti.UI.currentWindow.field_tow_type != null){
+                dbValue = Ti.UI.currentWindow.field_tow_type;
+                for(i = 0; i < options.length; i ++){
+                    if(options[i].dbValue == dbValue){
+                        textValue = options[i].title;
+                        break;
+                    }
+                }
+            }
+        }
+        
         if (dbValue === null && typeof settings.default_value !== 'undefined') {
             if(settings.default_value.length > 0){
                 dbValue = settings.default_value;
@@ -99,7 +116,6 @@ Omadi.widgets.list_text = {
             width : '100%'
         });
         
-   
         widgetView = Omadi.widgets.getLabelField(instance);
         widgetView.top = 1;
         widgetView.bottom = 1;
@@ -136,6 +152,13 @@ Omadi.widgets.list_text = {
                         ev.source.widgetView.textValue = textValue;
                         ev.source.widgetView.setText(textValue);
                         ev.source.widgetView.value = ev.source.widgetView.dbValue = ev.source.widgetView.options[ev.index].dbValue;
+                        
+                        // This is a special case for dispatching
+                        if(ev.source.widgetView.instance.field_name == 'field_tow_type'){
+                            Ti.App.fireEvent("omadi:dispatch:towTypeChanged", {
+                                dbValue : ev.source.widgetView.dbValue
+                            });
+                        }
                     }
 
                     // if (ev.source.widgetView.check_conditional_fields.length > 0) {

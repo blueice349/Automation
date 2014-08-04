@@ -11,7 +11,7 @@ var wrapperView;
 var empty = null;
 
 curWin.setBackgroundColor("#eee");
-Ti.UI.currentWindow.setOrientationModes([Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
+
 wrapperView = Ti.UI.createView({
    layout: 'vertical',
    bottom: 0,
@@ -137,22 +137,22 @@ function alertNavButtons(currentWin, currentWinWrapper, type) {"use strict";
         systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
     });
 
-    label = Titanium.UI.createButton({
-        title : type,
-        color : '#fff',
+    label = Titanium.UI.createLabel({
+        text : type,
+        color : '#333',
         ellipsize : true,
         wordwrap : false,
-        width : 200,
+        width : Ti.UI.SIZE,
         focusable : false,
         touchEnabled : false,
         style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
     });
     
     if (type != null) {
-        label.title = type;
+        label.text = type;
     }
     else {
-        label.title = 'Location Alerts';
+        label.text = 'Location Alerts';
     }
 
     refreshImg = Ti.UI.createImageView({
@@ -163,9 +163,13 @@ function alertNavButtons(currentWin, currentWinWrapper, type) {"use strict";
     });
 
     refreshImg.addEventListener('click', function(e) {
-        
-        Omadi.display.loading("Refreshing...");
-        Omadi.location.uploadGPSCoordinates();
+        try{
+            Omadi.display.loading("Refreshing...");
+            Omadi.location.uploadGPSCoordinates();
+        }
+        catch(ex){
+            Omadi.service.sendErrorReport("Exception with GPS refresh image: " + ex);
+        }
     });
     
     items = [backButton, space, label, space];
@@ -182,6 +186,10 @@ function alertNavButtons(currentWin, currentWinWrapper, type) {"use strict";
         borderBottom : false,
         height: Ti.UI.SIZE
     });
+    
+    if(Ti.App.isIOS7){
+        toolbar.top += 20;
+    }
 
     currentWinWrapper.add(toolbar);
 }
@@ -249,9 +257,14 @@ function alertNavButtons_android(lv_listTableView, currentWindow, currentWindowW
     });
 
     refreshImg.addEventListener('click', function(e) {
-        Omadi.display.loading("Refreshing...");
-        
-        Omadi.location.uploadGPSCoordinates();
+        try{
+            Omadi.display.loading("Refreshing...");
+            
+            Omadi.location.uploadGPSCoordinates();
+        }
+        catch(ex){
+            Omadi.service.sendErrorReport("Exception with gps refresh click: " + ex);
+        }
     });
 
     headerView.add(label);
@@ -367,90 +380,87 @@ function loadData() {"use strict";
 
 function opnAccountAlertsList(e) {"use strict";
     
-    accountWindow = Ti.UI.createWindow({
-        navBarHidden : true,
-        title : e.row.lbl,
-        nid : e.row.nid,
-        isOpened : true,
-        isChild: true
-    });
-    
-    accountWrapperView = Ti.UI.createView({
-       layout: 'vertical',
-       bottom: 0,
-       top: 0,
-       right: 0,
-       left: 0 
-    });
-    
-    accountWindow.add(accountWrapperView);
-    
-    if (Ti.App.isAndroid) {
-        alertNavButtons_android(accountMessage.listView, accountWindow, accountWrapperView, accountWindow.title);
-    }
-    else {
-        alertNavButtons(accountWindow, accountWrapperView, accountWindow.title);
-    }
-
-    accountMessage.listView = Titanium.UI.createTableView({
-        top : 0,
-        bottom : 0,
-        separatorColor : '#BDBDBD',
-        backgroundColor : '#fff',
-        footerView: Ti.UI.createView({
-            height: 50,
-            width: '100%'
-        })
-    });
-    
-    accountWrapperView.add(accountMessage.listView);
-    
-    accountMessage.listView.addEventListener('click', function(row_e) {
-        var db, result, n_nid, type_vl, region_f, name_s, dialog;
-        //accountMessage.search.blur();
-        db = Omadi.utils.openMainDatabase();
-
-        result = db.execute("SELECT * FROM node WHERE nid=" + row_e.row.nid);
-        
-        n_nid = row_e.row.nid;
-        type_vl = result.fieldByName('table_name');
-        region_f = result.fieldByName('form_part');
-        name_s = result.fieldByName('title');
-        result.close();
-        db.close();
-
-        dialog = Titanium.UI.createAlertDialog({
-            title : 'Omadi - ' + type_vl.charAt(0).toUpperCase() + type_vl.slice(1),
-            buttonNames : ['Cancel', 'View Form Data'],
-            cancel : 0,
-            message : "What would you like to do?"
+    try{
+        accountWindow = Ti.UI.createWindow({
+            navBarHidden : true,
+            title : e.row.lbl,
+            nid : e.row.nid,
+            isOpened : true,
+            isChild: true,
+            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
         });
-        dialog.show();
         
-        dialog.addEventListener('click', function(dialog_e) {
+        accountWrapperView = Ti.UI.createView({
+           layout: 'vertical',
+           bottom: 0,
+           top: 0,
+           right: 0,
+           left: 0 
+        });
+        
+        accountWindow.add(accountWrapperView);
+        
+        if (Ti.App.isAndroid) {
+            alertNavButtons_android(accountMessage.listView, accountWindow, accountWrapperView, accountWindow.title);
+        }
+        else {
+            alertNavButtons(accountWindow, accountWrapperView, accountWindow.title);
+        }
+    
+        accountMessage.listView = Titanium.UI.createTableView({
+            top : 0,
+            bottom : 0,
+            separatorColor : '#BDBDBD',
+            backgroundColor : '#fff',
+            footerView: Ti.UI.createView({
+                height: 50,
+                width: '100%'
+            })
+        });
+        
+        accountWrapperView.add(accountMessage.listView);
+        
+        accountMessage.listView.addEventListener('click', function(row_e) {
+            var db, result, n_nid, type_vl, region_f, name_s, dialog;
             
-            if (dialog_e.index != dialog_e.source.cancel) {
+            try{
+                db = Omadi.utils.openMainDatabase();
+        
+                result = db.execute("SELECT * FROM node WHERE nid=" + row_e.row.nid);
                 
-                Omadi.display.openViewWindow(type_vl, n_nid);
+                n_nid = row_e.row.nid;
+                type_vl = result.fieldByName('table_name');
+                region_f = result.fieldByName('form_part');
+                name_s = result.fieldByName('title');
+                result.close();
+                db.close();
+                
+                Omadi.display.showDialogFormOptions(row_e);
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception with account message list view click: " + ex);
             }
         });
-    });
+        
+        accountWindow.addEventListener('android:back', function() {
+            accountWindow.close();
+        });
     
-    accountWindow.addEventListener('android:back', function() {
-        accountWindow.close();
-    });
-
-    accountWindow.addEventListener('close', function(e) {
-        accountWindow.isOpened = false;
-    });
-
-  
-    accountWindow.open();
-    if (Ti.App.isAndroid) {
-        Ti.UI.Android.hideSoftKeyboard();
+        accountWindow.addEventListener('close', function(e) {
+            accountWindow.isOpened = false;
+        });
+    
+      
+        accountWindow.open();
+        if (Ti.App.isAndroid) {
+            Ti.UI.Android.hideSoftKeyboard();
+        }
+        
+        loadAccAlertData();
     }
-    
-    loadAccAlertData();
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception in open account alerts list: " + ex);
+    }
 }
 
 function logginOutMessageCenter(){"use strict";
@@ -485,10 +495,34 @@ function refreshUIAlertsMessageCenter(e){"use strict";
     loadData();
 }
 
+function deleteOldAlerts(){"use strict";
+    var db, timestamp;
+    
+    // Delete last hour of alert data
+    try{
+        db = Omadi.utils.openGPSDatabase();
+        
+        // only last hour
+        timestamp = Omadi.utils.getUTCTimestamp() - (3600);
+        
+        db.execute("DELETE FROM alerts WHERE timestamp < " + timestamp);
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception deleting old alerts: " + ex);
+    }
+    
+    try{
+        db.close();
+    }
+    catch(ex1){}
+}
+
 ( function() {"use strict";
 
-    
+    Ti.App.removeEventListener('loggingOut', logginOutMessageCenter);
     Ti.App.addEventListener('loggingOut', logginOutMessageCenter);
+    
+    Ti.App.removeEventListener("savedNode", savedNodeMessageCenter);
     Ti.App.addEventListener("savedNode", savedNodeMessageCenter);
     
     if (Ti.App.isAndroid) {
@@ -540,12 +574,17 @@ function refreshUIAlertsMessageCenter(e){"use strict";
     
     //When the user clicks on a certain contact, it opens individual_contact.js
     listTableView.addEventListener('click', function(e) {
-        if (e.row != null) {
-            opnAccountAlertsList(e);
+        try{
+            if (e.row != null) {
+                opnAccountAlertsList(e);
+            }
+        }
+        catch(ex){
+            Omadi.service.sendErrorReport("Exception with listtableview click in message center: " + ex);
         }
     });
     
-    
+    deleteOldAlerts();
     
     curWin.is_opened = true;
     loadData();
@@ -564,7 +603,6 @@ function refreshUIAlertsMessageCenter(e){"use strict";
         Ti.App.removeEventListener('refresh_UI_Alerts', refreshUIAlertsMessageCenter);
         
         // Clean up memory
-        
         Ti.UI.currentWindow.remove(wrapperView);
         wrapperView = null;
         curWin = null;

@@ -59,8 +59,10 @@ Omadi.widgets.license_plate = {
             dbValue = "";
             textValue = "";
             if ( typeof node[real_field_name] !== 'undefined') {
-                if ( typeof node[real_field_name].parts[part].textValue !== 'undefined') {
+                // The "false" will still allow "FALSE", so we're okay here since CAPS is mandated for a final value
+                if ( typeof node[real_field_name].parts[part].textValue !== 'undefined' && node[real_field_name].parts[part].textValue !== "false") {
                     dbValue = textValue = node[real_field_name].parts[part].textValue;
+                    Ti.API.error("lic: " + dbValue);
                 }
             }
         }
@@ -119,6 +121,8 @@ Omadi.widgets.license_plate = {
                     if(e.source.value !== null){
                         tempValue = (e.source.value + "".toString()).replace(/[^0-9a-zA-Z]/g, '');
                         tempValue = tempValue.toUpperCase();
+                        // Change the oh's to zeros
+                        tempValue = tempValue.replace(/O/g, '0');
                     }
                     
                     e.source.dbValue = tempValue;
@@ -127,16 +131,7 @@ Omadi.widgets.license_plate = {
                     if (tempValue != e.source.value) {
                         e.source.value = tempValue;
                         
-                        
-                        if (Ti.App.isAndroid) {
-                            e.source.setSelection(e.source.value.length, e.source.value.length);
-                        }
-                    }
-
-                    if (e.source.value.length > e.source.maxLength) {
-                        e.source.value = e.source.value.substring(0, e.source.maxLength);
-                        
-                        if (Ti.App.isAndroid) {
+                        if (Ti.App.isAndroid && e.source.value != null && typeof e.source.value.length !== 'undefined') {
                             e.source.setSelection(e.source.value.length, e.source.value.length);
                         }
                     }

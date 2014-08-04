@@ -54,7 +54,8 @@ Omadi.widgets.omadi_reference = {
     getNewElement : function(node, instance, index) {"use strict";
 
         var settings, widgetView, dbValue, textValue, nodeTypes, possibleValues, options,
-            i, query, db, result, wrapper, autocomplete_table, calculatedTop, isHidden;
+            i, query, db, result, wrapper, autocomplete_table, calculatedTop, isHidden,
+            vehicleNid, addressLabel;
 
         dbValue = "";
         textValue = "";
@@ -77,6 +78,15 @@ Omadi.widgets.omadi_reference = {
         for (i in instance.settings.reference_types) {
             if (instance.settings.reference_types.hasOwnProperty(i)) {
                 nodeTypes.push(instance.settings.reference_types[i]);
+            }
+        }
+        
+        // Special case to automatically select the truck the user is in 
+        if(nodeTypes.length == 1 && dbValue == "" && instance.isRequired && nodeTypes[0] == 'company_vehicle'){
+            vehicleNid = Omadi.bundles.companyVehicle.getCurrentVehicleNid();
+            if(vehicleNid > 0){
+                textValue = Omadi.bundles.companyVehicle.getCurrentVehicleName();
+                dbValue = vehicleNid;
             }
         }
         
@@ -108,6 +118,22 @@ Omadi.widgets.omadi_reference = {
             layout : 'vertical'
         });
         
+        addressLabel = Ti.UI.createLabel({
+            text: '',
+            height: 0,
+            width: Ti.UI.FILL,
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+            color: '#666',
+            font: {
+                fontSize: 12
+            },
+            top: 0
+        });
+        
+        if(dbValue > 0){
+            addressLabel.text = Omadi.widgets.omadi_reference.getFirstStreetAddress(dbValue);
+        }
+        
         if(instance.widget.type == 'omadi_reference_select'){
             
             options = [];
@@ -125,30 +151,32 @@ Omadi.widgets.omadi_reference = {
             widgetView.bottom = 1;
             widgetView.setText(textValue);
             
-            widgetView.addEventListener('click', function(e) {
-                var postDialog = Titanium.UI.createOptionDialog();
-                postDialog.options = e.source.options;
-                postDialog.cancel = -1;
-                postDialog.widgetView = e.source;
-                postDialog.show();
-
-                postDialog.addEventListener('click', function(ev) {
-                    var text;
-                    
-                    if (ev.index >= 0) {
+            if(instance.can_edit){
+                widgetView.addEventListener('click', function(e) {
+                    var postDialog = Titanium.UI.createOptionDialog();
+                    postDialog.options = e.source.options;
+                    postDialog.cancel = -1;
+                    postDialog.widgetView = e.source;
+                    postDialog.show();
+    
+                    postDialog.addEventListener('click', function(ev) {
+                        var text;
                         
-                        if(ev.source.widgetView.possibleValues[ev.index].nid === null){
-                            text = '';   
+                        if (ev.index >= 0) {
+                            
+                            if(ev.source.widgetView.possibleValues[ev.index].nid === null){
+                                text = '';   
+                            }
+                            else{
+                                text = ev.source.options[ev.index];
+                            }
+                            ev.source.widgetView.textValue = text;
+                            ev.source.widgetView.dbValue = ev.source.widgetView.possibleValues[ev.index].nid;
+                            ev.source.widgetView.setText(text);
                         }
-                        else{
-                            text = ev.source.options[ev.index];
-                        }
-                        ev.source.widgetView.textValue = text;
-                        ev.source.widgetView.dbValue = ev.source.widgetView.possibleValues[ev.index].nid;
-                        ev.source.widgetView.setText(text);
-                    }
+                    });
                 });
-            });
+            }
             
             wrapper.add(widgetView);
             
@@ -191,14 +219,15 @@ Omadi.widgets.omadi_reference = {
             widgetView.clickedAutocomplete = false;
             widgetView.touched = false;
             widgetView.blurred = true;
+            widgetView.addressLabel = addressLabel;
             
             if(!isHidden){
                 widgetView.defaultValueChildFields = Omadi.widgets.omadi_reference.setupParentDefaultFields(instance);
         
                 autocomplete_table = Titanium.UI.createTableView({
-                    zIndex : 999,
+                    //zIndex : 999,
                     height : 0,
-                    backgroundColor : '#FFFFFF',
+                    backgroundColor : '#fff',
                     visible : false,
                     borderColor : '#000',
                     borderWidth : 0,
@@ -210,7 +239,7 @@ Omadi.widgets.omadi_reference = {
                 widgetView.autocomplete_table = autocomplete_table;
         
                 autocomplete_table.addEventListener('click', function(e) {
-                    var i, callback;
+                    var i, callback, street;
                     
                     e.source.textField.textValue = e.source.textField.value = e.rowData.title;
                     e.source.textField.dbValue = e.rowData.nid;
@@ -219,7 +248,11 @@ Omadi.widgets.omadi_reference = {
                     e.source.autocomplete_table.setBorderWidth(0);
                     e.source.autocomplete_table.setVisible(false);
                     
-                    e.source.textField.setColor('#006600');
+                    street = Omadi.widgets.omadi_reference.getFirstStreetAddress(e.rowData.nid);
+                    e.source.textField.addressLabel.text = street;
+                    e.source.textField.addressLabel.height = 20;
+                    
+                    e.source.textField.setColor('#060');
         
                     if (Ti.App.isAndroid) {
                         // Make sure the cursor is at the end of the text
@@ -264,24 +297,25 @@ Omadi.widgets.omadi_reference = {
                     e.source.blurred = true;
                 });
                 
-                Ti.UI.currentWindow.addEventListener("customCopy", function(){
-                    var i, callback;
-                    
-                    Ti.API.debug("In CUSTOM COPY");
-                    Omadi.widgets.omadi_reference.setChildDefaultValues(widgetView);
-                    //Ti.API.debug(widgetView.onChangeCallbacks);
-                    if (widgetView.onChangeCallbacks.length > 0) {
-                        for ( i = 0; i < widgetView.onChangeCallbacks.length; i++) {
-                            callback = widgetView.onChangeCallbacks[i];
-                            callback(widgetView.onChangeCallbackArgs[i]);
-                        }
-                    }
-                });
+                // TODO: get this part working with the formmodule
+                // Ti.UI.currentWindow.addEventListener("customCopy", function(){
+                    // var i, callback;
+//                     
+                    // Ti.API.debug("In CUSTOM COPY");
+                    // Omadi.widgets.omadi_reference.setChildDefaultValues(widgetView);
+                    // //Ti.API.debug(widgetView.onChangeCallbacks);
+                    // if (widgetView.onChangeCallbacks.length > 0) {
+                        // for ( i = 0; i < widgetView.onChangeCallbacks.length; i++) {
+                            // callback = widgetView.onChangeCallbacks[i];
+                            // callback(widgetView.onChangeCallbackArgs[i]);
+                        // }
+                    // }
+                // });
         
                 widgetView.addEventListener('change', function(e) {
                     /*global setConditionallyRequiredLabels*/
         
-                    var possibleValues, tableData, i, j, regEx, row, upperCaseValue, callback;
+                    var possibleValues, tableData, i, j, regEx, row, upperCaseValue, callback, street;
                     
                     Ti.API.debug("auto: " + e.source.clickedAutocomplete);
                     
@@ -293,12 +327,14 @@ Omadi.widgets.omadi_reference = {
                     
                     if (e.source.touched === true) {
                         //Ti.API.info("changed");
-                            
+                         
                         e.source.dbValue = null;
                         e.source.textValue = e.source.value;
                         
                         e.source.setColor('#ee0000');
-        
+                        
+                        e.source.addressLabel.height = 0;
+                        
                         if (e.source.lastValue != e.source.value && e.source.value != '') {
                             possibleValues = e.source.possibleValues;
         
@@ -317,6 +353,10 @@ Omadi.widgets.omadi_reference = {
                                         e.source.autocomplete_table.setHeight(0);
                                         e.source.autocomplete_table.setBorderWidth(0);
                                         e.source.autocomplete_table.setVisible(false);
+                                        
+                                        street = Omadi.widgets.omadi_reference.getFirstStreetAddress(e.source.dbValue);
+                                        e.source.addressLabel.text = street;
+                                        e.source.addressLabel.height = 20;
                                         
                                         e.source.setColor('#006600');
                                         
@@ -385,6 +425,7 @@ Omadi.widgets.omadi_reference = {
         
                 wrapper.add(widgetView);
                 wrapper.add(autocomplete_table);
+                wrapper.add(addressLabel);
             }
         }
 
@@ -485,6 +526,32 @@ Omadi.widgets.omadi_reference = {
                 }
             }
         }
+    },
+    getFirstStreetAddress : function(nid){"use strict";
+        var instances, node, street, field_name;
+        
+        street = '';
+        node = Omadi.data.nodeLoad(nid);
+        
+        if(node){
+            instances = Omadi.data.getFields(node.type);
+            for(field_name in instances){
+                if(instances.hasOwnProperty(field_name)){
+                    if(instances[field_name].type == 'location'){
+                        if(typeof instances[field_name].part !== 'undefined' && instances[field_name].part == 'street'){
+                            if(typeof node[field_name] !== 'undefined' && 
+                                typeof node[field_name].dbValues !== 'undefined' && 
+                                typeof node[field_name].dbValues[0] !== 'undefined'){
+                                    
+                                    street = node[field_name].dbValues[0];
+                                    break;
+                            }   
+                        }
+                    }
+                }
+            }   
+        }
+        return street;
     }
 };
 

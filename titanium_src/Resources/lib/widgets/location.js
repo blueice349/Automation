@@ -7,7 +7,8 @@ Omadi.widgets.location = {
 
         instance.elements = [];
 
-        var settings = instance.settings, fieldView, i, j, element, addAnotherItemButton = null;
+        var settings = instance.settings, fieldView, i, j, element, 
+            addAnotherItemButton = null, nameParts, part;
 
         fieldView = Ti.UI.createView({
             width : '100%',
@@ -17,7 +18,24 @@ Omadi.widgets.location = {
         });
 
         instance.fieldView = fieldView;
+        
+        nameParts = instance.field_name.split('___');
 
+        if (nameParts[1]) {
+            part = nameParts[1];
+            if(part == 'postal_code'){
+                if(instance.isRequired && typeof settings.require_zip !== 'undefined' && settings.require_zip == 1){
+                    instance.isRequired = true;
+                }
+                else{
+                    instance.isRequired = false;
+                }
+            }
+        }
+        else {
+            Ti.API.error("There should be parts to this location field!!!");
+        }
+        
         fieldView.add(Omadi.widgets.label.getRegularLabelView(instance));
         setConditionallyRequiredLabelForInstance(node, instance);
 
@@ -90,7 +108,7 @@ Omadi.widgets.location = {
         }
 
         
-        Ti.API.debug("Creating location " + part + " field");
+        Ti.API.info("Creating location " + part + " field");
 
         if (part == 'province') {// state
 
@@ -134,8 +152,15 @@ Omadi.widgets.location = {
             widgetView.setAutocapitalization(Ti.UI.TEXT_AUTOCAPITALIZATION_WORDS);
             widgetView.real_field_name = real_field_name;
 
-            if (part == 'postal_code') {
+            if(part == 'street'){
+                widgetView.maxLength = 255;
+            }
+            else if(part == 'city'){
+                widgetView.maxLength = 255;
+            }
+            else if (part == 'postal_code') {
                 widgetView.setKeyboardType(Ti.UI.KEYBOARD_NUMBERS_PUNCTUATION);
+                widgetView.maxLength = 16;
             }
 
             widgetView.addEventListener('focus', function(e) {

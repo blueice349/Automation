@@ -48,14 +48,23 @@ Omadi.widgets.text_long = {
         
         if(settings.cardinality == -1){
             addAnotherItemButton = Ti.UI.createButton({
-               title: 'Add another item',
+               title: ' Add another item ',
                right: 15,
-               instance: instance
+               instance: instance,
+               style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
+                backgroundGradient: Omadi.display.backgroundGradientGray,
+                borderColor: '#999',
+                borderWidth: 1,
+                width: 180,
+                borderRadius: 10,
+                color: '#eee',
+                top: 10
             });
             
             addAnotherItemButton.addEventListener('click', function(e){
                 var instance = e.source.instance;
                 instance.numVisibleFields ++;
+                Omadi.widgets.unfocusField();
                 Omadi.widgets.shared.redraw(instance);
             });
         
@@ -100,8 +109,9 @@ Omadi.widgets.text_long = {
             borderColor: '#999',
             borderWidth: 1,
             textAlign: Ti.UI.TEXT_ALIGNMENT_LEFT,
-            right: 15,
-            left: 15,
+            right: '4%',
+            left: '4%',
+            width: '92%',
             height: 110,
             color: '#000',
             autocapitalization: Ti.UI.TEXT_AUTOCAPITALIZATION_SENTENCES,
@@ -160,12 +170,6 @@ Omadi.widgets.text_long = {
             }
             // changedContentValue(e.source);
             // noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-        });
-
-        widgetView.addEventListener('blur', function(e) {
-            //Ti.API.info(e.source.value.length + ' or ' + e.value.length + ' Field number ==> min: ' + e.source.myminLength + ' max: ' + e.source.mymaxLength);
-            
-            
         });
         
         return widgetView;

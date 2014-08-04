@@ -31,6 +31,10 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.RelativeLayout.LayoutParams;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
+import android.content.DialogInterface;
+import android.os.Handler;
 
 public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCallback{
 	
@@ -55,6 +59,37 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 	
 	public int getDegreesAtCapture(){
 		return captureDegrees;
+	}
+	
+	public void resetCaptureButton(){
+		this.captureButtonPressed = false;
+	}
+	
+	public void photoSaved(){
+		final AlertDialog.Builder dialog = new AlertDialog.Builder(context).setMessage("Photo Saved");
+		  
+		final AlertDialog alert = dialog.create();
+		alert.show();
+
+		// Hide after some seconds
+		final Handler handler  = new Handler();
+		final Runnable runnable = new Runnable() {
+		    @Override
+		    public void run() {
+		        if (alert.isShowing()) {
+		            alert.dismiss();
+		        }
+		    }
+		};
+
+		alert.setOnDismissListener(new DialogInterface.OnDismissListener() {
+		    @Override
+		    public void onDismiss(DialogInterface dialog) {
+		        handler.removeCallbacks(runnable);
+		    }
+		});
+
+		handler.postDelayed(runnable, 1000);
 	}
 	
 	public ToolsOverlay(Context c){
@@ -95,12 +130,28 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 						captureDegrees = degrees;
 						captureButtonPressed = true;
 						
-						if(hasAutoFocus){
-							camera.autoFocus(toolsOverlay);
+						Log.d("CAMERA", "On click listener");
+						try{
+							if(hasAutoFocus){
+								if(camera != null){
+									try{
+										camera.autoFocus(toolsOverlay);
+									}
+									catch(Exception e){
+										OmadiCameraActivity.cameraActivity.takePicture();
+									}
+								}
+							}
+							else{
+								OmadiCameraActivity.cameraActivity.takePicture();
+							}
 						}
-						else{
-							OmadiCameraActivity.cameraActivity.takePicture();
+						catch(Exception e){
+							// nothing here
+							Log.e("CAMERA", "Exception in capture image onclick: " + e.getMessage());
 						}
+						
+						captureButtonPressed = false;
 					}
 				}
 			});
@@ -189,8 +240,12 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 								}
 							}
 								
+							try{
+								System.setProperty("OMADI_FLASH", localCameraParams.getFlashMode());
+							}
+							catch(Exception e){
 								
-							System.setProperty("OMADI_FLASH", localCameraParams.getFlashMode());
+							}
 							
 							if(is != null){
 								bitmap = BitmapFactory.decodeStream(is);
@@ -225,7 +280,7 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 	}
 	
 	public void onAutoFocus(boolean success, Camera camera){
-		Log.d("CAMERA", "FOCUS WAS SUCCESSFUL");
+		Log.d("CAMERA", "CAMERA FOCUS WAS SUCCESSFUL");
 		OmadiCameraActivity.cameraActivity.takePicture();
 	}
 	
@@ -430,11 +485,11 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 		
 		this.degrees = degrees;
 		
-		Log.d("CAMERA", "Degrees now " + degrees);
+		Log.d("CAMERA", "CAMERA Degrees now " + degrees);
 		
 		redrawButtons();
 		
-		Log.d("CAMERA", "redrew buttons");
+		Log.d("CAMERA", "CAMERA redrew buttons");
 	}
 	
 	private void redrawButtons(){

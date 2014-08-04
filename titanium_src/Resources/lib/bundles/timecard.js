@@ -1,5 +1,4 @@
 /*jslint eqeq:true*/
-
 Omadi.bundles.timecard = {};
 
 Omadi.bundles.timecard.askClockOutLogout = function(){"use strict";
@@ -14,27 +13,36 @@ Omadi.bundles.timecard.askClockOutLogout = function(){"use strict";
         });
     
         verifyLogout.addEventListener('click', function(e) {
-            if(e.index == 0){
-                Omadi.bundles.timecard.doClockOut(true);
+            try{
+                if(e.index == 0){
+                    Omadi.bundles.timecard.doClockOut(true);
+                }
+                else if (e.index == 1) {
+                    Ti.API.info("Logging out from 3-button timecard dialog.");
+                    Omadi.service.logout();
+                }
             }
-            else if (e.index == 1) {
-                Ti.API.info("Logging out from 3-button timecard dialog.");
-                Omadi.service.logout();
+            catch(ex){
+                Omadi.service.sendErrorReport("exception verify logout: " + ex);
             }
         });
     }
     else{
         
         verifyLogout = Ti.UI.createAlertDialog({
-            title : 'Logout?',
-            message : 'Are you sure you want to logout?',
-            buttonNames : ['Yes', 'No']
+            title : 'Really Logout?',
+            buttonNames : ['Logout', 'Cancel']
         });
 
         verifyLogout.addEventListener('click', function(e) {
-            if (e.index == 0) {
-                Ti.API.info("Logging out from timecard regular logout.");
-                Omadi.service.logout();
+            try{
+                if (e.index == 0) {
+                    Ti.API.info("Logging out from timecard regular logout.");
+                    Omadi.service.logout();
+                }
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("exception verify logout 2: " + ex);
             }
         });
     }
@@ -52,21 +60,23 @@ Omadi.bundles.timecard.askClockIn = function(){"use strict";
         if(!Omadi.bundles.timecard.isUserClockedIn()){
             
             dialog = Ti.UI.createAlertDialog({
-               title: 'Clock In',
-               message: 'Do you want to clock in now?',
-               buttonNames: ['Yes', 'No']
+               title: 'Clock In Now?',
+               buttonNames: ['Clock In', 'No']
             });
             
             dialog.addEventListener('click', function(e){
-               dialog.hide();
-               
-               if(e.index == 0){
-                   Omadi.bundles.timecard.doClockIn();
-               }
-               
-               if(typeof alertQueue !== 'undefined'){
-                   Ti.App.fireEvent('showNextAlertInQueue');
-               }
+               try{
+                   if(e.index == 0){
+                       Omadi.bundles.timecard.doClockIn();
+                   }
+                   
+                   if(typeof alertQueue !== 'undefined'){
+                       Ti.App.fireEvent('showNextAlertInQueue');
+                   }
+                }
+                catch(ex){
+                    Omadi.service.sendErrorReport("exception in clock in now?: " + ex);
+                }
             });
             
             if(typeof alertQueue !== 'undefined'){
@@ -105,12 +115,13 @@ Omadi.bundles.timecard.isUserClockedIn = function(){"use strict";
 };
 
 Omadi.bundles.timecard.doClockIn = function() {"use strict";
+    /*jslint nomen:true*/
     var now, node, uid;
     uid = Omadi.utils.getUid();
     now = Omadi.utils.getUTCTimestamp();
     
     node = {
-        nid : 'new',
+        nid : Omadi.data.getNewNodeNid(),
         clock_in_time : {
             dbValues : [now]
         },
@@ -124,14 +135,30 @@ Omadi.bundles.timecard.doClockIn = function() {"use strict";
         changed_uid : uid,
         table_name : 'timecard',
         type : 'timecard',
-        no_data : [],
         viewed : now,
         form_part : 0
     };
     
-    Ti.App.addEventListener('doneSendingData', Omadi.bundles.timecard.removeStatus);
-
-    Omadi.data.trySaveNode(node);
+    //Ti.App.removeEventListener('doneSendingData', Omadi.bundles.timecard.removeStatus);
+    //Ti.App.addEventListener('doneSendingData', Omadi.bundles.timecard.removeStatus);
+    
+    try{
+        //Omadi.display.loading();
+        node = Omadi.data.nodeSave(node);
+        if(node._saved){
+            Ti.App.fireEvent('sendUpdates');
+        }
+        else{
+            //Omadi.bundles.timecard.removeStatus();
+            alert("A problem occurred clocking in. Please try again.");
+            Omadi.service.sendErrorReport("Could not do a clock in timecard entry: not saved");
+        }
+    }
+    catch(ex){
+        //Omadi.bundles.timecard.removeStatus();
+        alert("A problem occurred clocking in. Please try again.");
+        Omadi.service.sendErrorReport("Could not save a timecard entry: " + ex);
+    }
 };
 
 Omadi.bundles.timecard.userShouldClockInOut = function(){"use strict";
@@ -160,18 +187,23 @@ Omadi.bundles.timecard.getLastClockInNid = function(){"use strict";
     uid = Omadi.utils.getUid();
     db = Omadi.utils.openMainDatabase();
     
-    result = db.execute("SELECT t.nid, MAX(t.clock_in_time) FROM timecard t WHERE t.user_0 = " + uid + " LIMIT 1");
-    
-    if(result.isValidRow()){
-        try{
-            nid = result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT);
+    try{
+        result = db.execute("SELECT t.nid, MAX(t.clock_in_time) FROM timecard t WHERE t.user_0 = " + uid + " LIMIT 1");
+        
+        if(result.isValidRow()){
+            try{
+                nid = result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT);
+            }
+            catch(ex){
+                nid = 0;
+                // the result is null, no clockins exist
+            }
         }
-        catch(ex){
-            nid = 0;
-            // the result is null, no clockins exist
-        }
+        result.close();
     }
-    result.close();
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception getting lastclockinnid: " + ex);
+    }
     
     db.close();
     
@@ -179,6 +211,7 @@ Omadi.bundles.timecard.getLastClockInNid = function(){"use strict";
 };
 
 Omadi.bundles.timecard.doClockOut = function(logoutNext) {"use strict";
+    /*jslint nomen:true*/
     var now, lastNid, lastNode;
     
     lastNid = Omadi.bundles.timecard.getLastClockInNid();
@@ -193,15 +226,31 @@ Omadi.bundles.timecard.doClockOut = function(logoutNext) {"use strict";
     lastNode.viewed = now;
     lastNode.form_part = 1;
     
+    Ti.App.removeEventListener('doneSendingData', Omadi.bundles.timecard.removeStatus);
     Ti.App.addEventListener('doneSendingData', Omadi.bundles.timecard.removeStatus);
     
-    Omadi.data.trySaveNode(lastNode);
-    
-    //Ti.API.debug("LOgoutnext: " + logoutNext);
+    try{
+        Omadi.display.loading();
+        lastNode = Omadi.data.nodeSave(lastNode);
+        if(lastNode._saved){
+            Ti.App.fireEvent('sendUpdates');
+        }
+        else{
+            Omadi.bundles.timecard.removeStatus();
+            alert("A problem occurred clocking out. Please try again.");
+            Omadi.service.sendErrorReport("Could not do a clock out timecard entry: not saved");
+        }
+    }
+    catch(ex){
+        Omadi.bundles.timecard.removeStatus();
+        alert("A problem occurred clocking out. Please try again.");
+        Omadi.service.sendErrorReport("Could not do a clock out timecard entry: " + ex);
+    }
     
     if(logoutNext){
     
         if(Ti.Network.online){
+            Ti.App.removeEventListener("doneSendingData", Omadi.bundles.timecard.logout);
             Ti.App.addEventListener("doneSendingData", Omadi.bundles.timecard.logout);
         }
         else{

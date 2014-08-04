@@ -8,7 +8,6 @@ var wrapper;
 var webview;
 
 curWin.setBackgroundColor("#fff");
-curWin.setOrientationModes([Titanium.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
 
 function addIOSToolbar(){"use strict";
     var backButton, space, aboutLabel, toolbar;
@@ -50,28 +49,37 @@ function addIOSToolbar(){"use strict";
 }
 
 function openAndroidFile(filePath, mimeType){"use strict";
-
-    var intent = Ti.Android.createIntent({
-        action: Ti.Android.ACTION_VIEW,
-        type: mimeType,
-        data: filePath
-    });
-    try {
-        Ti.Android.currentActivity.startActivity(intent);
-    } 
-    catch(e) {
-        Ti.API.debug(e);
-        alert('No apps are installed to open the file!');
+    try{
+        var intent = Ti.Android.createIntent({
+            action: Ti.Android.ACTION_VIEW,
+            type: mimeType,
+            data: filePath
+        });
+        try {
+            Ti.Android.currentActivity.startActivity(intent);
+        } 
+        catch(e) {
+            Ti.API.debug(e);
+            alert('No apps are installed to open the file!');
+        }
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("exception in openandroid file: " + ex);
     }
 }
 
 function deleteAndroidFile(filePath){"use strict";
-    var file = Ti.Filesystem.getFile(filePath);
-    
-    if(file.isFile()){
-        Omadi.display.loading("Deleting...");
-        file.deleteFile();
-        Omadi.display.doneLoading();
+    try{
+        var file = Ti.Filesystem.getFile(filePath);
+        
+        if(file.isFile()){
+            Omadi.display.loading("Deleting...");
+            file.deleteFile();
+            Omadi.display.doneLoading();
+        }
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("exception in delete android file: " + ex);
     }
 }
 
@@ -92,6 +100,10 @@ function deleteAndroidFile(filePath){"use strict";
         layout: 'vertical'
     });
     
+    if(Ti.App.isIOS7){
+        wrapper.top = 20;
+    }
+    
     Omadi.display.loading("Downloading...");
     
     viewType = Omadi.display.getFileViewType(curWin.title.toString());
@@ -102,7 +114,10 @@ function deleteAndroidFile(filePath){"use strict";
         // Open a label view
         
         try {
-            http = Ti.Network.createHTTPClient();
+            http = Ti.Network.createHTTPClient({
+                enableKeepAlive: false,
+                validatesSecureCertificate: false
+            });
             http.setTimeout(30000);
             http.open('GET', url);
     
@@ -155,7 +170,10 @@ function deleteAndroidFile(filePath){"use strict";
         if (Ti.Filesystem.isExternalStoragePresent()) {
             
             try {
-                http = Ti.Network.createHTTPClient();
+                http = Ti.Network.createHTTPClient({
+                    enableKeepAlive: false,
+                    validatesSecureCertificate: false
+                });
                 http.setTimeout(30000);
                 http.open('GET', url);
         

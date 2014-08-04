@@ -27,7 +27,6 @@ Ti.include('/lib/functions.js');
 
 	curWin = Ti.UI.currentWindow;
 	curWin.backgroundColor = '#eee';
-	curWin.setOrientationModes([Titanium.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
 	
 	wrapperView = Ti.UI.createView({
 	   layout: 'vertical',
@@ -36,6 +35,10 @@ Ti.include('/lib/functions.js');
 	   right: 0,
 	   left: 0 
 	});
+
+    if(Ti.App.isIOS7){
+        wrapperView.top = 20;
+    }
 	
 	curWin.add(wrapperView);
 	
@@ -57,12 +60,12 @@ Ti.include('/lib/functions.js');
 			systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
 		});
 		
-		aboutLabel = Titanium.UI.createButton({
-			title : 'About',
-			color : '#fff',
+		aboutLabel = Titanium.UI.createLabel({
+			text : 'About',
+			color : '#333',
 			ellipsize : true,
 			wordwrap : false,
-			width : 200,
+			width : Ti.UI.SIZE,
 			style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
 		});
 	
@@ -87,9 +90,9 @@ Ti.include('/lib/functions.js');
 	
 	logo = Ti.UI.createImageView({
 		image : '/images/logo.png',
-		top : 50,
-		width : 200,
-		height : 114
+		top : 0,
+		width : 280,
+		height : 280
 	});
 	
 	scrollView.add(logo);
@@ -156,65 +159,5 @@ Ti.include('/lib/functions.js');
 	scrollView.add(syncLabel);
 	
 	scrollView.add(termsOfServiceLabel);
-	// buttonView = Ti.UI.createView({
-		// top : 10,
-		// width : 285,
-		// height : 50
-	// });
-	
-
-        // updateButton = Ti.UI.createButton({
-        // left : 0,
-        // width : 122,
-        // height : 50,
-        // title : 'Sync Data'
-        // });
-        // updateButton.addEventListener('click', function() {
-        // Ti.App.fireEvent('normal_update_from_menu');
-        // curWin.close();
-        // });
-        //
-        // buttonView.add(updateButton);
-        //
-        // reinitializeBtn = Ti.UI.createButton({
-        // left : 130,
-        // width : 153,
-        // height : 50,
-        // title : 'Reset All Data'
-        // });
-        //
-        // reinitializeBtn.addEventListener('click', function() {
-        // dialog = Ti.UI.createAlertDialog({
-        // cancel : 1,
-        // buttonNames : ['Yes', 'No'],
-        // message : 'Are you sure you want to reset the database?',
-        // title : 'Re-initialize Alert!'
-        // });
-        //
-        // dialog.addEventListener('click', function(e) {
-        // var db, result;
-        //
-        // if(e.index === 0) {
-        // if (!Omadi.data.isUpdating()){
-        //
-        // dialog.hide();
-        //
-        //
-        // curWin.close();
-        //
-        // Ti.App.fireEvent('full_update_from_menu');
-        //
-        //
-        // }
-        // }
-        // });
-        //
-        // dialog.show();
-        // });
-        //
-        // buttonView.add(reinitializeBtn);
-        //
-        // scrollView.add(buttonView);
-
 
 }());
