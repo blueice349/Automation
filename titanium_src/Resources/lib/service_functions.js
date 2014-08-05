@@ -1421,7 +1421,7 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
                 
                 // Check if the file is ready for deletion
                 if(bytesUploaded == 0 || bytesUploaded >= filesize || uploadFinished){
-                    Ti.API.error("UPload is finished for nid " + nid + " and delta " + delta);
+                    Ti.API.error("Upload is finished for nid " + nid + " and delta " + delta);
                     try{
                         //Finishing the file after upload so it's available on the device for printing
                         listDB.execute("UPDATE _files SET uploading=0, fid=" + json.file_id + ", finished=" + Omadi.utils.getUTCTimestamp() + " WHERE id=" + photoId);
@@ -1761,7 +1761,7 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
     
     // Don't try to upload a file while form data is being saved. This causes photos to get messed up.
     // Don't upload a file if another file upload has started in the last 90 seconds.
-    if (!Ti.Network.online || Ti.App.closingApp || Omadi.service.isSendingData() || isUploadingFile && now - lastUploadStartTimestamp <= 90) {
+    if (!Ti.Network.online || Ti.App.closingApp || Omadi.service.isSendingData() || (isUploadingFile && now - lastUploadStartTimestamp <= 90)) {
     	return;
     }
     
@@ -1783,10 +1783,10 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
     try {
 	    var db = Omadi.utils.openListDatabase();
 	    // Reset all photos to not uploading in case there was an error previously
-	    db.execute('UPDATE _files SET uploading = 0 WHERE uploading <> 0');
+	    db.execute('UPDATE _files SET uploading = 0 WHERE uploading != 0');
 	    
 	    // Set the photo to uploading status
-	    db.execute('UPDATE _files SET uploading = ' + nowTimestamp + ' WHERE id = ' + Omadi.service.currentFileUpload.id);
+	    db.execute('UPDATE _files SET uploading = ' + now + ' WHERE id = ' + Omadi.service.currentFileUpload.id);
 	    db.close();
 	} catch(e) {
 	    Omadi.service.sendErrorReport('Exception setting uploading var: ' + e);
