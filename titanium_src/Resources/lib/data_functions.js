@@ -1818,136 +1818,75 @@ Omadi.data.getFileArray = function(onlyUploadable){"use strict";
             try{
                 
                 nextFile = {
-                    nid : result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT),
+                    nid : parseInt(result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT), 10) || 0,
                     id : result.fieldByName('id', Ti.Database.FIELD_TYPE_INT),
                     file_path : result.fieldByName('file_path'),
                     file_name : result.fieldByName('file_name'),
                     field_name : result.fieldByName('field_name'),
-                    delta : result.fieldByName('delta'),
-                    timestamp : result.fieldByName('timestamp'),
-                    tries : result.fieldByName('tries'),
+                    delta : parseInt(result.fieldByName('delta'), 10) || 0,
+                    timestamp : parseInt(result.fieldByName('timestamp'), 10) || 0,
+                    tries : parseInt(result.fieldByName('tries'), 10) || 0,
                     latitude : result.fieldByName('latitude'),
                     longitude : result.fieldByName('longitude'),
                     accuracy : result.fieldByName('accuracy'),
                     degrees : result.fieldByName('degrees'),
                     thumb_path : result.fieldByName('thumb_path'),
                     type : result.fieldByName('type'),
-                    filesize : result.fieldByName('filesize'),
-                    bytes_uploaded : result.fieldByName('bytes_uploaded'),
+                    filesize : parseInt(result.fieldByName('filesize'), 10) || 0,
+                    bytes_uploaded : parseInt(result.fieldByName('bytes_uploaded'), 10) || 0,
                     fid : result.fieldByName('fid'),
                     uid : result.fieldByName('uid'),
                     client_account : result.fieldByName('client_account'),
-                    uploading : result.fieldByName('uploading'),
-                    finished : result.fieldByName('finished'),
-                    upload_part : 1
+                    uploading : parseInt(result.fieldByName('uploading'), 10) || 0,
+                    finished : parseInt(result.fieldByName('finished'), 10) || 0,
+                    numUploadParts : 1,
+                    upload_part : 1,
+                    uploading_bytes : parseInt(result.fieldByName('filesize'), 10) || 0,
                 };
                 
-                if(nextFile.filesize != null){
-                    nextFile.filesize = parseInt(nextFile.filesize, 10);
-                }
-                else{
-                    nextFile.filesize = 0;
-                }
-                
-                if(nextFile.bytes_uploaded != null){
-                    nextFile.bytes_uploaded = parseInt(nextFile.bytes_uploaded, 10);
-                }
-                else{
-                    nextFile.bytes_uploaded = 0;
-                }
-                
-                if(nextFile.tries != null){
-                    nextFile.tries = parseInt(nextFile.tries, 10);
-                }
-                else{
-                    nextFile.tries = 0;
-                }
-                
-                if(nextFile.delta != null){
-                    nextFile.delta = parseInt(nextFile.delta, 10);
-                }
-                else{
-                    nextFile.delta = 0;
-                }
-                
-                if(nextFile.timestamp != null){
-                    nextFile.timestamp = parseInt(nextFile.timestamp, 10);
-                }
-                else{
-                    nextFile.timestamp = 0;
-                }
-                
-                if(nextFile.fid != null){
-                    nextFile.fid = parseInt(nextFile.fid, 10);
-                }
-                else{
-                    nextFile.fid = 0;
-                }
-                
-                if(nextFile.finished != null){
-                    nextFile.finished = parseInt(nextFile.finished, 10);
-                }
-                else{
-                    nextFile.finished = 0;
-                }
-                
-                if(nextFile.uploaded != null){
-                    nextFile.uploaded = parseInt(nextFile.uploaded, 10);
-                }
-                else{
-                    nextFile.uploaded = 0;
-                }
-                
+                // Upload videos and files in chunks
                 if(nextFile.type == 'video' || nextFile.type == 'file'){
                     nextFile.numUploadParts = Math.ceil(nextFile.filesize / Omadi.data.maxBytesPerUpload);
                     nextFile.upload_part = (nextFile.bytes_uploaded / Omadi.data.maxBytesPerUpload) + 1;
                     nextFile.uploading_bytes = Omadi.data.maxBytesPerUpload;
                 }
-                else{
-                    nextFile.numUploadParts = 1;
-                    nextFile.upload_part = 1;
-                    nextFile.uploading_bytes = nextFile.filesize;
-                }
                 
-                if(onlyUploadable){
+                if (!onlyUploadable) {
+					// Put all files into the array
+					files.push(nextFile);
+                } else {
                     
-                    if(nextFile.nid <= 0){
-                            
-                        if(nextFile.timestamp < now - 1800){
-                            // If the file was done over 30 minutes ago, find out more
-                            if(nextFile.nid != -1000000){
-                                node = Omadi.data.nodeLoad(nextFile.nid);
-                                if(node !== null){
-                                    if(node.flag_is_updated != 3 && node.flag_is_updated != 4){
-                                        // If this is not a draft or continuous save, send up the debug
-                                        message = "Not a negative draft: " + JSON.stringify(node);
-                                        // Limit node message to 2000 characters
-                                        message = message.substring(0, 2000);
-                                        message += JSON.stringify(nextFile);
-                                        Omadi.service.sendErrorReport(message);
-                                        
-                                        // Do not remove this as an upload just yet.
-                                        // It could be a continuous save node
-                                        // Need to look at error data from users using this
-                                        // to determine what to do in this case
-                                    }
-                                }
-                                else{
-                                    message = "Null negative Node with nid " + nextFile.nid + " ";
-                                    message += JSON.stringify(nextFile);
-                                    Omadi.service.sendErrorReport(message);
-                                    
-                                    // This file should stop attempting to be uploaded
-                                    neverUploadIds.push(nextFile.id);
-                                }
+                    // Negative nids mean they haven't been uploaded yet, -1000000 means never upload.
+                    // Send error reports for files that should have been uploaded but are over 30 minutes old.
+                    if (nextFile.nid <= 0 && nextFile.nid != -1000000 && nextFile.timestamp < now - 1800) {
+                        node = Omadi.data.nodeLoad(nextFile.nid);
+                        if (node !== null) {
+                            if (node.flag_is_updated != 3 && node.flag_is_updated != 4) { // 3 = Draft, 4 = Continuous save
+                                // If this is not a draft or continuous save, send up the debug
+                                message = "Not a negative draft: " + JSON.stringify(node);
+                                // Limit node message to 2000 characters
+                                message = message.substring(0, 2000);
+                                message += JSON.stringify(nextFile);
+                                Omadi.service.sendErrorReport(message);
+                                
+                                // Do not remove this as an upload just yet.
+                                // It could be a continuous save node
+                                // Need to look at error data from users using this
+                                // to determine what to do in this case
                             }
+                        } else {
+                            message = "Null negative Node with nid " + nextFile.nid + " ";
+                            message += JSON.stringify(nextFile);
+                            Omadi.service.sendErrorReport(message);
+                            
+                            // This file should stop attempting to be uploaded
+                            neverUploadIds.push(nextFile.id);
                         }
-                    }
-                    else if(nextFile.finished > 0){
+                    } else if (nextFile.finished > 0) {
                         // We don't show the finished uploads
                         
                         if(now > nextFile.finished + (3600 * 16)){
-                            // Delete any files that have been uploaded and still exist on the device for too long
+                            // Delete any files that have been uploaded and still exist on the device for too long (16 hours)
                             
                             deleteFile = true;
                             
@@ -2004,10 +1943,6 @@ Omadi.data.getFileArray = function(onlyUploadable){"use strict";
                         // Only allow positive nids into the possibilities for upload
                         files.push(nextFile);
                     }
-                }
-                else{
-                    // Put all files into the array
-                    files.push(nextFile);
                 }
             }
             catch(innerEx){

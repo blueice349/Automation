@@ -1707,225 +1707,165 @@ Omadi.service.abortFileUpload = function(){"use strict";
     }
 };
 
-Omadi.service.uploadFile = function(isBackground) {"use strict";
-    /*jslint eqeq:true, plusplus: true*/
-    /*global Base64*/
-    var listDB, result, isUploading, nowTimestamp, 
-        lastUploadStartTimestamp, tmpImageView, 
-        blobImage, maxDiff, imageData, uploadPhoto,
-        numFilesReadyToUpload, payload, cookie, 
-        origAppStartMillis, currentWinStartMillis, windowURL,
-        isSendingData;
-        
-    if(typeof isBackground === 'undefined'){
-        isBackground = false;
+Omadi.service.verifyStartMillis = function(isBackground){"use strict";
+	// Verify that start millis is defined
+	if (typeof Ti.UI.currentWindow.appStartMillis === 'undefined') {
+		var windowURL = Ti.UI.currentWindow.url || '';
+        Omadi.service.sendErrorReport("AppStartMillis upload was undefined, background: " + isBackground + ", url: " + windowURL);
+        return false;
+	}
+	
+	var origAppStartMillis = Ti.App.Properties.getDouble('omadi:appStartMillis', 0);
+	var currentWinStartMillis = parseInt(Ti.UI.currentWindow.appStartMillis, 10);
+	
+	// Verify that start millis is a number
+	if (isNaN(origAppStartMillis) || isNaN(currentWinStartMillis)) {
+		Ti.API.error("start millis is NaN: " + currentWinStartMillis + " - " + origAppStartMillis);
+        Omadi.service.sendErrorReport("start millis is NaN: " + currentWinStartMillis + " - " + origAppStartMillis);
+        return false;
+	}
+	
+	// Verify that start millis is not zero
+	if (origAppStartMillis == 0 || currentWinStartMillis == 0) {
+        Ti.API.error("AppStartMillis upload was zero: " + origAppStartMillis + " - " + currentWinStartMillis + ", background: " + isBackground);
+        Omadi.service.sendErrorReport("AppStartMillis upload was zero: " + origAppStartMillis + " - " + currentWinStartMillis + ", background: " + isBackground);
+        return false;
     }
     
-    // Remove the activity if the appStartMillis don't match the current runtime
+    // Verify that start millis match
+    if(origAppStartMillis != Ti.UI.currentWindow.appStartMillis){
+        if(Ti.App.isAndroid){
+            Omadi.service.sendErrorReport("An extra android upload activity is being REJECTED, background: " + isBackground + " : "  + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
+            return false;
+        }
+        Omadi.service.sendErrorReport("An extra iOS upload event is being REJECTED, background: " + isBackground + " : " + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
+        return false;
+    }
+    
+    return true;
+};
+
+Omadi.service.uploadFile = function(isBackground) {"use strict";
+	isBackground =  isBackground || false;
+	
+    // Don't upload the file if the appStartMillis don't match the current runtime
     // This may come up when the app crashes, and this function is called multiple times
     // for all the open activities, but it should only be called once
-    if(typeof Ti.UI.currentWindow.appStartMillis !== 'undefined'){
-        origAppStartMillis = Ti.App.Properties.getDouble('omadi:appStartMillis', 0);
-        currentWinStartMillis = parseInt(Ti.UI.currentWindow.appStartMillis, 10);
-        
-        if(isNaN(origAppStartMillis) || isNaN(currentWinStartMillis)){
-            Ti.API.error("start millis is NaN: " + currentWinStartMillis + " - " + origAppStartMillis);
-            Omadi.service.sendErrorReport("start millis is NaN: " + currentWinStartMillis + " - " + origAppStartMillis);
-        }
-        else{
-            if(origAppStartMillis == 0 || currentWinStartMillis == 0){
-                Ti.API.error("AppStartMillis upload was zero: " + origAppStartMillis + " - " + currentWinStartMillis + ", background: " + isBackground);
-                Omadi.service.sendErrorReport("AppStartMillis upload was zero: " + origAppStartMillis + " - " + currentWinStartMillis + ", background: " + isBackground);
-            }
-            else{
-                if(origAppStartMillis != Ti.UI.currentWindow.appStartMillis){
-                    if(Ti.App.isAndroid){
-                        //Omadi.service.sendErrorReport("An extra android upload activity was REJECTED, background: " + isBackground + " : "  + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
-                        return;
-                        //Ti.Android.currentActivity.finish();
-                    }
-                    //else{
-                        Omadi.service.sendErrorReport("An extra iOS upload event is being REJECTED, background: " + isBackground + " : " + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
-                        return;
-                    //}
-                }
-            }
-        }
-    }
-    else{
-        
-        windowURL = "";
-        if(typeof Ti.UI.currentWindow.url !== 'undefined'){
-            windowURL = Ti.UI.currentWindow.url;
-        }
-        Omadi.service.sendErrorReport("AppStartMillis upload was undefined, background: " + isBackground + ", url: " + windowURL);
+	if (!Omadi.service.verifyStartMillis(isBackground)) {
+		return;
+	}
+	
+	var now = Omadi.utils.getUTCTimestamp();
+    var lastUploadStartTimestamp = Omadi.service.getLastUploadStartTimestamp();
+    var isUploadingFile = lastUploadStartTimestamp === null;
+    
+    // Don't try to upload a file while form data is being saved. This causes photos to get messed up.
+    // Don't upload a file if another file upload has started in the last 90 seconds.
+    if (!Ti.Network.online || Ti.App.closingApp || Omadi.service.isSendingData() || isUploadingFile && now - lastUploadStartTimestamp <= 90) {
+    	return;
     }
     
-    Ti.API.debug("Attempting to upload a file");
-   
-    if (Ti.Network.online && !Ti.App.closingApp) {
+    var numFilesReadyToUpload = Omadi.data.getNumFilesReadyToUpload();
+    if (numFilesReadyToUpload == 0) {
+		return;
+    }
+    
+    Omadi.service.currentFileUpload = Omadi.data.getNextPhotoData();
+    if (!Omadi.service.currentFileUpload) {
+		Ti.API.error('Next photo data is null');
+		return;
+    }
+    
+	if (Omadi.service.currentFileUpload.nid <= 0) {
+		return;
+	}
+    
+    try {
+	    var db = Omadi.utils.openListDatabase();
+	    // Reset all photos to not uploading in case there was an error previously
+	    db.execute('UPDATE _files SET uploading = 0 WHERE uploading <> 0');
+	    
+	    // Set the photo to uploading status
+	    db.execute('UPDATE _files SET uploading = ' + nowTimestamp + ' WHERE id = ' + Omadi.service.currentFileUpload.id);
+	    db.close();
+	} catch(e) {
+	    Omadi.service.sendErrorReport('Exception setting uploading var: ' + e);
+	}
+	
+	try{
+		// Build HTTP header
+        Omadi.service.uploadFileHTTP = Ti.Network.createHTTPClient({
+            enableKeepAlive: false,
+            validatesSecureCertificate: false
+        });
         
-        nowTimestamp = Omadi.utils.getUTCTimestamp();
+        Omadi.service.uploadFileHTTP.onsendstream = Omadi.service.photoUploadStream;
+        Omadi.service.uploadFileHTTP.onload = Omadi.service.photoUploadSuccess;
+        Omadi.service.uploadFileHTTP.onerror = Omadi.service.photoUploadError;
+        Omadi.service.uploadFileHTTP.open('POST', Omadi.DOMAIN_NAME + '/js-sync/upload.json');
+        Omadi.service.uploadFileHTTP.timeout = 45000;
         
-        lastUploadStartTimestamp = Omadi.service.getLastUploadStartTimestamp();
-        
-        if(lastUploadStartTimestamp === null){
-            lastUploadStartTimestamp = nowTimestamp;
-            isUploading = false;
-        }
-        else{
-            isUploading = true;
-            Ti.API.debug("Currently uploading a file: " + lastUploadStartTimestamp);
-        }
-        
-        // Make sure no images are currently uploading
-        // Maximum of 90 seconds apart for images uploading
-        // Also make sure form data is not being saved - mainly because of photos being messed up taken on a form update
-        isSendingData = Omadi.service.isSendingData();
-        
-        if (!isSendingData && (!isUploading || (nowTimestamp - lastUploadStartTimestamp) > 90)){
+        Omadi.service.uploadFileHTTP.nid = Omadi.service.currentFileUpload.nid;
+        Omadi.service.uploadFileHTTP.photoId = Omadi.service.currentFileUpload.id;
+        Omadi.service.uploadFileHTTP.delta = Omadi.service.currentFileUpload.delta;
+        Omadi.service.uploadFileHTTP.field_name = Omadi.service.currentFileUpload.field_name;
+        Omadi.service.uploadFileHTTP.upload_part = Omadi.service.currentFileUpload.upload_part;
+        Omadi.service.uploadFileHTTP.numUploadParts = Omadi.service.currentFileUpload.numUploadParts;
+        Omadi.service.uploadFileHTTP.tries = Omadi.service.currentFileUpload.tries;
+        Omadi.service.uploadFileHTTP.isBackground = isBackground;
 
-            numFilesReadyToUpload = Omadi.data.getNumFilesReadyToUpload();
-            
-            Ti.API.debug("Files left: " + numFilesReadyToUpload);
-            
-            if (numFilesReadyToUpload > 0) {
-                
-                Omadi.service.currentFileUpload = Omadi.data.getNextPhotoData();
-                
-                if(Omadi.service.currentFileUpload){
-                    //Omadi.service.sendErrorReport("Next photo data is valid");
-                    
-                    Ti.API.debug("Current upload is for nid " + Omadi.service.currentFileUpload.nid + " field " + Omadi.service.currentFileUpload.field_name + " delta " + Omadi.service.currentFileUpload.delta + " and tries=" + Omadi.service.currentFileUpload.tries);
-                    
-                    try{
-                        listDB = Omadi.utils.openListDatabase();
-                        // Reset all photos to not uploading in case there was an error previously
-                        listDB.execute("UPDATE _files SET uploading = 0 WHERE uploading <> 0");
-                        
-                        if ((Omadi.service.currentFileUpload.file_data === null || typeof Omadi.service.currentFileUpload.file_data.length === 'undefined' || Omadi.service.currentFileUpload.file_data.length < 10) && Omadi.service.currentFileUpload.id > 0) {
-                            listDB.execute("DELETE FROM _files WHERE id=" + Omadi.service.currentFileUpload.id);
-                            Omadi.service.sendErrorReport("Deleted a file from the database");
-                            return;
-                        }
-                        
-                        // Set the photo to uploading status
-                        listDB.execute("UPDATE _files SET uploading = " + nowTimestamp + " WHERE id = " + Omadi.service.currentFileUpload.id);
-                        listDB.close();
-                    }
-                    catch(ex1){
-                        Omadi.service.sendErrorReport("Exception setting uploading var: " + ex1);
-                    }
-                     
-                    if (Omadi.service.currentFileUpload.nid > 0) {
-                        
-                        try{
-                            Omadi.service.uploadFileHTTP = Ti.Network.createHTTPClient({
-                                enableKeepAlive: false,
-                                validatesSecureCertificate: false
-                            });
-                            
-                            Omadi.service.uploadFileHTTP.onsendstream = Omadi.service.photoUploadStream;
-                            Omadi.service.uploadFileHTTP.onload = Omadi.service.photoUploadSuccess;
-                            Omadi.service.uploadFileHTTP.onerror = Omadi.service.photoUploadError;
-                            
-                            Omadi.service.uploadFileHTTP.open('POST', Omadi.DOMAIN_NAME + '/js-sync/upload.json');
-                            Omadi.service.uploadFileHTTP.timeout = 45000;
-                            
-                            //Ti.API.error(Omadi.DOMAIN_NAME);
-                            
-                            Omadi.service.uploadFileHTTP.nid = Omadi.service.currentFileUpload.nid;
-                            Omadi.service.uploadFileHTTP.photoId = Omadi.service.currentFileUpload.id;
-                            Omadi.service.uploadFileHTTP.delta = Omadi.service.currentFileUpload.delta;
-                            Omadi.service.uploadFileHTTP.field_name = Omadi.service.currentFileUpload.field_name;
-                            Omadi.service.uploadFileHTTP.upload_part = Omadi.service.currentFileUpload.upload_part;
-                            Omadi.service.uploadFileHTTP.numUploadParts = Omadi.service.currentFileUpload.numUploadParts;
-                            Omadi.service.uploadFileHTTP.tries = Omadi.service.currentFileUpload.tries;
-                            Omadi.service.uploadFileHTTP.isBackground = isBackground;
+        Omadi.service.uploadFileHTTP.setRequestHeader('Content-Type', 'application/json');
         
-                            //Ti.API.info("Uploading to " + domainName);
-                            Omadi.service.uploadFileHTTP.setRequestHeader("Content-Type", "application/json");
-                            
-                            if(isBackground){
-                                listDB = Omadi.utils.openListDatabase();
-                                result = listDB.execute("SELECT token FROM background_files WHERE uid = " + Omadi.service.currentFileUpload.uid + " AND client_account = '" + dbEsc(Omadi.service.currentFileUpload.client_account) + "'");
-                                if(result.isValidRow()){
-                                    cookie = result.fieldByName('token');
-                                    //Ti.API.error("cook: " + cookie);
-                                    if(cookie > ""){
-                                        Omadi.service.uploadFileHTTP.setRequestHeader("Cookie", cookie);
-                                    }
-                                }
-                                listDB.close();   
-                            }
-                            else{
-                                Omadi.utils.setCookieHeader(Omadi.service.uploadFileHTTP);
-                            }
-                            
-                            //Ti.API.debug("before payload");
-                            
-                            payload = JSON.stringify({
-                                file_data : Omadi.service.currentFileUpload.file_data,
-                                filename : Omadi.service.currentFileUpload.file_name,
-                                nid : Omadi.service.currentFileUpload.nid,
-                                field_name : Omadi.service.currentFileUpload.field_name,
-                                delta : Omadi.service.currentFileUpload.delta,
-                                timestamp : Omadi.service.currentFileUpload.timestamp,
-                                latitude : Omadi.service.currentFileUpload.latitude,
-                                longitude : Omadi.service.currentFileUpload.longitude,
-                                accuracy : Omadi.service.currentFileUpload.accuracy,
-                                degrees : Omadi.service.currentFileUpload.degrees,
-                                type : Omadi.service.currentFileUpload.type,
-                                fid : Omadi.service.currentFileUpload.fid,
-                                filesize : Omadi.service.currentFileUpload.filesize,
-                                mobile_id : Omadi.service.currentFileUpload.id,
-                                bytes_uploaded : Omadi.service.currentFileUpload.bytes_uploaded,
-                                uploading_bytes : Omadi.service.currentFileUpload.uploading_bytes,
-                                upload_part : Omadi.service.currentFileUpload.upload_part,
-                                current_timestamp : Omadi.utils.getUTCTimestamp()
-                            });
-                            
-                            
-                            //Ti.API.debug("after payload def");
-                            
-                            // var tempFile = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory, '_temp.txt');
-                            // tempFile.write(payload);
-//                             
-                            // tempFile = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory, '_temp.txt');
-                            // payload = tempFile.read();
-                            
-                            if(Omadi.service.currentFileUpload.upload_part == 1){
-                                Ti.App.fireEvent("sendingData", {
-                                    message : 'Uploading files. ' + numFilesReadyToUpload + ' to go...',
-                                    progress : true
-                                });
-                            }
-                            
-                            //Ti.API.error("Sending photo to server");
-                            
-                            // var file = Ti.Filesystem.getFile(Omadi.service.currentFileUpload.file_path);
-                            // var blob = file.read();
-                            
-                            Omadi.service.uploadFileHTTP.setValidatesSecureCertificate(false);
-                            
-                            Omadi.service.uploadFileHTTP.send(payload);
-                            
-                            //Ti.API.debug("after payload send");
-                        }
-                        catch(ex2){
-                            Omadi.service.sendErrorReport("Exception sending upload data: " + ex2);
-                        }
-                        //alert("time_stamp_send_to_sever_in_ios");
-                    }
-                }
-                else{
-                    Ti.API.error("Next photo data is null");
+        // Include cookie if there is one
+        if (isBackground) {
+            db = Omadi.utils.openListDatabase();
+            var result = db.execute('SELECT token FROM background_files WHERE uid = ' + Omadi.service.currentFileUpload.uid + ' AND client_account = "' + dbEsc(Omadi.service.currentFileUpload.client_account) + '"');
+            if (result.isValidRow()) {
+                cookie = result.fieldByName('token');
+                if (cookie > '') {
+                    Omadi.service.uploadFileHTTP.setRequestHeader('Cookie', cookie);
                 }
             }
+            result.close();
+            db.close();
+        } else {
+            Omadi.utils.setCookieHeader(Omadi.service.uploadFileHTTP);
         }
-        else{
-            Ti.API.debug("now: " + nowTimestamp + ", last: " + lastUploadStartTimestamp + ", isUploading: " + isUploading + ", isSendingData: " + isSendingData);
+        
+        // Build HTTP content
+        var payload = JSON.stringify({
+            file_data : Omadi.service.currentFileUpload.file_data,
+            filename : Omadi.service.currentFileUpload.file_name,
+            nid : Omadi.service.currentFileUpload.nid,
+            field_name : Omadi.service.currentFileUpload.field_name,
+            delta : Omadi.service.currentFileUpload.delta,
+            timestamp : Omadi.service.currentFileUpload.timestamp,
+            latitude : Omadi.service.currentFileUpload.latitude,
+            longitude : Omadi.service.currentFileUpload.longitude,
+            accuracy : Omadi.service.currentFileUpload.accuracy,
+            degrees : Omadi.service.currentFileUpload.degrees,
+            type : Omadi.service.currentFileUpload.type,
+            fid : Omadi.service.currentFileUpload.fid,
+            filesize : Omadi.service.currentFileUpload.filesize,
+            mobile_id : Omadi.service.currentFileUpload.id,
+            bytes_uploaded : Omadi.service.currentFileUpload.bytes_uploaded,
+            uploading_bytes : Omadi.service.currentFileUpload.uploading_bytes,
+            upload_part : Omadi.service.currentFileUpload.upload_part,
+            current_timestamp : Omadi.utils.getUTCTimestamp()
+        });
+        
+        if (Omadi.service.currentFileUpload.upload_part == 1) {
+            Ti.App.fireEvent('sendingData', {
+                message : 'Uploading files. ' + numFilesReadyToUpload + ' to go...',
+                progress : true
+            });
         }
+        
+        // Upload file
+        Omadi.service.uploadFileHTTP.setValidatesSecureCertificate(false);
+        Omadi.service.uploadFileHTTP.send(payload);
+    } catch(e) {
+        Omadi.service.sendErrorReport("Exception sending upload data: " + e);
     }
 };
 
