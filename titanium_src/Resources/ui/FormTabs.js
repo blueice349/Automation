@@ -893,9 +893,9 @@ FormTabs.prototype.handleUnsavedAttachments = function(callback){"use strict";
                                 }
                                 
                                 // Delete the thumbnail file if there is one
-                                thumbPath = result.fieldByName("thumb_path");
+                                var thumbPath = result.fieldByName("thumb_path");
                                 if(thumbPath){
-                                    thumbFile = Ti.Filesystem.getFile(thumbPath);
+                                    var thumbFile = Ti.Filesystem.getFile(thumbPath);
                                     if(thumbFile.exists()){
                                         thumbFile.deleteFile();
                                     }
@@ -903,6 +903,11 @@ FormTabs.prototype.handleUnsavedAttachments = function(callback){"use strict";
                                 
                                 result.next();
                             }
+                            
+                            result.close();
+                            
+                            // Delete files from the database
+                            db.execute("DELETE FROM _files WHERE nid IN (" + attachmentNids.join(',') + ")");
                             db.close();
                             callback();
                     	} else if (e.index === 1) { // 1 = Keep
