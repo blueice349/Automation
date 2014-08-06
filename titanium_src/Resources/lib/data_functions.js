@@ -8,6 +8,10 @@ Omadi.data.cache.fields = {};
 Omadi.data.cache.regions = {};
 Omadi.data.cache.fakeFields = {};
 
+// Constants
+Omadi.data.MAX_BYTES_PER_UPLOAD = 2097152; // 2MB
+
+
 Omadi.data.cameraAndroid = null;
 
 Omadi.data.isUpdating = function() {"use strict";
@@ -1778,16 +1782,243 @@ Omadi.data.getNumFilesReadyToUpload = function(uid){"use strict";
     return retval;
 };
 
-Omadi.data.maxBytesPerUpload = 2097152; // 2MB
+/*
+ * Retuns an array of all files stored on the device according to the database.
+ */
+Omadi.data.getAllFiles = function(){"use strict";
+	var files = [];
 
-Omadi.data.getFileArray = function(onlyUploadable){"use strict";
-    var files, sql, listDB, result, nextFile, now, node, message, lastErrorTimestamp, 
+	var db = Omadi.utils.openListDatabase();
+	try {
+		var result = db.execute('SELECT * FROM _files ORDER BY tries ASC, filesize ASC, delta ASC');
+		while (result.isValidRow()) {
+			var file = {
+                nid : parseInt(result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT), 10) || 0,
+                id : result.fieldByName('id', Ti.Database.FIELD_TYPE_INT),
+                file_path : result.fieldByName('file_path'),
+                file_name : result.fieldByName('file_name'),
+                field_name : result.fieldByName('field_name'),
+                delta : parseInt(result.fieldByName('delta'), 10) || 0,
+                timestamp : parseInt(result.fieldByName('timestamp'), 10) || 0,
+                tries : parseInt(result.fieldByName('tries'), 10) || 0,
+                latitude : result.fieldByName('latitude'),
+                longitude : result.fieldByName('longitude'),
+                accuracy : result.fieldByName('accuracy'),
+                degrees : result.fieldByName('degrees'),
+                thumb_path : result.fieldByName('thumb_path'),
+                type : result.fieldByName('type'),
+                filesize : parseInt(result.fieldByName('filesize'), 10) || 0,
+                bytes_uploaded : parseInt(result.fieldByName('bytes_uploaded'), 10) || 0,
+                fid : result.fieldByName('fid'),
+                uid : result.fieldByName('uid'),
+                client_account : result.fieldByName('client_account'),
+                uploading : parseInt(result.fieldByName('uploading'), 10) || 0,
+                finished : parseInt(result.fieldByName('finished'), 10) || 0
+            };
+            
+            files.push(file);
+		}
+	} catch (e) {
+        Ti.API.error("Error in get file query load: " + e);
+        Omadi.service.sendErrorReport("Error in get file query load: " + e);
+	}
+	db.close();
+	return files;
+};
+
+/*
+ * Returns an array of all files that are ready to be uploaded.
+ * @param {Array.<Object>} files The files from which you want to select uploadable files.
+ * @return {Array.<Object>} The files that are ready to be uploaded.
+ */
+Omadi.data.getFilesForUpload = function(files){"use strict";
+	files = files || Omadi.data.getAllFiles();
+
+	var filesForUpload = [];
+	
+	var allowVideoMobileNetwork = Ti.App.Properties.getBool('allowVideoMobileNetwork', false);
+	
+	for (var i = 0; i < files.length; i++) {
+		var file = files[i];
+		
+		// Filter out videos on mobile unless the user allows it
+		if (Ti.Network.networkType === Ti.Network.NETWORK_MOBILE && !allowVideoMobileNetwork) {
+			continue;
+		}
+		
+		// Filter out negative nids
+		if (file.nid <= 0) {
+			continue;
+		}
+		
+		// Filter out files that have already finished uploading
+		if (file.finished > 0) {
+			continue;
+		}
+		
+		// Filter out files that have failed to upload 10 times
+		if (file.tries > 10) {
+			continue;
+		}
+		
+		// Prepare large files for chunk uploading
+		if(file.type == 'video' || file.type == 'file'){
+            file.numUploadParts = Math.ceil(file.filesize / Omadi.data.MAX_BYTES_PER_UPLOAD);
+            file.upload_part = (file.bytes_uploaded / Omadi.data.MAX_BYTES_PER_UPLOAD) + 1;
+            file.uploading_bytes = Omadi.data.MAX_BYTES_PER_UPLOAD;
+        } else {
+        	file.numUploadParts = 1;
+            file.upload_part = 1;
+            file.uploading_bytes = nextFile.filesize;
+        }
+		
+		filesForUpload.push(file);
+	}
+	
+	return filesForUpload;
+};
+
+/*
+ * Removes from the database and deletes any files that have been uploaded and need to be removed.
+ * @param {Array.<Object>} files The files from which you want to delete finished uploads.
+ * @return {Array.<Object>} The passed in files minus those that were deleted.
+ */
+Omadi.data.deleteFinishedUploads = function(files){"use strict";
+	// Don't delete photos if the user set the option to keep them.
+	if(Ti.App.Properties.getString("photoWidget", 'take') == 'choose' && Ti.App.Properties.getString("deleteOnUpload", "false") == "false"){
+        return files;
+    }
+    
+	files = files || Omadi.data.getAllFiles();
+	var returnFiles = [];
+	
+	var now = Omadi.utils.getUTCTimestamp();
+	var db = Omadi.utils.openListDatabase();
+	try {
+		for (var i = 0; i < files.length; i++) {
+			var file = files[i];
+			
+			// Delete files that finshed over 16 hours ago.
+			if (file.finished > 0 && now > file.finished + (3600 * 16)) {
+				
+				// Delete file
+				var imageFile = Ti.Filesystem.getFile(file.file_path);
+	            if(imageFile.exists()){
+	                imageFile.deleteFile();
+	            }
+	            
+	            // Delete thumbnail
+	            if(file.thumb_path != null && file.thumb_path.length > 10){
+	                var thumbFile = Ti.Filesystem.getFile(file.thumb_path);
+	                if(thumbFile.exists()){
+	                   thumbFile.deleteFile();
+	                }
+	            }
+	            
+	            // Delete from database
+	            db.execute("DELETE FROM _files WHERE id = " + file.id);
+			} else {
+				returnFiles.push(file);
+			}
+		}
+	} catch (e) {
+		Ti.API.error("Error in delete file or thumbnail from device: " + e);
+    	Omadi.service.sendErrorReport("Error in delete file or thumbnail from device: " + e);
+	}
+	db.close();
+	
+	return returnFiles;
+};
+
+/*
+ * Sets a flag to stop attempting to upload files that have failed 10 times or haven't been uploaded after 30 minutes.
+ * @param {Array.<Object>} files The files from which you want to delete finished uploads.
+ */
+Omadi.data.keepFailedUploads = function(files){"use strict";
+	files = files || Omadi.data.getAllFiles();
+	
+	var now = Omadi.utils.getUTCTimestamp();
+	var idsToKeep = [];
+	
+	for (var i = 0; i < files.length; i++) {
+		var file = files[i];
+		var node = Omadi.data.nodeLoad(file.nid);
+		
+		if (node === null) {
+            Omadi.service.sendErrorReport('Null node with nid ' + file.nid + ' ' + JSON.stringify(file));
+		}
+		
+		// Check for files that should have been uploaded but haven't after 30 minutes
+		if (file.nid <= 0 && file.nid != -1000000 && file.timestamp < now - 1800) {
+			// Files with negative nids have not been uploaded. An nid of -1000000 should never be uploaded.
+            if (node.flag_is_updated != 3 && node.flag_is_updated != 4) { // 3 = Draft, 4 = Continuous save
+                // If this is not a draft or continuous save, send up the debug
+                message = "Non draft or continuos node not uploaded after 30 minutes: " + JSON.stringify(node);
+                // Limit node message to 2000 characters
+                message = message.substring(0, 2000);
+                message += JSON.stringify(file);
+                Omadi.service.sendErrorReport(message);
+                
+                idsToKeep.push(file.id);
+            }
+            
+        // Check for files that have failed to upload after 10 attempts
+        } else if (file.tries > 10) {
+			message = "Over 10 tries: " + JSON.stringify(node);
+	        // Limit node message to 2000 characters
+	        message = message.substring(0, 2000);
+			message += JSON.stringify(file);
+			Omadi.service.sendErrorReport(message);
+			
+        	idsToKeep.push(file.id);
+        }
+	}
+	
+	var db = Omadi.utils.openListDatabase();
+	try {
+		if (idsToKeep.length > 0) {
+	        // Set files to never be attempted again
+	        db.execute("UPDATE _files SET nid = -1000000 WHERE id IN(" + idsToKeep.join(',') + ")");
+	        var dialog = Ti.UI.createAlertDialog({
+	           title: 'Upload Problem',
+	           message: idsToKeep.length + " file" + (idsToKeep.length > 1 ? 's' : '') + " could not be uploaded. You can see non-uploaded files under 'Actions' -> 'Photos Not Uploaded'",  
+	           buttonNames: ['Ok', 'Take Me There']
+	        });
+	        
+	        dialog.addEventListener('click', function(e){
+	        	if (e.index === 1) {
+		            try {
+		            	Omadi.display.openLocalPhotosWindow();
+		            } catch(e) {
+		                Omadi.service.sendErrorReport("exception upload problem dialog: " + e);
+		            }
+				}
+	        });
+	        
+	        dialog.show();
+	    }
+	} catch (e) {
+		Ti.API.error("Error in keep failed uploads: " + e);
+    	Omadi.service.sendErrorReport("Error in keep failed uploads: " + e);
+	}
+	db.close();
+};
+
+/*
+Omadi.data.getFileArray = function(){"use strict";
+	var files = Omadi.data.getAllFiles();
+	
+	Omadi.data.keepFailedUploads(files);
+	Omadi.data.deleteFinishedUploads(files);
+	
+	return Omadi.data.getFilesForUpload(files);
+};
+*/
+
+Omadi.data.getFileArray = function(){"use strict";
+    var files, sql, listDB, result, nextFile, now, node, message, 
         neverUploadIds, dialog, deleteFile, photoWidget, photoDeleteOption, imageFile, 
         thumbFile, deleteFinishedIds;
-    
-    if(typeof onlyUploadable === 'undefined'){
-        onlyUploadable = true;
-    }
     
     neverUploadIds = [];
     deleteFinishedIds = [];
@@ -1795,18 +2026,12 @@ Omadi.data.getFileArray = function(onlyUploadable){"use strict";
     
     
     sql = "SELECT * FROM _files ";
-        
-    if(Ti.Network.networkType === Ti.Network.NETWORK_MOBILE && onlyUploadable){
-        if(!Ti.App.Properties.getBool('allowVideoMobileNetwork', false)){
-            // We do not want to upload a video when on a mobile network   
-            sql += " WHERE type != 'video' "; 
-        }
+    if(Ti.Network.networkType === Ti.Network.NETWORK_MOBILE && !Ti.App.Properties.getBool('allowVideoMobileNetwork', false)){
+    	sql += " WHERE type != 'video' "; 
     }
-    
     sql += " ORDER BY tries ASC, filesize ASC, delta ASC";
     
     now = Omadi.utils.getUTCTimestamp();
-    lastErrorTimestamp = Ti.App.Properties.getDouble('lastFileErrorTimestamp', 0);
     
     listDB = Omadi.utils.openListDatabase();
     
@@ -1838,111 +2063,106 @@ Omadi.data.getFileArray = function(onlyUploadable){"use strict";
                     uid : result.fieldByName('uid'),
                     client_account : result.fieldByName('client_account'),
                     uploading : parseInt(result.fieldByName('uploading'), 10) || 0,
-                    finished : parseInt(result.fieldByName('finished'), 10) || 0,
-                    numUploadParts : 1,
-                    upload_part : 1,
-                    uploading_bytes : parseInt(result.fieldByName('filesize'), 10) || 0,
+                    finished : parseInt(result.fieldByName('finished'), 10) || 0
                 };
                 
                 // Upload videos and files in chunks
                 if(nextFile.type == 'video' || nextFile.type == 'file'){
-                    nextFile.numUploadParts = Math.ceil(nextFile.filesize / Omadi.data.maxBytesPerUpload);
-                    nextFile.upload_part = (nextFile.bytes_uploaded / Omadi.data.maxBytesPerUpload) + 1;
-                    nextFile.uploading_bytes = Omadi.data.maxBytesPerUpload;
-                }
-                
-                if (!onlyUploadable) {
-					// Put all files into the array
-					files.push(nextFile);
+                    nextFile.numUploadParts = Math.ceil(nextFile.filesize / Omadi.data.MAX_BYTES_PER_UPLOAD);
+                    nextFile.upload_part = (nextFile.bytes_uploaded / Omadi.data.MAX_BYTES_PER_UPLOAD) + 1;
+                    nextFile.uploading_bytes = Omadi.data.MAX_BYTES_PER_UPLOAD;
                 } else {
-                    
-                    // Negative nids mean they haven't been uploaded yet, -1000000 means never upload.
-                    // Send error reports for files that should have been uploaded but are over 30 minutes old.
-                    if (nextFile.nid <= 0 && nextFile.nid != -1000000 && nextFile.timestamp < now - 1800) {
-                        node = Omadi.data.nodeLoad(nextFile.nid);
-                        if (node !== null) {
-                            if (node.flag_is_updated != 3 && node.flag_is_updated != 4) { // 3 = Draft, 4 = Continuous save
-                                // If this is not a draft or continuous save, send up the debug
-                                message = "Not a negative draft: " + JSON.stringify(node);
-                                // Limit node message to 2000 characters
-                                message = message.substring(0, 2000);
-                                message += JSON.stringify(nextFile);
-                                Omadi.service.sendErrorReport(message);
-                                
-                                // Do not remove this as an upload just yet.
-                                // It could be a continuous save node
-                                // Need to look at error data from users using this
-                                // to determine what to do in this case
-                            }
-                        } else {
-                            message = "Null negative Node with nid " + nextFile.nid + " ";
-                            message += JSON.stringify(nextFile);
-                            Omadi.service.sendErrorReport(message);
-                            
-                            // This file should stop attempting to be uploaded
-                            neverUploadIds.push(nextFile.id);
-                        }
-                    } else if (nextFile.finished > 0) {
-                        // We don't show the finished uploads
-                        
-                        if(now > nextFile.finished + (3600 * 16)){
-                            // Delete any files that have been uploaded and still exist on the device for too long (16 hours)
-                            
-                            deleteFile = true;
-                            
-                            photoWidget = Ti.App.Properties.getString("photoWidget", 'take');
-                            photoDeleteOption = Ti.App.Properties.getString("deleteOnUpload", "false");
-                           
-                            if(photoWidget == 'choose' && photoDeleteOption == "false"){
-                                deleteFile = false;
-                            }
-                            
-                            Ti.API.error("ABOUT TO DELETE A FINISHED FILE!: " + nextFile.file_path);
-                            
-                            if(deleteFile){
-                                imageFile = Ti.Filesystem.getFile(nextFile.file_path);
-                                if(imageFile.exists()){
-                                    imageFile.deleteFile();
-                                } 
-                                
-                                // Delete the thumbnail if one is saved
-                                if(nextFile.thumb_path != null && nextFile.thumb_path.length > 10){
-                                    thumbFile = Ti.Filesystem.getFile(nextFile.thumb_path);
-                                    if(thumbFile.exists()){
-                                       thumbFile.deleteFile();
-                                    }
-                                }
-                                
-                                deleteFinishedIds.push(nextFile.id);
-                            }
-                        }
-                    }
-                    else if(nextFile.tries > 10){
-                        
-                        // Show everything if the file was attempted more than 10 times
-                        node = Omadi.data.nodeLoad(nextFile.nid);
-                        
-                        if(node !== null){
-                           
-                            message = "Over 10 tries: " + JSON.stringify(node);
+                	nextFile.numUploadParts = 1;
+                    nextFile.upload_part = 1;
+                    nextFile.uploading_bytes = nextFile.filesize;
+                }
+                 
+                // Negative nids mean they haven't been uploaded yet, -1000000 means never upload.
+                // Send error reports for files that should have been uploaded but are over 30 minutes old.
+                if (nextFile.nid <= 0 && nextFile.nid != -1000000 && nextFile.timestamp < now - 1800) {
+                    node = Omadi.data.nodeLoad(nextFile.nid);
+                    if (node !== null) {
+                        if (node.flag_is_updated != 3 && node.flag_is_updated != 4) { // 3 = Draft, 4 = Continuous save
+                            // If this is not a draft or continuous save, send up the debug
+                            message = "Not a negative draft: " + JSON.stringify(node);
                             // Limit node message to 2000 characters
                             message = message.substring(0, 2000);
                             message += JSON.stringify(nextFile);
                             Omadi.service.sendErrorReport(message);
+                            
+                            // Do not remove this as an upload just yet.
+                            // It could be a continuous save node
+                            // Need to look at error data from users using this
+                            // to determine what to do in this case
                         }
-                        else{
-                            message = "Null Node with nid " + nextFile.nid + " ";
-                            message += JSON.stringify(nextFile);
-                            Omadi.service.sendErrorReport(message);
-                        }
+                    } else {
+                        message = "Null negative Node with nid " + nextFile.nid + " ";
+                        message += JSON.stringify(nextFile);
+                        Omadi.service.sendErrorReport(message);
                         
                         // This file should stop attempting to be uploaded
                         neverUploadIds.push(nextFile.id);
                     }
-                    else{
-                        // Only allow positive nids into the possibilities for upload
-                        files.push(nextFile);
+                } else if (nextFile.finished > 0) {
+                    // We don't show the finished uploads
+                    
+                    if(now > nextFile.finished + (3600 * 16)){
+                        // Delete any files that have been uploaded and still exist on the device for too long (16 hours)
+                        
+                        deleteFile = true;
+                        
+                        photoWidget = Ti.App.Properties.getString("photoWidget", 'take');
+                        photoDeleteOption = Ti.App.Properties.getString("deleteOnUpload", "false");
+                       
+                        if(photoWidget == 'choose' && photoDeleteOption == "false"){
+                            deleteFile = false;
+                        }
+                        
+                        Ti.API.error("ABOUT TO DELETE A FINISHED FILE!: " + nextFile.file_path);
+                        
+                        if(deleteFile){
+                            imageFile = Ti.Filesystem.getFile(nextFile.file_path);
+                            if(imageFile.exists()){
+                                imageFile.deleteFile();
+                            } 
+                            
+                            // Delete the thumbnail if one is saved
+                            if(nextFile.thumb_path != null && nextFile.thumb_path.length > 10){
+                                thumbFile = Ti.Filesystem.getFile(nextFile.thumb_path);
+                                if(thumbFile.exists()){
+                                   thumbFile.deleteFile();
+                                }
+                            }
+                            
+                            deleteFinishedIds.push(nextFile.id);
+                        }
                     }
+                }
+                else if(nextFile.tries > 10){
+                    
+                    // Show everything if the file was attempted more than 10 times
+                    node = Omadi.data.nodeLoad(nextFile.nid);
+                    
+                    if(node !== null){
+                       
+                        message = "Over 10 tries: " + JSON.stringify(node);
+                        // Limit node message to 2000 characters
+                        message = message.substring(0, 2000);
+                        message += JSON.stringify(nextFile);
+                        Omadi.service.sendErrorReport(message);
+                    }
+                    else{
+                        message = "Null Node with nid " + nextFile.nid + " ";
+                        message += JSON.stringify(nextFile);
+                        Omadi.service.sendErrorReport(message);
+                    }
+                    
+                    // This file should stop attempting to be uploaded
+                    neverUploadIds.push(nextFile.id);
+                }
+                else{
+                    // Only allow positive nids into the possibilities for upload
+                    files.push(nextFile);
                 }
             }
             catch(innerEx){
@@ -2111,7 +2331,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                                     
                                     Ti.API.debug("Original: " + imageBlob.length + " " + imageBlob.width + "x" + imageBlob.height);
                                     
-                                    if (imageBlob.length > Omadi.data.maxBytesPerUpload || imageBlob.height > maxPhotoPixels || imageBlob.width > maxPhotoPixels) {
+                                    if (imageBlob.length > Omadi.data.MAX_BYTES_PER_UPLOAD || imageBlob.height > maxPhotoPixels || imageBlob.width > maxPhotoPixels) {
         
                                         maxDiff = imageBlob.height - maxPhotoPixels;
                                         if (imageBlob.width - maxPhotoPixels > maxDiff) {
@@ -2172,7 +2392,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                     try{
                         fileStream = imageFile.open(Ti.Filesystem.MODE_READ);
                         buffer = Ti.createBuffer({
-                            length: Omadi.data.maxBytesPerUpload 
+                            length: Omadi.data.MAX_BYTES_PER_UPLOAD 
                         });
                         
                         Ti.API.debug("bytes already uploaded: " + nextFile.bytes_uploaded);
@@ -2324,7 +2544,7 @@ Omadi.data.sendDebugData = function(showResponse){"use strict";
         message += " --- USER SUBMITTED --- ";    
     }
     
-    files = Omadi.data.getFileArray(false);
+    files = Omadi.data.getAllFiles();
     
     message += JSON.stringify(files);
     
