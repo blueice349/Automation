@@ -2079,29 +2079,31 @@ Omadi.data.getFileArray = function(){"use strict";
                  
                 // Negative nids mean they haven't been uploaded yet, -1000000 means never upload.
                 // Send error reports for files that should have been uploaded but are over 30 minutes old.
-                if (nextFile.nid <= 0 && nextFile.nid != -1000000 && nextFile.timestamp < now - 1800) {
-                    node = Omadi.data.nodeLoad(nextFile.nid);
-                    if (node !== null) {
-                        if (node.flag_is_updated != 3 && node.flag_is_updated != 4) { // 3 = Draft, 4 = Continuous save
-                            // If this is not a draft or continuous save, send up the debug
-                            message = "Not a negative draft: " + JSON.stringify(node);
-                            // Limit node message to 2000 characters
-                            message = message.substring(0, 2000);
-                            message += JSON.stringify(nextFile);
-                            Omadi.service.sendErrorReport(message);
-                            
-                            // Do not remove this as an upload just yet.
-                            // It could be a continuous save node
-                            // Need to look at error data from users using this
-                            // to determine what to do in this case
-                        }
-                    } else {
-                        message = "Null negative Node with nid " + nextFile.nid + " ";
-                        message += JSON.stringify(nextFile);
-                        Omadi.service.sendErrorReport(message);
-                        
-                        // This file should stop attempting to be uploaded
-                        neverUploadIds.push(nextFile.id);
+                if (nextFile.nid <= 0) { 
+                	if (nextFile.nid != -1000000 && nextFile.timestamp < now - 1800) {
+	                    node = Omadi.data.nodeLoad(nextFile.nid);
+	                    if (node !== null) {
+	                        if (node.flag_is_updated != 3 && node.flag_is_updated != 4) { // 3 = Draft, 4 = Continuous save
+	                            // If this is not a draft or continuous save, send up the debug
+	                            message = "Not a negative draft: " + JSON.stringify(node);
+	                            // Limit node message to 2000 characters
+	                            message = message.substring(0, 2000);
+	                            message += JSON.stringify(nextFile);
+	                            Omadi.service.sendErrorReport(message);
+	                            
+	                            // Do not remove this as an upload just yet.
+	                            // It could be a continuous save node
+	                            // Need to look at error data from users using this
+	                            // to determine what to do in this case
+	                        }
+	                    } else {
+	                        message = "Null negative Node with nid " + nextFile.nid + " ";
+	                        message += JSON.stringify(nextFile);
+	                        Omadi.service.sendErrorReport(message);
+	                        
+	                        // This file should stop attempting to be uploaded
+	                        neverUploadIds.push(nextFile.id);
+	                    }
                     }
                 } else if (nextFile.finished > 0) {
                     // We don't show the finished uploads

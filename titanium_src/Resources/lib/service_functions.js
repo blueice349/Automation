@@ -1754,7 +1754,7 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
 	if (!Omadi.service.verifyStartMillis(isBackground)) {
 		return;
 	}
-	
+
 	var now = Omadi.utils.getUTCTimestamp();
     var lastUploadStartTimestamp = Omadi.service.getLastUploadStartTimestamp();
     var isUploadingFile = lastUploadStartTimestamp === null;
