@@ -4,10 +4,10 @@ var Widget, Omadi;
 Widget = {};
 
 function ListTextWidget(formObj, instance, fieldViewWrapper){"use strict";
-    this.formObj = formObj;
+    this.formObj = formObj || {};
     this.instance = instance;
     this.fieldView = null;
-    this.node = formObj.node;
+    this.node = this.formObj.node || [];
     this.dbValues = [];
     this.textValues = [];
     this.elements = [];
@@ -331,6 +331,11 @@ exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper)
     Widget[instance.field_name] = new ListTextWidget(FormObj, instance, fieldViewWrapper);
     
     return Widget[instance.field_name];
+};
+
+exports.getOptions = function(instance) {
+	var listText = new ListTextWidget(null, instance, null);
+	return listText.getOptions();
 };
 
 

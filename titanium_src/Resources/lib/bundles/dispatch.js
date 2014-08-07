@@ -465,8 +465,8 @@ Omadi.bundles.dispatch.getStatusOptions = function(nid){"use strict";
             
                 if(typeof dispatchInstances.field_dispatching_status !== 'undefined'){
                     statusInstance = dispatchInstances.field_dispatching_status;
-                    var listText = new ListTextWidget(null, statusInstance, null);
-                    fieldOptions = listText.getOptions();
+                    var ListTextWidget = require('ui/widget/ListText');
+                    fieldOptions = ListTextWidget.getOptions(statusInstance);
                     
                     switch(currentStatusKey){
                         
@@ -954,8 +954,8 @@ Omadi.bundles.dispatch.showDiscontinueJobDialog = function(args){"use strict";
         if(typeof discontinueInstances.job_discontinued !== 'undefined'){
             Ti.API.debug("has job discontinued");
             
-            var listText = new ListTextWidget(null, discontinueInstances.job_discontinued, null);
-            discontinueOptions = listText.getOptions();
+            var ListTextWidget = require('ui/widget/ListText');
+            discontinueOptions = ListTextWidget.getOptions(discontinueInstances.job_discontinued);
             
             if(discontinueOptions.length > 0){
                 
