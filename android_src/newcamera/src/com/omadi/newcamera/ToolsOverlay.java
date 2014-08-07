@@ -148,7 +148,7 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 						}
 						catch(Exception e){
 							// nothing here
-							Log.e("CAMERA", "Exception in capture image onclick: " + e.getMessage());
+							NewcameraModule.sendErrorReport("Exception in capture image onclick: " + e.getMessage());
 						}
 						
 						captureButtonPressed = false;
@@ -275,6 +275,7 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 			this.addView(container);
 		}
 		catch(Exception e){
+			NewcameraModule.sendErrorReport("CAMERA tools INIT: " + e.getMessage());
 			Log.d("CAMERA", "CAMERA tools INIT: " + e.getMessage());
 		}
 	}
@@ -354,6 +355,7 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 				cameraParams = camera.getParameters();
 			}
 			catch(Exception e){
+				NewcameraModule.sendErrorReport("CAMERA cannot get camera params: " + e.toString());
 				Log.d("CAMERA", "CAMERA cannot get camera params: " + e.toString());
 			}
 
@@ -427,6 +429,7 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 				}
 				catch(Exception e){
 					Log.d("CAMERA", "CAMERA flash button init: " + e.toString());
+					NewcameraModule.sendErrorReport("CAMERA flash button init: " + e.toString());
 					e.printStackTrace();
 				}
 
@@ -468,6 +471,7 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 					}
 					catch(Exception e){
 						Log.d("CAMERA", "CAMERA zoom control init: " + e.toString());
+						NewcameraModule.sendErrorReport("CAMERA zoom control init: " + e.toString());
 						e.printStackTrace();
 					}
 				}
@@ -598,6 +602,7 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 		}
 		catch(Exception e){
 			Log.d("CAMERA", "CAMERA redrawButtons: " + e.getMessage());
+			NewcameraModule.sendErrorReport("CAMERA redrawButtons: " + e.getMessage());
 		}
 	}
 	

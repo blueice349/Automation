@@ -1949,18 +1949,20 @@ Omadi.data.keepFailedUploads = function(files){"use strict";
 		}
 		
 		// Check for files that should have been uploaded but haven't after 30 minutes
-		if (file.nid <= 0 && file.nid != -1000000 && file.timestamp < now - 1800) {
-			// Files with negative nids have not been uploaded. An nid of -1000000 should never be uploaded.
-            if (node.flag_is_updated != 3 && node.flag_is_updated != 4) { // 3 = Draft, 4 = Continuous save
-                // If this is not a draft or continuous save, send up the debug
-                message = "Non draft or continuos node not uploaded after 30 minutes: " + JSON.stringify(node);
-                // Limit node message to 2000 characters
-                message = message.substring(0, 2000);
-                message += JSON.stringify(file);
-                Omadi.service.sendErrorReport(message);
-                
-                idsToKeep.push(file.id);
-            }
+		if (file.nid <= 0) {
+			if (file.nid != -1000000 && file.timestamp < now - 1800) {
+				// Files with negative nids have not been uploaded. An nid of -1000000 should never be uploaded.
+				if (node.flag_is_updated != 3 && node.flag_is_updated != 4) { // 3 = Draft, 4 = Continuous save
+				    // If this is not a draft or continuous save, send up the debug
+				    message = "Non draft or continuos node not uploaded after 30 minutes: " + JSON.stringify(node);
+				    // Limit node message to 2000 characters
+				        message = message.substring(0, 2000);
+				        message += JSON.stringify(file);
+				        Omadi.service.sendErrorReport(message);
+				        
+				        idsToKeep.push(file.id);
+				}
+			}
             
         // Check for files that have failed to upload after 10 attempts
         } else if (file.tries > 10) {
@@ -2238,7 +2240,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
             nextFile = files[i];
             imageFile = Ti.Filesystem.getFile(nextFile.file_path);
             
-            if(!imageFile.exists() || !imageFile.isFile()){
+            if(!imageFile.exists()){
                
                 Ti.API.error("File does not exist: " + nextFile.file_path);
                 

@@ -5,6 +5,7 @@ var Widget, Omadi;
 Widget = {};
 
 var ImageFactory = null;
+var Utils = require('lib/Utils');
 
 if(Ti.App.isIOS){
     ImageFactory = require('ti.imagefactory');
@@ -256,7 +257,7 @@ ImageWidget.prototype.getImageView = function(widgetView, index, nid, fid, fileP
     }
     else{
         Ti.API.error("Error in creating imageview, fid = " + fid);
-        Omadi.service.sendErrorReport("Error in creating imageview, fid = " + fid);
+        Utils.sendErrorReport("Error in creating imageview, fid = " + fid);
     }
 
     imageView = Ti.UI.createImageView({
@@ -311,7 +312,7 @@ ImageWidget.prototype.getImageView = function(widgetView, index, nid, fid, fileP
                 }
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception imageview clicked: " + ex);
+                Utils.sendErrorReport("Exception imageview clicked: " + ex);
             }
         });
     }
@@ -335,7 +336,7 @@ ImageWidget.prototype.getImageView = function(widgetView, index, nid, fid, fileP
                 }
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception in imageview click 2: " + ex);
+                Utils.sendErrorReport("Exception in imageview click 2: " + ex);
             }
         });
     }
@@ -425,19 +426,19 @@ ImageWidget.prototype.clickedPhotoOption = function(e){"use strict";
                             Omadi.data.deletePhotoUploadByPath(filePath, e2.source.isDeletePhoto); 
                         }
                         else{
-                            Omadi.service.sendErrorReport("Trying to remove image, filepath is null");
+                            Utils.sendErrorReport("Trying to remove image, filepath is null");
                         }
                     }
                 }
                 catch(ex){
-                    Omadi.service.sendErrorReport("in clicked photo option dialog: " + ex);
+                    Utils.sendErrorReport("in clicked photo option dialog: " + ex);
                 }
             });
             dialog.show();
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in clicked photo option: " + ex);
+        Utils.sendErrorReport("Exception in clicked photo option: " + ex);
     }
 };
 
@@ -576,7 +577,7 @@ ImageWidget.prototype.openPictureChooser = function(imageView){"use strict";
                         pictureWindow = null;
                     }
                     catch(ex){
-                        Omadi.service.sendErrorReport("Exception in image use button: " + ex);
+                        Utils.sendErrorReport("Exception in image use button: " + ex);
                     }
                 });
                 
@@ -603,7 +604,7 @@ ImageWidget.prototype.openPictureChooser = function(imageView){"use strict";
                         pictureWindow = null;
                     }
                     catch(ex){
-                        Omadi.service.sendErrorReport("Exception with cancel button in image: " + ex);
+                        Utils.sendErrorReport("Exception with cancel button in image: " + ex);
                     }
                 });
                 
@@ -729,7 +730,7 @@ ImageWidget.prototype.openPictureChooser = function(imageView){"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in Android photo chooser window open: " + ex);
+        Utils.sendErrorReport("Exception in Android photo chooser window open: " + ex);
     }
 };
 
@@ -748,7 +749,7 @@ ImageWidget.prototype.imageRowClicked = function(e){"use strict";
         e.source.isChecked = !e.source.isChecked;
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in imagerowclicked: " + ex);
+        Utils.sendErrorReport("Exception in imagerowclicked: " + ex);
     }
 };
 
@@ -775,6 +776,11 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
             
             this.cameraAndroid.showCamera({
                 maxPhotos : maxPhotos,
+                sendError : function(event){
+                	if(typeof event.message !== 'undefined'){
+                		Utils.sendErrorReport(event.message);
+                	}
+                },
                 addedPhoto : function(event){
                     
                    var newImageView, tmpImageView, blob, maxDiff, newHeight, newWidth,
@@ -794,6 +800,12 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
                     file = Ti.Filesystem.getFile(filePath);
                     // Allow the imageView to be touched again with an event
                     imageView.setTouchEnabled(true);
+                    
+                    if (!file.exists()) {
+                    	Utils.sendErrorReport('Image didn\'t save properly after capture');
+                    	alert('There was an error saving the image. Please try again.');
+                    	return;
+                    }
                     
                     if(typeof imageView.addedPhotos === 'undefined'){
                         imageView.addedPhotos = [];
@@ -863,17 +875,17 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
                                     parentView.remove(imageView);
                                 }
                                 catch(ex2){
-                                    Omadi.service.sendErrorReport("Exception removing image view 1 " + ex2);
+                                    Utils.sendErrorReport("Exception removing image view 1 " + ex2);
                                 }
                             }, 1000);                           
                          }
                      }
                      catch(ex){
-                         Omadi.service.sendErrorReport("Exception in Android saving image: " + ex);
+                         Utils.sendErrorReport("Exception in Android saving image: " + ex);
                      }
                 },
                 error : function(error) {
-                    Omadi.service.sendErrorReport("Error capturing a photo" + JSON.stringify(error));
+                    Utils.sendErrorReport("Error capturing a photo" + JSON.stringify(error));
                     
                     // Allow the imageView to be touched again with an event
                     imageView.setTouchEnabled(true);
@@ -884,7 +896,7 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
                     }
                     else{
                         alert(error.message);
-                        Omadi.service.sendErrorReport("Photo error: " + error.code + ": " + error.message);
+                        Utils.sendErrorReport("Photo error: " + error.code + ": " + error.message);
                     }
                 },
                 // Currently, an overlay must exist to not show the default camera
@@ -941,7 +953,7 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
                     Ti.Media.takePicture();
                 }
                 catch(ex){
-                    Omadi.service.sendErrorReport("Exception in capture button click: " + ex);
+                    Utils.sendErrorReport("Exception in capture button click: " + ex);
                 }
             });
             doneButton.addEventListener('click', function(evt) {
@@ -949,7 +961,7 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
                     Ti.Media.hideCamera();
                 }
                 catch(ex){
-                    Omadi.service.sendErrorReport("Exception in donebutton click for photo: " + ex);
+                    Utils.sendErrorReport("Exception in donebutton click for photo: " + ex);
                 }
             });
 
@@ -967,7 +979,7 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
                     }
                 }
                 catch(ex){
-                    Omadi.service.sendErrorReport("Exception in flash button click: " + ex);
+                    Utils.sendErrorReport("Exception in flash button click: " + ex);
                 }
             });
 
@@ -1039,17 +1051,17 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
                             }
                         }
                         catch(ex1){
-                            Omadi.service.sendErrorReport("Exception setting up another imageview in iOS: " + ex1);
+                            Utils.sendErrorReport("Exception setting up another imageview in iOS: " + ex1);
                         }
                         
                     }
                     catch(ex){
-                        Omadi.service.sendErrorReport("Exception saving iOS photo: " + ex);
+                        Utils.sendErrorReport("Exception saving iOS photo: " + ex);
                     }
                 },
                 error : function(error) {
                     
-                    Omadi.service.sendErrorReport("Problem opening iOS camera: " + JSON.stringify(error));
+                    Utils.sendErrorReport("Problem opening iOS camera: " + JSON.stringify(error));
                     
                     Ti.API.error('Captured Image - Error: ' + error.code + " :: " + error.message);
                     if (error.code == Titanium.Media.NO_CAMERA) {
@@ -1075,12 +1087,12 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
             }
             catch(ex) {
                 Ti.API.error("Flash: " + ex);
-                Omadi.service.sendErrorReport("iOS flash error: " + ex);
+                Utils.sendErrorReport("iOS flash error: " + ex);
             }
         }
         catch(wrapperEx) {
             Ti.API.error("Wrapper: " + wrapperEx);
-            Omadi.service.sendErrorReport("iOS camera error: " + wrapperEx);
+            Utils.sendErrorReport("iOS camera error: " + wrapperEx);
         }
     }
 };
@@ -1173,7 +1185,7 @@ ImageWidget.prototype.cleanUp = function(){"use strict";
     }
     catch(ex){
         try{
-            Omadi.service.sendErrorReport("Exception cleaning up image widget field: " + ex);
+            Utils.sendErrorReport("Exception cleaning up image widget field: " + ex);
         }
         catch(ex1){}
     }

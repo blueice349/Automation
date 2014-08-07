@@ -288,7 +288,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 			camera.setPreviewDisplay(previewHolder);
 		}
 	    catch(Exception e){
-	    	Log.e("CAMERA", "CAMERA Could not start preview: " + e.getMessage());
+	    	NewcameraModule.sendErrorReport("CAMERA Could not start preview: " + e.getMessage());
 	    	
 	    	HashMap<String, Object> hm = new HashMap<String, Object>();
 			hm.put("message", e.getMessage());
@@ -309,7 +309,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 				camera.release();
 			}
 			catch(Exception e){
-				Log.e("CAMERA", "CAMERA exception releasing: " + e.getMessage());
+				NewcameraModule.sendErrorReport("CAMERA exception releasing: " + e.getMessage());
 			}
 			camera = null;
 		}
@@ -331,7 +331,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 				camera.release();
 			}
 			catch(Exception e){
-				Log.e("CAMERA", "CAMERA exception releasing: " + e.getMessage());
+				NewcameraModule.sendErrorReport("CAMERA exception releasing: " + e.getMessage());
 			}
 			camera = null;
 		}
@@ -343,6 +343,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 		}
 		catch(Exception e){
 			exceptionMessage = e.getMessage();
+			NewcameraModule.sendErrorReport("Failed to open camera", e);
 		}
 		
 		Log.d("CAMERA", "CAMERA after open: " + exceptionMessage);
@@ -414,6 +415,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 		}
 		catch (Throwable t) {
 			Log.d("CAMERA", "CAMERA is not open, unable to release: " + t.getMessage());
+			NewcameraModule.sendErrorReport("CAMERA is not open, unable to release: " + t.getMessage());
 			t.printStackTrace();
 		}
 
@@ -435,7 +437,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 			}
 		}
 		else{
-			Log.e("CAMERA", "CAMERA is null, could not take picture");
+			NewcameraModule.sendErrorReport("CAMERA is null, could not take picture");
 			autoFinishActivityWithError("Camera could not be found.");
 		}
 	}
@@ -486,7 +488,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 					File rootsd = Environment.getExternalStorageDirectory();
 					String localPath = rootsd.getAbsolutePath() + "/dcim/Camera/o_" + photosTaken + imageFile.getName();
 					
-					moveImage(imageFile.getAbsolutePath(), localPath);
+					boolean errorOccured = moveImage(imageFile.getAbsolutePath(), localPath);
 					String localUrl = "file://" + localPath;
 					
 					//String thumbPath = filePath.replaceAll(".jpg$", "_thumb.jpg");
@@ -547,41 +549,54 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 		cameraActivity.finish();
 	}
 	
-	private void moveImage(String source, String dest)
+	private boolean moveImage(String source, String dest)
 	{
+
+		BufferedInputStream bis = null;
+		BufferedOutputStream bos = null;
+		File src = null;
+		File dst = null;
+		boolean errorOccured = false;
+		
 		try {
+			src = new File(source);
+			dst = new File(dest);
+			bis = new BufferedInputStream(new FileInputStream(src), 8096);
+			bos = new BufferedOutputStream(new FileOutputStream(dst), 8096);
 
-			BufferedInputStream bis = null;
-			BufferedOutputStream bos = null;
-
-			File src = new File(source);
-			File dst = new File(dest);
-
-			try {
-				bis = new BufferedInputStream(new FileInputStream(src), 8096);
-				bos = new BufferedOutputStream(new FileOutputStream(dst), 8096);
-
-				byte[] buf = new byte[8096];
-				int len = 0;
-
-				while ((len = bis.read(buf)) != -1) {
-					bos.write(buf, 0, len);
-				}
-
-			} finally {
-				if (bis != null) {
-					bis.close();
-				}
-
-				if (bos != null) {
-					bos.close();
-				}
+			byte[] buf = new byte[8096];
+			int len = 0;
+			while ((len = bis.read(buf)) != -1) {
+				bos.write(buf, 0, len);
 			}
-			src.delete();
 
 		} catch (IOException e) {
-			Log.e("CAMERA", "Unable to move file: " + e.getMessage(), e);
+			NewcameraModule.sendErrorReport("Unable to move file: " + e.getMessage(), e);
+			errorOccured = true;
 		}
+		
+		try {
+			if (bis != null) {
+				bis.close();
+			}
+		} catch (IOException e) {
+			NewcameraModule.sendErrorReport("Unable to close BufferedInputStream: " + e.getMessage(), e);
+		}
+		try {
+			if (bos != null) {
+				bos.close();
+			}
+		} catch (IOException e) {
+			NewcameraModule.sendErrorReport("Unable to close BufferedOutputStream: " + e.getMessage(), e);
+		}
+		if (src != null) {
+			src.delete();
+		}
+		if (errorOccured && dst != null) {
+			dst.delete();
+		}
+		
+		return !errorOccured;
 	}
 	
 	static Handler messageHandler = new Handler() {

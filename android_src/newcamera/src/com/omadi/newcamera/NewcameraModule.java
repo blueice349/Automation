@@ -21,7 +21,6 @@ import org.appcelerator.kroll.KrollModule;
 import org.appcelerator.kroll.KrollObject;
 import org.appcelerator.kroll.KrollRuntime;
 import org.appcelerator.kroll.annotations.Kroll;
-
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.TiBaseActivity;
 import org.appcelerator.titanium.TiBlob;
@@ -76,6 +75,7 @@ public class NewcameraModule extends KrollModule
 	
 	static KrollFunction finishedCallback = null;
 	static KrollFunction addedPhotoCallback = null;
+	static KrollFunction sendErrorCallback = null;
 	static KrollFunction errorCallback = null;
 	
 	static String errorMessage = "";
@@ -115,7 +115,7 @@ public class NewcameraModule extends KrollModule
 		if (OmadiCameraActivity.cameraActivity != null) {
 			OmadiCameraActivity.cameraActivity.takePicture();
 		} else {
-			Log.e(LCAT, "camera preview is not open, unable to take photo");
+			sendErrorReport("camera preview is not open, unable to take photo");
 		}
 	}
 	
@@ -315,8 +315,7 @@ public class NewcameraModule extends KrollModule
 	
 	public static void sendError(String message, String adminMessage){
 		
-		Log.e("CAMERA", message);
-		Log.e("CAMERA", adminMessage);
+		sendErrorReport(message + ": " + adminMessage);
 			
 		if(NewcameraModule.errorCallback == null){
 			return;
@@ -330,6 +329,38 @@ public class NewcameraModule extends KrollModule
 			hm.put("message", adminMessage);
 			
 			NewcameraModule.errorCallback.callAsync(instance.getKrollObject(), hm);
+		}
+	}
+	
+	public static void sendErrorReport(String message) {
+		Log.e("CAMERA", message);
+		
+		if(NewcameraModule.sendErrorCallback == null){
+			return;
+		}
+		
+		NewcameraModule instance = NewcameraModule.getInstance();
+		if(instance != null){
+			HashMap<String, Object> hm = new HashMap<String, Object>();
+			hm.put("message", message);
+			
+			NewcameraModule.sendErrorCallback.callAsync(instance.getKrollObject(), hm);
+		}
+	}
+	
+	public static void sendErrorReport(String message, Exception e) {
+		Log.e("CAMERA", message, e);
+		
+		if(NewcameraModule.sendErrorCallback == null){
+			return;
+		}
+		
+		NewcameraModule instance = NewcameraModule.getInstance();
+		if(instance != null){
+			HashMap<String, Object> hm = new HashMap<String, Object>();
+			hm.put("message", message + ": " + e.getMessage());
+			
+			NewcameraModule.sendErrorCallback.callAsync(instance.getKrollObject(), hm);
 		}
 	}
 	
@@ -354,6 +385,9 @@ public class NewcameraModule extends KrollModule
 		}
 		if (options.containsKey("addedPhoto")) {
 			addedPhotoCallback = (KrollFunction) options.get("addedPhoto");
+		}
+		if (options.containsKey("sendError")) {
+			sendErrorCallback = (KrollFunction) options.get("sendError");
 		}
 		if (options.containsKey("maxPhotos")) {
 			maxPhotos = (Integer) options.get("maxPhotos");
@@ -426,6 +460,7 @@ public class NewcameraModule extends KrollModule
 					imageDir.mkdirs();
 					if (!imageDir.exists()) {
 						Log.w("CAMERA", "Attempt to create '" + imageDir.getAbsolutePath() + "' failed silently.");
+						NewcameraModule.sendErrorReport("Attempt to create '" + imageDir.getAbsolutePath() + "' failed silently.");
 					}
 				}
 			} 
@@ -436,7 +471,7 @@ public class NewcameraModule extends KrollModule
 			imageFile = tfh.getTempFile(imageDir, ".jpg", true);
 		}
 		catch (IOException e) {
-			Log.e("CAMERA", "Unable to create temp file", e);
+			sendErrorReport("Unable to create temp file", e);
 			if (errorCallback != null) {
 				errorCallback.callAsync(getKrollObject(), createErrorResponse(UNKNOWN_ERROR, e.getMessage()));
 			}
@@ -450,6 +485,7 @@ public class NewcameraModule extends KrollModule
 		resultHandler.cancelCallback = cancelCallback;
 		resultHandler.errorCallback = errorCallback;
 		resultHandler.addedPhotoCallback = addedPhotoCallback;
+		resultHandler.sendErrorCallback = sendErrorCallback;
 		resultHandler.activitySupport = activitySupport;
 		resultHandler.cameraIntent = cameraIntent.getIntent();
 		
@@ -468,7 +504,7 @@ public class NewcameraModule extends KrollModule
 		protected String imageUrl;
 		protected boolean saveToPhotoGallery;
 		protected int code;
-		protected KrollFunction successCallback, cancelCallback, errorCallback, addedPhotoCallback;
+		protected KrollFunction successCallback, cancelCallback, errorCallback, addedPhotoCallback, sendErrorCallback;
 		protected TiActivitySupport activitySupport;
 		protected Intent cameraIntent;
 
@@ -482,20 +518,18 @@ public class NewcameraModule extends KrollModule
 		@Override
 		public void onResult(Activity activity, int requestCode, int resultCode, Intent data)
 		{
-			
-			if(resultCode == 13){
-				Log.d("CAMERA", "Finished camera activity with error.");
-				if (errorCallback != null) {
-					HashMap<String, Object> hm = new HashMap<String, Object>();
-					hm.put("code", 13);
-					hm.put("message", NewcameraModule.errorMessage);
-					errorCallback.callAsync(getKrollObject(), hm);
-				}
-			}
-			else{
+			if (resultCode == Activity.RESULT_OK || resultCode == Activity.RESULT_CANCELED) {
 				Log.d("CAMERA", "Finished camera activity successfully.");
 				if (successCallback != null) {
 					successCallback.callAsync(getKrollObject(), new Object[] {});
+				}
+			} else {
+				Log.d("CAMERA", "Finished camera activity with error.");
+				if (errorCallback != null) {
+					HashMap<String, Object> hm = new HashMap<String, Object>();
+					hm.put("code", resultCode);
+					hm.put("message", NewcameraModule.errorMessage);
+					errorCallback.callAsync(getKrollObject(), hm);
 				}
 			}
 		}
@@ -504,7 +538,7 @@ public class NewcameraModule extends KrollModule
 		public void onError(Activity activity, int requestCode, Exception e) {
 			
 			String msg = "Camera problem: " + e.getMessage();
-			Log.e(LCAT, msg, e);
+			sendErrorReport(msg);
 			
 			if (errorCallback != null) {
 				errorCallback.callAsync(getKrollObject(), createErrorResponse(UNKNOWN_ERROR, msg));
@@ -559,6 +593,7 @@ public class NewcameraModule extends KrollModule
 			width = opts.outWidth;
 			height = opts.outHeight;
 		} catch (FileNotFoundException e) {
+			NewcameraModule.sendErrorReport("bitmap not found: " + path, e);
 			Log.w(LCAT, "bitmap not found: " + path);
 		}
 
