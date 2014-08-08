@@ -420,13 +420,15 @@ ImageWidget.prototype.clickedPhotoOption = function(e){"use strict";
                         
                         parentView.remove(e2.source.imageView);
                         
-                        if(filePath !== null){
-                            Ti.API.debug("Removing file reference in DB: " + filePath + " " + e2.source.isDeletePhoto);
-                            // Do the removal for an image stored on the phone
-                            Omadi.data.deletePhotoUploadByPath(filePath, e2.source.isDeletePhoto); 
-                        }
-                        else{
-                            Utils.sendErrorReport("Trying to remove image, filepath is null");
+                        if (e.source.isDeletePhoto) {
+	                        if(filePath !== null){
+	                            Ti.API.debug("Removing file reference in DB: " + filePath + " " + e2.source.isDeletePhoto);
+	                            // Do the removal for an image stored on the phone
+	                            Omadi.data.deletePhotoUploadByPath(filePath, e2.source.isDeletePhoto); 
+	                        }
+	                        else{
+	                            Utils.sendErrorReport("Trying to delete image, filepath is null");
+                        	}
                         }
                     }
                 }
@@ -774,6 +776,83 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
                 }
             }
             
+            var close = function() {
+            	var startIndex, newImageView, i, addedPhoto, takeNextPhotoView, lastIndex, cardinality, parentView;
+                 try{
+                     if(typeof imageView.addedPhotos !== 'undefined'){
+                        
+                        imageView.hide();
+                        imageView.setWidth(0);
+                        imageView.setLeft(0);
+                        
+                        lastIndex = 0;
+                        
+                        parentView = Widget[imageView.instance.field_name].elements[0];
+                         
+						var missingFiles = [];
+                        for(i = 0; i < imageView.addedPhotos.length; i ++){
+                            addedPhoto = imageView.addedPhotos[i];
+                            
+                            var file = file = Ti.Filesystem.getFile(addedPhoto.filePath);
+                            if (!file.exists()) {
+                            	missingFiles.push = [addedPhoto];
+                            	continue;
+                            }
+                            
+                            newImageView = Widget[imageView.instance.field_name].getImageView(parentView, addedPhoto.imageIndex, null, null, addedPhoto.filePath, "", addedPhoto.degrees);
+                            parentView.add(newImageView);
+                            lastIndex = addedPhoto.imageIndex;  
+                        }
+                        
+                        if (missingFiles.length > 0) {
+                        	Utils.sendErrorReport(missingFiles.length + ' of ' + addedPhotos.length + ' images missing on camera callback: ' + JSON.stringify({
+                        		missing: missingFiles,
+                        		added: addedPhotos
+                        	}));
+                        	if (addedPhotos.length > 1) {
+                				alert(missingFiles.length + ' of the photos you just took ' + (missingFiles.length > 1 ? 'were' : 'was') + ' not saved properly. Please try again.');
+                        	} else {
+                        		alert('The photo you just took was not saved properly. Please try again.');
+                        	}
+                        }
+                        
+                        cardinality = -1;
+                        if(typeof imageView.instance.settings.cardinality !== 'undefined'){
+                            cardinality = parseInt(imageView.instance.settings.cardinality, 10);
+                            if(isNaN(cardinality)){
+                                cardinality = -1;
+                            }
+                        }
+                        
+                        // Make sure we never lose a photo due to a crash
+                        Widget[imageView.instance.field_name].formObj.saveForm('continuous');
+                        
+                        Ti.API.debug("Cardinality: " + cardinality);
+                        Ti.API.debug("last Index: " + lastIndex);
+                        
+                        if(cardinality == -1 || (lastIndex + 1) < cardinality){
+                            takeNextPhotoView = Widget[imageView.instance.field_name].getImageView(parentView, lastIndex + 1, null, null, null, null, 0);
+                            parentView.add(takeNextPhotoView);
+                        }
+                        
+                        parentView.setContentWidth(parentView.getContentWidth() + ((imageView.addedPhotos.length - missingFiles.length) * 110));
+                        
+                        // Remove the original imageView from the parent
+                        setTimeout(function(){
+                            try{
+                                parentView.remove(imageView);
+                            }
+                            catch(ex2){
+                                Utils.sendErrorReport("Exception removing image view 1 " + ex2);
+                            }
+                        }, 1000);                           
+                     }
+                 }
+                 catch(ex){
+                     Utils.sendErrorReport("Exception in Android saving image: " + ex);
+                 }
+            };
+            
             this.cameraAndroid.showCamera({
                 maxPhotos : maxPhotos,
                 sendError : function(event){
@@ -824,72 +903,12 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
                     
                 },
                 success : function(event) {
-                    Ti.API.info('Photo complete success in JS');
-                     
-                     var startIndex, newImageView, i, addedPhoto, takeNextPhotoView, lastIndex, cardinality, parentView;
-                     try{
-                         if(typeof imageView.addedPhotos !== 'undefined'){
-                            
-                            imageView.hide();
-                            imageView.setWidth(0);
-                            imageView.setLeft(0);
-                            
-                            lastIndex = 0;
-                            
-                            parentView = Widget[imageView.instance.field_name].elements[0];
-                             
-                            for(i = 0; i < imageView.addedPhotos.length; i ++){
-                                addedPhoto = imageView.addedPhotos[i];
-                                
-                                newImageView = Widget[imageView.instance.field_name].getImageView(parentView, addedPhoto.imageIndex, null, null, addedPhoto.filePath, "", addedPhoto.degrees);
-                                
-                                parentView.add(newImageView);
-                                
-                                lastIndex = addedPhoto.imageIndex;  
-                            }    
-                            
-                            cardinality = -1;
-                            if(typeof imageView.instance.settings.cardinality !== 'undefined'){
-                                cardinality = parseInt(imageView.instance.settings.cardinality, 10);
-                                if(isNaN(cardinality)){
-                                    cardinality = -1;
-                                }
-                            }
-                            
-                            // Make sure we never lose a photo due to a crash
-                            Widget[imageView.instance.field_name].formObj.saveForm('continuous');
-                            
-                            Ti.API.debug("Cardinality: " + cardinality);
-                            Ti.API.debug("last Index: " + lastIndex);
-                            
-                            if(cardinality == -1 || (lastIndex + 1) < cardinality){
-                                takeNextPhotoView = Widget[imageView.instance.field_name].getImageView(parentView, lastIndex + 1, null, null, null, null, 0);
-                                parentView.add(takeNextPhotoView);
-                            }
-                            
-                            parentView.setContentWidth(parentView.getContentWidth() + (imageView.addedPhotos.length * 110));
-                            
-                            // Remove the original imageView from the parent
-                            setTimeout(function(){
-                                try{
-                                    parentView.remove(imageView);
-                                }
-                                catch(ex2){
-                                    Utils.sendErrorReport("Exception removing image view 1 " + ex2);
-                                }
-                            }, 1000);                           
-                         }
-                     }
-                     catch(ex){
-                         Utils.sendErrorReport("Exception in Android saving image: " + ex);
-                     }
+                	Ti.API.info('Photo complete success in JS');
+                	close();
                 },
                 error : function(error) {
                     Utils.sendErrorReport("Error capturing a photo" + JSON.stringify(error));
-                    
-                    // Allow the imageView to be touched again with an event
-                    imageView.setTouchEnabled(true);
-                    
+         
                     Ti.API.info('Captured Image - Error: ' + error.code + " :: " + error.message);
                     if (typeof error.code == Titanium.Media.NO_CAMERA) {
                         alert('No Camera in device');
@@ -898,6 +917,7 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
                         alert(error.message);
                         Utils.sendErrorReport("Photo error: " + error.code + ": " + error.message);
                     }
+                    close();
                 },
                 // Currently, an overlay must exist to not show the default camera
                 overlay : blankOverlay,
@@ -1128,6 +1148,7 @@ ImageWidget.prototype.saveFileInfo = function(imageView, filePath, thumbPath, de
         db.close();
     }
     catch(ex) {
+    	Utils.sendErrorReport("Problem saving the photo to the database in saveFileInfo: " + ex);
         alert("Problem saving the photo to the database: " + ex);
     }
 };
@@ -1156,6 +1177,7 @@ ImageWidget.prototype.saveAndroidFileInfo = function(fieldName, imageIndex, file
         db.close();
     }
     catch(ex) {
+    	Utils.sendErrorReport("Problem saving the photo to the database in saveAndroidFileInfo: " + ex);
         alert("Problem saving the photo to the database: " + ex);
     }
 };

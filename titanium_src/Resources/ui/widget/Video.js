@@ -3,6 +3,8 @@ var Widget, Omadi;
 
 Widget = {};
 
+var Utils = require('lib/Utils');
+
 function VideoWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.formObj = formObj;
     this.instance = instance;
@@ -611,7 +613,8 @@ VideoWidget.prototype.saveFileInfo = function(imageView, filePath, thumbPath, de
         db.close();
     }
     catch(ex) {
-        alert("Problem saving the photo to the database: " + ex);
+    	Utils.sendErrorReport("Problem saving the video to the database: " + ex);
+        alert("Problem saving the video to the database: " + ex);
     }
 };
 

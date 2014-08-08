@@ -3,6 +3,8 @@
 var Widget, Omadi;
 Widget = {};
 
+var Utils = require('lib/Utils');
+
 function SignatureWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.formObj = formObj;
     this.instance = instance;
@@ -607,6 +609,7 @@ SignatureWidget.prototype.saveFileInfo = function(imageView, filePath, thumbPath
         db.close();
     }
     catch(ex) {
+    	Utils.sendErrorReport("Problem saving the signature to the database: " + ex);
         alert("Problem saving the signature to the database: " + ex);
     }
 };

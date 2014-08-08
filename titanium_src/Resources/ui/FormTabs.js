@@ -153,18 +153,28 @@ FormTabs.prototype.doDispatchSave = function(saveType){"use strict";
                     dialog.show();
                 }
                 else{
-                    // Save each form individually
-                    if(Dispatch.dispatchObj){
-                        Dispatch.dispatchObj.saveForm('normal');
-                    }
-                    
-                    // Save each form individually
-                    if(Dispatch.workObj){
-                        Dispatch.workObj.saveForm(saveType);
-                    }
-                    
-                    // As each form is saved, an event will be dispatched out to this module to let it know it saved correctly
-                    // Then this module will detect that everything saved correctly and close itself
+                	var missingFiles = Dispatch.getIdsOfMissingFiles(Dispatch.workObj);
+                	
+                	if (missingFiles.length > 0) {
+						var db = Omadi.utils.openListDatabase();
+						db.execute('DELETE FROM _files WHERE id IN (' + ids.join(',') + ')');
+						db.close();
+						
+						alert(missingFiles.length + ' of the files you just added ' + (missingFiles.length > 1 ? 'were' : 'was') + ' lost. Please add ' + (missingFiles.length > 1 ? 'them' : 'it') + ' again and resave.');
+					} else {
+	                    // Save each form individually
+	                    if(Dispatch.dispatchObj){
+	                        Dispatch.dispatchObj.saveForm('normal');
+	                    }
+	                    
+	                    // Save each form individually
+	                    if(Dispatch.workObj){
+	                        Dispatch.workObj.saveForm(saveType);
+	                    }
+	                    
+	                    // As each form is saved, an event will be dispatched out to this module to let it know it saved correctly
+	                    // Then this module will detect that everything saved correctly and close itself
+                   }
                 }
             }
         }
@@ -176,6 +186,59 @@ FormTabs.prototype.doDispatchSave = function(saveType){"use strict";
     catch(ex){
         Utils.sendErrorReport("Could not dodispatchsave: " + ex);
     }
+};
+
+FormTabs.prototype.getIdsOfMissingFiles = function(node) {
+	var db = Omadi.utils.openListDatabase();
+	
+	var ids = [node.continuous_nid || 0, 0];
+	if (node.nid !== 'new') {
+		ids.push(node.nid);
+	}
+	var result = db.execute('SELECT COUNT(*) AS count, * FROM _files WHERE nid IN (' + ids.join(',') + ')');
+	
+	var missingFiles = [];
+	var i = 1;
+	while (result.isValidRow()) {
+		var filePath = result.fieldByName('file_path');
+		file = Ti.Filesystem.getFile(filePath);
+		
+		if (!file.exists()) {
+			var fileInfo = {
+				nid : parseInt(result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT), 10) || 0,
+				id : result.fieldByName('id', Ti.Database.FIELD_TYPE_INT),
+				file_path : result.fieldByName('file_path'),
+				file_name : result.fieldByName('file_name'),
+				field_name : result.fieldByName('field_name'),
+				delta : parseInt(result.fieldByName('delta'), 10) || 0,
+				timestamp : parseInt(result.fieldByName('timestamp'), 10) || 0,
+				tries : parseInt(result.fieldByName('tries'), 10) || 0,
+				latitude : result.fieldByName('latitude'),
+				longitude : result.fieldByName('longitude'),
+				accuracy : result.fieldByName('accuracy'),
+				degrees : result.fieldByName('degrees'),
+				thumb_path : result.fieldByName('thumb_path'),
+				type : result.fieldByName('type'),
+				filesize : parseInt(result.fieldByName('filesize'), 10) || 0,
+				bytes_uploaded : parseInt(result.fieldByName('bytes_uploaded'), 10) || 0,
+				fid : result.fieldByName('fid'),
+				uid : result.fieldByName('uid'),
+				client_account : result.fieldByName('client_account'),
+				uploading : parseInt(result.fieldByName('uploading'), 10) || 0,
+				finished : parseInt(result.fieldByName('finished'), 10) || 0
+			};
+            
+			Omadi.service.sendErrorReport('File ' + i + ' of ' + result.fieldByName('count') + ' not found on node save: ' + JSON.stringify(fileInfo));
+			missingFiles.push(fileInfo[id]);
+		}
+		i++;
+		result.next();
+	}
+	
+	result.close();
+	db.close();
+	
+	return missingFiles;
 };
 
 function incrementCommentTab(e){"use strict";
