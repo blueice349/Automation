@@ -1817,6 +1817,7 @@ Omadi.data.getAllFiles = function(){"use strict";
             };
             
             files.push(file);
+            result.next();
 		}
 	} catch (e) {
         Ti.API.error("Error in get file query load: " + e);
@@ -1831,10 +1832,10 @@ Omadi.data.getAllFiles = function(){"use strict";
  * @param {Array.<Object>} files The files from which you want to select uploadable files.
  * @return {Array.<Object>} The files that are ready to be uploaded.
  */
-Omadi.data.getFilesForUpload = function(files){"use strict";
+Omadi.data.getUploadableFiles = function(files){"use strict";
 	files = files || Omadi.data.getAllFiles();
 
-	var filesForUpload = [];
+	var uploadableFiles = [];
 	
 	var allowVideoMobileNetwork = Ti.App.Properties.getBool('allowVideoMobileNetwork', false);
 	
@@ -1862,20 +1863,32 @@ Omadi.data.getFilesForUpload = function(files){"use strict";
 		}
 		
 		// Prepare large files for chunk uploading
-		if(file.type == 'video' || file.type == 'file'){
-            file.numUploadParts = Math.ceil(file.filesize / Omadi.data.MAX_BYTES_PER_UPLOAD);
-            file.upload_part = (file.bytes_uploaded / Omadi.data.MAX_BYTES_PER_UPLOAD) + 1;
-            file.uploading_bytes = Omadi.data.MAX_BYTES_PER_UPLOAD;
-        } else {
-        	file.numUploadParts = 1;
-            file.upload_part = 1;
-            file.uploading_bytes = nextFile.filesize;
-        }
 		
-		filesForUpload.push(file);
+		
+		uploadableFiles.push(file);
 	}
 	
-	return filesForUpload;
+	return uploadableFiles;
+};
+
+/*
+ * Adds chunk loading data to an array of files.
+ * @param {Array.<Object>} files The files to process.
+ */
+Omadi.data.processAttachmentsForChunkUploading = function(files) {
+	for (var i = 0; i < files.length; i++) {
+		var file = files[i];
+		
+		if(file.type == 'video' || file.type == 'file'){
+			file.numUploadParts = Math.ceil(file.filesize / Omadi.data.MAX_BYTES_PER_UPLOAD);
+			file.upload_part = (file.bytes_uploaded / Omadi.data.MAX_BYTES_PER_UPLOAD) + 1;
+			file.uploading_bytes = Omadi.data.MAX_BYTES_PER_UPLOAD;
+        } else {
+			file.numUploadParts = 1;
+			file.upload_part = 1;
+			file.uploading_bytes = file.filesize;
+		}
+	}
 };
 
 /*
@@ -2013,9 +2026,12 @@ Omadi.data.getFileArray = function(){"use strict";
 	Omadi.data.keepFailedUploads(files);
 	Omadi.data.deleteFinishedUploads(files);
 	
-	return Omadi.data.getFilesForUpload(files);
+	var uploadableFiles = Omadi.data.getUploadableFiles(files);
+	Omadi.data.processAttachmentsForChunkUploading(uploadableFiles);
+	return files;
 };
 */
+
 
 Omadi.data.getFileArray = function(){"use strict";
     var files, sql, listDB, result, nextFile, now, node, message, 

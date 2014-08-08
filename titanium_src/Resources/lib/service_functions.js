@@ -1423,7 +1423,7 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
                 if(bytesUploaded == 0 || bytesUploaded >= filesize || uploadFinished){
                     Ti.API.error("Upload is finished for nid " + nid + " and delta " + delta);
                     try{
-                        //Finishing the file after upload so it's available on the device for printing
+                    	//Finishing the file after upload so it's available on the device for printing
                         listDB.execute("UPDATE _files SET uploading=0, fid=" + json.file_id + ", finished=" + Omadi.utils.getUTCTimestamp() + " WHERE id=" + photoId);
                     }
                     catch(sqlEx2){
@@ -1792,6 +1792,8 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
 	    Omadi.service.sendErrorReport('Exception setting uploading var: ' + e);
 	}
 	
+	Ti.API.info('Uploading photo');
+	
 	try{
 		// Build HTTP header
         Omadi.service.uploadFileHTTP = Ti.Network.createHTTPClient({
@@ -1999,62 +2001,60 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
                             obj.data.node[nid][field_name + "___data"] = node[field_name].jsonValue;
                         }
                         
-                        if(instances[field_name].type == 'image' && 
-                            typeof instances[field_name].widget !== 'undefined' &&
-                            typeof instances[field_name].widget.type !== 'undefined' &&
+                        if (instances[field_name].type == 'image' && 
+                            typeof instances[field_name].widget &&
                             instances[field_name].widget.type == 'omadi_image_signature' &&
                             obj.data.node[nid][field_name] == -1){
+                            
+                            var files = Omadi.data.getAllFiles();
+                            var fi;
+
+                            Ti.API.debug("adding signature: " + JSON.stringify(files));
+                            
+                            for(fi = 0; fi < files.length; fi ++){
+                                Ti.API.debug("file data" + JSON.stringify(files[fi]));
                                 
-                                var files = Omadi.data.getFileArray(false);
-                                var fi;
-                                
-                                Ti.API.debug("adding signature: " + JSON.stringify(files));
-                                
-                                for(fi = 0; fi < files.length; fi ++){
-                                    
-                                    Ti.API.debug("file data" + JSON.stringify(files[fi]));
-                                    
-                                    if(files[fi].field_name == field_name){
-                                        if(files[fi].nid == node.nid){
-                                             
-                                           try{
-                                                var imageFile = Ti.Filesystem.getFile(files[fi].file_path);
+                                if(files[fi].field_name == field_name){
+                                    if(files[fi].nid == node.nid){
+                                         
+                                       try{
+                                            var imageFile = Ti.Filesystem.getFile(files[fi].file_path);
+                                            
+                                            if(imageFile.exists() && imageFile.isFile()){
+                                                var imageBlob = imageFile.read();
                                                 
-                                                if(imageFile.exists() && imageFile.isFile()){
-                                                    var imageBlob = imageFile.read();
+                                                if(!imageBlob){
+                                                    Omadi.service.sendErrorReport("initial signature blob is null");
+                                                } 
+                                                else{
                                                     
-                                                    if(!imageBlob){
-                                                        Omadi.service.sendErrorReport("initial signature blob is null");
-                                                    } 
-                                                    else{
+                                                    var imageData = Ti.Utils.base64encode(imageBlob);
+                    
+                                                    try{
+                                                        imageData = imageData.getText();
+                                                        var lastLocation = Omadi.location.getLastLocation();
                                                         
-                                                        var imageData = Ti.Utils.base64encode(imageBlob);
-                        
-                                                        try{
-                                                            imageData = imageData.getText();
-                                                            var lastLocation = Omadi.location.getLastLocation();
-                                                            
-                                                            obj.data.node[nid][field_name] = [{
-                                                                nid: -1, 
-                                                                data: imageData,
-                                                                latitude: lastLocation.latitude,
-                                                                longitude: lastLocation.longitude,
-                                                                accuracy: lastLocation.accuracy
-                                                            }];
-                                                        }
-                                                        catch(ex6){
-                                                            Omadi.service.sendErrorReport("Exception getting text of base64 signature of size " + imageBlob.length + ": " + ex6); 
-                                                        }
+                                                        obj.data.node[nid][field_name] = [{
+                                                            nid: -1, 
+                                                            data: imageData,
+                                                            latitude: lastLocation.latitude,
+                                                            longitude: lastLocation.longitude,
+                                                            accuracy: lastLocation.accuracy
+                                                        }];
+                                                    }
+                                                    catch(ex6){
+                                                        Omadi.service.sendErrorReport("Exception getting text of base64 signature of size " + imageBlob.length + ": " + ex6); 
                                                     }
                                                 }
                                             }
-                                            catch(exRead){
-                                                Ti.API.debug("Exception reading initial signature file: " + exRead);
-                                                Omadi.service.sendErrorReport("Exception reading initial signature file: " + exRead);
-                                            }
+                                        }
+                                        catch(exRead){
+                                            Ti.API.debug("Exception reading initial signature file: " + exRead);
+                                            Omadi.service.sendErrorReport("Exception reading initial signature file: " + exRead);
                                         }
                                     }
                                 }
+                            }
                         }
                     }
                 }
