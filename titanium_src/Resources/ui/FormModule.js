@@ -422,6 +422,14 @@ function FormModule(type, nid, form_part, usingDispatch) {"use strict";
     }
 }
 
+FormModule.SaveType = {
+	REGULAR: 'regular',
+	SAVE_PLUS_NEW: 'new',
+	SAVE_PLUS_NEXT: 'next_part',
+	CONTINUOUS: 'continuous',
+	DRAFT: 'draft'
+};
+
 FormModule.prototype.initNewWindowFromCurrentData = function(form_part){"use strict";
     var imageNids, field_name, listDB, result, fid, i, found;
     
@@ -747,9 +755,7 @@ FormModule.prototype.trySaveNode = function(saveType){"use strict";
     var dialog, closeAfterSave, nodeType;
     /*jslint nomen: true*/
     
-    if(typeof saveType === 'undefined'){
-        saveType = 'regular';
-    }
+    saveType = saveType || FormModule.SaveType.REGULAR;
     
     closeAfterSave = true;
     
@@ -781,7 +787,7 @@ FormModule.prototype.trySaveNode = function(saveType){"use strict";
         this.trySaveNodeTries = 0;
         Omadi.display.doneLoading();
         
-        if(saveType == 'continuous'){
+        if(saveType == FormModule.SaveType.CONTINUOUS){
             this.node._isContinuous = true;
         }
         else{
@@ -847,13 +853,13 @@ FormModule.prototype.trySaveNode = function(saveType){"use strict";
                             // Ti.App.fireEvent('sendUpdates');
                         // }
                         
-                        if (saveType === "next_part") {         
+                        if (saveType === FormModule.SaveType.SAVE_PLUS_NEXT) {         
                             
                             this.initNewWindowFromCurrentData(this.node.form_part + 1);
                             
                             //closeAfterSave = false;                
                         }
-                        else if(saveType == 'new'){
+                        else if(saveType == FormModule.SaveType.SAVE_PLUS_NEW){
                             
                             this.initNewWindowFromCurrentData(this.node.type);
                                                   
@@ -882,12 +888,12 @@ FormModule.prototype.trySaveNode = function(saveType){"use strict";
                                     closeAfterSave = false;  
                                 }
                                 
-                                if (saveType === "next_part") {
+                                if (saveType === FormModule.SaveType.SAVE_PLUS_NEXT) {
                                     ActiveFormObj.initNewWindowFromCurrentData(ActiveFormObj.node.form_part + 1);
                                     
                                     closeAfterSave = false;
                                 }
-                                else if(saveType == 'new'){
+                                else if(saveType == FormModule.SaveType.SAVE_PLUS_NEW){
                                     
                                     ActiveFormObj.initNewWindowFromCurrentData(ActiveFormObj.node.type);
                                     
@@ -1557,7 +1563,7 @@ FormModule.prototype.validate_form_data = function(saveType){"use strict";
     
     try{
         
-        if(saveType == 'draft'){
+        if(saveType == FormModule.SaveType.DRAFT){
             this.validateRestrictions();
         }
         else if(saveType != 'continuous'){
@@ -1699,14 +1705,14 @@ FormModule.prototype.saveForm = function(saveType){"use strict";
     try{
         this.formToNode();
         
-        if(saveType == 'draft'){
+        if(saveType == FormModule.SaveType.DRAFT){
             this.node._isDraft = true;
         }
         else{
             this.node._isDraft = false;
         }
         
-        if(saveType == 'continuous'){
+        if(saveType == FormModule.SaveType.CONTINUOUS){
             this.node._isContinuous = true;
         }
         else{

@@ -1163,19 +1163,26 @@ FormTabs.prototype.savedDispatchNode = function(e){"use strict";
         
         Omadi.data.deleteContinuousNodes();
         
-        if(Ti.App.isAndroid){
-            // This cannot be done on iOS
-            // Also, don't close the tabs because that will cause some flashing of screens on iOS... simply close the tabgroup
-            if(Dispatch.dispatchObj !== null){
-                Dispatch.dispatchObj.closeWindow();
-            }
-            
-            if(Dispatch.workObj !== null){
-                Dispatch.workObj.closeWindow();
-            }
+        
+        
+        // if saveType is next or new don't close. instead load window from current data.
+        if (e.saveType === FormModule.SaveType.SAVE_PLUS_NEXT || e.saveType === FormModule.SaveType.SAVE_PLUS_NEW) {
+        	Dispatch.workObj.initNewWindowFromCurrentData(Dispatch.workObj.form_part + 1);
+        } else {
+        	if(Ti.App.isAndroid){
+	            // This cannot be done on iOS
+	            // Also, don't close the tabs because that will cause some flashing of screens on iOS... simply close the tabgroup
+	            if(Dispatch.dispatchObj !== null){
+	                Dispatch.dispatchObj.closeWindow();
+	            }
+	            
+	            if(Dispatch.workObj !== null){
+	                Dispatch.workObj.closeWindow();
+	            }
+	        }
+        	Dispatch.tabGroup.close();
         }
         
-        Dispatch.tabGroup.close();
     }
 };
 
