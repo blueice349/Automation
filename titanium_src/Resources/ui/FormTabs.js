@@ -1166,7 +1166,7 @@ FormTabs.prototype.savedDispatchNode = function(e){"use strict";
         
         
         // if saveType is next or new don't close. instead load window from current data.
-        if (e.saveType === FormModule.SaveType.SAVE_PLUS_NEXT || e.saveType === FormModule.SaveType.SAVE_PLUS_NEW) {
+        if (e.saveType === 'next_part' || e.saveType === 'new') {
         	Dispatch.workObj.initNewWindowFromCurrentData(Dispatch.workObj.form_part + 1);
         } else {
         	if(Ti.App.isAndroid){

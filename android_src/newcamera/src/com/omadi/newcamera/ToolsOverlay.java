@@ -121,6 +121,7 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 			catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+				NewcameraModule.sendErrorReport("Exception getting camera icon: " + e.getMessage());
 			}
 			captureImage.setImageBitmap(bitmap);
 			
@@ -138,6 +139,7 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 										camera.autoFocus(toolsOverlay);
 									}
 									catch(Exception e){
+										NewcameraModule.sendErrorReport("Error trying to autoFocus camera: " + e.getMessage());
 										OmadiCameraActivity.cameraActivity.takePicture();
 									}
 								}
@@ -172,7 +174,7 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 		        flashView.setImageBitmap(bitmap);     
 	        } 
 	        catch (IOException e) {
-	        	e.printStackTrace();
+	        	e.printStackTrace();NewcameraModule.sendErrorReport("Error getting flash off icon: " + e.getMessage());
 	        }
 	        
 	        flashView.setOnClickListener(new View.OnClickListener() {
@@ -244,7 +246,7 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 								System.setProperty("OMADI_FLASH", localCameraParams.getFlashMode());
 							}
 							catch(Exception e){
-								
+								NewcameraModule.sendErrorReport("Failed to set property OMADI_FLASH: " + e.getMessage());
 							}
 							
 							if(is != null){
@@ -258,6 +260,7 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 						catch (IOException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
+							NewcameraModule.sendErrorReport("Exception setOnClickListner in ToolsOverlay: " + e.getMessage());
 						}
 
 						redrawButtons();
@@ -420,6 +423,7 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 							camera.setParameters(cameraParams);
 						} 
 						catch (IOException e) {
+							NewcameraModule.sendErrorReport("Exception setting up flash button: " + e.getMessage());
 							e.printStackTrace();
 						}
 					}
@@ -457,6 +461,7 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 								}
 								catch(Exception e){
 									e.printStackTrace();
+									NewcameraModule.sendErrorReport("Exception on progress change: " + e.getMessage());
 								}
 							}
 	

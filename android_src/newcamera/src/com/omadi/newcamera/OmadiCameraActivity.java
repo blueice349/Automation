@@ -437,7 +437,6 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 			}
 		}
 		else{
-			NewcameraModule.sendErrorReport("CAMERA is null, could not take picture");
 			autoFinishActivityWithError("Camera could not be found.");
 		}
 	}
@@ -683,6 +682,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 			}
 		}
 		catch(Exception e){
+			NewcameraModule.sendErrorReport("CAMERA Exception onsensor change: " + e.getMessage(), e);
 			Log.d("CAMERA", "CAMERA Exception onsensor change: " + e.getMessage());
 		}
 	}

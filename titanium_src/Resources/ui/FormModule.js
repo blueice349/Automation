@@ -422,14 +422,6 @@ function FormModule(type, nid, form_part, usingDispatch) {"use strict";
     }
 }
 
-FormModule.SaveType = {
-	REGULAR: 'regular',
-	SAVE_PLUS_NEW: 'new',
-	SAVE_PLUS_NEXT: 'next_part',
-	CONTINUOUS: 'continuous',
-	DRAFT: 'draft'
-};
-
 FormModule.prototype.initNewWindowFromCurrentData = function(form_part){"use strict";
     var imageNids, field_name, listDB, result, fid, i, found;
     
@@ -755,7 +747,7 @@ FormModule.prototype.trySaveNode = function(saveType){"use strict";
     var dialog, closeAfterSave, nodeType;
     /*jslint nomen: true*/
     
-    saveType = saveType || FormModule.SaveType.REGULAR;
+    saveType = saveType || 'regular';
     
     closeAfterSave = true;
     
@@ -787,7 +779,7 @@ FormModule.prototype.trySaveNode = function(saveType){"use strict";
         this.trySaveNodeTries = 0;
         Omadi.display.doneLoading();
         
-        if(saveType == FormModule.SaveType.CONTINUOUS){
+        if(saveType == 'continuous'){
             this.node._isContinuous = true;
         }
         else{
@@ -853,13 +845,13 @@ FormModule.prototype.trySaveNode = function(saveType){"use strict";
                             // Ti.App.fireEvent('sendUpdates');
                         // }
                         
-                        if (saveType === FormModule.SaveType.SAVE_PLUS_NEXT) {         
+                        if (saveType === 'next_part') {         
                             
                             this.initNewWindowFromCurrentData(this.node.form_part + 1);
                             
                             //closeAfterSave = false;                
                         }
-                        else if(saveType == FormModule.SaveType.SAVE_PLUS_NEW){
+                        else if(saveType == 'new'){
                             
                             this.initNewWindowFromCurrentData(this.node.type);
                                                   
@@ -888,12 +880,12 @@ FormModule.prototype.trySaveNode = function(saveType){"use strict";
                                     closeAfterSave = false;  
                                 }
                                 
-                                if (saveType === FormModule.SaveType.SAVE_PLUS_NEXT) {
+                                if (saveType === SaveType.SAVE_PLUS_NEXT) {
                                     ActiveFormObj.initNewWindowFromCurrentData(ActiveFormObj.node.form_part + 1);
                                     
                                     closeAfterSave = false;
                                 }
-                                else if(saveType == FormModule.SaveType.SAVE_PLUS_NEW){
+                                else if(saveType == SaveType.SAVE_PLUS_NEW){
                                     
                                     ActiveFormObj.initNewWindowFromCurrentData(ActiveFormObj.node.type);
                                     
@@ -1563,7 +1555,7 @@ FormModule.prototype.validate_form_data = function(saveType){"use strict";
     
     try{
         
-        if(saveType == FormModule.SaveType.DRAFT){
+        if(saveType == 'draft'){
             this.validateRestrictions();
         }
         else if(saveType != 'continuous'){
@@ -1705,14 +1697,14 @@ FormModule.prototype.saveForm = function(saveType){"use strict";
     try{
         this.formToNode();
         
-        if(saveType == FormModule.SaveType.DRAFT){
+        if(saveType == 'draft'){
             this.node._isDraft = true;
         }
         else{
             this.node._isDraft = false;
         }
         
-        if(saveType == FormModule.SaveType.CONTINUOUS){
+        if(saveType == 'continuous'){
             this.node._isContinuous = true;
         }
         else{

@@ -157,6 +157,7 @@ public class NewcameraModule extends KrollModule
 			for(StackTraceElement element : stackTrace){
 				base64 += "\n\nclass:" + element.getClassName() + ", file:" + element.getFileName() + ", method" + element.getMethodName() + ", line:" + element.getLineNumber() + ", isnative" + element.isNativeMethod();
 			}
+			sendErrorReport("Error in base64Encode", fileEx);
 		}
 		catch(java.io.IOException ioEx){
 			base64 = "IO Exception: " + ioEx.getMessage();
@@ -164,6 +165,7 @@ public class NewcameraModule extends KrollModule
 			for(StackTraceElement element : stackTrace){
 				base64 += "\n\nclass:" + element.getClassName() + ", file:" + element.getFileName() + ", method" + element.getMethodName() + ", line:" + element.getLineNumber() + ", isnative" + element.isNativeMethod();
 			}
+			sendErrorReport("Error in base64Encode", ioEx);
 		}
 		catch(Exception e){
 			base64 = "Other Exception: " + e.getMessage();
@@ -171,6 +173,7 @@ public class NewcameraModule extends KrollModule
 			for(StackTraceElement element : stackTrace){
 				base64 += "\n\nclass:" + element.getClassName() + ", file:" + element.getFileName() + ", method" + element.getMethodName() + ", line:" + element.getLineNumber() + ", isnative" + element.isNativeMethod();
 			}
+			sendErrorReport("Error in base64Encode", e);
 		}
 		
 		return base64;
@@ -198,6 +201,7 @@ public class NewcameraModule extends KrollModule
 		}
 		catch(Exception e){
 			retval = "Memory Error 1: " + e.getMessage();
+			sendErrorReport("Error in resizeImage:" + retval, e);
 			return retval;
 		}
 		
@@ -212,12 +216,14 @@ public class NewcameraModule extends KrollModule
 		}
 		catch(Exception e){
 			retval = "Memory Error 2: " + e.getMessage();
+			sendErrorReport("Error in resizeImage:" + retval, e);
 			return retval;
 		}
 		
 		if(bitmap == null){
 			Log.d("CAMERA", "CAMERA Initial bitmap is null");
 			retval = "Bitmap Error 3: bitmap is null";
+			sendErrorReport("Error in resizeImage:" + retval);
 		}
 		else{
 			int height = 0;
@@ -233,6 +239,7 @@ public class NewcameraModule extends KrollModule
 			}
 			catch(Exception e){
 				retval = "Bitmap Error 4: " + e.getMessage();
+				sendErrorReport("Error in resizeImage:" + retval);
 				return retval;
 			}
 			
@@ -254,6 +261,7 @@ public class NewcameraModule extends KrollModule
 				}
 				catch(Exception e){
 					retval = "Bitmap Error 5: " + e.getMessage();
+					sendErrorReport("Error in resizeImage:" + retval);
 					return retval;
 				}
 				
@@ -268,6 +276,7 @@ public class NewcameraModule extends KrollModule
 					}
 					catch(Exception e){
 						retval = "Bitmap Error 7: could not get new width/height";
+						sendErrorReport("Error in resizeImage:" + retval);
 						return retval;
 					}
 		        	
@@ -278,6 +287,7 @@ public class NewcameraModule extends KrollModule
 		        	}
 					catch(Exception e){
 						retval = "Memory Error 8: " + e.getMessage();
+						sendErrorReport("Error in resizeImage:" + retval);
 						bitmap.recycle();
 						bitmap = null;
 						return retval;
@@ -298,6 +308,7 @@ public class NewcameraModule extends KrollModule
 					    e.printStackTrace();
 					    Log.d("CAMERA", "CAMERA writing resize file: " + e.getMessage());
 					    retval = "Write Error 9: " + e.getMessage();
+						sendErrorReport("Error in resizeImage:" + retval);
 					}
 					
 					resized.recycle();
