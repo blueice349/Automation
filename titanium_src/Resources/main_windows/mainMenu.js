@@ -1011,16 +1011,21 @@ function showContinuousSavedNode(){"use strict";
             listDB = Omadi.utils.openListDatabase();
             result = listDB.execute("SELECT COUNT(*) FROM _files WHERE nid = 0");
             if(result.isValidRow()){
-                if(result.field(0) > 0){
+            	var count = result.field(0);
+                if (count > 0){
                      // Let omadi know about the problem
-                    Omadi.service.sendErrorReport("Photo with a 0 nid was found without a node to load.");
+                    Omadi.service.sendErrorReport(count + " photo" + (count > 1 ? "s" : "") + " with a 0 nid was found without a node to load.");
                     Omadi.data.sendDebugData(false);
                     
                     // If no form pops up, that probably means the app crashed while taking a photo and something weird happened
                     listDB.execute("UPDATE _files SET nid = -1000000 WHERE nid = 0");
                     
                     // Let the user know about the problem
-                    alert("A recent photo was not attached to a form properly, but it was saved. To see it, go to Actions -> Photos Not Uploaded");
+                    if (count > 1) {
+                    	alert(count + " recent photos were not attached to a form properly, but they were saved. To see them, go to Actions -> Photos Not Uploaded");
+                    } else {
+                    	alert("A recent photo was not attached to a form properly, but it was saved. To see it, go to Actions -> Photos Not Uploaded");
+                    }
                 }
             }
             result.close();
