@@ -107,7 +107,6 @@ FormTabs.prototype.doDispatchSave = function(saveType){"use strict";
             alert("You must first select a job type.");
         }
         else if(Dispatch.workObj.nodeSaved === false){
-            
             // Only allow the button to work once per second
             if(now - Dispatch.lastSaveTime > 1000){
                 Dispatch.lastSaveTime = now;
@@ -189,53 +188,60 @@ FormTabs.prototype.doDispatchSave = function(saveType){"use strict";
 };
 
 FormTabs.prototype.getIdsOfMissingFiles = function(node) {
+	var missingFiles = [];
 	var db = Omadi.utils.openListDatabase();
 	
-	var ids = [node.continuous_nid || 0, 0];
-	if (node.nid !== 'new') {
-		ids.push(node.nid);
-	}
-	var result = db.execute('SELECT COUNT(*) AS count, * FROM _files WHERE nid IN (' + ids.join(',') + ')');
-	
-	var missingFiles = [];
-	var i = 1;
-	while (result.isValidRow()) {
-		var filePath = result.fieldByName('file_path');
-		file = Ti.Filesystem.getFile(filePath);
-		
-		if (!file.exists()) {
-			var fileInfo = {
-				nid : parseInt(result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT), 10) || 0,
-				id : result.fieldByName('id', Ti.Database.FIELD_TYPE_INT),
-				file_path : result.fieldByName('file_path'),
-				file_name : result.fieldByName('file_name'),
-				field_name : result.fieldByName('field_name'),
-				delta : parseInt(result.fieldByName('delta'), 10) || 0,
-				timestamp : parseInt(result.fieldByName('timestamp'), 10) || 0,
-				tries : parseInt(result.fieldByName('tries'), 10) || 0,
-				latitude : result.fieldByName('latitude'),
-				longitude : result.fieldByName('longitude'),
-				accuracy : result.fieldByName('accuracy'),
-				degrees : result.fieldByName('degrees'),
-				thumb_path : result.fieldByName('thumb_path'),
-				type : result.fieldByName('type'),
-				filesize : parseInt(result.fieldByName('filesize'), 10) || 0,
-				bytes_uploaded : parseInt(result.fieldByName('bytes_uploaded'), 10) || 0,
-				fid : result.fieldByName('fid'),
-				uid : result.fieldByName('uid'),
-				client_account : result.fieldByName('client_account'),
-				uploading : parseInt(result.fieldByName('uploading'), 10) || 0,
-				finished : parseInt(result.fieldByName('finished'), 10) || 0
-			};
-            
-			Omadi.service.sendErrorReport('File ' + i + ' of ' + result.fieldByName('count') + ' not found on node save: ' + JSON.stringify(fileInfo));
-			missingFiles.push(fileInfo[id]);
+	try {
+		var ids = [node.continuous_nid || 0, 0];
+		if (node.nid !== 'new') {
+			ids.push(node.nid);
 		}
-		i++;
-		result.next();
+		
+		var count = db.execute('SELECT COUNT(*) AS count FROM _files WHERE nid IN (' + ids.join(',') + ')');
+		var numMissingFiles = count.fieldByName('count');
+		count.close();
+		
+		if (numMissingFiles > 0) {
+			var result = db.execute('SELECT * FROM _files WHERE nid IN (' + ids.join(',') + ')');
+			var i = 1;
+			while (result.isValidRow()) {
+				var filePath = result.fieldByName('file_path');
+				if (filePath === null || !Ti.Filesystem.getFile(filePath).exists()) {
+					var fileInfo = {
+						nid : result.fieldByName('nid'),
+						id : result.fieldByName('id'),
+						file_path : result.fieldByName('file_path'),
+						file_name : result.fieldByName('file_name'),
+						field_name : result.fieldByName('field_name'),
+						delta : result.fieldByName('delta'),
+						timestamp : result.fieldByName('timestamp'),
+						tries : result.fieldByName('tries'),
+						latitude : result.fieldByName('latitude'),
+						longitude : result.fieldByName('longitude'),
+						accuracy : result.fieldByName('accuracy'),
+						degrees : result.fieldByName('degrees'),
+						thumb_path : result.fieldByName('thumb_path'),
+						type : result.fieldByName('type'),
+						filesize : result.fieldByName('filesize'),
+						bytes_uploaded : result.fieldByName('bytes_uploaded'),
+						fid : result.fieldByName('fid'),
+						uid : result.fieldByName('uid'),
+						client_account : result.fieldByName('client_account'),
+						uploading : result.fieldByName('uploading'),
+						finished : result.fieldByName('finished')
+					};
+		            
+					Omadi.service.sendErrorReport('File ' + i + ' of ' + numMissingFiles + ' not found on node save: ' + JSON.stringify(fileInfo));
+					missingFiles.push(fileInfo.id);
+				}
+				i++;
+				result.next();
+			}
+			result.close();
+		}
+	} catch (e) {
+		Utils.sendErrorReport("Error getting id's of missing files: " + e);
 	}
-	
-	result.close();
 	db.close();
 	
 	return missingFiles;
@@ -1137,6 +1143,7 @@ FormTabs.prototype.savedDispatchNode = function(e){"use strict";
         }
 	}
     
+
     if (Dispatch.workSavedInfo && (Dispatch.dispatchSavedInfo || !Dispatch.dispatchTab)) {
         // Both nodes are saved, so we can close the window
         Dispatch.setSendingData = false;

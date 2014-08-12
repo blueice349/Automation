@@ -7,7 +7,7 @@ function Database(){"use strict";
     this.listDBConn = null;
     // IMPORTANT, IMPORTANT, IMPORTANT, IMPORTANT!!!!!
     // When changing this version number, also change it in the util_functions file
-    this.dbVersion = "DB1723";
+    this.dbVersion = "DB1724";
     this.mainDBName = null;
 }
 

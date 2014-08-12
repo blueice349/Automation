@@ -2854,7 +2854,9 @@ FormModule.prototype.setupIOSToolbar = function(){"use strict";
     
     if(ActiveFormObj.parentTabObj.dispatchTab !== null || this.type == 'dispatch'){
         actions.title = 'Save';
-        actions.addEventListener('click', ActiveFormObj.parentTabObj.doDispatchSave);
+        actions.addEventListener('click', function() {
+        	ActiveFormObj.parentTabObj.doDispatchSave('normal');
+        });
     }
     else{
         actions.addEventListener('click', ActiveFormObj.showActionsOptions);
@@ -3123,7 +3125,9 @@ FormModule.prototype.getWindow = function(){"use strict";
                     }, 2000);
                 });
                 
-                doneButton.addEventListener('click', ActiveFormObj.parentTabObj.doDispatchSave);
+                doneButton.addEventListener('click', function() {
+		        	ActiveFormObj.parentTabObj.doDispatchSave('normal');
+		        });
                 
             }
             else{
