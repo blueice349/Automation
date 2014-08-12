@@ -1121,11 +1121,9 @@ FormTabs.prototype.updateDispatchStatus = function(){"use strict";
 };
 
 FormTabs.prototype.savedDispatchNode = function(e){"use strict";
-    var workNid, dispatchNid, sendUpdates, db, localOnly, singleSaveNid, isFinalSave, setFlag;
-    
-    localOnly = (e.isContinuous || e.isDraft);
+    var workNid, dispatchNid, sendUpdates, db, singleSaveNid, isFinalSave, setFlag;
 
-    if (!localOnly) {
+    if (e.saveType != 'continuous' && e.saveType != 'draft') {
         Dispatch.setSendingData = true;
         // Don't allow a background job to send data before everything is ready
         Omadi.service.setSendingData(true);
@@ -1133,27 +1131,24 @@ FormTabs.prototype.savedDispatchNode = function(e){"use strict";
     
     // We have two sets of Info from the 'e' variable. The continuous saves need to stay linked
     // When the final save comes through, we don't want to mix up nids as 4 different negative nids
-    // will be floating around for this one dispatch form
-    if(e.isContinuous){
+    // will be floating around for this one dispatch form.
+    if (e.saveType == 'continuous') {
         // Don't get continuous and real nids mixed up
         if (e.nodeType == 'dispatch') {
             Dispatch.continuousDispatchInfo = e;
-        }
-        else {
+        } else {
             Dispatch.continuousWorkInfo = e;
         }
-    }
-    else{
-        // Don't get continuous and real nids mixed up
+    } else{
+        //  Don't get continuous and real nids mixed up
         if (e.nodeType == 'dispatch') {
             Dispatch.dispatchSavedInfo = e;
-        }
-        else {
+        } else {
             Dispatch.workSavedInfo = e;
         }
     }
     
-    if (Dispatch.workSavedInfo !== null && (Dispatch.dispatchSavedInfo !== null || Dispatch.dispatchTab === null)) {
+    if (Dispatch.workSavedInfo && (Dispatch.dispatchSavedInfo || !Dispatch.dispatchTab)) {
         // Both nodes are saved, so we can close the window
         Dispatch.setSendingData = false;
         // Allow the updates to go through now that all the data is present
@@ -1163,12 +1158,7 @@ FormTabs.prototype.savedDispatchNode = function(e){"use strict";
         
         Omadi.data.deleteContinuousNodes();
         
-        
-        
-        // if saveType is next or new don't close. instead load window from current data.
-        if (e.saveType === 'next_part' || e.saveType === 'new') {
-        	Dispatch.workObj.initNewWindowFromCurrentData(Dispatch.workObj.form_part + 1);
-        } else {
+        if (e.saveType == 'normal' || e.saveType == 'draft') {
         	if(Ti.App.isAndroid){
 	            // This cannot be done on iOS
 	            // Also, don't close the tabs because that will cause some flashing of screens on iOS... simply close the tabgroup
@@ -1181,8 +1171,11 @@ FormTabs.prototype.savedDispatchNode = function(e){"use strict";
 	            }
 	        }
         	Dispatch.tabGroup.close();
+        } else if (e.saveType == 'next_part') {
+        	Dispatch.workObj.initNewWindowFromCurrentData(Dispatch.workObj.form_part + 1);
+        } else if (e.saveType == 'new') {
+        	Dispatch.workObj.initNewWindowFromCurrentData(Dispatch.workObj.type);
         }
-        
     }
 };
 

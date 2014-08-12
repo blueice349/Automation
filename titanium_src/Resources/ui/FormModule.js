@@ -744,180 +744,96 @@ FormModule.prototype.closeWindow = function(){"use strict";
 };
 
 FormModule.prototype.trySaveNode = function(saveType){"use strict";
-    var dialog, closeAfterSave, nodeType;
     /*jslint nomen: true*/
     
     saveType = saveType || 'regular';
     
-    closeAfterSave = true;
+    var closeAfterSave = true;
+    var nodeType = this.node.type;
     
-    nodeType = this.node.type;
+    try {
+		// If an updating is happening try again later.
+		if(Omadi.data.isUpdating() && saveType != 'continuous' && saveType != 'draft'){
+			Ti.API.error("Trying to save node while updating");
+			
+			if (this.trySaveNodeTries == 0) {
+				Omadi.display.loading('Waiting...');
+			}
+			
+			setTimeout(function() {
+				FormObj[nodeType].trySaveNode(saveType);
+			}, 1000);
+			
+			// After 10 tries ignore the update and save anyway.
+			this.trySaveNodeTries++;
+			if (this.trySaveNodeTries > 10) {
+				Omadi.data.setUpdating(false);
+			}
+			return;
+		}
+		
+		this.saveNode(saveType);
+	} catch (e) {
+		Omadi.service.sendErrorReport("Exception in trysavenode: " + e);
+	} finally {
+		this.trySaveNodeTries = 0;
+		Omadi.display.doneLoading();
+	}
+};
+
+FormModule.prototype.saveNode = function(saveType) {
+	this.node._isContinuous = saveType == 'continuous';
+	this.node._isDraft = saveType == 'draft';
     
-    // Allow instant saving of drafts and continuous saves
-    // Do not allow drafts or continuous saves to happen while an update is happening as it can cause problems
-    if(Omadi.data.isUpdating()){
+    try {
+	    // Do not allow the web server's data in a background update
+	    // to overwrite the local data just being saved
+	    Ti.App.allowBackgroundUpdate = false;
+	    this.node = Omadi.data.nodeSave(this.node);
+	    // Now that the node is saved on the phone or a big error occurred, allow background logouts
+	    Ti.App.allowBackgroundLogout = true;
+	    
+	    // Setup the current node and nid in the window so a duplicate won't be made for this window
+        this.nid = this.node.nid;
         
-        Ti.API.error("is updating");
-        
-        if(saveType != 'continuous'){
-            if(this.trySaveNodeTries == 0){
-                // Only show waiting once and not everytime it passes through here
-                Omadi.display.loading("Waiting...");   
-            }
-            setTimeout(function(){
-                FormObj[nodeType].trySaveNode(saveType);
-            }, 1000);
-            
-            this.trySaveNodeTries ++;
-            
-            if(this.trySaveNodeTries > 10){
-                Omadi.data.setUpdating(false);
-            }
+        if (!this.node._isContinuous) {
+        	if (!this.node._saved) {
+	            Omadi.service.sendErrorReport("Node failed to save on the phone: " + JSON.stringify(this.node));
+	            alert("There is a problem with the form data, and it cannot not be saved. Please fix the data or close the form.");
+	            return;
+	        }
+	        
+	        this.nodeSaved = true;
         }
-    }
-    else{
-        this.trySaveNodeTries = 0;
-        Omadi.display.doneLoading();
-        
-        if(saveType == 'continuous'){
-            this.node._isContinuous = true;
-        }
-        else{
-            this.node._isContinuous = false;
-        }
-        
-        try{
-            // Do not allow the web server's data in a background update
-            // to overwrite the local data just being saved
-            Ti.App.allowBackgroundUpdate = false;
-            
-            this.node = Omadi.data.nodeSave(this.node);
-            
-            // Now that the node is saved on the phone or a big error occurred, allow background logouts
-            Ti.App.allowBackgroundLogout = true;
-            
-            // Setup the current node and nid in the window so a duplicate won't be made for this window
-            this.nid = this.node.nid;
-            
-            if(this.node._saved === true){ 
-                // Don't set the node as saved on a continuous save, as that can mess up windows closing, etc.
-                if(!this.node._isContinuous){
-                    this.nodeSaved = true;
-                }
-                
-                // if(this.usingDispatch){
-                    // Let the dispatch_form.js window take care of the rest once the data is in the database
-                    this.win.dispatchTabGroup.fireEvent("omadi:dispatch:savedDispatchNode",{
-                        nodeNid: this.node._saveNid,
-                        nodeType: this.node.type,
-                        isContinuous: this.node._isContinuous,
-                        isDraft: this.node._isDraft,
-                        saveType: saveType
-                    });
-//                     
-                    // // if in dispatch, the dispatch_form.js will take care of closing the window
-                    // closeAfterSave = false;
-                // }
-                
-                if(this.node._isContinuous === true){
-                    // Keep the window open, do not sync
-                    Omadi.display.doneLoading();
-                }
-                else{
-                    
-                    Ti.App.fireEvent("savedNode");
-                    
-                    if(this.node._isDraft === true){
-                        
-                        // if(closeAfterSave){
-                            // this.closeWindow();
-                        // }
-                    }
-                    else if(Ti.Network.online){
-                        
-                        
-                        // if(this.usingDispatch){
-                            // closeAfterSave = false;  
-                        // }
-                        // else{
-                            // // Send updates immediately only when not using dispatch
-                            // // When using dispatch, the DispatchForm module will initialize this
-                            // Ti.App.fireEvent('sendUpdates');
-                        // }
-                        
-                        if (saveType === 'next_part') {         
-                            
-                            this.initNewWindowFromCurrentData(this.node.form_part + 1);
-                            
-                            //closeAfterSave = false;                
-                        }
-                        else if(saveType == 'new'){
-                            
-                            this.initNewWindowFromCurrentData(this.node.type);
-                                                  
-                            //closeAfterSave = false;
-                        }
-                        
-                        // if(closeAfterSave){
-                            // this.closeWindow();
-                        // }
-                    }
-                    else{
-                       
-                        dialog = Titanium.UI.createAlertDialog({
-                            title : 'No Internet Connection',
-                            buttonNames : ['OK'],
-                            message: 'Alert management of this ' + this.node.type.toUpperCase() + ' immediately. You do not have an Internet connection right now.  Your data was saved and will be synched when you connect to the Internet.'
-                        });
-                        
-                        dialog.show();
-                        
-                        dialog.addEventListener('click', function(ev) {
-                            var closeAfterSave = true;
-                            try{
-                                
-                                if(ActiveFormObj.usingDispatch){
-                                    closeAfterSave = false;  
-                                }
-                                
-                                if (saveType === SaveType.SAVE_PLUS_NEXT) {
-                                    ActiveFormObj.initNewWindowFromCurrentData(ActiveFormObj.node.form_part + 1);
-                                    
-                                    closeAfterSave = false;
-                                }
-                                else if(saveType == SaveType.SAVE_PLUS_NEW){
-                                    
-                                    ActiveFormObj.initNewWindowFromCurrentData(ActiveFormObj.node.type);
-                                    
-                                    closeAfterSave = false;
-                                }
-                                
-                                if(closeAfterSave){
-                                    ActiveFormObj.closeWindow();
-                                }
-                            }
-                            catch(ex){
-                                Omadi.service.sendErrorReport("Exception in form no internet dialog click: " + ex);
-                            }
-                        });
-                    }
-                }
-            }
-            else{
-                // Allow background updates again
-                Ti.App.allowBackgroundUpdate = true;
-                
-                if(saveType != 'continuous'){
-                    Omadi.service.sendErrorReport("Node failed to save on the phone: " + JSON.stringify(this.node));
-                    alert("There is a problem with the form data, and it cannot not be saved. Please fix the data or close the form.");
-                }
-            }
-        }
-        catch(ex){
-            Omadi.display.doneLoading();
-            Omadi.service.sendErrorReport("Exception in trysavenode: " + ex);
-        }
-    } 
+    	
+    	// Notify the user if there is no network
+    	if (Ti.Network.online || this.node._isContinuous || this.node._isDraft) {
+	    	this.win.dispatchTabGroup.fireEvent("omadi:dispatch:savedDispatchNode",{
+		        nodeNid: this.node._saveNid,
+		        nodeType: this.node.type,
+		        saveType: saveType
+		    });
+		    Ti.App.fireEvent("savedNode");
+		} else {
+			var self = this;
+			var dialog = Titanium.UI.createAlertDialog({
+				title : 'No Internet Connection',
+				buttonNames : ['OK'],
+				message: 'Alert management of this ' + this.node.type.toUpperCase() + ' immediately. You do not have an Internet connection right now.  Your data was saved and will be synched when you connect to the Internet.'
+			});
+			dialog.addEventListener('click', function(e) {
+            	self.win.dispatchTabGroup.fireEvent("omadi:dispatch:savedDispatchNode",{
+			        nodeNid: self.node._saveNid,
+			        nodeType: self.node.type,
+			        saveType: saveType
+			    });
+			    Ti.App.fireEvent("savedNode");
+            });
+			dialog.show();
+		}
+	} catch (e) {
+		Omadi.service.sendErrorReport("Exception in saveNode: " + e);
+	}
 };
 
 //******** loadCustomCopyNode ****************************************************
