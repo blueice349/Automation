@@ -748,9 +748,6 @@ FormModule.prototype.trySaveNode = function(saveType){"use strict";
     
     saveType = saveType || 'regular';
     
-    var closeAfterSave = true;
-    var nodeType = this.node.type;
-    
     try {
 		// If an updating is happening try again later.
 		if(Omadi.data.isUpdating() && saveType != 'continuous' && saveType != 'draft'){

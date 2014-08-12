@@ -1129,24 +1129,13 @@ FormTabs.prototype.savedDispatchNode = function(e){"use strict";
         Omadi.service.setSendingData(true);
     }
     
-    // We have two sets of Info from the 'e' variable. The continuous saves need to stay linked
-    // When the final save comes through, we don't want to mix up nids as 4 different negative nids
-    // will be floating around for this one dispatch form.
-    if (e.saveType == 'continuous') {
-        // Don't get continuous and real nids mixed up
-        if (e.nodeType == 'dispatch') {
-            Dispatch.continuousDispatchInfo = e;
-        } else {
-            Dispatch.continuousWorkInfo = e;
-        }
-    } else{
-        //  Don't get continuous and real nids mixed up
+	if (e.saveType != 'continuous') {
         if (e.nodeType == 'dispatch') {
             Dispatch.dispatchSavedInfo = e;
         } else {
             Dispatch.workSavedInfo = e;
         }
-    }
+	}
     
     if (Dispatch.workSavedInfo && (Dispatch.dispatchSavedInfo || !Dispatch.dispatchTab)) {
         // Both nodes are saved, so we can close the window
@@ -1157,6 +1146,9 @@ FormTabs.prototype.savedDispatchNode = function(e){"use strict";
         Ti.App.fireEvent('sendUpdates');
         
         Omadi.data.deleteContinuousNodes();
+
+        Dispatch.dispatchSavedInfo = null;
+        Dispatch.workSavedInfo = null;
         
         if (e.saveType == 'normal' || e.saveType == 'draft') {
         	if(Ti.App.isAndroid){
