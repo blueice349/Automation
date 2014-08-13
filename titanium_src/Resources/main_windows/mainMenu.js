@@ -894,49 +894,16 @@ function sendingDataMainMenu(e){"use strict";
     showNetworkStatus();
 }
 
-function afterUploadCloseMainMenu(){
-    Ti.API.debug("Closing Main Menu Window");
-    Ti.App.closeWindowAfterUpload = false;
-    
-    Ti.App.removeEventListener('photoUploaded', afterUploadCloseMainMenu);
-    Ti.App.removeEventListener('doneSendingPhotos', afterUploadCloseMainMenu);
-    
-    Ti.UI.currentWindow.close(); 
-}
-
 function loggingOutMainMenu(e){"use strict";
     var lastUploadStartTimestamp, db;
     
-    if(typeof Omadi.display.FormModule !== 'undefined' && Omadi.display.FormModule !== null){
-        Omadi.display.FormModule.loggingOut();
+    if(typeof Omadi.display.FormTabs !== 'undefined' && Omadi.display.FormTabs !== null){
+        Omadi.display.FormTabs.loggingOut();
     }
     
     Omadi.service.abortFileUpload();
     
     Ti.UI.currentWindow.close();
-    
-    // lastUploadStartTimestamp = Omadi.service.getLastUploadStartTimestamp();
-//                  
-    // if(lastUploadStartTimestamp === null){
-        // // Not currently uploading anything, so the window can close immediately
-        // Ti.API.debug("Closing Main Menu Window Immediately");
-        // Ti.UI.currentWindow.close();
-    // }
-    // else{
-        // Ti.API.debug("Waiting to close main menu");
-        // Ti.UI.currentWindow.hide();
-        // Ti.UI.currentWindow.setVisible(false);
-        // Ti.App.closeWindowAfterUpload = true;
-//         
-        // Ti.App.removeEventListener('photoUploaded', afterUploadCloseMainMenu);
-        // Ti.App.addEventListener('photoUploaded', afterUploadCloseMainMenu);
-//         
-        // Ti.App.removeEventListener('doneSendingPhotos', afterUploadCloseMainMenu);
-        // Ti.App.addEventListener('doneSendingPhotos', afterUploadCloseMainMenu);
-//         
-        // // After 5 minutes, make sure the close listeners are removed if the events take too long to happen 
-        // setTimeout(afterUploadCloseMainMenu, 300000);
-    // }
 }
 
 function networkChangedMainMenu(e){"use strict";
@@ -1058,16 +1025,16 @@ function userInitiatedUpdateCheck(){"use strict";
 function switchedNodeIdMainMenu(e){"use strict";
     Ti.API.error("Switched it up: " + JSON.stringify(e));
     
-    if(typeof Omadi.display.FormModule !== 'undefined' && Omadi.display.FormModule !== null){
-        Omadi.display.FormModule.switchedNid(e);
+    if(typeof Omadi.display.FormTabs !== 'undefined' && Omadi.display.FormTabs !== null){
+        Omadi.display.FormTabs.switchedNid(e);
     }
 }
 
 function photoUploadedMainMenu(e){"use strict";
     Ti.API.error("Photo Uploaded main menu: " + JSON.stringify(e));
     
-    if(Omadi.display.FormModule !== null){
-        Omadi.display.FormModule.photoUploaded(e);
+    if(Omadi.display.FormTabs !== null){
+        Omadi.display.FormTabs.photoUploaded(e);
     }
 }
 

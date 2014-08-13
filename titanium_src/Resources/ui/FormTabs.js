@@ -343,7 +343,7 @@ FormTabs.prototype.getWindow = function(initNewDispatch){"use strict";
         title = '';
         
         this.FormModule = require('ui/FormModule');
-        this.FormModule.reset();
+        //this.FormModule.reset();
         
         if (this.nid == 'new') {
     
@@ -1243,3 +1243,83 @@ exports.getWindow = function(OmadiObj, type, nid, form_part, initNewDispatch){"u
     return Dispatch.getWindow(initNewDispatch);
 };
 
+exports.loggingOut = function(){"use strict";
+    if(Dispatch.dispatchObj !== null){
+        Dispatch.dispatchObj.closeWindow();
+    }
+    
+    if(Dispatch.workObj !== null){
+        Dispatch.workObj.closeWindow();
+    }
+    
+    if(self.setSendingData){
+        // This screen set sending data to true, so free it up in case it's still set
+        // which would be the case for one node validating and the other not validating
+        Omadi.service.setSendingData(false);
+    }
+    
+    Omadi.data.deleteContinuousNodes();
+    
+   	Dispatch.tabGroup.close();
+};
+
+exports.switchedNid = function(e){"use strict";
+	// This is the callback from a successful form creation on the server to change any open forms that match the negative nid
+    //   to the correct positive nid so duplicate forms will not be created
+    
+    
+	if(Dispatch.dispatchObj !== null){
+        switchNidForObject(Dispatch.dispatchObj, e);
+    }
+    
+    if(Dispatch.workObj !== null){
+        switchNidForObject(Dispatch.workObj, e);
+    }
+};
+
+function switchNidForObject(obj, e) {
+    Ti.API.info("In switched nid: " + JSON.stringify(e));
+    
+    try{
+        if(e.negativeNid == obj.nid){
+            obj.nid = e.positiveNid;
+            obj.node.nid = e.positiveNid;
+            obj.origNid = e.positiveNid;
+            obj.node.origNid = e.positiveNid;
+            Ti.API.info("Switched the negative nid to the positive nid correctly");
+        }
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception switching the nid in a form: " + ex);
+    }	
+};
+
+
+exports.photoUploaded = function(e){"use strict";
+    var i, nid, delta, fid, field_name, dbValues;
+    Ti.API.info("In photo Uploaded: " + JSON.stringify(e));
+    
+    // Currently, only supporting images in the work node, so nothing should be done in the dispatch form until it's supported
+    
+    if (Dispatch.workObj !== null) {
+	    try{
+	        nid = parseInt(e.nid, 10);
+	        delta = parseInt(e.delta, 10);
+	        field_name = e.field_name;
+	        fid = parseInt(e.fid, 10);
+	        
+	        if(Dispatch.workObj.nid == nid){
+	            if(typeof Dispatch.workObj.fieldWrappers[field_name] !== 'undefined'){
+	                
+	                Ti.API.info("Just inserted a photo uploaded with delta: " + delta + ", fid: " + fid + ", field_name: " + field_name);
+	                
+	                Dispatch.workObj.setValueWidgetProperty(field_name, 'dbValue', fid, delta);
+	                Dispatch.workObj.setValueWidgetProperty(field_name, 'fid', fid, delta);
+	            }
+	        }
+	    }
+	    catch(ex){
+	        Omadi.service.sendErrorReport("Exception switching the photo id in a form: " + ex);
+	    }
+    }
+};

@@ -797,11 +797,12 @@ Omadi.display.openViewWindow = function(type, nid, win) {"use strict";
     return viewWindow;
 };
 
-Omadi.display.FormModule = null;
+Omadi.display.FormTabs = null;
 Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
     var db, result, formWindow, intNid, isDispatch, dispatchNid, bundle, Dispatch, formObject, node, 
         FormModule, tempFormPart, fromBundle, to_type, newIsDispatch, isChangeTo, initNewDispatch;
     
+
     try{
         Ti.API.debug("opening form window");
         
@@ -882,15 +883,15 @@ Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
         //if(isDispatch){
             Omadi.display.loading();
             
-            Dispatch = require('ui/FormTabs');
-            formWindow = Dispatch.getWindow(Omadi, type, nid, form_part, initNewDispatch);
+            Omadi.display.FormTabs = require('ui/FormTabs');
+            formWindow = Omadi.display.FormTabs.getWindow(Omadi, type, nid, form_part, initNewDispatch);
             
             if(formWindow){
                 formWindow.addEventListener('open', Omadi.display.doneLoading);
                 formWindow.open();
                 
                 // Must be called after getWindow
-                node = Dispatch.getNode();
+                node = Omadi.display.FormTabs.getNode();
             }
             else{
                 Omadi.service.sendErrorReport("Could not open dispatch form window");
