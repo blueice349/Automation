@@ -153,7 +153,7 @@ function deleteAndroidFile(filePath){"use strict";
             };
     
             http.onerror = function(e) {
-                Ti.API.error("Error in download File");
+                Ti.API.error("Error in download File 1: " + e);
                 Omadi.display.doneLoading();
                 alert("There was an error retrieving the file.");
             };
@@ -339,7 +339,7 @@ function deleteAndroidFile(filePath){"use strict";
                 };
         
                 http.onerror = function(e) {
-                    Ti.API.error("Error in download File");
+                    Ti.API.error("Error in download File 2: " + JSON.stringify(e));
                     Omadi.display.doneLoading();
                     alert("There was an error retrieving the file.");
                 };

@@ -4,6 +4,8 @@ var FormObj, Omadi, ActiveFormObj, popupWin, popupWinListView, popupWinFieldObje
 FormObj = {};
 popupWin = null;
 
+var Utils = require('lib/Utils');
+
 function rules_field_passed_time_check(time_rule, timestamp) {"use strict";
     var retval, timestamp_day, timestamp_midnight, days, day_rule, values, start_time, end_time, i;
 
@@ -454,7 +456,7 @@ FormModule.prototype.initNewWindowFromCurrentData = function(form_part){"use str
             this.getWindow();
         }
         else{
-            this.formObj.sendError("Trying to do a save + new from form window with type:  " + form_part);
+            Utils.sendErrorReport("Trying to do a save + new from form window with type:  " + form_part);
         }
     }
     else{
@@ -537,7 +539,7 @@ FormModule.prototype.initNewWindowFromCurrentData = function(form_part){"use str
             //Ti.API.debug("about to go to next part 2: " + JSON.stringify(this.node));
         }
         catch(ex){
-            this.sendError("Exception setting up the imagedata for a form + next part: " + ex);
+            Utils.sendErrorReport("Exception setting up the imagedata for a form + next part: " + ex);
             try{
                 listDB.close();
             }
@@ -948,7 +950,7 @@ FormModule.prototype.formToNode = function(addDispatch){"use strict";
        }
    }
    catch(ex){
-       this.sendError("Bundling node from form: " + ex);
+       Utils.sendErrorReport("Bundling node from form: " + ex);
        alert("There was a problem bundling the submitted data. The cause of the error was sent to support.");
    }
    
@@ -1230,7 +1232,7 @@ FormModule.prototype.validateRestrictions = function(){"use strict";
         }
     }
     catch(ex){
-        this.sendError("Exception in validate restriction: " + ex);
+        Utils.sendErrorReport("Exception in validate restriction: " + ex);
         
         if(db != null){
             try{
@@ -1300,7 +1302,7 @@ FormModule.prototype.validateRequired = function(instance){"use strict";
                         break;
                     
                     default: 
-                        this.sendError("Missing field type def in validate_form_data for field_name " + instance.field_name);
+                        Utils.sendErrorReport("Missing field type def in validate_form_data for field_name " + instance.field_name);
                         break;
                 }
             }
@@ -1333,7 +1335,7 @@ FormModule.prototype.validateRequired = function(instance){"use strict";
         }
     }
     catch(ex){
-        this.sendError("Exception in validate required: " + ex);
+        Utils.sendErrorReport("Exception in validate required: " + ex);
     }
 };
 
@@ -1360,7 +1362,7 @@ FormModule.prototype.validateMinLength = function(instance){"use strict";
         }
     }
     catch(ex){
-        this.sendError("Exception in validate min length: " + ex);
+        Utils.sendErrorReport("Exception in validate min length: " + ex);
     }
 };
 
@@ -1385,7 +1387,7 @@ FormModule.prototype.validateMaxLength = function(instance){"use strict";
         }
     }
     catch(ex){
-        this.sendError("Exception in validate max length: " + ex);
+        Utils.sendErrorReport("Exception in validate max length: " + ex);
     }
 };
 
@@ -1419,7 +1421,7 @@ FormModule.prototype.validateMinValue = function(instance){"use strict";
         }
     }
     catch(ex){
-        this.sendError("Exception in validate min value: " + ex);
+        Utils.sendErrorReport("Exception in validate min value: " + ex);
     }
 };
 
@@ -1455,7 +1457,7 @@ FormModule.prototype.validateMaxValue = function(instance){"use strict";
         }
     }
     catch(ex){
-        this.sendError("Exception in validate max value: " + ex);
+        Utils.sendErrorReport("Exception in validate max value: " + ex);
     }
 };
 
@@ -1551,7 +1553,7 @@ FormModule.prototype.validateEmail = function(instance){"use strict";
         }
     }
     catch(ex){
-        this.sendError("Exception in validate email: " + ex);
+        Utils.sendErrorReport("Exception in validate email: " + ex);
     }
 };
 
@@ -1572,7 +1574,7 @@ FormModule.prototype.validatePhone = function(instance){"use strict";
         }
     }
     catch(ex){
-        this.sendError("Exception in validate phone: " + ex);
+        Utils.sendErrorReport("Exception in validate phone: " + ex);
     }
 };
 
@@ -2801,7 +2803,7 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
    }
    catch(ex){
        popupWin = null;
-       this.sendError("Could not open multi-selector: " + instance.label + " " + ex);
+       Utils.sendErrorReport("Could not open multi-selector: " + instance.label + " " + ex);
    }
 };
 
@@ -2936,7 +2938,7 @@ FormModule.prototype.getWindow = function(){"use strict";
             }
         }
         catch(regionEx){
-            this.sendError("Error setting up form regions: " + regionEx);
+            Utils.sendErrorReport("Error setting up form regions: " + regionEx);
         }
         
         try{
@@ -3020,11 +3022,11 @@ FormModule.prototype.getWindow = function(){"use strict";
                                             }
                                         }
                                         else{
-                                            this.sendError("Could not create field: " + JSON.stringify(instance));
+                                            Utils.sendErrorReport("Could not create field: " + JSON.stringify(instance));
                                         }
                                     }
                                     catch(elementEx){
-                                        this.sendError("Error adding field: " + elementEx + " " + JSON.stringify(instance));
+                                        Utils.sendErrorReport("Error adding field: " + elementEx + " " + JSON.stringify(instance));
                                     }
                                 }
                             }
@@ -3034,7 +3036,7 @@ FormModule.prototype.getWindow = function(){"use strict";
             }  
         }
         catch(fieldEx){
-            this.sendError("Error setting up fields: " + fieldEx);
+            Utils.sendErrorReport("Error setting up fields: " + fieldEx);
         }
         
         try{
@@ -3165,7 +3167,7 @@ FormModule.prototype.getWindow = function(){"use strict";
         }
     }
     catch(ex){
-        this.sendError("Could not get form window: " + ex);
+        Utils.sendErrorReport("Could not get form window: " + ex);
     }
     
     return this.win;
@@ -3207,7 +3209,7 @@ FormModule.prototype.recalculateCalculationFields = function(){"use strict";
         }
     }
     catch(ex){
-        this.sendError("Exception calculating form calc fields: " + ex);
+        Utils.sendErrorReport("Exception calculating form calc fields: " + ex);
     }
 };
 
@@ -3749,7 +3751,7 @@ FormModule.prototype.getRegularLabelView = function(instance){"use strict";
         this.labelViews[instance.field_name] = labelView;
     }
     catch(ex){
-        this.sendError("Could not get regular label: " + ex);
+        Utils.sendErrorReport("Could not get regular label: " + ex);
     }
     
     return labelView;
@@ -4283,7 +4285,7 @@ FormModule.prototype.setConditionallyRequiredLabelForInstance = function(instanc
         }
     }
     catch(ex){
-        this.sendError("Changing conditional value: " + ex);
+        Utils.sendErrorReport("Changing conditional value: " + ex);
     }
 };
 

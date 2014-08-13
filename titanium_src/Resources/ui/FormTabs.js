@@ -342,8 +342,7 @@ FormTabs.prototype.getWindow = function(initNewDispatch){"use strict";
         
         title = '';
         
-        this.FormModule = require('ui/FormModule');
-        //this.FormModule.reset();
+        this.restFormObjects();
         
         if (this.nid == 'new') {
     
@@ -1322,4 +1321,11 @@ exports.photoUploaded = function(e){"use strict";
 	        Omadi.service.sendErrorReport("Exception switching the photo id in a form: " + ex);
 	    }
     }
+};
+
+FormTabs.prototype.restFormObjects = function() {
+	this.FormModule = require('ui/FormModule');
+    this.FormModule.reset();
+    Dispatch.workObj = null;
+    Dispatch.dispatchObj = null;
 };
