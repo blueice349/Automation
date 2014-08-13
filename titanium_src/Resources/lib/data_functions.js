@@ -2768,8 +2768,12 @@ Omadi.data.processFetchedJson = function(){"use strict";
         Omadi.display.showNewNotificationDialog();
         
         
-        if(typeof Omadi.service.fetchedJSON.page !== 'undefined' && typeof Omadi.service.fetchedJSON.total_pages !== 'undefined' && typeof Omadi.service.fetchedJSON.total_node_count !== 'undefined'){
-            Omadi.service.syncInitialFormItems(Omadi.service.fetchedJSON.total_node_count, Omadi.service.fetchedJSON.total_pages);
+        if(typeof Omadi.service.fetchedJSON.page !== 'undefined' && 
+            typeof Omadi.service.fetchedJSON.total_pages !== 'undefined' && 
+            typeof Omadi.service.fetchedJSON.total_node_count !== 'undefined' &&
+            typeof Omadi.service.fetchedJSON.total_comment_count !== 'undefined'){
+            
+            Omadi.service.syncInitialFormItems(Omadi.service.fetchedJSON.total_node_count, Omadi.service.fetchedJSON.total_comment_count, Omadi.service.fetchedJSON.total_pages);
         }
     }
     catch(ex) {
@@ -3259,7 +3263,7 @@ Omadi.data.processCommentJson = function(mainDB) {"use strict";
             mainDB.execute("BEGIN IMMEDIATE TRANSACTION");
             for ( i = 0; i < queries.length; i++) {
                 mainDB.execute(queries[i]);
-                Ti.API.debug("Inserted a comment");
+                //Ti.API.debug("Inserted a comment");
             }
             mainDB.execute("COMMIT TRANSACTION");
         }
