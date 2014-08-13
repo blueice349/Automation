@@ -164,11 +164,13 @@ Omadi.service.initialInstallPage = 0;
 Omadi.service.isInitialInstall = false;
 Omadi.service.initialInstallTotalPages = 0;
 
-Omadi.service.syncInitialFormItems = function(count, numPages){"use strict";
-    var http, syncURL, i, max;
+Omadi.service.syncInitialFormItems = function(nodeCount, commentCount, numPages){"use strict";
+    var http, syncURL, i, max, count;
     
     try{
         Ti.API.error("in initial form items");
+        
+        count = nodeCount + commentCount;
         
         max = count + (numPages * 100);
         
@@ -203,6 +205,7 @@ Omadi.service.syncInitialInstallDownloadNextPage = function(){"use strict";
     
     if(Omadi.service.initialInstallPage < Omadi.service.initialInstallTotalPages){
         // Make sure the update timestamp is 0 because the sync is not complete    
+        Ti.API.debug("About to sync page " + Omadi.service.initialInstallPage);
         Omadi.data.setLastUpdateTimestamp(0);
         Omadi.service.syncInitialFormPage(Omadi.service.initialInstallPage);   
     }
@@ -273,7 +276,13 @@ Omadi.service.processInitialInstallJSON = function(){"use strict";
             }
         }
         
+        if (typeof Omadi.service.fetchedJSON.comment !== 'undefined') {
+            Ti.API.debug("Installing comments");
+            Omadi.data.processCommentJson(mainDB);
+        }
+        
         Ti.API.debug("about to set request_time");
+        
         // Setup the last update timestamp to the correct timestamp in case this is the last synced node bunch
         if(typeof Omadi.service.fetchedJSON.request_time !== 'undefined'){
             Omadi.data.setLastUpdateTimestamp(Omadi.service.fetchedJSON.request_time);
@@ -373,14 +382,11 @@ Omadi.service.syncInitialFormPage = function(page){"use strict";
                         
                         file = Ti.Filesystem.getFile(Ti.Filesystem.tempDirectory + "/download_" + Omadi.utils.getUTCTimestamp() + ".txt");
                         
-                        Ti.API.debug("Got here 1");
-                        
                         if(file.write(this.responseData)){
-                           Ti.API.debug("Got here 2");
+                           
                            string = file.read();
                            
                            if(isJsonString(string.text)){
-                                Ti.API.debug("Is JSON");
                                 
                                 Omadi.service.fetchedJSON = null;
                                 if(Ti.App.isAndroid && typeof AndroidSysUtil !== 'undefined' && AndroidSysUtil != null){
