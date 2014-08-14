@@ -1251,7 +1251,7 @@ exports.loggingOut = function(){"use strict";
         Dispatch.workObj.closeWindow();
     }
     
-    if(self.setSendingData){
+    if(Dispatch.setSendingData){
         // This screen set sending data to true, so free it up in case it's still set
         // which would be the case for one node validating and the other not validating
         Omadi.service.setSendingData(false);

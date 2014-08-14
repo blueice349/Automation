@@ -1207,11 +1207,8 @@ Omadi.service.logout = function() {"use strict";
     Ti.App.fireEvent('upload_gps_locations');
     Ti.App.fireEvent('stop_gps');
     
-    //Omadi.service.sendErrorReport("Logging out.");
-    
     if(Ti.App.isAndroid){
         Omadi.background.android.stopGPSService();
-        //Omadi.background.android.stopUpdateService();
     }
     
     Omadi.service.sendLogoutRequest();
