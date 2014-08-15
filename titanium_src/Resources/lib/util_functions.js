@@ -1387,11 +1387,11 @@ Omadi.utils.list_search_node_matches_search_criteria = function(node, criteria) 
                                         switch(search_operator) {
                                             case 'starts with':
                                             case 'not starts with':
-                                                query += " AND title LIKE '%" + dbEsc(search_value) + "%'";
+                                                query += " AND title LIKE '%" + Omadi.utils.sqlEscape(search_value) + "%'";
                                                 break;
                                             case 'ends with':
                                             case 'not ends with':
-                                                query += " AND title LIKE '%" + dbEsc(search_value) + "'";
+                                                query += " AND title LIKE '%" + Omadi.utils.sqlEscape(search_value) + "'";
                                                 break;
                                             case '=':
                                             case '!=':
@@ -1434,7 +1434,7 @@ Omadi.utils.list_search_node_matches_search_criteria = function(node, criteria) 
                                                 
                                                 break;
                                             default:
-                                                query += " AND title LIKE '%" + dbEsc(search_value) + "'%";
+                                                query += " AND title LIKE '%" + Omadi.utils.sqlEscape(search_value) + "'%";
                                                 break;
                                         }
     
@@ -1659,16 +1659,16 @@ Omadi.utils.list_search_node_matches_search_criteria = function(node, criteria) 
                                             switch(search_operator) {
                                                 case 'starts with':
                                                 case 'not starts with':
-                                                    query += " AND name LIKE '" + dbEsc(search_value) + "%'";
+                                                    query += " AND name LIKE '" + Omadi.utils.sqlEscape(search_value) + "%'";
                                                     break;
     
                                                 case 'ends with':
                                                 case 'not ends with':
-                                                    query += " AND name LIKE '%" + dbEsc(search_value) + "'";
+                                                    query += " AND name LIKE '%" + Omadi.utils.sqlEscape(search_value) + "'";
                                                     break;
     
                                                 default:
-                                                    query += " AND name LIKE '%" + dbEsc(search_value) + "%'";
+                                                    query += " AND name LIKE '%" + Omadi.utils.sqlEscape(search_value) + "%'";
                                                     break;
                                             }
     
@@ -1967,6 +1967,53 @@ Omadi.utils.setPhotoWidget = function(photoWidget){"use strict";
 
 Omadi.utils.getPhotoWidget = function(){"use strict";
     return Ti.App.Properties.getString("photoWidget", 'take');
+};
+
+Omadi.utils.sqlEscape = function(str) {
+	str = str || '';
+	var result = str.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, function (char) {
+		switch (char) {
+			case "\0":
+				return "\\0";
+			case "\x08":
+				return "\\b";
+			case "\x09":
+				return "\\t";
+			case "\x1a":
+				return "\\z";
+			case "\n":
+				return "\\n";
+			case "\r":
+				return "\\r";
+			case "\"":
+			case "'":
+			case "\\":
+			case "%":
+				return "\\"+char; // prepends a backslash to backslash, percent,
+			                      // and double/single quotes
+	    }
+	});
+	return result;
+};
+
+Omadi.utils.sqlEscapeAll = function(arr) {
+	var result = [];
+	for (var i = 0; i < arr.length; i++) {
+		result[i] = Omadi.utils.sqlEscape(arr[i]);
+	}
+	return result;
+};
+
+Omadi.utils.regExpEscape = function(str) {
+  return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+};
+
+Omadi.utils.regExpEscapeAll = function(arr) {
+	var result = [];
+	for (var i = 0; i < arr.length; i++) {
+		result[i] = Omadi.utils.regExpEscape(arr[i]);
+	}
+	return result;
 };
 
 Ti.include('/lib/location_functions.js');

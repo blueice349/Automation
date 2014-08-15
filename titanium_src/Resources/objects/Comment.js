@@ -702,7 +702,7 @@ Comment.prototype.save = function(comment){"use strict";
         }
         catch(ex){
             alert("An error occurred saving the comment. Please try again.");
-            this.sendError("Exception saving the comment: " + ex);
+            Utils.sendErrorReport("Exception saving the comment: " + ex);
         }
     }
     
