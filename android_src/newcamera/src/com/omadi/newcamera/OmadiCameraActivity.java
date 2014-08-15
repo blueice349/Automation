@@ -4,6 +4,8 @@ import java.awt.image.BufferedImage;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 
@@ -485,7 +487,12 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 					}
 					
 					File rootsd = Environment.getExternalStorageDirectory();
-					String localPath = rootsd.getAbsolutePath() + "/dcim/Camera/o_" + photosTaken + imageFile.getName();
+					
+					Calendar cal = Calendar.getInstance();
+					SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_kk-mm-ss");
+					String dateString = dateFormat.format(cal.getTime());
+					
+					String localPath = rootsd.getAbsolutePath() + "/dcim/Camera/o_" + dateString + "_" + photosTaken + imageFile.getName();
 					
 					boolean errorOccured = moveImage(imageFile.getAbsolutePath(), localPath);
 					String localUrl = "file://" + localPath;
