@@ -372,13 +372,13 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 		openCamera();
 		
 		if(camera != null){
-		
 			Log.d("CAMERA", "CAMERA Opened");
 			
 			cameraActivity = this;
 			
 			try{
 				
+				previewLayout.removeAllViews();
 				previewLayout.addView(preview);
 				previewLayout.addView(toolsOverlay);
 				
@@ -421,6 +421,8 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 			t.printStackTrace();
 		}
 
+		cameraActivity.setResult(Activity.RESULT_OK);
+		cameraActivity.finish();
 		cameraActivity = null;
 		
 		Log.d("CAMERA", "CAMERA Sensor unregistered");
