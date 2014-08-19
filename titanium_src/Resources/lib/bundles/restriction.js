@@ -3,6 +3,8 @@
 
 Omadi.bundles.restriction = {};
 
+var Utils = require('lib/Utils');
+
 Omadi.bundles.restriction.getCurrentRestrictions = function(){"use strict";
     var restricted, timestamp, query, nid, i, j, nodes, node, accountNids, licensePlate, vin, 
         db, result, restrictionBundle, restrictions, accountNid;
@@ -56,7 +58,7 @@ Omadi.bundles.restriction.getCurrentRestrictions = function(){"use strict";
             db.close();
         }
         catch(ex){
-            Omadi.service.sendErrorReport("Exception getting restrictions: " + ex);
+            Utils.sendErrorReport("Exception getting restrictions: " + ex);
         }
     }
         

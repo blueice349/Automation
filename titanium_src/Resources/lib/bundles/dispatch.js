@@ -4,6 +4,8 @@
 
 Omadi.bundles.dispatch = {};
 
+var Utils = require('lib/Utils');
+
 Omadi.bundles.dispatch.showJobsScreen = function(){"use strict";
     var bundle, retval, instances;
     
@@ -76,7 +78,7 @@ Omadi.bundles.dispatch.getDrivingDirections = function(args){"use strict";
         }
     }
     else{
-        Omadi.service.sendErrorReport('No NID to get driving directions');
+        Utils.sendErrorReport('No NID to get driving directions');
         alert("An unknown error occurred attempting to accept the job.");
     }
 };
@@ -114,12 +116,12 @@ Omadi.bundles.dispatch.openDispatchDirections = function(node){"use strict";
                            // Change the node to the referenced parent node
                            node = Omadi.data.nodeLoad(referenceNid);
                            if(node == null){
-                               Omadi.service.sendErrorReport("reference node null for address: " + JSON.stringify(node) + JSON.strigify(bundle));
+                               Utils.sendErrorReport("reference node null for address: " + JSON.stringify(node) + JSON.strigify(bundle));
                                alert("The street address is blank, so directions cannot be opened.");
                            }
                        }
                        else{
-                           Omadi.service.sendErrorReport("reference nid Street is not filled in: " + JSON.stringify(node) + JSON.strigify(bundle));
+                           Utils.sendErrorReport("reference nid Street is not filled in: " + JSON.stringify(node) + JSON.strigify(bundle));
                            alert("The street address is blank, so directions cannot be opened.");
                        }
                 }
@@ -154,12 +156,12 @@ Omadi.bundles.dispatch.openDispatchDirections = function(node){"use strict";
             Omadi.display.getDrivingDirectionsTo(address);
         }
         else{
-            Omadi.service.sendErrorReport("Street is not filled in: " + locationFieldName + " " + address + JSON.stringify(node));
+            Utils.sendErrorReport("Street is not filled in: " + locationFieldName + " " + address + JSON.stringify(node));
             alert("The street address is blank, so directions cannot be opened.");
         }
     }
     else{
-        Omadi.service.sendErrorReport("Could not find locationFieldName: " + JSON.stringify(node) + JSON.stringify(bundle));
+        Utils.sendErrorReport("Could not find locationFieldName: " + JSON.stringify(node) + JSON.stringify(bundle));
         alert("The directions could not be opened. Please try again later.");
     }  
 };
@@ -266,7 +268,7 @@ Omadi.bundles.dispatch.acceptJob = function(args){"use strict";
                 }
                 else {
                     alert("The job was not accepted because an unknown error occurred.");
-                    Omadi.service.sendErrorReport("Bad response text for accept job: " + this.responseText);
+                    Utils.sendErrorReport("Bad response text for accept job: " + this.responseText);
                 }                    
 
                 Omadi.data.setUpdating(false);
@@ -290,7 +292,7 @@ Omadi.bundles.dispatch.acceptJob = function(args){"use strict";
                     dialog.show();
                 }
                 
-                Omadi.service.sendErrorReport('Could not accept job' + JSON.stringify(e));
+                Utils.sendErrorReport('Could not accept job' + JSON.stringify(e));
             };
             
             http.send(JSON.stringify({
@@ -299,7 +301,7 @@ Omadi.bundles.dispatch.acceptJob = function(args){"use strict";
         }
     }
     else{
-        Omadi.service.sendErrorReport('No NID to accept job');
+        Utils.sendErrorReport('No NID to accept job');
         alert("An unknown error occurred attempting to accept the job.");
     }
 };
@@ -715,7 +717,7 @@ Omadi.bundles.dispatch.updateStatus = function(nid, status, background){"use str
                 if(!background){
                     alert("The status was not updated because an unknown error occurred.");
                 }
-                Omadi.service.sendErrorReport("Bad response text for update dispatch status: " + this.responseText);
+                Utils.sendErrorReport("Bad response text for update dispatch status: " + this.responseText);
             }
     
             Omadi.data.setUpdating(false);
@@ -741,7 +743,7 @@ Omadi.bundles.dispatch.updateStatus = function(nid, status, background){"use str
                 }
             }
             
-            Omadi.service.sendErrorReport('Could not update status: ' + JSON.stringify(e));
+            Utils.sendErrorReport('Could not update status: ' + JSON.stringify(e));
         };
         
         http.send(JSON.stringify({
@@ -810,7 +812,7 @@ Omadi.bundles.dispatch.discontinueJob = function(nid, status, background){"use s
                 if(!background){
                     alert("The status was not updated because an unknown error occurred.");
                 }
-                Omadi.service.sendErrorReport("Bad response text for discontinue job: " + this.responseText);
+                Utils.sendErrorReport("Bad response text for discontinue job: " + this.responseText);
             }
     
             Omadi.data.setUpdating(false);
@@ -836,7 +838,7 @@ Omadi.bundles.dispatch.discontinueJob = function(nid, status, background){"use s
                 }
             }
             
-            Omadi.service.sendErrorReport('Could not discontinue job: ' + JSON.stringify(e));
+            Utils.sendErrorReport('Could not discontinue job: ' + JSON.stringify(e));
         };
         
         http.send(JSON.stringify({
@@ -882,7 +884,7 @@ Omadi.bundles.dispatch.showUpdateStatusDialog = function(args){"use strict";
                     }
                 }
                 catch(ex){
-                    Omadi.service.sendErrorReport("exception update form info first: " + ex);
+                    Utils.sendErrorReport("exception update form info first: " + ex);
                 }
             });
             
@@ -927,7 +929,7 @@ Omadi.bundles.dispatch.showUpdateStatusDialog = function(args){"use strict";
                     }
                 }
                 catch(ex){
-                    Omadi.service.sendErrorReport("Exception updating job status: " + ex);
+                    Utils.sendErrorReport("Exception updating job status: " + ex);
                 }
             });
             
@@ -935,7 +937,7 @@ Omadi.bundles.dispatch.showUpdateStatusDialog = function(args){"use strict";
         }
     }
     else{
-        Omadi.service.sendErrorReport('No NID to accept job');
+        Utils.sendErrorReport('No NID to accept job');
         alert("An unknown error occurred attempting to update the status.");
     }
 };
@@ -987,7 +989,7 @@ Omadi.bundles.dispatch.showDiscontinueJobDialog = function(args){"use strict";
                         }
                     }
                     catch(ex){
-                        Omadi.service.sendErrorReport("Exception updating job status: " + ex);
+                        Utils.sendErrorReport("Exception updating job status: " + ex);
                     }
                 });
                 
@@ -999,7 +1001,7 @@ Omadi.bundles.dispatch.showDiscontinueJobDialog = function(args){"use strict";
         }
     }
     else{
-        Omadi.service.sendErrorReport('No NID to discontinue job');
+        Utils.sendErrorReport('No NID to discontinue job');
         alert("An unknown error occurred attempting to discontinue the job.");
     }  
 };
@@ -1113,7 +1115,7 @@ Omadi.bundles.dispatch.getCurrentUserJobs = function(){"use strict";
                 }
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Could not load dispatch job: " + ex);
+                Utils.sendErrorReport("Could not load dispatch job: " + ex);
             }
             
             result.next();

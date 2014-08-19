@@ -9,6 +9,8 @@ var webview;
 
 curWin.setBackgroundColor("#fff");
 
+var Utils = require('lib/Utils');
+
 function addIOSToolbar(){"use strict";
     var backButton, space, aboutLabel, toolbar;
     
@@ -64,7 +66,7 @@ function openAndroidFile(filePath, mimeType){"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("exception in openandroid file: " + ex);
+        Utils.sendErrorReport("exception in openandroid file: " + ex);
     }
 }
 
@@ -79,7 +81,7 @@ function deleteAndroidFile(filePath){"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("exception in delete android file: " + ex);
+        Utils.sendErrorReport("exception in delete android file: " + ex);
     }
 }
 

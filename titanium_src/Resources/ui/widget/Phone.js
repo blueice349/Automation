@@ -1,6 +1,7 @@
 /*jslint eqeq:true,plusplus:true,regexp:true*/
 
 var Widget, Omadi;
+var Utils = require('lib/Utils');
 
 Widget = {};
 
@@ -84,7 +85,7 @@ PhoneWidget.prototype.getFieldView = function(){"use strict";
                 Widget[e.source.fieldName].redraw();
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception in phone add another: " + ex);
+                Utils.sendErrorReport("Exception in phone add another: " + ex);
             }
         });
         
@@ -228,7 +229,7 @@ PhoneWidget.prototype.cleanUp = function(){"use strict";
     }
     catch(ex){
         try{
-            Omadi.service.sendErrorReport("Exception cleaning up phone widget field: " + ex);
+            Utils.sendErrorReport("Exception cleaning up phone widget field: " + ex);
         }
         catch(ex1){}
     }

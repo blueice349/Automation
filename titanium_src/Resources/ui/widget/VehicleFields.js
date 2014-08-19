@@ -2,6 +2,8 @@
 
 var Widget, Omadi;
 
+var Utils = require('lib/Utils');
+
 Widget = {};
 
 function VehicleFieldsWidget(formObj, instance, fieldViewWrapper){"use strict";
@@ -100,7 +102,7 @@ VehicleFieldsWidget.prototype.getNewElement = function(index){"use strict";
         real_field_name = nameParts[0];
     }
     else {
-        this.formObj.sendError("There should be parts to this vehicle field!!!:" + this.instance.label);
+        Utils.sendErrorReport("There should be parts to this vehicle field!!!:" + this.instance.label);
         alert("There was an error setting up the vehicle fields. Please contact support.");
         return;
     }
@@ -205,7 +207,7 @@ VehicleFieldsWidget.prototype.getNewElement = function(index){"use strict";
             widget.autocomplete_table.setVisible(false);
         }
         catch(ex){
-            Omadi.service.sendErrorReport("Exception in vehicle fields autocomplete click: " + ex);
+            Utils.sendErrorReport("Exception in vehicle fields autocomplete click: " + ex);
         }
     });
 
@@ -245,7 +247,7 @@ VehicleFieldsWidget.prototype.getNewElement = function(index){"use strict";
         }
         catch(ex){
             try{
-                Omadi.service.sendErrorReport("exception in vehicle fields blur: " + ex);
+                Utils.sendErrorReport("exception in vehicle fields blur: " + ex);
             }catch(ex1){}
         }
     });
@@ -368,7 +370,7 @@ VehicleFieldsWidget.prototype.getNewElement = function(index){"use strict";
             e.source.lastValue = e.source.value;
         }
         catch(ex){
-            Omadi.service.sendErrorReport("exception in vehicle fields change listener: " + ex);
+            Utils.sendErrorReport("exception in vehicle fields change listener: " + ex);
         }
     });
 
@@ -411,7 +413,7 @@ VehicleFieldsWidget.prototype.cleanUp = function(){"use strict";
     }
     catch(ex){
         try{
-            Omadi.service.sendErrorReport("Exception cleaning up vehicle widget field: " + ex);
+            Utils.sendErrorReport("Exception cleaning up vehicle widget field: " + ex);
         }
         catch(ex1){}
     }

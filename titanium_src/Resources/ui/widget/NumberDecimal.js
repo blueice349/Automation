@@ -2,6 +2,8 @@
 
 var Widget, Omadi;
 
+var Utils = require('lib/Utils');
+
 Widget = {};
 
 function NumberDecimalWidget(formObj, instance, fieldViewWrapper){"use strict";
@@ -84,7 +86,7 @@ NumberDecimalWidget.prototype.getFieldView = function(){"use strict";
                 Widget[e.source.fieldName].redraw();
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception in decimal add another: " + ex);
+                Utils.sendErrorReport("Exception in decimal add another: " + ex);
             }
         });
         
@@ -246,7 +248,7 @@ NumberDecimalWidget.prototype.cleanUp = function(){"use strict";
     }
     catch(ex){
         try{
-            Omadi.service.sendErrorReport("Exception cleaning up decimal widget field: " + ex);
+            Utils.sendErrorReport("Exception cleaning up decimal widget field: " + ex);
         }
         catch(ex1){}
     }

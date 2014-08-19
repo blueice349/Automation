@@ -3,6 +3,8 @@
 
 Ti.include('/lib/functions.js');
 
+var Utils = require('lib/Utils');
+
 var curWin = Ti.UI.currentWindow;
 var tabGroup;
 var tableView;
@@ -174,7 +176,7 @@ function createiOSToolbar(){"use strict";
                 search.setValue('');
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception in button bar click in recent: " + ex);
+                Utils.sendErrorReport("Exception in button bar click in recent: " + ex);
             }
         });
         
@@ -230,7 +232,7 @@ function createAndroidTabs(){"use strict";
                 search.setValue('');
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception with recent saved tab click: " + ex);
+                Utils.sendErrorReport("Exception with recent saved tab click: " + ex);
             }
         });
         
@@ -264,7 +266,7 @@ function createAndroidTabs(){"use strict";
                 search.setValue('');
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception with viewed tab click in recent: " + ex);
+                Utils.sendErrorReport("Exception with viewed tab click in recent: " + ex);
             }
         });
         

@@ -1,6 +1,7 @@
 /*jslint eqeq:true, plusplus: true*/
 
 var Widget, Omadi;
+var Utils = require('lib/Utils');
 Widget = {};
 
 var Utils = require('lib/Utils');
@@ -217,7 +218,7 @@ SignatureWidget.prototype.getNewElement = function(index){"use strict";
             widget.openSignatureView();
         }
         catch(ex){
-            Omadi.service.sendErrorReport("Exception in signature button click: " + ex);
+            Utils.sendErrorReport("Exception in signature button click: " + ex);
         }
     });
     
@@ -451,7 +452,7 @@ SignatureWidget.prototype.openSignatureView = function(){"use strict";
                 }
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception in signature textview click: " + ex);
+                Utils.sendErrorReport("Exception in signature textview click: " + ex);
             }
         });
         
@@ -467,7 +468,7 @@ SignatureWidget.prototype.openSignatureView = function(){"use strict";
                e.source.scrollView.scrollingEnabled = false;
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception in signature overlay button click: " + ex);
+                Utils.sendErrorReport("Exception in signature overlay button click: " + ex);
             }
         });
     }
@@ -511,7 +512,7 @@ SignatureWidget.prototype.openSignatureView = function(){"use strict";
             }, 1000);
         }
         catch(ex){
-            Omadi.service.sendErrorReport("Exception getting signature image: " + ex);
+            Utils.sendErrorReport("Exception getting signature image: " + ex);
         }
         
         e.source.win.close();
@@ -555,12 +556,12 @@ SignatureWidget.prototype.saveSignature = function(doneButton){"use strict";
         }
         else{
     
-            Omadi.service.sendErrorReport("File is not available for signature.");
+            Utils.sendErrorReport("File is not available for signature.");
             alert("There was a problem saving the signature.");
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception saving signature: " + ex);
+        Utils.sendErrorReport("Exception saving signature: " + ex);
         alert("There was a problem saving the signature.");
     }
 };
@@ -649,7 +650,7 @@ SignatureWidget.prototype.cleanUp = function(){"use strict";
     }
     catch(ex){
         try{
-            Omadi.service.sendErrorReport("Exception cleaning up signature widget field: " + ex);
+            Utils.sendErrorReport("Exception cleaning up signature widget field: " + ex);
         }
         catch(ex1){}
     }

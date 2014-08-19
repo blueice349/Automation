@@ -6,6 +6,8 @@ Ti.include('/lib/functions.js');
 var curWin = Ti.UI.currentWindow;
 curWin.setBackgroundColor('#eee');
 
+var Utils = require('lib/Utils');
+
 var tableView = null;
 var win_new;
 var tableData;
@@ -74,7 +76,7 @@ Drafts.deleteDraft = function(nid){"use strict";
             }
         }
         catch(ex){
-            Omadi.service.sendErrorReport("exception in click for draft delete: " + ex);
+            Utils.sendErrorReport("exception in click for draft delete: " + ex);
         }
     });
     
@@ -288,7 +290,7 @@ Drafts.refreshDrafts = function(){"use strict";
                 }
             }
             catch(ex){
-                Omadi.service.sendErrorReport("exception in drafts tableview click: " + ex);
+                Utils.sendErrorReport("exception in drafts tableview click: " + ex);
             }
         });
 

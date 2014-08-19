@@ -3,6 +3,8 @@
 var Widget, Omadi;
 Widget = {};
 
+var Utils = require('lib/Utils');
+
 function ExtraPriceWidget(formObj, instance, fieldViewWrapper){"use strict";
 
     var hasDBValue = false;
@@ -108,7 +110,7 @@ ExtraPriceWidget.prototype.getFieldView = function(){"use strict";
                 Widget[e.source.fieldName].redraw();
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception adding one to extra price: " + ex);
+                Utils.sendErrorReport("Exception adding one to extra price: " + ex);
             }
         });
         
@@ -360,7 +362,7 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
                 }
                 catch(ex){
                     try{
-                        Omadi.service.sendErrorReport("exception in extra price blur: " + ex);
+                        Utils.sendErrorReport("exception in extra price blur: " + ex);
                     }catch(ex1){}
                 }
             });
@@ -403,7 +405,7 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
                     descView.touched = false;
                 }
                 catch(ex){
-                    Omadi.service.sendErrorReport("Exception touching autocomplete in extra price: " + ex);
+                    Utils.sendErrorReport("Exception touching autocomplete in extra price: " + ex);
                 }
             });
     
@@ -515,7 +517,7 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
                     e.source.lastValue = e.source.value;
                 }
                 catch(ex){
-                    Omadi.service.sendErrorReport("Exception in extra price autocomplete change: " + ex);
+                    Utils.sendErrorReport("Exception in extra price autocomplete change: " + ex);
                 }
             });
         }
@@ -603,14 +605,14 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
                             }
                         }
                         catch(ex){
-                            Omadi.service.sendErrorReport("Exception with desc view dialog click: " + ex);
+                            Utils.sendErrorReport("Exception with desc view dialog click: " + ex);
                         }
                     });
                     
                     dialog.show();
                 }
                 catch(ex){
-                    Omadi.service.sendErrorReport("Exception desc view click in extra price: " + ex);
+                    Utils.sendErrorReport("Exception desc view click in extra price: " + ex);
                 }
             });
         }
@@ -847,7 +849,7 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
         }
     }
     catch(ex1){
-        Omadi.service.sendErrorReport("Exception creating an extra price field: " + ex1);
+        Utils.sendErrorReport("Exception creating an extra price field: " + ex1);
     }
     
     return outsideWrapper;
@@ -892,7 +894,7 @@ ExtraPriceWidget.prototype.changeQuantityField = function(jsonValue, optionsInde
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in changeQuantityField: " + ex);
+        Utils.sendErrorReport("Exception in changeQuantityField: " + ex);
     }
     
     return jsonValue;
@@ -909,7 +911,7 @@ ExtraPriceWidget.prototype.setTotal = function(){"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in setTotal: " + ex);
+        Utils.sendErrorReport("Exception in setTotal: " + ex);
     }
 };
 
@@ -980,7 +982,7 @@ ExtraPriceWidget.prototype.setTotalDelta = function(delta){"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in setTotalDelta: " + delta + " " + ex);
+        Utils.sendErrorReport("Exception in setTotalDelta: " + delta + " " + ex);
     }
 };
 
@@ -995,7 +997,7 @@ ExtraPriceWidget.prototype.itemChange = function(){"use strict";
         }    
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in itemChange: " + ex);
+        Utils.sendErrorReport("Exception in itemChange: " + ex);
     }
 };
 
@@ -1241,7 +1243,7 @@ ExtraPriceWidget.prototype.itemChangeDelta = function(delta){"use strict";
         
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in itemChangeDelta: " + delta + " " + ex);
+        Utils.sendErrorReport("Exception in itemChangeDelta: " + delta + " " + ex);
     }
 };
 
@@ -1261,7 +1263,7 @@ ExtraPriceWidget.prototype.getPrices = function(descValue){"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in getPrices: " + ex);
+        Utils.sendErrorReport("Exception in getPrices: " + ex);
     }
     
     return prices;
@@ -1361,7 +1363,7 @@ ExtraPriceWidget.prototype.cleanUp = function(){"use strict";
     }
     catch(ex){
         try{
-            Omadi.service.sendErrorReport("Exception cleaning up amounts widget field: " + ex);
+            Utils.sendErrorReport("Exception cleaning up amounts widget field: " + ex);
         }
         catch(ex1){}
     }

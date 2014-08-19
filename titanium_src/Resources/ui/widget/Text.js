@@ -2,6 +2,8 @@
 
 var Widget, Omadi;
 
+var Utils = require('lib/Utils');
+
 Widget = {};
 
 function TextWidget(formObj, instance, fieldViewWrapper){"use strict";
@@ -94,7 +96,7 @@ TextWidget.prototype.addAnotherCallback = function(e){"use strict";
         Widget[e.source.fieldName].redraw();
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in text field add another: " + ex);
+        Utils.sendErrorReport("Exception in text field add another: " + ex);
     }
 };
 
@@ -228,7 +230,7 @@ TextWidget.prototype.getNewElementWrapper = function(index){"use strict";
             catch(ex){
                 Ti.API.error("Exception in duplicate warning timeout: " + ex);
                 try{
-                    Omadi.service.sendErrorReport("Exception in duplicate warning timeout: " + ex);
+                    Utils.sendErrorReport("Exception in duplicate warning timeout: " + ex);
                 }
                 catch(ex2){}
             }
@@ -325,7 +327,7 @@ TextWidget.prototype.onChangeListener = function(e) {"use strict";
                 catch(ex){
                     Ti.API.error("Exception in duplicate warning timeout: " + ex);
                     try{
-                        Omadi.service.sendErrorReport("Exception in duplicate warning timeout: " + ex);
+                        Utils.sendErrorReport("Exception in duplicate warning timeout: " + ex);
                     }
                     catch(ex2){}
                 }
@@ -375,14 +377,14 @@ TextWidget.prototype.setDuplicateWarnings = function(fieldName, value, saveType)
                 }
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception on onload of setDuplicateWarnings: " + ex);
+                Utils.sendErrorReport("Exception on onload of setDuplicateWarnings: " + ex);
             }
         };
     
         http.onerror = function(e) {
             try{
                 Ti.API.error(JSON.stringify(e));
-                Omadi.service.sendErrorReport("Error on setduplicatewarnings: " + JSON.stringify(e));
+                Utils.sendErrorReport("Error on setduplicatewarnings: " + JSON.stringify(e));
             }
             catch(ex){
                 
@@ -396,7 +398,7 @@ TextWidget.prototype.setDuplicateWarnings = function(fieldName, value, saveType)
         }));
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in setDuplicateWarnings: " + ex);
+        Utils.sendErrorReport("Exception in setDuplicateWarnings: " + ex);
     }
 };
 
@@ -429,7 +431,7 @@ TextWidget.prototype.cleanUp = function(){"use strict";
     }
     catch(ex){
         try{
-            Omadi.service.sendErrorReport("Exception cleaning up text widget field: " + ex);
+            Utils.sendErrorReport("Exception cleaning up text widget field: " + ex);
         }
         catch(ex1){}
     }

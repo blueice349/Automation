@@ -267,7 +267,7 @@ VideoWidget.prototype.getImageView = function(widgetView, index, nid, fid, degre
             }
         }
         catch(ex){
-            Omadi.service.sendErrorReport("Exception in video image view click: " + ex);
+            Utils.sendErrorReport("Exception in video image view click: " + ex);
         }
     });
    
@@ -301,7 +301,7 @@ VideoWidget.prototype.openVideoPlayer = function(imageView){"use strict";
                 Widget[e.source.instance.field_name].videoWin = null;
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception in video back button pressed: " + ex);
+                Utils.sendErrorReport("Exception in video back button pressed: " + ex);
             }
         });
     
@@ -519,7 +519,7 @@ VideoWidget.prototype.openVideoChooser = function(imageView){"use strict";
             },
             error: function (e){
                 alert("There was a problem inserting the video.");
-                Omadi.service.sendErrorReport("Video insert: " + JSON.stringify(e));
+                Utils.sendErrorReport("Video insert: " + JSON.stringify(e));
                 Ti.API.debug(JSON.stringify(e));
             },
             mediaTypes: [Ti.Media.MEDIA_TYPE_VIDEO],
@@ -643,7 +643,7 @@ VideoWidget.prototype.cleanUp = function(){"use strict";
     }
     catch(ex){
         try{
-            Omadi.service.sendErrorReport("Exception cleaning up video widget field: " + ex);
+            Utils.sendErrorReport("Exception cleaning up video widget field: " + ex);
         }
         catch(ex1){}
     }

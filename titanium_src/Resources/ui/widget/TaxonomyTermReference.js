@@ -1,6 +1,7 @@
 /*jslint eqeq:true, plusplus: true*/
 
 var Widget, Omadi;
+var Utils = require('lib/Utils');
 Widget = {};
 
 function TaxonomyTermReferenceWidget(formObj, instance, fieldViewWrapper){"use strict";
@@ -237,7 +238,7 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
                 e.source.textField.touched = false;
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception in taxonomy autocomplete click: " + ex);
+                Utils.sendErrorReport("Exception in taxonomy autocomplete click: " + ex);
             }
         });
         
@@ -266,7 +267,7 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
             }
             catch(ex){
                 try{
-                    Omadi.service.sendErrorReport("exception in taxonomy term blur: " + ex);
+                    Utils.sendErrorReport("exception in taxonomy term blur: " + ex);
                 }catch(ex1){}
             }
         });
@@ -429,7 +430,7 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
                                 }
                             }
                             catch(ex){
-                                Omadi.service.sendErrorReport("Exception in taxonomy post dialog click: " + ex);
+                                Utils.sendErrorReport("Exception in taxonomy post dialog click: " + ex);
                             }
                         });
                         
@@ -437,7 +438,7 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
                     }
                 }
                 catch(ex){
-                    Omadi.service.sendErrorReport("could not open taxonomy term select box: " + e.source.instance.label + " " + ex);
+                    Utils.sendErrorReport("could not open taxonomy term select box: " + e.source.instance.label + " " + ex);
                 }
             });
         }
@@ -539,7 +540,7 @@ TaxonomyTermReferenceWidget.prototype.cleanUp = function(){"use strict";
     }
     catch(ex){
         try{
-            Omadi.service.sendErrorReport("Exception cleaning up taxonomy widget field: " + ex);
+            Utils.sendErrorReport("Exception cleaning up taxonomy widget field: " + ex);
         }
         catch(ex1){}
     }

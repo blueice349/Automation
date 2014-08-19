@@ -2,6 +2,8 @@
 
 Ti.include('/lib/CC_functions.js');
 
+var Utils = require('lib/Utils');
+
 Omadi.print = {};
 
 Omadi.print.StarMicronics = null;
@@ -133,7 +135,7 @@ Omadi.print.startMCRMode = function(portName){"use strict";
                      }
                 }
                 catch(ex){
-                    Omadi.service.sendErrorReport("exception with swipe card click: " + ex);
+                    Utils.sendErrorReport("exception with swipe card click: " + ex);
                 }
             });
             dialog.show();
@@ -189,7 +191,7 @@ Omadi.print.chargeCard = function(nid){"use strict";
                             }
                         }
                         catch(ex){
-                            Omadi.service.sendErrorReport("exception selecting a printer for mcr: " + ex);
+                            Utils.sendErrorReport("exception selecting a printer for mcr: " + ex);
                         }
                    });
                    
@@ -275,7 +277,7 @@ Omadi.print.printReceipt = function(nid){"use strict";
                             } 
                         }
                         catch(ex){
-                            Omadi.service.sendErrorReport("exception in select printer for print: " + ex);
+                            Utils.sendErrorReport("exception in select printer for print: " + ex);
                         }
                    });
                    
@@ -311,7 +313,7 @@ Omadi.print.printReceipt = function(nid){"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in print receipt: " + ex);
+        Utils.sendErrorReport("Exception in print receipt: " + ex);
     }
 };
 

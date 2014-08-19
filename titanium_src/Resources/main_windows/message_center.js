@@ -1,6 +1,8 @@
 //Common used functions
 Ti.include('/lib/functions.js');
 
+var Utils = require('lib/Utils');
+
 /*global  Omadi*/
 /*jslint eqeq: true, plusplus: true*/
 
@@ -168,7 +170,7 @@ function alertNavButtons(currentWin, currentWinWrapper, type) {"use strict";
             Omadi.location.uploadGPSCoordinates();
         }
         catch(ex){
-            Omadi.service.sendErrorReport("Exception with GPS refresh image: " + ex);
+            Utils.sendErrorReport("Exception with GPS refresh image: " + ex);
         }
     });
     
@@ -263,7 +265,7 @@ function alertNavButtons_android(lv_listTableView, currentWindow, currentWindowW
             Omadi.location.uploadGPSCoordinates();
         }
         catch(ex){
-            Omadi.service.sendErrorReport("Exception with gps refresh click: " + ex);
+            Utils.sendErrorReport("Exception with gps refresh click: " + ex);
         }
     });
 
@@ -438,7 +440,7 @@ function opnAccountAlertsList(e) {"use strict";
                 Omadi.display.showDialogFormOptions(row_e);
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception with account message list view click: " + ex);
+                Utils.sendErrorReport("Exception with account message list view click: " + ex);
             }
         });
         
@@ -459,7 +461,7 @@ function opnAccountAlertsList(e) {"use strict";
         loadAccAlertData();
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in open account alerts list: " + ex);
+        Utils.sendErrorReport("Exception in open account alerts list: " + ex);
     }
 }
 
@@ -508,7 +510,7 @@ function deleteOldAlerts(){"use strict";
         db.execute("DELETE FROM alerts WHERE timestamp < " + timestamp);
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception deleting old alerts: " + ex);
+        Utils.sendErrorReport("Exception deleting old alerts: " + ex);
     }
     
     try{
@@ -580,7 +582,7 @@ function deleteOldAlerts(){"use strict";
             }
         }
         catch(ex){
-            Omadi.service.sendErrorReport("Exception with listtableview click in message center: " + ex);
+            Utils.sendErrorReport("Exception with listtableview click in message center: " + ex);
         }
     });
     

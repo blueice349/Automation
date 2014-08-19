@@ -1,6 +1,9 @@
 /*jslint eqeq:true, plusplus: true*/
 
 var Widget, Omadi;
+
+var Utils = require('lib/Utils');
+
 Widget = {};
 
 function ListTextWidget(formObj, instance, fieldViewWrapper){"use strict";
@@ -81,7 +84,7 @@ ListTextWidget.prototype.getFieldView = function(){"use strict";
                 Widget[e.source.fieldName].redraw();
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception in list text add another: " + ex);
+                Utils.sendErrorReport("Exception in list text add another: " + ex);
             }
         });
         
@@ -228,19 +231,19 @@ ListTextWidget.prototype.getNewElementWrapper = function(index){"use strict";
                                     });
                                 }
                                 catch(ex){
-                                    Omadi.service.sendErrorReport("Could not fire towtype changed event");
+                                    Utils.sendErrorReport("Could not fire towtype changed event");
                                     alert("Could not change tow type. Please try again.");
                                 }
                             }
                         }
                     }
                     catch(ex2){
-                        Omadi.service.sendErrorReport("Exception in list text dialog click: " + ex2);
+                        Utils.sendErrorReport("Exception in list text dialog click: " + ex2);
                     }
                 });
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception in list text label click: " + ex);
+                Utils.sendErrorReport("Exception in list text label click: " + ex);
             }
         });
     }
@@ -317,7 +320,7 @@ ListTextWidget.prototype.cleanUp = function(){"use strict";
     }
     catch(ex){
         try{
-            Omadi.service.sendErrorReport("Exception cleaning up list text widget field: " + ex);
+            Utils.sendErrorReport("Exception cleaning up list text widget field: " + ex);
         }
         catch(ex1){}
     }

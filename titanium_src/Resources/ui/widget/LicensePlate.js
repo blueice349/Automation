@@ -2,6 +2,8 @@
 
 var Widget, Omadi;
 
+var Utils = require('lib/Utils');
+
 Widget = {};
 
 function LicensePlateWidget(formObj, instance, fieldViewWrapper){"use strict";
@@ -90,7 +92,7 @@ LicensePlateWidget.prototype.getNewElementWrapper = function(index){"use strict"
         real_field_name = nameParts[0];
     }
     else {
-        this.formObj.sendError("There should be parts to this license plate field!!!: " + this.instance.label);
+        Utils.sendErrorReport("There should be parts to this license plate field!!!: " + this.instance.label);
         alert("Could not create the license plate field. Please contact support.");
         return;
     }
@@ -274,7 +276,7 @@ LicensePlateWidget.prototype.getNewElementWrapper = function(index){"use strict"
                         catch(ex){
                             Ti.API.error("Exception in duplicate warning timeout: " + ex);
                             try{
-                                Omadi.service.sendErrorReport("Exception in duplicate warning timeout: " + ex);
+                                Utils.sendErrorReport("Exception in duplicate warning timeout: " + ex);
                             }
                             catch(ex2){}
                         }
@@ -321,7 +323,7 @@ LicensePlateWidget.prototype.getNewElementWrapper = function(index){"use strict"
                 catch(ex){
                     Ti.API.error("Exception in duplicate warning timeout: " + ex);
                     try{
-                        Omadi.service.sendErrorReport("Exception in duplicate warning timeout: " + ex);
+                        Utils.sendErrorReport("Exception in duplicate warning timeout: " + ex);
                     }
                     catch(ex2){}
                 }
@@ -374,12 +376,12 @@ LicensePlateWidget.prototype.getNewElementWrapper = function(index){"use strict"
                         }
                     }
                     catch(ex){
-                        Omadi.service.sendErrorReport("Exception in license plate dialog click: " + ex);
+                        Utils.sendErrorReport("Exception in license plate dialog click: " + ex);
                     }
                 });
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception in license plate state click: " + ex);
+                Utils.sendErrorReport("Exception in license plate state click: " + ex);
             }
         });
         
@@ -430,14 +432,14 @@ LicensePlateWidget.prototype.setDuplicateWarnings = function(fieldName, value, s
                 }
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception on onload of setDuplicateWarnings: " + ex);
+                Utils.sendErrorReport("Exception on onload of setDuplicateWarnings: " + ex);
             }
         };
     
         http.onerror = function(e) {
             try{
                 Ti.API.error(JSON.stringify(e));
-                Omadi.service.sendErrorReport("Error on setduplicatewarnings: " + JSON.stringify(e));
+                Utils.sendErrorReport("Error on setduplicatewarnings: " + JSON.stringify(e));
             }
             catch(ex){
                 
@@ -453,7 +455,7 @@ LicensePlateWidget.prototype.setDuplicateWarnings = function(fieldName, value, s
         }));
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in setDuplicateWarnings: " + ex);
+        Utils.sendErrorReport("Exception in setDuplicateWarnings: " + ex);
     }
 };
 
@@ -700,7 +702,7 @@ LicensePlateWidget.prototype.cleanUp = function(){"use strict";
     }
     catch(ex){
         try{
-            Omadi.service.sendErrorReport("Exception cleaning up license plate widget field: " + ex);
+            Utils.sendErrorReport("Exception cleaning up license plate widget field: " + ex);
         }
         catch(ex1){}
     }

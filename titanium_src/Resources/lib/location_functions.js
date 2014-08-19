@@ -2,6 +2,8 @@
 
 Omadi.location = Omadi.location || {};
 
+var Utils = require('lib/Utils');
+
 Omadi.location.isLocationEnabled = function(){"use strict";
     /*global alertQueue */
     var dialog = null, locAuth, retval = true;
@@ -83,7 +85,7 @@ Omadi.location.getLastLocation = function(expire){"use strict";
         db.close();
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in getLastLocation: " + ex);
+        Utils.sendErrorReport("Exception in getLastLocation: " + ex);
     }
     
     return location;

@@ -4,6 +4,8 @@ var Widget, Omadi, dateWindow, date_picker, time_picker, innerWrapperView, wrapp
 Widget = {};
 dateWindow = null;
 
+var Utils = require('lib/Utils');
+
 function DatestampWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.formObj = formObj;
     this.instance = instance;
@@ -87,7 +89,7 @@ DatestampWidget.prototype.getFieldView = function(){"use strict";
                 Widget[e.source.fieldName].redraw();
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception redrawing datestamp field: " + ex);
+                Utils.sendErrorReport("Exception redrawing datestamp field: " + ex);
             }
         });
         
@@ -199,7 +201,7 @@ DatestampWidget.prototype.getNewElement = function(index){"use strict";
             }
         }
         catch(ex){
-            Omadi.service.sendErrorReport("Exception in dateview click datestamp: " + ex);
+            Utils.sendErrorReport("Exception in dateview click datestamp: " + ex);
         }
     });
     
@@ -232,7 +234,7 @@ DatestampWidget.prototype.getNewElement = function(index){"use strict";
                 }
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception with timeview clicked in datestamp: " + ex);
+                Utils.sendErrorReport("Exception with timeview clicked in datestamp: " + ex);
             }
         });
         
@@ -462,7 +464,7 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
                 dateWindow.close();
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Could not cancel out of datestamp window: " + ex);
+                Utils.sendErrorReport("Could not cancel out of datestamp window: " + ex);
             }
         });
     
@@ -586,7 +588,7 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
                     newDate = pickerValue;
                 }
                 else{
-                    Omadi.service.sendErrorReport("Neither the time picker nor the date picker were defined.");
+                    Utils.sendErrorReport("Neither the time picker nor the date picker were defined.");
                 }
                 
                 if(newDate){
@@ -622,11 +624,11 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
                     }
                 }
                 else{
-                    Omadi.service.sendErrorReport("Newdate is null or not defined");
+                    Utils.sendErrorReport("Newdate is null or not defined");
                 }
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Date ok button clicked problem: " + ex);    
+                Utils.sendErrorReport("Date ok button clicked problem: " + ex);    
             }
             
             try{
@@ -648,7 +650,7 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
                 dateWindow = null; 
             }
             catch(ex1){
-                Omadi.service.sendErrorReport("Date ok button closing window problem: " + ex1);
+                Utils.sendErrorReport("Date ok button closing window problem: " + ex1);
             }
         });
     
@@ -683,7 +685,7 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
                 }
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Date clear button clicked problem: " + ex);    
+                Utils.sendErrorReport("Date clear button clicked problem: " + ex);    
             }
     
             try{
@@ -705,7 +707,7 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
                 dateWindow = null;  
             }
             catch(ex1){
-                Omadi.service.sendErrorReport("Date clear button closing window problem: " + ex1);
+                Utils.sendErrorReport("Date clear button closing window problem: " + ex1);
             }
         });
     
@@ -730,7 +732,7 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
                 dateWindow = null; 
             }
             catch(ex1){
-                Omadi.service.sendErrorReport("Date cancel button closing window problem: " + ex1);
+                Utils.sendErrorReport("Date cancel button closing window problem: " + ex1);
             }
         });
     
@@ -757,7 +759,7 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
                 dateWindow = null; 
             }
             catch(ex1){
-                Omadi.service.sendErrorReport("Date cancel button closing window problem: " + ex1);
+                Utils.sendErrorReport("Date cancel button closing window problem: " + ex1);
             }
         });
         
@@ -802,7 +804,7 @@ DatestampWidget.prototype.cleanUp = function(){"use strict";
     }
     catch(ex){
         try{
-            Omadi.service.sendErrorReport("Exception cleaning up datestamp widget field: " + ex);
+            Utils.sendErrorReport("Exception cleaning up datestamp widget field: " + ex);
         }
         catch(ex1){}
     }

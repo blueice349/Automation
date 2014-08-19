@@ -1,6 +1,9 @@
 /*jslint eqeq:true, plusplus: true*/
 
 var Widget, Omadi;
+
+var Utils = require('lib/Utils');
+
 Widget = {};
 
 function ListBooleanWidget(formObj, instance, fieldViewWrapper){"use strict";
@@ -183,7 +186,7 @@ ListBooleanWidget.prototype.getNewElement = function(index){"use strict";
             }
         }
         catch(ex){
-            Omadi.service.sendErrorReport("Exception in checkbox click: " + ex);
+            Utils.sendErrorReport("Exception in checkbox click: " + ex);
         }
     });
     
@@ -216,7 +219,7 @@ ListBooleanWidget.prototype.cleanUp = function(){"use strict";
     }
     catch(ex){
         try{
-            Omadi.service.sendErrorReport("Exception cleaning up checkbox widget field: " + ex);
+            Utils.sendErrorReport("Exception cleaning up checkbox widget field: " + ex);
         }
         catch(ex1){}
     }

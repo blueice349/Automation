@@ -2,6 +2,8 @@
 
 var Widget, Omadi, CalculatedFieldCache;
 
+var Utils = require('lib/Utils');
+
 Widget = {};
 CalculatedFieldCache = {};
 
@@ -168,7 +170,7 @@ CalculationFieldWidget.prototype.getNewElement = function(index, showCalc){"use 
                 Widget[e.source.instance.field_name].redraw(instance);
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception while clicking recalculate: " + ex);
+                Utils.sendErrorReport("Exception while clicking recalculate: " + ex);
             }
         });
         
@@ -509,7 +511,7 @@ CalculationFieldWidget.prototype.getTableView = function() {"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception getting calculation field table view: " + ex);
+        Utils.sendErrorReport("Exception getting calculation field table view: " + ex);
     }
 
     return tableView;
@@ -851,7 +853,7 @@ CalculationFieldWidget.prototype.getRowValues = function(instance){"use strict";
         }
     }
     catch(ex){
-        this.formObj.sendError("Exception getting calc row values: " + ex);    
+        Utils.sendErrorReport("Exception getting calc row values: " + ex);    
     }
     
     return [{
@@ -887,7 +889,7 @@ CalculationFieldWidget.prototype.cleanUp = function(){"use strict";
     }
     catch(ex){
         try{
-            Omadi.service.sendErrorReport("Exception cleaning up calculation widget field: " + ex);
+            Utils.sendErrorReport("Exception cleaning up calculation widget field: " + ex);
         }
         catch(ex1){}
     }
@@ -914,10 +916,6 @@ exports.getView = function(OmadiObj, node, instance){"use strict";
     formObj.form_part = node.form_part;
     formObj.formToNode = function(){
         return node;  
-    };
-    
-    formObj.sendError = function(message){
-        Omadi.services.sendErrorReport(message);  
     };
     
     widget = new CalculationFieldWidget(formObj, instance, null);

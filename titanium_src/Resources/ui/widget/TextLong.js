@@ -2,6 +2,8 @@
 
 var Widget, Omadi;
 
+var Utils = require('lib/Utils');
+
 Widget = {};
 
 function TextLongWidget(formObj, instance, fieldViewWrapper){"use strict";
@@ -84,7 +86,7 @@ TextLongWidget.prototype.getFieldView = function(){"use strict";
                 Widget[e.source.fieldName].redraw();
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception in text long add another: " + ex);
+                Utils.sendErrorReport("Exception in text long add another: " + ex);
             }
         });
         
@@ -227,7 +229,7 @@ TextLongWidget.prototype.getNewElement = function(index){"use strict";
         }
         catch(ex){
             try{
-                Omadi.service.sendErrorReport("Exception in text long focus listener: " + ex);
+                Utils.sendErrorReport("Exception in text long focus listener: " + ex);
             }
             catch(ex1){}
         }
@@ -239,7 +241,7 @@ TextLongWidget.prototype.getNewElement = function(index){"use strict";
         }
         catch(ex){
             try{
-                Omadi.service.sendErrorReport("exception in text long blur: " + ex);
+                Utils.sendErrorReport("exception in text long blur: " + ex);
             }catch(ex1){}
         }
     });
@@ -272,7 +274,7 @@ TextLongWidget.prototype.cleanUp = function(){"use strict";
     }
     catch(ex){
         try{
-            Omadi.service.sendErrorReport("Exception cleaning up text long widget field: " + ex);
+            Utils.sendErrorReport("Exception cleaning up text long widget field: " + ex);
         }
         catch(ex1){}
     }

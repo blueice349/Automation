@@ -213,7 +213,7 @@ function getRegionHeaderView(regionView, region, expanded){"use strict";
             }
         }
         catch(ex){
-            Omadi.service.sendErrorReport("Exception in region click: " + ex);
+            Utils.sendErrorReport("Exception in region click: " + ex);
         }
     });
     
@@ -242,7 +242,7 @@ function getRegionHeaderView(regionView, region, expanded){"use strict";
                             // FormObj[i].fieldObjects[j].cleanUp();
                         // }
                         // catch(ex1){
-                            // Omadi.service.sendErrorReport("Failed to cleanup object: " + ex1);
+                            // Utils.sendErrorReport("Failed to cleanup object: " + ex1);
                         // }
                     // }
                 // }
@@ -250,7 +250,7 @@ function getRegionHeaderView(regionView, region, expanded){"use strict";
         // }
     // }
     // catch(ex){
-        // Omadi.service.sendErrorReport("Failed to cleanup: " + ex);
+        // Utils.sendErrorReport("Failed to cleanup: " + ex);
     // }
     // // Clear out everything in FormObj
      // FormObj = null;
@@ -649,7 +649,7 @@ FormModule.prototype.closeWindow = function(){"use strict";
           Omadi.data.deleteContinuousNodes();
      }
      catch(ex4){
-         Omadi.service.sendErrorReport("Exception deleting continuous: " + ex4);
+         Utils.sendErrorReport("Exception deleting continuous: " + ex4);
      }
      
      try{
@@ -667,7 +667,7 @@ FormModule.prototype.closeWindow = function(){"use strict";
                                 // FormObj[i].fieldObjects[j].cleanUp();
                             // }
                             // catch(ex1){
-                                // Omadi.service.sendErrorReport("Failed to cleanup object: " + ex1);
+                                // Utils.sendErrorReport("Failed to cleanup object: " + ex1);
                             // }
                         // }
                     // }
@@ -675,7 +675,7 @@ FormModule.prototype.closeWindow = function(){"use strict";
             // }
          // }
          // catch(ex){
-            // Omadi.service.sendErrorReport("Failed to cleanup: " + ex);
+            // Utils.sendErrorReport("Failed to cleanup: " + ex);
          // }
         
          // Clear out everything in FormObj
@@ -699,7 +699,7 @@ FormModule.prototype.closeWindow = function(){"use strict";
              }
          }
          catch(exRegion){
-             Omadi.service.sendErrorReport("Exception removing region views: " + exRegion);
+             Utils.sendErrorReport("Exception removing region views: " + exRegion);
          }
          
          this.regionViews = {};
@@ -714,7 +714,7 @@ FormModule.prototype.closeWindow = function(){"use strict";
                     this.fieldObjects[j].cleanUp();
                 }
                 catch(ex2){
-                    Omadi.service.sendErrorReport("Failed to cleanup object: " + ex2);
+                    Utils.sendErrorReport("Failed to cleanup object: " + ex2);
                 }
                 
                 this.fieldObjects[j] = null;
@@ -773,7 +773,7 @@ FormModule.prototype.trySaveNode = function(saveType){"use strict";
 		
 		this.saveNode(saveType);
 	} catch (e) {
-		Omadi.service.sendErrorReport("Exception in trysavenode: " + e);
+		Utils.sendErrorReport("Exception in trysavenode: " + e);
 	} finally {
 		this.trySaveNodeTries = 0;
 		Omadi.display.doneLoading();
@@ -797,7 +797,7 @@ FormModule.prototype.saveNode = function(saveType) {
         
         if (!this.node._isContinuous) {
         	if (!this.node._saved) {
-	            Omadi.service.sendErrorReport("Node failed to save on the phone: " + JSON.stringify(this.node));
+	            Utils.sendErrorReport("Node failed to save on the phone: " + JSON.stringify(this.node));
 	            alert("There is a problem with the form data, and it cannot not be saved. Please fix the data or close the form.");
 	            return;
 	        }
@@ -831,7 +831,7 @@ FormModule.prototype.saveNode = function(saveType) {
 			dialog.show();
 		}
 	} catch (e) {
-		Omadi.service.sendErrorReport("Exception in saveNode: " + e);
+		Utils.sendErrorReport("Exception in saveNode: " + e);
 	}
 };
 
@@ -893,7 +893,7 @@ FormModule.prototype.loadCustomCopyNode = function(originalNode, from_type, to_t
     }
     else{
         Ti.API.error("No bundle found for " + from_type);
-        Omadi.service.sendErrorReport("No bundle found for " + from_type);
+        Utils.sendErrorReport("No bundle found for " + from_type);
     }
     
     return newNode;
@@ -946,7 +946,7 @@ FormModule.prototype.formToNode = function(addDispatch){"use strict";
            }
        }
        catch(dispatchEx){
-           Omadi.service.sendErrorReport("Exception adding dispatch info to node: " + dispatchEx);
+           Utils.sendErrorReport("Exception adding dispatch info to node: " + dispatchEx);
        }
    }
    catch(ex){
@@ -1532,7 +1532,7 @@ FormModule.prototype.validate_form_data = function(saveType){"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in form validation: " + ex);
+        Utils.sendErrorReport("Exception in form validation: " + ex);
     }
 };
 
@@ -1599,7 +1599,7 @@ FormModule.prototype.validateMaxLength = function(instance){"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in validate max length: " + ex);
+        Utils.sendErrorReport("Exception in validate max length: " + ex);
     }
 };
 
@@ -1675,7 +1675,7 @@ FormModule.prototype.saveForm = function(saveType){"use strict";
         }
     }
     catch(ex1){
-        Omadi.service.sendErrorReport("Exception saving form: " + ex1);
+        Utils.sendErrorReport("Exception saving form: " + ex1);
     }
 };
 
@@ -1695,7 +1695,7 @@ function duplicateWarningCompleteCallback(e){"use strict";
         }
     }
     catch(ex3){
-        Omadi.service.sendErrorReport("Exception in closing waiting dialog for duplicatewarningcomplete: " + ex3);
+        Utils.sendErrorReport("Exception in closing waiting dialog for duplicatewarningcomplete: " + ex3);
     }
     
     try{
@@ -1742,7 +1742,7 @@ function duplicateWarningCompleteCallback(e){"use strict";
         }
     }
     catch(ex1){
-        Omadi.service.sendErrorReport("Exception in duplicatewarningcomplete: " + ex1);
+        Utils.sendErrorReport("Exception in duplicatewarningcomplete: " + ex1);
     }
 }
 
@@ -1940,7 +1940,7 @@ FormModule.prototype.displayDuplicateWarnings = function(warningJSON, value, sav
                 }
             }
             catch(exDB){
-                Omadi.service.sendErrorReport("Exception in database section of display duplicate: " + exDB);
+                Utils.sendErrorReport("Exception in database section of display duplicate: " + exDB);
             }
             
             for(i = 0; i < matches.length; i ++){
@@ -2025,7 +2025,7 @@ FormModule.prototype.displayDuplicateWarnings = function(warningJSON, value, sav
                     }
                 }
                 catch(ex){
-                    Omadi.service.sendErrorReport("Exception in duplicate warning table view click: " + ex);
+                    Utils.sendErrorReport("Exception in duplicate warning table view click: " + ex);
                 }
             });
             
@@ -2161,15 +2161,9 @@ FormModule.prototype.displayDuplicateWarnings = function(warningJSON, value, sav
             this.win.add(wrapper);
         }
         catch(ex){
-            Omadi.service.sendErrorReport("Exception showing duplicate warnings: " + ex);
+            Utils.sendErrorReport("Exception showing duplicate warnings: " + ex);
         }
     }
-};
-
-FormModule.prototype.sendError = function(message){"use strict";
-    message += JSON.stringify(this.node);
-    Ti.API.error(message);
-    Omadi.service.sendErrorReport(message);
 };
 
 FormModule.prototype.initNewNode = function(){"use strict";
@@ -2223,7 +2217,7 @@ FormModule.prototype.initNewNode = function(){"use strict";
     }
     catch(ex){
         Ti.API.error("Exception initializing a new node: " + ex);
-        Omadi.service.sendErrorReport("Exception initializing a new node: " + ex);
+        Utils.sendErrorReport("Exception initializing a new node: " + ex);
     }
 };
 FormModule.prototype.getFormFieldValues = function(field_name){"use strict";
@@ -2257,7 +2251,7 @@ FormModule.prototype.setValues = function(field_name, defaultValues){"use strict
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in setValues: " + ex);
+        Utils.sendErrorReport("Exception in setValues: " + ex);
     }
 };
 
@@ -2557,7 +2551,7 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
                         }
                     }
                     catch(ex){
-                        Omadi.service.sendErrorReport("Exception in form list view click: " + ex);
+                        Utils.sendErrorReport("Exception in form list view click: " + ex);
                     }
                 });
                 
@@ -2719,7 +2713,7 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
                         }
                     }
                     catch(ex){
-                        Omadi.service.sendErrorReport("Exception in form ok button pressed for multi select: " + ex);
+                        Utils.sendErrorReport("Exception in form ok button pressed for multi select: " + ex);
                     }
                     
                     try{
@@ -2731,7 +2725,7 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
                         popupWin = null;
                     }
                     catch(ex1){
-                        Omadi.service.sendErrorReport("Exception closing out the multi-select from ok button: " + ex1);
+                        Utils.sendErrorReport("Exception closing out the multi-select from ok button: " + ex1);
                     }
                 });
             
@@ -2781,7 +2775,7 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
                         popupWin = null;
                     }
                     catch(ex){
-                        Omadi.service.sendErrorReport("Exception in multi-view cancel button: " + ex);
+                        Utils.sendErrorReport("Exception in multi-view cancel button: " + ex);
                     }
                 });
                 
@@ -2820,7 +2814,7 @@ FormModule.prototype.setupIOSToolbar = function(){"use strict";
             ActiveFormObj.parentTabObj.close();
         }
         catch(ex){
-            Omadi.service.sendErrorReport("Exception in back click for form: " + ex);
+            Utils.sendErrorReport("Exception in back click for form: " + ex);
         }
     });
 
@@ -3163,7 +3157,7 @@ FormModule.prototype.getWindow = function(){"use strict";
             this.recalculateCalculationFields();
         }
         catch(exBottom){
-            Omadi.service.sendErrorReport("Exception in creating the bottom part of the form: " + exBottom);
+            Utils.sendErrorReport("Exception in creating the bottom part of the form: " + exBottom);
         }
     }
     catch(ex){
@@ -3372,7 +3366,7 @@ FormModule.prototype.changeViolationFieldOptions = function(args){"use strict";
             descriptions = [];
         }
         catch(extop){
-            Omadi.service.sendErrorReport("Exception in changeviolationfieldoptions top: " + extop);
+            Utils.sendErrorReport("Exception in changeviolationfieldoptions top: " + extop);
         }
         
         if(parentNidDBValues.length > 0){
@@ -3403,7 +3397,7 @@ FormModule.prototype.changeViolationFieldOptions = function(args){"use strict";
                         rulesData = JSON.parse(origRulesData);
                     }
                     catch(exJSON){
-                        Omadi.service.sendErrorReport("Exception parsing violation JSON: " + exJSON + " " + origRulesData);
+                        Utils.sendErrorReport("Exception parsing violation JSON: " + exJSON + " " + origRulesData);
                     }
                     
                     Ti.API.debug("Rules data: ");
@@ -3555,11 +3549,11 @@ FormModule.prototype.changeViolationFieldOptions = function(args){"use strict";
             this.setValueWidgetProperty(violation_field_name, ['options'], options);
         }
         catch(ex1){
-            Omadi.service.sendErrorReport("Exception setting violation options: " + ex1);
+            Utils.sendErrorReport("Exception setting violation options: " + ex1);
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Could not change the violation options: " + ex);
+        Utils.sendErrorReport("Could not change the violation options: " + ex);
     }
 };
 
@@ -3623,16 +3617,16 @@ FormModule.prototype.showActionsOptions = function(e){"use strict";
                 }
                 else{
                     alert("The form data was saved correctly, but this screen didn't close for some reason. You can exit safely.");
-                    Omadi.service.sendErrorReport("User got the alert about the screen not closing.");
+                    Utils.sendErrorReport("User got the alert about the screen not closing.");
                 }
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception in post dialog after save in form: " + ex);
+                Utils.sendErrorReport("Exception in post dialog after save in form: " + ex);
             }
         });
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in form show actions options: " + ex);
+        Utils.sendErrorReport("Exception in form show actions options: " + ex);
     }
 };
 
@@ -3707,7 +3701,7 @@ FormModule.prototype.getFieldView = function(instance, fieldViewWrapper){"use st
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in creating a field on a form: " + ex);
+        Utils.sendErrorReport("Exception in creating a field on a form: " + ex);
     }
     return fieldView;
 };
@@ -3912,7 +3906,7 @@ FormModule.prototype.getTextField = function(instance){"use strict";
         }
         catch(ex){
             try{
-                Omadi.service.sendErrorReport("exception in text field in form blur: " + ex);
+                Utils.sendErrorReport("exception in text field in form blur: " + ex);
             }catch(ex1){}
         }
     });
@@ -4344,7 +4338,7 @@ exports.getWindow = function(OmadiObj, type, nid, form_part, usingDispatch){"use
         return FormObj[type].getWindow();
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception getting window for form: " + ex);
+        Utils.sendErrorReport("Exception getting window for form: " + ex);
     }
 };
 

@@ -2,6 +2,8 @@
 
 Omadi.bundles.inspection = {};
 
+var Utils = require('lib/Utils');
+
 Omadi.bundles.inspection.getLastInspectionReportNid = function(vehicleNid){"use strict";
     var db, result, lastNid;
     /* Prerequisite to using this function is knowing the inspection bundle exists */
@@ -90,7 +92,7 @@ Omadi.bundles.inspection.askToReviewLastInspection = function(){"use strict";
                                     }
                                 }
                                 catch(ex){
-                                    Omadi.service.sendErrorReport("exception review last inspection report: " + ex);
+                                    Utils.sendErrorReport("exception review last inspection report: " + ex);
                                 }
                             });
                             
@@ -215,7 +217,7 @@ Omadi.bundles.inspection.askToCreateInspection = function(showLogout){"use stric
                }
             }
             catch(ex){
-                Omadi.service.sendErrorReport("exception ask to create inspection: " + ex);
+                Utils.sendErrorReport("exception ask to create inspection: " + ex);
                 // Make sure the user can always log out
                 Omadi.display.showLogoutDialog();
             }

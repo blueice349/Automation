@@ -231,7 +231,7 @@ FormTabs.prototype.getIdsOfMissingFiles = function(node) {
 						finished : result.fieldByName('finished')
 					};
 		            
-					Omadi.service.sendErrorReport('File ' + i + ' of ' + numMissingFiles + ' not found on node save: ' + JSON.stringify(fileInfo));
+					Utils.sendErrorReport('File ' + i + ' of ' + numMissingFiles + ' not found on node save: ' + JSON.stringify(fileInfo));
 					missingFiles.push(fileInfo.id);
 				}
 				i++;
@@ -653,7 +653,7 @@ FormTabs.prototype.getWindow = function(initNewDispatch){"use strict";
                 this.tabGroup.addTab(this.commentsTab);
             }
             catch(commentEx){
-                this.sendError("Exception with comments: " + commentEx);
+                Utils.sendErrorReport("Exception with comments: " + commentEx);
             }
         }
         
@@ -797,7 +797,7 @@ FormTabs.prototype.setupMenu = function(){"use strict";
                         }
                     }
                     catch(ex){
-                        this.sendError("Could not init the Android menu: " + ex);
+                        Utils.sendErrorReport("Could not init the Android menu: " + ex);
                     }
                 };
             });
@@ -807,7 +807,7 @@ FormTabs.prototype.setupMenu = function(){"use strict";
         }
     }
     catch(evt) {
-        this.sendError("Exception setting up form menu: " + evt);
+        Utils.sendErrorReport("Exception setting up form menu: " + evt);
     }
 };
 
@@ -987,7 +987,7 @@ FormTabs.prototype.handleUnsavedAttachments = function(callback){"use strict";
                             callback();
                     	}
                     } catch(ex) {
-                        Omadi.service.sendErrorReport("Exception in form second dialog click: " + ex);
+                        Utils.sendErrorReport("Exception in form second dialog click: " + ex);
                     	callback();
                     }
                 });
@@ -997,7 +997,7 @@ FormTabs.prototype.handleUnsavedAttachments = function(callback){"use strict";
         }
     }
     catch(ex){
-        this.workObj.sendError("Exception handling unsaved attachments: " + ex);
+        Utils.sendErrorReport("Exception handling unsaved attachments: " + ex);
         callback();
     }
 };
@@ -1210,20 +1210,14 @@ FormTabs.prototype.towTypeChanged = function(e) {"use strict";
             }
         }
         else {
-            Dispatch.sendError("There was a problem with the " + newNodeType + " selection. Please select a different option.");
+            Utils.sendErrorReport("There was a problem with the " + newNodeType + " selection. Please select a different option.");
             alert("There was a problem with the " + newNodeType + " selection. Please select a different option.");
         }
     }
     catch(ex){
-        Dispatch.sendError("There was an exception with the " + newNodeType + " dispatch selection: " + ex);
+        Utils.sendErrorReport("There was an exception with the " + newNodeType + " dispatch selection: " + ex);
         alert("An error occurred with your selection. Please contact support.");
     }
-};
-
-FormTabs.prototype.sendError = function(message){"use strict";
-    message += JSON.stringify(this.node);
-    Ti.API.error(message);
-    Utils.sendErrorReport(message);
 };
 
 exports.getNode = function(){"use strict";
@@ -1289,7 +1283,7 @@ function switchNidForObject(obj, e) {
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception switching the nid in a form: " + ex);
+        Utils.sendErrorReport("Exception switching the nid in a form: " + ex);
     }	
 };
 
@@ -1318,7 +1312,7 @@ exports.photoUploaded = function(e){"use strict";
 	        }
 	    }
 	    catch(ex){
-	        Omadi.service.sendErrorReport("Exception switching the photo id in a form: " + ex);
+	        Utils.sendErrorReport("Exception switching the photo id in a form: " + ex);
 	    }
     }
 };

@@ -3,6 +3,8 @@
 
 Omadi.bundles.tag = {};
 
+var Utils = require('lib/Utils');
+
 Omadi.bundles.tag.hasSavedTags = function(){"use strict";
     var db, result, retval = false;
     
@@ -113,7 +115,7 @@ Omadi.bundles.tag.getExpiredTags = function(){"use strict";
         db.close();
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in getting expired tags: " + ex);
+        Utils.sendErrorReport("Exception in getting expired tags: " + ex);
     }
     
     if(typeof tagBundle.data.node_type_specific !== 'undefined'){
@@ -155,7 +157,7 @@ Omadi.bundles.tag.getExpiredTags = function(){"use strict";
             }
         }
         catch(ex1){
-            Omadi.service.sendErrorReport("Exception in adding search sql to tag expired: " + ex1);
+            Utils.sendErrorReport("Exception in adding search sql to tag expired: " + ex1);
         }
             
         try{
@@ -219,7 +221,7 @@ Omadi.bundles.tag.getExpiredTags = function(){"use strict";
             }
         }
         catch(ex2){
-            Omadi.service.sendErrorReport("Exception in filtering community tags: " + ex2);
+            Utils.sendErrorReport("Exception in filtering community tags: " + ex2);
         }
     }
     

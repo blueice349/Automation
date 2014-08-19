@@ -11,6 +11,8 @@ Ti.include('/lib/encoder_base_64.js');
 Ti.include('/lib/functions.js');
 Ti.include('/main_windows/ios_geolocation.js');
 
+var Utils = require('lib/Utils');
+
 Ti.API.info("Starting App.");
 
 var iOSGPS, scrollView, scrollPositionY = 0, portal, sound;
@@ -80,7 +82,7 @@ function startGPSService() {"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in startGPSService: " + ex);
+        Utils.sendErrorReport("Exception in startGPSService: " + ex);
     }
 }
 
@@ -373,7 +375,7 @@ function openMainScreen(loggedIn){"use strict";
         startGPSService();
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception opening main menu screen: " + ex);
+        Utils.sendErrorReport("Exception opening main menu screen: " + ex);
     }
 }
 
@@ -965,7 +967,7 @@ function openMainScreen(loggedIn){"use strict";
                             openMainScreen(false);
                         }
                         catch(ex){
-                            Omadi.service.sendErrorReport("Exception in onload callback in login: " + ex);
+                            Utils.sendErrorReport("Exception in onload callback in login: " + ex);
                         }
                     };
     
@@ -987,12 +989,12 @@ function openMainScreen(loggedIn){"use strict";
                             }
                             else {
                                 alert("There was a problem logging you in. Please try again. Details: " + e.error);
-                                Omadi.service.sendErrorReport("Error logging in: " + e.error);
+                                Utils.sendErrorReport("Error logging in: " + e.error);
                                 //label_error.text = "An error has occurred. Please try again.";
                             }
                         }
                         catch(ex){
-                            Omadi.service.sendErrorReport("Exception in onerror handler in login: " + ex);
+                            Utils.sendErrorReport("Exception in onerror handler in login: " + ex);
                         }
                     };
                     
@@ -1015,7 +1017,7 @@ function openMainScreen(loggedIn){"use strict";
                 }
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception with login button clicked: " + ex);
+                Utils.sendErrorReport("Exception with login button clicked: " + ex);
             }
         });
 
@@ -1047,7 +1049,7 @@ function openMainScreen(loggedIn){"use strict";
                 }
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception in android back in login screen: " + ex);
+                Utils.sendErrorReport("Exception in android back in login screen: " + ex);
                 Ti.UI.currentWindow.close();
             }
         });
@@ -1073,7 +1075,7 @@ function openMainScreen(loggedIn){"use strict";
                 openMainScreen(true);
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception getting to main screen already logged in: " + ex);
+                Utils.sendErrorReport("Exception getting to main screen already logged in: " + ex);
             }
         }
         else{

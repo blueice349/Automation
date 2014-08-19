@@ -3,6 +3,8 @@
 var Omadi = Omadi || {};
 Omadi.utils = Omadi.utils || {};
 
+var Utils = require('lib/Utils');
+
 Omadi.DOMAIN_NAME = domainName;
 Ti.App.DOMAIN_NAME = domainName;
 
@@ -313,7 +315,7 @@ Omadi.utils.setCookieHeader = function(http) {"use strict";
         catch(ex){
             Ti.API.error("Could not set http cookie header");
             Ti.API.error(cookie);
-            Omadi.service.sendErrorReport("Could not set cookie for " + http.location);
+            Utils.sendErrorReport("Could not set cookie for " + http.location);
         }
     }
 };
@@ -1802,7 +1804,7 @@ Omadi.utils.list_search_node_matches_search_criteria = function(node, criteria) 
         // No conditions exist, so the row matches
     }
     catch(e) {
-        Omadi.service.sendErrorReport("Exception in matching search criteria: " + e);
+        Utils.sendErrorReport("Exception in matching search criteria: " + e);
     }
 
     return true;

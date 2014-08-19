@@ -2,6 +2,7 @@
 /*jslint eqeq:true,plusplus:true*/
 
 var Comments = require('services/Comments');
+var Utils = require('lib/Utils');
 
 Omadi.service = Omadi.service || {};
 
@@ -79,7 +80,7 @@ Omadi.service.refreshSession = function() {"use strict";
                                     db_func.close();
                                 }
                                 catch(ex){
-                                    Omadi.service.sendErrorReport("exception in logged out 403: " + ex);
+                                    Utils.sendErrorReport("exception in logged out 403: " + ex);
                                 }
                             });
     
@@ -105,7 +106,7 @@ Omadi.service.refreshSession = function() {"use strict";
                                     db_func.close();
                                 }
                                 catch(ex){
-                                    Omadi.service.sendErrorReport("exception in logged out 401: " + ex);
+                                    Utils.sendErrorReport("exception in logged out 401: " + ex);
                                 }
                             });
     
@@ -194,7 +195,7 @@ Omadi.service.syncInitialFormItems = function(nodeCount, commentCount, numPages)
         Omadi.service.syncInitialInstallDownloadNextPage();
     }
     catch(ex1){
-        Omadi.service.sendErrorReport("Exception in paging retrieval setup: " + ex1);    
+        Utils.sendErrorReport("Exception in paging retrieval setup: " + ex1);    
     }
 };
 
@@ -239,7 +240,7 @@ Omadi.service.syncInitialInstallDownloadRetry = function(){"use strict";
             }, 5000);
         }
         else{
-            Omadi.service.sendErrorReport("in else in syncInitialInstallDownloadRetry: page=" + Omadi.service.initialInstallPage + ', total=' + Omadi.service.initialInstallTotalPages);
+            Utils.sendErrorReport("in else in syncInitialInstallDownloadRetry: page=" + Omadi.service.initialInstallPage + ', total=' + Omadi.service.initialInstallTotalPages);
             
             if(Omadi.service.progressBar !== null){
                 Omadi.service.progressBar.close();
@@ -251,7 +252,7 @@ Omadi.service.syncInitialInstallDownloadRetry = function(){"use strict";
         Omadi.data.setLastUpdateTimestamp(0);
         
         alert("A problem occurred syncing the initial form entries. Please logout and try again.");
-        Omadi.service.sendErrorReport("Too many retries in the initial install");
+        Utils.sendErrorReport("Too many retries in the initial install");
     }
 };
 
@@ -289,7 +290,7 @@ Omadi.service.processInitialInstallJSON = function(){"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in processInitialInstallJSON: " + ex);
+        Utils.sendErrorReport("Exception in processInitialInstallJSON: " + ex);
     }
     finally{
         try{
@@ -401,7 +402,7 @@ Omadi.service.syncInitialFormPage = function(page){"use strict";
                                 Omadi.service.processInitialInstallJSON();
                             }
                             else{
-                                Omadi.service.sendErrorReport("Text is not json");
+                                Utils.sendErrorReport("Text is not json");
                                 if (Omadi.service.progressBar !== null) {
                                     Omadi.service.progressBar.close();
                                     Omadi.service.progressBar = null;
@@ -409,7 +410,7 @@ Omadi.service.syncInitialFormPage = function(page){"use strict";
                             }
                         }
                         else{
-                            Omadi.service.sendErrorReport("Failed to write to the download file");
+                            Utils.sendErrorReport("Failed to write to the download file");
                         }
                         
                         if(file.exists()){
@@ -418,7 +419,7 @@ Omadi.service.syncInitialFormPage = function(page){"use strict";
                     }
                     catch(ex){
                         Ti.API.debug("Exception at data: " + ex);
-                        Omadi.service.sendErrorReport("Exception at json data: " + ex);
+                        Utils.sendErrorReport("Exception at json data: " + ex);
                     }
                     
                     file = null;
@@ -426,7 +427,7 @@ Omadi.service.syncInitialFormPage = function(page){"use strict";
                 }
                 else{
                     Ti.API.debug("No data was found.");        
-                    Omadi.service.sendErrorReport("Bad response text and data for download: " + this.responseText + ", stautus: " + this.status + ", statusText: " + this.statusText);
+                    Utils.sendErrorReport("Bad response text and data for download: " + this.responseText + ", stautus: " + this.status + ", statusText: " + this.statusText);
                 }  
                 
                 setTimeout(function(){
@@ -434,7 +435,7 @@ Omadi.service.syncInitialFormPage = function(page){"use strict";
                 }, 500);       
             }
             catch(ex1){
-                Omadi.service.sendErrorReport("Exception in saving initial install data onsuccess: " + ex1);
+                Utils.sendErrorReport("Exception in saving initial install data onsuccess: " + ex1);
                 
                 Ti.App.fireEvent('omadi:initialInstallDownloadRetry'); 
             }
@@ -468,7 +469,7 @@ Omadi.service.syncInitialFormPage = function(page){"use strict";
                             db_func.close();
                         }
                         catch(ex){
-                            Omadi.service.sendErrorReport("exception in logged out update 403: " + ex);
+                            Utils.sendErrorReport("exception in logged out update 403: " + ex);
                         }
                     });
     
@@ -493,7 +494,7 @@ Omadi.service.syncInitialFormPage = function(page){"use strict";
                             db_func.close();
                         }
                         catch(ex){
-                            Omadi.service.sendErrorReport("exception in logged out update 401: " + ex);
+                            Utils.sendErrorReport("exception in logged out update 401: " + ex);
                         }
                     });
     
@@ -515,7 +516,7 @@ Omadi.service.syncInitialFormPage = function(page){"use strict";
                 
                 if(Omadi.data.getLastUpdateTimestamp() <= 1 || this.userInitiated){
                     
-                    Omadi.service.sendErrorReport("Network Error with dialog: " + errorDescription);
+                    Utils.sendErrorReport("Network Error with dialog: " + errorDescription);
                     
                     message = "There was a network error";
                     dialog = Titanium.UI.createAlertDialog({
@@ -550,7 +551,7 @@ Omadi.service.syncInitialFormPage = function(page){"use strict";
         
     }
     catch(ex1){
-        Omadi.service.sendErrorReport("Exception in paging retrieval: " + ex1);    
+        Utils.sendErrorReport("Exception in paging retrieval: " + ex1);    
     }
 };
 
@@ -693,7 +694,7 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
                                         Omadi.data.processFetchedJson();
                                     }
                                     else{
-                                        Omadi.service.sendErrorReport("Text is not json");
+                                        Utils.sendErrorReport("Text is not json");
                                         if (Omadi.service.progressBar !== null) {
                                             Omadi.service.progressBar.close();
                                             Omadi.service.progressBar = null;
@@ -701,7 +702,7 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
                                     }
                                 }
                                 else{
-                                    Omadi.service.sendErrorReport("Failed to write to the download file");
+                                    Utils.sendErrorReport("Failed to write to the download file");
                                 }
                                 
                                 if(file.exists()){
@@ -710,7 +711,7 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
                             }
                             catch(ex){
                                 Ti.API.debug("Exception at data: " + ex);
-                                Omadi.service.sendErrorReport("Exception at json data: " + ex);
+                                Utils.sendErrorReport("Exception at json data: " + ex);
                             }
                             
                             file = null;
@@ -723,11 +724,11 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
                                 Omadi.service.progressBar = null;
                             }
                 
-                            Omadi.service.sendErrorReport("Bad response text and data for download: " + this.responseText + ", stautus: " + this.status + ", statusText: " + this.statusText);
+                            Utils.sendErrorReport("Bad response text and data for download: " + this.responseText + ", stautus: " + this.status + ", statusText: " + this.statusText);
                         }               
                     }
                     catch(ex1){
-                        Omadi.service.sendErrorReport("Exception in saving sync data onsuccess: " + ex1);
+                        Utils.sendErrorReport("Exception in saving sync data onsuccess: " + ex1);
                     }
                     
                     Omadi.data.setUpdating(false);
@@ -773,7 +774,7 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
                                     db_func.close();
                                 }
                                 catch(ex){
-                                    Omadi.service.sendErrorReport("exception in logged out update 403: " + ex);
+                                    Utils.sendErrorReport("exception in logged out update 403: " + ex);
                                 }
                             });
     
@@ -798,7 +799,7 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
                                     db_func.close();
                                 }
                                 catch(ex){
-                                    Omadi.service.sendErrorReport("exception in logged out update 401: " + ex);
+                                    Utils.sendErrorReport("exception in logged out update 401: " + ex);
                                 }
                             });
     
@@ -820,7 +821,7 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
                         
                         if(Omadi.data.getLastUpdateTimestamp() <= 1 || this.userInitiated){
                             
-                            Omadi.service.sendErrorReport("Network Error with dialog: " + errorDescription);
+                            Utils.sendErrorReport("Network Error with dialog: " + errorDescription);
                             
                             message = "There was a network error";
                             dialog = Titanium.UI.createAlertDialog({
@@ -861,7 +862,7 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
         }
     }
     catch(ex) {
-        Omadi.service.sendErrorReport("exception changing omadi reference select value: " + ex);
+        Utils.sendErrorReport("exception changing omadi reference select value: " + ex);
     }
 };
 
@@ -933,7 +934,7 @@ Omadi.service.sendDataOnLoad = function(e){"use strict";
                         Omadi.data.processFetchedJson();
                     }
                     else{
-                        Omadi.service.sendErrorReport("Text is not json");
+                        Utils.sendErrorReport("Text is not json");
                         if (Omadi.service.progressBar !== null) {
                             Omadi.service.progressBar.close();
                             Omadi.service.progressBar = null;
@@ -941,7 +942,7 @@ Omadi.service.sendDataOnLoad = function(e){"use strict";
                     }
                 }
                 else{
-                    Omadi.service.sendErrorReport("Failed to write to the download file");
+                    Utils.sendErrorReport("Failed to write to the download file");
                 }
                 
                 if(file.exists()){
@@ -950,7 +951,7 @@ Omadi.service.sendDataOnLoad = function(e){"use strict";
             }
             catch(ex){
                 Ti.API.debug("Exception at data: " + ex);
-                Omadi.service.sendErrorReport("Exception at json data: " + ex);
+                Utils.sendErrorReport("Exception at json data: " + ex);
             }
             
             file = null;
@@ -977,7 +978,7 @@ Omadi.service.sendDataOnLoad = function(e){"use strict";
                     Omadi.service.logout();
                 }
                 catch(ex){
-                    Omadi.service.sendErrorReport("exception on logstatus logout: " + ex);
+                    Utils.sendErrorReport("exception on logstatus logout: " + ex);
                 }
             });
         }
@@ -987,7 +988,7 @@ Omadi.service.sendDataOnLoad = function(e){"use strict";
         Ti.App.fireEvent("doneSendingData");
     }
     catch(ex1){
-        Omadi.service.sendErrorReport("Exception in update data onload: " + ex1);
+        Utils.sendErrorReport("Exception in update data onload: " + ex1);
     }
 };
 
@@ -1016,7 +1017,7 @@ Omadi.service.sendDataOnError = function(e){"use strict";
                 });
                 
                 try{
-                    Omadi.service.sendErrorReport('User logged out with code ' + this.status + " " + e.error);
+                    Utils.sendErrorReport('User logged out with code ' + this.status + " " + e.error);
                 }
                 catch(none){}
     
@@ -1046,12 +1047,12 @@ Omadi.service.sendDataOnError = function(e){"use strict";
     
             dialog.show();
     
-            Omadi.service.sendErrorReport('500 error on send update: ' + e.error);
+            Utils.sendErrorReport('500 error on send update: ' + e.error);
         }
         else{
             
             try{
-                Omadi.service.sendErrorReport('Showed the user a network error dialog on send: ' + this.status + " " + e.error);
+                Utils.sendErrorReport('Showed the user a network error dialog on send: ' + this.status + " " + e.error);
             }
             catch(none2){}
             
@@ -1074,7 +1075,7 @@ Omadi.service.sendDataOnError = function(e){"use strict";
         Ti.App.fireEvent("doneSendingData");
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception with update data onerror callback: " + ex);
+        Utils.sendErrorReport("Exception with update data onerror callback: " + ex);
     }
 };
 
@@ -1095,22 +1096,22 @@ Omadi.service.sendUpdates = function() {"use strict";
         
         if(isNaN(origAppStartMillis) || isNaN(currentWinStartMillis)){
             Ti.API.error("start millis is NaN: " + currentWinStartMillis + " - " + origAppStartMillis);
-            Omadi.service.sendErrorReport("start millis is NaN: " + currentWinStartMillis + " - " + origAppStartMillis);
+            Utils.sendErrorReport("start millis is NaN: " + currentWinStartMillis + " - " + origAppStartMillis);
         }
         else{
             if(origAppStartMillis == 0 || currentWinStartMillis == 0){
                 Ti.API.error("AppStartMillis upload was zero: " + origAppStartMillis + " - " + currentWinStartMillis);
-                Omadi.service.sendErrorReport("AppStartMillis upload was zero: " + origAppStartMillis + " - " + currentWinStartMillis);
+                Utils.sendErrorReport("AppStartMillis upload was zero: " + origAppStartMillis + " - " + currentWinStartMillis);
             }
             else{
                 if(origAppStartMillis != Ti.UI.currentWindow.appStartMillis){
                     if(Ti.App.isAndroid){
-                        //Omadi.service.sendErrorReport("An extra android upload activity was REJECTED, background: " + isBackground + " : "  + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
+                        //Utils.sendErrorReport("An extra android upload activity was REJECTED, background: " + isBackground + " : "  + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
                         return;
                         //Ti.Android.currentActivity.finish();
                     }
                     //else{
-                        Omadi.service.sendErrorReport("An extra iOS send update event is being REJECTED: " + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
+                        Utils.sendErrorReport("An extra iOS send update event is being REJECTED: " + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
                         return;
                     //}
                 }
@@ -1123,7 +1124,7 @@ Omadi.service.sendUpdates = function() {"use strict";
         if(typeof Ti.UI.currentWindow.url !== 'undefined'){
             windowURL = Ti.UI.currentWindow.url;
         }
-        Omadi.service.sendErrorReport("AppStartMillis upload was undefined, url: " + windowURL);
+        Utils.sendErrorReport("AppStartMillis upload was undefined, url: " + windowURL);
     }
     
     Ti.API.error("Sending Data Now");
@@ -1397,7 +1398,7 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
                         subDB.execute("UPDATE " + tableName + " SET " + json.field_name + "='" + dbEsc(JSON.stringify(jsonArray)) + "' WHERE nid=" + json.nid);
                     }
                     catch(sqlEx4){
-                        Omadi.service.sendErrorReport("Exception in upload success ex4: " + sqlEx4 + ", json: " + JSON.stringify(json));
+                        Utils.sendErrorReport("Exception in upload success ex4: " + sqlEx4 + ", json: " + JSON.stringify(json));
                     }
                 }
                 else {
@@ -1405,7 +1406,7 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
                         subDB.execute("UPDATE " + tableName + " SET " + json.field_name + "='" + json.file_id + "' WHERE nid='" + json.nid + "'");
                     }
                     catch(sqlEx3){
-                        Omadi.service.sendErrorReport("Exception in upload success ex3: " + sqlEx3 + ", json: " + JSON.stringify(json));
+                        Utils.sendErrorReport("Exception in upload success ex3: " + sqlEx3 + ", json: " + JSON.stringify(json));
                     }
                 }
             }
@@ -1430,7 +1431,7 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
                         listDB.execute("UPDATE _files SET uploading=0, fid=" + json.file_id + ", finished=" + Omadi.utils.getUTCTimestamp() + " WHERE id=" + photoId);
                     }
                     catch(sqlEx2){
-                        Omadi.service.sendErrorReport("Exception in upload success ex2: " + sqlEx2 + ", json: " + JSON.stringify(json));
+                        Utils.sendErrorReport("Exception in upload success ex2: " + sqlEx2 + ", json: " + JSON.stringify(json));
                     }
                 }
                 else{
@@ -1438,7 +1439,7 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
                         listDB.execute("UPDATE _files SET bytes_uploaded=" + bytesUploaded + ", fid=" + json.file_id + ", uploading=0 WHERE id=" + photoId);
                     }
                     catch(sqlEx1){
-                        Omadi.service.sendErrorReport("Exception in upload success ex1: " + sqlEx1 + ", json: " + JSON.stringify(json));
+                        Utils.sendErrorReport("Exception in upload success ex1: " + sqlEx1 + ", json: " + JSON.stringify(json));
                     }
                 }
             }
@@ -1484,7 +1485,7 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
         if(typeof json !== 'undefined'){
             message += JSON.stringify(json);
         }
-        Omadi.service.sendErrorReport(message);
+        Utils.sendErrorReport(message);
     }
     
     Omadi.service.uploadFileHTTP = null;
@@ -1502,7 +1503,7 @@ Omadi.service.photoUploadError = function(e){"use strict";
     Omadi.service.currentFileUpload = null;
     
     if(e.error != "The request timed out" && e.error != "Read timed out"){
-        Omadi.service.sendErrorReport("Upload failed. Code: " + e.code + ", Error: " + e.error);
+        Utils.sendErrorReport("Upload failed. Code: " + e.code + ", Error: " + e.error);
     }
     
     Ti.API.error("Upload failed. Code: " + e.code + ", Error: " + e.error);
@@ -1534,7 +1535,7 @@ Omadi.service.photoUploadError = function(e){"use strict";
                     Omadi.service.photoUploadErrorDialog = null;
                 }
                 catch(ex){
-                    Omadi.service.sendErrorReport("exception photouploaderrordialog: " + ex);
+                    Utils.sendErrorReport("exception photouploaderrordialog: " + ex);
                 }
             });
             
@@ -1612,7 +1613,7 @@ Omadi.service.photoUploadError = function(e){"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Upload failed exception: " + ex);
+        Utils.sendErrorReport("Upload failed exception: " + ex);
     }
     
     if (Omadi.utils.isLoggedIn() && saveFailedUpload) {
@@ -1641,7 +1642,7 @@ Omadi.service.getLastUploadStartTimestamp = function(){"use strict";
     }
     catch(ex) {
         
-        Omadi.service.sendErrorReport("Exception getting uploading vars: " + ex);
+        Utils.sendErrorReport("Exception getting uploading vars: " + ex);
     }  
     
     Ti.API.debug("last upload: " + lastUploadStartTimestamp);
@@ -1706,7 +1707,7 @@ Omadi.service.abortFileUpload = function(){"use strict";
         db.close();
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Error aborting http upload: " + ex);
+        Utils.sendErrorReport("Error aborting http upload: " + ex);
     }
 };
 
@@ -1714,7 +1715,7 @@ Omadi.service.verifyStartMillis = function(isBackground){"use strict";
 	// Verify that start millis is defined
 	if (typeof Ti.UI.currentWindow.appStartMillis === 'undefined') {
 		var windowURL = Ti.UI.currentWindow.url || '';
-        Omadi.service.sendErrorReport("AppStartMillis upload was undefined, background: " + isBackground + ", url: " + windowURL);
+        Utils.sendErrorReport("AppStartMillis upload was undefined, background: " + isBackground + ", url: " + windowURL);
         return false;
 	}
 	
@@ -1724,24 +1725,24 @@ Omadi.service.verifyStartMillis = function(isBackground){"use strict";
 	// Verify that start millis is a number
 	if (isNaN(origAppStartMillis) || isNaN(currentWinStartMillis)) {
 		Ti.API.error("start millis is NaN: " + currentWinStartMillis + " - " + origAppStartMillis);
-        Omadi.service.sendErrorReport("start millis is NaN: " + currentWinStartMillis + " - " + origAppStartMillis);
+        Utils.sendErrorReport("start millis is NaN: " + currentWinStartMillis + " - " + origAppStartMillis);
         return false;
 	}
 	
 	// Verify that start millis is not zero
 	if (origAppStartMillis == 0 || currentWinStartMillis == 0) {
         Ti.API.error("AppStartMillis upload was zero: " + origAppStartMillis + " - " + currentWinStartMillis + ", background: " + isBackground);
-        Omadi.service.sendErrorReport("AppStartMillis upload was zero: " + origAppStartMillis + " - " + currentWinStartMillis + ", background: " + isBackground);
+        Utils.sendErrorReport("AppStartMillis upload was zero: " + origAppStartMillis + " - " + currentWinStartMillis + ", background: " + isBackground);
         return false;
     }
     
     // Verify that start millis match
     if(origAppStartMillis != Ti.UI.currentWindow.appStartMillis){
         if(Ti.App.isAndroid){
-            Omadi.service.sendErrorReport("An extra android upload activity is being REJECTED, background: " + isBackground + " : "  + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
+            Utils.sendErrorReport("An extra android upload activity is being REJECTED, background: " + isBackground + " : "  + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
             return false;
         }
-        Omadi.service.sendErrorReport("An extra iOS upload event is being REJECTED, background: " + isBackground + " : " + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
+        Utils.sendErrorReport("An extra iOS upload event is being REJECTED, background: " + isBackground + " : " + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
         return false;
     }
     
@@ -1792,7 +1793,7 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
 	    db.execute('UPDATE _files SET uploading = ' + now + ' WHERE id = ' + Omadi.service.currentFileUpload.id);
 	    db.close();
 	} catch(e) {
-	    Omadi.service.sendErrorReport('Exception setting uploading var: ' + e);
+	    Utils.sendErrorReport('Exception setting uploading var: ' + e);
 	}
 	
 	Ti.API.info('Uploading photo');
@@ -1870,50 +1871,8 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
         Omadi.service.uploadFileHTTP.setValidatesSecureCertificate(false);
         Omadi.service.uploadFileHTTP.send(payload);
     } catch(e) {
-        Omadi.service.sendErrorReport("Exception sending upload data: " + e);
+        Utils.sendErrorReport("Exception sending upload data: " + e);
     }
-};
-
-Omadi.service.sendErrorReport = function(message) {"use strict";
-    var http, uid, domain, appVersion, platform, model, version;
-    
-    Ti.API.error("ERROR: " + message);
-    
-    uid = Omadi.utils.getUid();
-    domain = Omadi.DOMAIN_NAME.replace('https://', '').replace('.omadi.com', '');
-    appVersion = Ti.App.version;
-    model = Ti.Platform.model;
-    version = Ti.Platform.version;
-    platform = Ti.Platform.name;
-    
-    http = Ti.Network.createHTTPClient({
-        enableKeepAlive: false,
-        validatesSecureCertificate: false
-    });
-    http.setTimeout(30000);
-    
-    http.onerror = function(){
-       Ti.App.fireEvent("errorReportFailed");
-    };
-    
-    http.onload = function(){
-       Ti.App.fireEvent("errorReportSuccess");
-    };
-    
-    http.open('POST', Omadi.DOMAIN_NAME + '/js-sync/error.json');
-    
-    http.setRequestHeader("Content-Type", "application/json");
-    Omadi.utils.setCookieHeader(http);
-
-    http.send(JSON.stringify({
-        domain: domain,
-        platform: platform,
-        model: model,
-        version: version,
-        appVersion: appVersion,
-        uid: uid,
-        message: message
-    }));
 };
 
 Omadi.service.getUpdatedNodeJSON = function() {"use strict";
@@ -2027,7 +1986,7 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
                                                 var imageBlob = imageFile.read();
                                                 
                                                 if(!imageBlob){
-                                                    Omadi.service.sendErrorReport("initial signature blob is null");
+                                                    Utils.sendErrorReport("initial signature blob is null");
                                                 } 
                                                 else{
                                                     
@@ -2046,14 +2005,14 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
                                                         }];
                                                     }
                                                     catch(ex6){
-                                                        Omadi.service.sendErrorReport("Exception getting text of base64 signature of size " + imageBlob.length + ": " + ex6); 
+                                                        Utils.sendErrorReport("Exception getting text of base64 signature of size " + imageBlob.length + ": " + ex6); 
                                                     }
                                                 }
                                             }
                                         }
                                         catch(exRead){
                                             Ti.API.debug("Exception reading initial signature file: " + exRead);
-                                            Omadi.service.sendErrorReport("Exception reading initial signature file: " + exRead);
+                                            Utils.sendErrorReport("Exception reading initial signature file: " + exRead);
                                         }
                                     }
                                 }
@@ -2067,14 +2026,14 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
     catch(ex) {
         
         alert("There was a problem packaging your data, so it has been saved as a draft.");
-        Omadi.service.sendErrorReport("Exception in JSON creation: " + ex);
+        Utils.sendErrorReport("Exception in JSON creation: " + ex);
         
         try {
             db.close();
         }
         catch(nothing1){
             Ti.API.error("db would not close");
-            Omadi.service.sendErrorReport("DB WOULD NOT CLOSE");
+            Utils.sendErrorReport("DB WOULD NOT CLOSE");
         }
         
         try{
@@ -2083,7 +2042,7 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
             db.close();
         }
         catch(nothing2){
-            Omadi.service.sendErrorReport("Could not save bad JSON as a draft.");
+            Utils.sendErrorReport("Could not save bad JSON as a draft.");
         }
     }
     
@@ -2093,7 +2052,7 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
         output = JSON.stringify(obj);
     }
     catch(jsonEx){
-        Omadi.service.sendErrorReport("Error stringifying obj: " + jsonEx);
+        Utils.sendErrorReport("Error stringifying obj: " + jsonEx);
     }
     
     Ti.API.info("Data: " + output);

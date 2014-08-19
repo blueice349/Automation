@@ -1,6 +1,9 @@
 /*jslint eqeq:true, plusplus: true*/
 
 var Widget, Omadi;
+
+var Utils = require('lib/Utils');
+
 Widget = {};
 
 
@@ -173,7 +176,7 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
             }
         }
         catch(ex){
-            Omadi.service.sendErrorReport("Exception in address label click from reference: " + ex);
+            Utils.sendErrorReport("Exception in address label click from reference: " + ex);
         }
     });
     
@@ -252,12 +255,12 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
                             }
                         }
                         catch(ex){
-                            Omadi.service.sendErrorReport("exception changing omadi reference select value dialog: " + ex);
+                            Utils.sendErrorReport("exception changing omadi reference select value dialog: " + ex);
                         }
                     });
                 }
                 catch(ex){
-                    Omadi.service.sendErrorReport("Exception in omadi reference widget view click: " + ex);
+                    Utils.sendErrorReport("Exception in omadi reference widget view click: " + ex);
                 }
             });
         }
@@ -371,7 +374,7 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
                     }
                 }
                 catch(ex1){
-                    Omadi.service.sendErrorReport("Exception in omadi reference auto complete: " + ex1);
+                    Utils.sendErrorReport("Exception in omadi reference auto complete: " + ex1);
                 }
             });
     
@@ -396,7 +399,7 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
                 }
                 catch(ex){
                     try{
-                        Omadi.service.sendErrorReport("exception in omadi reference blur: " + ex);
+                        Utils.sendErrorReport("exception in omadi reference blur: " + ex);
                     }catch(ex1){}
                 }
             });
@@ -549,7 +552,7 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
                     }
                 }
                 catch(ex){
-                    Omadi.service.sendErrorReport("Exception in omadi reference change event: " + ex);
+                    Utils.sendErrorReport("Exception in omadi reference change event: " + ex);
                 }
             });
     
@@ -682,7 +685,7 @@ OmadiReferenceWidget.prototype.cleanUp = function(){"use strict";
     }
     catch(ex){
         try{
-            Omadi.service.sendErrorReport("Exception cleaning up integer widget field: " + ex);
+            Utils.sendErrorReport("Exception cleaning up integer widget field: " + ex);
         }
         catch(ex1){}
     }

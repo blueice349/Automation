@@ -1,6 +1,7 @@
 /*jslint eqeq:true, plusplus: true*/
 
 var Widget, Omadi;
+var Utils = require('lib/Utils');
 
 Widget = {};
 
@@ -103,7 +104,7 @@ function getTimeRulesText(timeValue) {"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception creating time strings in rules field: " + ex);
+        Utils.sendErrorReport("Exception creating time strings in rules field: " + ex);
     }
 
     return returnVal;
@@ -310,7 +311,7 @@ RulesFieldWidget.prototype.getNewElement = function(index){"use strict";
                                 view.add(row);
                             }
                             catch(ex){
-                                Omadi.service.sendErrorReport("Exception with a rules field row: " + ex);
+                                Utils.sendErrorReport("Exception with a rules field row: " + ex);
                             }
                             
                             hasRules = true;
@@ -585,7 +586,7 @@ RulesFieldWidget.prototype.showDetail = function(e) {"use strict";
         detail_popup.open();
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Could not show the details for a rules: " + ex);   
+        Utils.sendErrorReport("Could not show the details for a rules: " + ex);   
     }
         //Ti.UI.currentWindow.add(detail_popup);
 
@@ -812,7 +813,7 @@ RulesFieldWidget.prototype.showDetail = function(e) {"use strict";
         // detail_popup.open();
     // }
     // catch(ex){
-        // Omadi.service.sendErrorReport("Exception in showing rules field details: " + ex);
+        // Utils.sendErrorReport("Exception in showing rules field details: " + ex);
     // }
 };
 
@@ -842,7 +843,7 @@ RulesFieldWidget.prototype.cleanUp = function(){"use strict";
     }
     catch(ex){
         try{
-            Omadi.service.sendErrorReport("Exception cleaning up rules widget field: " + ex);
+            Utils.sendErrorReport("Exception cleaning up rules widget field: " + ex);
         }
         catch(ex1){}
     }

@@ -2,6 +2,8 @@
 
 var Widget, Omadi;
 
+var Utils = require('lib/Utils');
+
 Widget = {};
 
 function NumberIntegerWidget(formObj, instance, fieldViewWrapper){"use strict";
@@ -84,7 +86,7 @@ NumberIntegerWidget.prototype.getFieldView = function(){"use strict";
                 Widget[e.source.fieldName].redraw();
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception in integer add another: " + ex);
+                Utils.sendErrorReport("Exception in integer add another: " + ex);
             }
         });
         
@@ -247,7 +249,7 @@ NumberIntegerWidget.prototype.cleanUp = function(){"use strict";
     }
     catch(ex){
         try{
-            Omadi.service.sendErrorReport("Exception cleaning up integer widget field: " + ex);
+            Utils.sendErrorReport("Exception cleaning up integer widget field: " + ex);
         }
         catch(ex1){}
     }

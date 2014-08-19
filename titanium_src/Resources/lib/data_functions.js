@@ -8,6 +8,8 @@ Omadi.data.cache.fields = {};
 Omadi.data.cache.regions = {};
 Omadi.data.cache.fakeFields = {};
 
+var Utils = require('lib/Utils');
+
 // Constants
 Omadi.data.MAX_BYTES_PER_UPLOAD = 2097152; // 2MB
 
@@ -88,7 +90,7 @@ Omadi.data.getLastUpdateTimestamp = function(useDB) {"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception getting last update timestamp: "+ ex);
+        Utils.sendErrorReport("Exception getting last update timestamp: "+ ex);
     }
 
     return timestamp;
@@ -299,7 +301,7 @@ Omadi.data.getNewNodeNid = function() {"use strict";
     }
     catch(ex){
         Ti.API.error("Exception in getNewNodeNid: " + ex);
-        Omadi.service.sendErrorReport("Exception in getNewNodeNid: " + ex);   
+        Utils.sendErrorReport("Exception in getNewNodeNid: " + ex);   
         try{
             db.close();
         }
@@ -375,7 +377,7 @@ Omadi.data.deleteContinuousNodes = function(){"use strict";
       }
   }
   catch(ex){
-      Omadi.service.sendErrorReport("Exception deleteContinuousNodes: " + ex);
+      Utils.sendErrorReport("Exception deleteContinuousNodes: " + ex);
   }
 };
 
@@ -401,7 +403,7 @@ Omadi.data.addNewTerms = function(node){"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in addNewTerms: " + ex);
+        Utils.sendErrorReport("Exception in addNewTerms: " + ex);
     }
     
     return node;
@@ -434,7 +436,7 @@ Omadi.data.insertNewTerm = function(machine_name, name){"use strict";
         db.close();
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in insertNewTerm: " + ex);
+        Utils.sendErrorReport("Exception in insertNewTerm: " + ex);
     }
     
     return retval;
@@ -544,7 +546,7 @@ Omadi.data.nodeSave = function(node) {"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in first part of node save: " + ex);
+        Utils.sendErrorReport("Exception in first part of node save: " + ex);
     }
       
     db = Omadi.utils.openMainDatabase();
@@ -606,7 +608,7 @@ Omadi.data.nodeSave = function(node) {"use strict";
                                             }
                                         }
                                         catch(exJSON){
-                                            Omadi.service.sendErrorReport("Could not parse JSON for extra_price: " + node[field_name].textValues[priceIdx]);
+                                            Utils.sendErrorReport("Could not parse JSON for extra_price: " + node[field_name].textValues[priceIdx]);
                                         }
                                         if(jsonValue != null){
                                             priceData.push(jsonValue);
@@ -731,7 +733,7 @@ Omadi.data.nodeSave = function(node) {"use strict";
                     // }
     //                 
                     // Ti.API.debug("SAVING DRAFT: " + saveNid + " " + origNid);
-                    //Omadi.service.sendErrorReport("Saved draft: saveNid = " + saveNid + ", origNid = " + origNid + ", winNid = " + Ti.UI.currentWindow.nid + ", continuous = " + Ti.UI.currentWindow.continuous_nid);
+                    //Utils.sendErrorReport("Saved draft: saveNid = " + saveNid + ", origNid = " + origNid + ", winNid = " + Ti.UI.currentWindow.nid + ", continuous = " + Ti.UI.currentWindow.continuous_nid);
                     // Only save drafts as a negative nid
                     query = "INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid, dispatch_nid, copied_from_nid) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",3,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1," + node.origNid + "," + node.dispatch_nid + "," + node.custom_copy_orig_nid + ")";
                 }
@@ -742,7 +744,7 @@ Omadi.data.nodeSave = function(node) {"use strict";
                     
                     if (saveNid > 0) {
                         
-                        //Omadi.service.sendErrorReport("Saved update: saveNid = " + saveNid + ", winNid = " + Ti.UI.currentWindow.nid + ", continuous = " + Ti.UI.currentWindow.continuous_nid);
+                        //Utils.sendErrorReport("Saved update: saveNid = " + saveNid + ", winNid = " + Ti.UI.currentWindow.nid + ", continuous = " + Ti.UI.currentWindow.continuous_nid);
                         query = "UPDATE node SET changed=" + node.changed + 
                             ", changed_uid=" + node.changed_uid + 
                             ", title='" + dbEsc(node.title) + 
@@ -757,7 +759,7 @@ Omadi.data.nodeSave = function(node) {"use strict";
                     }
                     else {
                         
-                        //Omadi.service.sendErrorReport("Saved new: saveNid = " + saveNid + ", winNid = " + Ti.UI.currentWindow.nid + ", continuous = " + Ti.UI.currentWindow.continuous_nid);
+                        //Utils.sendErrorReport("Saved new: saveNid = " + saveNid + ", winNid = " + Ti.UI.currentWindow.nid + ", continuous = " + Ti.UI.currentWindow.continuous_nid);
                         // Give all permissions for this node. Once it comes back, the correct permissions will be there.  If it never gets uploaded, the user should be able to do whatever they want with that info.
                         query = "INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid, dispatch_nid, copied_from_nid, latitude, longitude, accuracy) VALUES (" + 
                             saveNid + "," + 
@@ -816,12 +818,12 @@ Omadi.data.nodeSave = function(node) {"use strict";
                 Omadi.display.doneLoading();
                 alert("Error saving to the node table: " + ex1);
                 db.execute("DELETE FROM " + node.type + " WHERE nid = " + saveNid);
-                Omadi.service.sendErrorReport("Error saving to the node table: " + ex1);
+                Utils.sendErrorReport("Error saving to the node table: " + ex1);
             }
         }    
         else{
             // The node didn't have any data to save in fields, so do not save, and send a report
-            Omadi.service.sendErrorReport("Node has no data: " + JSON.stringify(node));
+            Utils.sendErrorReport("Node has no data: " + JSON.stringify(node));
             node._saved = false;
         }
 
@@ -829,7 +831,7 @@ Omadi.data.nodeSave = function(node) {"use strict";
     catch(ex2) {
         Omadi.display.doneLoading();
         alert("Error saving to " + node.type + " table: " + ex2 + " : " + query);
-        Omadi.service.sendErrorReport("Error saving to " + node.type + " table: " + ex2 + " : " + query);
+        Utils.sendErrorReport("Error saving to " + node.type + " table: " + ex2 + " : " + query);
     }
     
     try {
@@ -890,7 +892,7 @@ Omadi.data.deleteNode = function(nid){"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception deleting node: " + ex);
+        Utils.sendErrorReport("Exception deleting node: " + ex);
     }
 };
 
@@ -960,7 +962,7 @@ Omadi.data.saveFailedUpload = function(photoId, showMessage) {"use strict";
             });
             
             if(showMessage){
-                Omadi.service.sendErrorReport("going to save to photo gallery_nid_" + nid + "_field_name_" + field_name + "_delta_" + delta + "_photoId_" + photoId);
+                Utils.sendErrorReport("going to save to photo gallery_nid_" + nid + "_field_name_" + field_name + "_delta_" + delta + "_photoId_" + photoId);
             }
 
             if (Ti.App.isAndroid) {
@@ -1004,7 +1006,7 @@ Omadi.data.saveFailedUpload = function(photoId, showMessage) {"use strict";
                                 });
                                 dialog.show();
         
-                                Omadi.service.sendErrorReport("Saved to photo gallery Android: " + nid);
+                                Utils.sendErrorReport("Saved to photo gallery Android: " + nid);
                             }
                             
                             // Only delete the original file if the file was moved correctly
@@ -1012,7 +1014,7 @@ Omadi.data.saveFailedUpload = function(photoId, showMessage) {"use strict";
                         }
                         else{
                             
-                            Omadi.service.sendErrorReport("Did not save to photo gallery: " + photoId);
+                            Utils.sendErrorReport("Did not save to photo gallery: " + photoId);
                             dialog = Titanium.UI.createAlertDialog({
                                 title : 'Corrupted File',
                                 message : "There was a problem uploading a file for node #" + nid + ", and the file could not be saved to this device's gallery. Unfortunately, the photo cannot be reclaimed.",
@@ -1035,7 +1037,7 @@ Omadi.data.saveFailedUpload = function(photoId, showMessage) {"use strict";
                     imageDir = null;
                 }
                 else{
-                    Omadi.service.sendErrorReport("Does not have external storage trying to save failed upload.");
+                    Utils.sendErrorReport("Does not have external storage trying to save failed upload.");
                 }
             }
             else{
@@ -1056,13 +1058,13 @@ Omadi.data.saveFailedUpload = function(photoId, showMessage) {"use strict";
                                 });
                                 dialog.show();
         
-                                Omadi.service.sendErrorReport("Saved to photo gallery iOS: " + nid);
+                                Utils.sendErrorReport("Saved to photo gallery iOS: " + nid);
                             }
                             
                             Omadi.data.deletePhotoUpload(photoId, true);
                         },
                         error : function(e) {
-                            Omadi.service.sendErrorReport("Did not save to photo gallery iOS: " + photoId);
+                            Utils.sendErrorReport("Did not save to photo gallery iOS: " + photoId);
                             dialog = Titanium.UI.createAlertDialog({
                                 title : 'Corrupted File',
                                 message : "There was a problem uploading a file for node #" + nid + ", and the file could not be saved to this device's gallery. Unfortunately, the photo cannot be reclaimed.",
@@ -1082,7 +1084,7 @@ Omadi.data.saveFailedUpload = function(photoId, showMessage) {"use strict";
         }
     }
     catch(ex) {
-        Omadi.service.sendErrorReport("Did not save to photo gallery exception: " + photoId + ", ex: " + ex);
+        Utils.sendErrorReport("Did not save to photo gallery exception: " + photoId + ", ex: " + ex);
         dialog = Titanium.UI.createAlertDialog({
             title : 'Corrupted File',
             message : "There was a problem uploading a file for node #" + nid + ", and the file could not be saved to this device's gallery.",
@@ -1110,7 +1112,7 @@ Omadi.data.deletePhotoUploadByPath = function(filePath, deleteFile){"use strict"
         db.execute("UPDATE _files SET delta = (delta - 1) WHERE nid = " + nid + " AND delta > " + delta);
     }
     else{
-        Omadi.service.sendErrorReport("Could not find filepath in database: " + filePath);
+        Utils.sendErrorReport("Could not find filepath in database: " + filePath);
     }
     
     result.close();
@@ -1251,14 +1253,14 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                             };
                         }
                         else{
-                             Omadi.service.sendErrorReport("unrecoverable node load 1 for nid " + nid);
+                             Utils.sendErrorReport("unrecoverable node load 1 for nid " + nid);
                              node = null;
                         }
                     }
                     else{
                         
                         if(nid <= 0){
-                            Omadi.service.sendErrorReport("unrecoverable node load 2 for nid " + nid);
+                            Utils.sendErrorReport("unrecoverable node load 2 for nid " + nid);
                         }
                         
                         node = null;
@@ -1269,7 +1271,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
 
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception with node table query: " + ex);
+                Utils.sendErrorReport("Exception with node table query: " + ex);
             }
     
             if (node != null && typeof node.nid !== 'undefined') {
@@ -1769,14 +1771,14 @@ Omadi.data.getNumFilesReadyToUpload = function(uid){"use strict";
         
         if(result.isValidRow()){
             retval = result.field(0, Ti.Database.FIELD_TYPE_INT);
-            //Omadi.service.sendErrorReport("Num Photos greater than 0: " + result.field(0, Ti.Database.FIELD_TYPE_INT));
+            //Utils.sendErrorReport("Num Photos greater than 0: " + result.field(0, Ti.Database.FIELD_TYPE_INT));
         }
         
         result.close();
         mainDB.close();
     }
     catch(ex){
-        Omadi.service.sendErrorReport('Error getting photo count: ' + ex);    
+        Utils.sendErrorReport('Error getting photo count: ' + ex);    
     }
     
     return retval;
@@ -1821,7 +1823,7 @@ Omadi.data.getAllFiles = function(){"use strict";
 		}
 	} catch (e) {
         Ti.API.error("Error in get file query load: " + e);
-        Omadi.service.sendErrorReport("Error in get file query load: " + e);
+        Utils.sendErrorReport("Error in get file query load: " + e);
 	}
 	db.close();
 	return files;
@@ -1936,7 +1938,7 @@ Omadi.data.deleteFinishedUploads = function(files){"use strict";
 		}
 	} catch (e) {
 		Ti.API.error("Error in delete file or thumbnail from device: " + e);
-    	Omadi.service.sendErrorReport("Error in delete file or thumbnail from device: " + e);
+    	Utils.sendErrorReport("Error in delete file or thumbnail from device: " + e);
 	}
 	db.close();
 	
@@ -1958,7 +1960,7 @@ Omadi.data.keepFailedUploads = function(files){"use strict";
 		var node = Omadi.data.nodeLoad(file.nid);
 		
 		if (node === null) {
-            Omadi.service.sendErrorReport('Null node with nid ' + file.nid + ' ' + JSON.stringify(file));
+            Utils.sendErrorReport('Null node with nid ' + file.nid + ' ' + JSON.stringify(file));
 		}
 		
 		// Check for files that should have been uploaded but haven't after 30 minutes
@@ -1971,7 +1973,7 @@ Omadi.data.keepFailedUploads = function(files){"use strict";
 				    // Limit node message to 2000 characters
 				        message = message.substring(0, 2000);
 				        message += JSON.stringify(file);
-				        Omadi.service.sendErrorReport(message);
+				        Utils.sendErrorReport(message);
 				        
 				        idsToKeep.push(file.id);
 				}
@@ -1983,7 +1985,7 @@ Omadi.data.keepFailedUploads = function(files){"use strict";
 	        // Limit node message to 2000 characters
 	        message = message.substring(0, 2000);
 			message += JSON.stringify(file);
-			Omadi.service.sendErrorReport(message);
+			Utils.sendErrorReport(message);
 			
         	idsToKeep.push(file.id);
         }
@@ -2005,7 +2007,7 @@ Omadi.data.keepFailedUploads = function(files){"use strict";
 		            try {
 		            	Omadi.display.openLocalPhotosWindow();
 		            } catch(e) {
-		                Omadi.service.sendErrorReport("exception upload problem dialog: " + e);
+		                Utils.sendErrorReport("exception upload problem dialog: " + e);
 		            }
 				}
 	        });
@@ -2014,7 +2016,7 @@ Omadi.data.keepFailedUploads = function(files){"use strict";
 	    }
 	} catch (e) {
 		Ti.API.error("Error in keep failed uploads: " + e);
-    	Omadi.service.sendErrorReport("Error in keep failed uploads: " + e);
+    	Utils.sendErrorReport("Error in keep failed uploads: " + e);
 	}
 	db.close();
 };
@@ -2107,7 +2109,7 @@ Omadi.data.getFileArray = function(){"use strict";
 	                            // Limit node message to 2000 characters
 	                            message = message.substring(0, 2000);
 	                            message += JSON.stringify(nextFile);
-	                            Omadi.service.sendErrorReport(message);
+	                            Utils.sendErrorReport(message);
 	                            
 	                            // Do not remove this as an upload just yet.
 	                            // It could be a continuous save node
@@ -2117,7 +2119,7 @@ Omadi.data.getFileArray = function(){"use strict";
 	                    } else {
 	                        message = "Null negative Node with nid " + nextFile.nid + " ";
 	                        message += JSON.stringify(nextFile);
-	                        Omadi.service.sendErrorReport(message);
+	                        Utils.sendErrorReport(message);
 	                        
 	                        // This file should stop attempting to be uploaded
 	                        neverUploadIds.push(nextFile.id);
@@ -2169,12 +2171,12 @@ Omadi.data.getFileArray = function(){"use strict";
                         // Limit node message to 2000 characters
                         message = message.substring(0, 2000);
                         message += JSON.stringify(nextFile);
-                        Omadi.service.sendErrorReport(message);
+                        Utils.sendErrorReport(message);
                     }
                     else{
                         message = "Null Node with nid " + nextFile.nid + " ";
                         message += JSON.stringify(nextFile);
-                        Omadi.service.sendErrorReport(message);
+                        Utils.sendErrorReport(message);
                     }
                     
                     // This file should stop attempting to be uploaded
@@ -2188,7 +2190,7 @@ Omadi.data.getFileArray = function(){"use strict";
             catch(innerEx){
                 // Catch the inner exception so it doesn't throw away all uploads
                 Ti.API.error("Error in inner file query load: " + innerEx);
-                Omadi.service.sendErrorReport("Error in get file query load: " + innerEx);
+                Utils.sendErrorReport("Error in get file query load: " + innerEx);
             }
             
             result.next();
@@ -2197,7 +2199,7 @@ Omadi.data.getFileArray = function(){"use strict";
     }
     catch(exDB){
         Ti.API.error("Error in get file query load: " + exDB);
-        Omadi.service.sendErrorReport("Error in get file query load: " + exDB);
+        Utils.sendErrorReport("Error in get file query load: " + exDB);
     }
     
     if(deleteFinishedIds.length > 0){
@@ -2221,7 +2223,7 @@ Omadi.data.getFileArray = function(){"use strict";
                 }
             }
             catch(ex){
-                Omadi.service.sendErrorReport("exception upload problem dialog: " + ex);
+                Utils.sendErrorReport("exception upload problem dialog: " + ex);
             }
         });
         
@@ -2262,7 +2264,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                 
                 //Omadi.data.deletePhotoUpload(nextFile.id, false);
                 
-                Omadi.service.sendErrorReport("The file at " + nextFile.file_path + " for node #" + nextFile.nid + " cannot be found for upload.");
+                Utils.sendErrorReport("The file at " + nextFile.file_path + " for node #" + nextFile.nid + " cannot be found for upload.");
                 
                 alert("The file at " + nextFile.file_path + " for node #" + nextFile.nid + " cannot be found for upload.");
                 
@@ -2291,13 +2293,13 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                             }
                             else{
                                 Ti.API.debug("Defined exception in Android base64Encode: " + nextFile.file_data);
-                                Omadi.service.sendErrorReport("Defined exception in Android base64Encode: " + nextFile.file_data);
+                                Utils.sendErrorReport("Defined exception in Android base64Encode: " + nextFile.file_data);
                                 retryEncode = true;
                             }
                         }
                         catch(exbase64){
                             Ti.API.debug("Exception reading Android base64Encode: " + exbase64);
-                            Omadi.service.sendErrorReport("Exception reading Android base64Encode: " + exbase64);
+                            Utils.sendErrorReport("Exception reading Android base64Encode: " + exbase64);
                             retryEncode = true;
                         }
                         
@@ -2309,12 +2311,12 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                                 if(!imageBlob){
                                     errorOccurred = true;
                                     Ti.API.debug("Image Blob is null");
-                                    Omadi.service.sendErrorReport("Image blob is null");
+                                    Utils.sendErrorReport("Image blob is null");
                                 } 
                             }
                             catch(exRead){
                                 Ti.API.debug("Exception reading file: " + exRead);
-                                Omadi.service.sendErrorReport("Exception reading non-resized photo: " + exRead);
+                                Utils.sendErrorReport("Exception reading non-resized photo: " + exRead);
                                 readyForUpload = false;
                                 // This is probably a memory error, so request a restart
                                 restartSuggested = true;
@@ -2330,12 +2332,12 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                             if(!imageBlob){
                                 errorOccurred = true;
                                 Ti.API.debug("Image Blob is null");
-                                Omadi.service.sendErrorReport("Image blob is null");
+                                Utils.sendErrorReport("Image blob is null");
                             }
                         }
                         catch(exRead1){
                             Ti.API.debug("Exception reading file: " + exRead1);
-                            Omadi.service.sendErrorReport("Exception reading non-resized photo: " + exRead1);
+                            Utils.sendErrorReport("Exception reading non-resized photo: " + exRead1);
                             readyForUpload = false;
                             // This is probably a memory error, so request a restart
                             restartSuggested = true;
@@ -2393,7 +2395,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                                     }
                                 }
                                 catch(ex) {
-                                    Omadi.service.sendErrorReport("Exception resizing iOS Photo: " + ex);
+                                    Utils.sendErrorReport("Exception resizing iOS Photo: " + ex);
                                     readyForUpload = false;
                                     errorOccurred = true;
                                 }
@@ -2439,7 +2441,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                             imageBlob = buffer.toBlob();
                         }
                         else{
-                            Omadi.service.sendErrorReport("Read zero bytes from stream.");
+                            Utils.sendErrorReport("Read zero bytes from stream.");
                             errorOccurred = true;
                         }
                         
@@ -2451,7 +2453,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                     }
                     catch(exVideo){
                         Ti.API.error("Exception with video upload: " + exVideo);
-                        Omadi.service.sendErrorReport("Exception with video upload: " + exVideo);
+                        Utils.sendErrorReport("Exception with video upload: " + exVideo);
                         errorOccurred = true;
                     }
                 }
@@ -2467,14 +2469,14 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                             nextFile.file_data = nextFile.file_data.getText();
                         }
                         catch(ex6){
-                            Omadi.service.sendErrorReport("Exception getting text of base64 photo of size " + imageBlob.length + ": " + ex6); 
+                            Utils.sendErrorReport("Exception getting text of base64 photo of size " + imageBlob.length + ": " + ex6); 
                             // This photo is not going to upload correctly
                             readyForUpload = false;
                             errorOccurred = true;
                         }
                     }
                     catch(ex5){
-                        Omadi.service.sendErrorReport("Exception base64 encoding photo of size " + imageBlob.length + ": " + ex5 + ", availableMemory " + Ti.Platform.availableMemory); 
+                        Utils.sendErrorReport("Exception base64 encoding photo of size " + imageBlob.length + ": " + ex5 + ", availableMemory " + Ti.Platform.availableMemory); 
                         // This photo is not going to upload correctly
                         readyForUpload = false;
                         errorOccurred = true;
@@ -2492,7 +2494,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
         catch(exAll){
             errorOccurred = true;
             Ti.API.error("File error: " + exAll);
-            Omadi.service.sendErrorReport("File error: " + exAll);
+            Utils.sendErrorReport("File error: " + exAll);
         }
         
         if(errorOccurred){
@@ -2523,18 +2525,18 @@ Omadi.data.getNextPhotoData = function(){"use strict";
         dialog.addEventListener('click', function(e){
             try{
                if(e.index == 0){
-                   Omadi.service.sendErrorReport("Actually closing the app by user");
+                   Utils.sendErrorReport("Actually closing the app by user");
                    Omadi.utils.closeApp();
                } 
             }
             catch(ex){
-                Omadi.service.sendErrorReport("exception the app is currently using too much memory: " + ex);
+                Utils.sendErrorReport("exception the app is currently using too much memory: " + ex);
             }
         });
         
         dialog.show();
         
-        Omadi.service.sendErrorReport("An Android restart was suggested.");
+        Utils.sendErrorReport("An Android restart was suggested.");
     }
     
     return null;
@@ -2591,7 +2593,7 @@ Omadi.data.sendDebugData = function(showResponse){"use strict";
         Ti.App.addEventListener('errorReportFailed', Omadi.data.debugDataFailed);
     }
     
-    Omadi.service.sendErrorReport(message);
+    Utils.sendErrorReport(message);
 };
 
 Omadi.data.resetDatabases = function(){"use strict";
@@ -3674,7 +3676,7 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                                     });
                                 }
                                 catch(switchedEx){
-                                    Omadi.service.sendErrorReport("exception switching it up: " + switchedEx);
+                                    Utils.sendErrorReport("exception switching it up: " + switchedEx);
                                 }
                             }
                             
@@ -3770,7 +3772,7 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
     }
     catch(ex) {
         Ti.API.error("Saving Node Data from JSON: " + ex);
-        Omadi.service.sendErrorReport("Exception saving from sync: " + ex);
+        Utils.sendErrorReport("Exception saving from sync: " + ex);
         alert("Saving Form Data for " + type + ": " + ex);
         
     }
@@ -4175,7 +4177,7 @@ Omadi.data.processNodeTypeJson = function(mainDB) {"use strict";
     }
     catch(ex) {
         alert("Installing form types: " + ex);
-        Omadi.service.sendErrorReport("FATAL Exception installing form types: " + ex);
+        Utils.sendErrorReport("FATAL Exception installing form types: " + ex);
     }
 };
 

@@ -4,6 +4,8 @@
 
 Ti.include('/lib/functions.js');
 
+var Utils = require('lib/Utils');
+
 var currentWinWrapper;
 var buttons;
 var viewButton;
@@ -91,7 +93,7 @@ Gallery.deleteOptionSelected = function(e){"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in deleteoption selected in gallery: " + ex);
+        Utils.sendErrorReport("Exception in deleteoption selected in gallery: " + ex);
     }
 };
 
@@ -140,7 +142,7 @@ Gallery.confirmDeleteOptionSelected = function(e){"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception confirming delete option: " + ex);
+        Utils.sendErrorReport("Exception confirming delete option: " + ex);
     }
 };
 
@@ -215,7 +217,7 @@ Gallery.imageOptionClicked = function(e){"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in imageoption clicked in local photos: " + ex);
+        Utils.sendErrorReport("Exception in imageoption clicked in local photos: " + ex);
     }
 };
 
@@ -247,7 +249,7 @@ Gallery.imageClicked = function(e){"use strict";
         dialog.show();
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception with imageClicked in local photos: " + ex);
+        Utils.sendErrorReport("Exception with imageClicked in local photos: " + ex);
     }
 };
 

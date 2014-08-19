@@ -3,6 +3,8 @@ var Omadi;
 
 Ti.include("/lib/functions.js");
 
+var Utils = require('lib/Utils');
+
 var Database = require('lib/Database');
 // Make sure the database is reset so it's not using old data from another session
 Database.reset();
@@ -503,7 +505,7 @@ function setupBottomButtons() {"use strict";
             }
         }
         catch(ex){
-            Omadi.service.sendErrorReport("Exception alerts view clicked: " + ex);
+            Utils.sendErrorReport("Exception alerts view clicked: " + ex);
         }
     });
     
@@ -602,7 +604,7 @@ function setupBottomButtons() {"use strict";
             recentWindow.open();
         }
         catch(ex){
-            Omadi.service.sendErrorReport("Exception recent view clicked: " + ex);
+            Utils.sendErrorReport("Exception recent view clicked: " + ex);
         }
     });
     
@@ -655,7 +657,7 @@ function setupBottomButtons() {"use strict";
                 tagsReadyWindow.open();
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception with tagsready view click: " + ex);
+                Utils.sendErrorReport("Exception with tagsready view click: " + ex);
             }
         });
         
@@ -770,7 +772,7 @@ function showAndroidMemoryAlert(){"use strict";
         var dialog2;
         try{
             if(e.index == 0){
-                Omadi.service.sendErrorReport("User is restarting app");
+                Utils.sendErrorReport("User is restarting app");
                 Ti.Android.currentActivity.finish();
                 AndroidSysUtil.KillMyProcess();
             }
@@ -784,13 +786,13 @@ function showAndroidMemoryAlert(){"use strict";
                 dialog2.addEventListener('click', function(e2){
                     try{
                         if(e2.index == 1){
-                            Omadi.service.sendErrorReport("User is restarting app after reading info.");
+                            Utils.sendErrorReport("User is restarting app after reading info.");
                             Ti.Android.currentActivity.finish();
                             AndroidSysUtil.KillMyProcess();
                         }
                     }
                     catch(ex2){
-                        Omadi.service.sendErrorReport("Exception in low memory alert after reading info: " + ex2);
+                        Utils.sendErrorReport("Exception in low memory alert after reading info: " + ex2);
                     }
                 });
                 
@@ -798,7 +800,7 @@ function showAndroidMemoryAlert(){"use strict";
             }
         }
         catch(ex){
-            Omadi.service.sendErrorReport("Exception in low memory alert: " + ex);
+            Utils.sendErrorReport("Exception in low memory alert: " + ex);
         }
     });
     
@@ -813,15 +815,15 @@ function checkAndroidMemoryAfterGC(){"use strict";
         availableBytes = Ti.Platform.getAvailableMemory();
         
         //Ti.API.debug("Ti Available Memory after GC + 1 sec: " + lastAvailableBytes + " -> " + availableBytes + " bytes");
-        //Omadi.service.sendErrorReport("Just forced a GC: " + lastAvailableBytes + " -> " + availableBytes);
+        //Utils.sendErrorReport("Just forced a GC: " + lastAvailableBytes + " -> " + availableBytes);
         
         if(availableBytes < 800000){
-            Omadi.service.sendErrorReport("Showing Android memory alert: " + availableBytes);
+            Utils.sendErrorReport("Showing Android memory alert: " + availableBytes);
             showAndroidMemoryAlert();
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception checking android memory after GC: " + ex);
+        Utils.sendErrorReport("Exception checking android memory after GC: " + ex);
     }
 }
 
@@ -835,7 +837,7 @@ function checkAndroidMemory(){"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception checking android memory: " + ex);
+        Utils.sendErrorReport("Exception checking android memory: " + ex);
     }
 }
 
@@ -981,7 +983,7 @@ function showContinuousSavedNode(){"use strict";
             	var count = result.field(0);
                 if (count > 0){
                      // Let omadi know about the problem
-                    Omadi.service.sendErrorReport(count + " photo" + (count > 1 ? "s" : "") + " with a 0 nid was found without a node to load.");
+                    Utils.sendErrorReport(count + " photo" + (count > 1 ? "s" : "") + " with a 0 nid was found without a node to load.");
                     Omadi.data.sendDebugData(false);
                     
                     // If no form pops up, that probably means the app crashed while taking a photo and something weird happened
@@ -1000,7 +1002,7 @@ function showContinuousSavedNode(){"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception opening continuous saved node: " + ex);
+        Utils.sendErrorReport("Exception opening continuous saved node: " + ex);
     }
 }
 
@@ -1053,7 +1055,7 @@ function openFormWindow(e){"use strict";
     
     Ti.UI.currentWindow.appStartMillis = (new Date()).getTime();
     Ti.App.Properties.setDouble("omadi:appStartMillis", Ti.UI.currentWindow.appStartMillis);
-    //Omadi.service.sendErrorReport("Main Menu was opened with millis: " + Ti.UI.currentWindow.appStartMillis);
+    //Utils.sendErrorReport("Main Menu was opened with millis: " + Ti.UI.currentWindow.appStartMillis);
    
     listView = Titanium.UI.createTableView({
         data : [],
@@ -1187,7 +1189,7 @@ function openFormWindow(e){"use strict";
             Omadi.data.setUpdating(false);
         }
         catch(ex){
-            Omadi.service.sendErrorReport("Exception swith listview clicked on main menu: " + ex);
+            Utils.sendErrorReport("Exception swith listview clicked on main menu: " + ex);
         }
     });
     
@@ -1275,7 +1277,7 @@ function openFormWindow(e){"use strict";
             a = null;
         }
         catch(ex1){
-            Omadi.service.sendErrorReport("In closing of main menu: " + ex1);
+            Utils.sendErrorReport("In closing of main menu: " + ex1);
         }
     });
     

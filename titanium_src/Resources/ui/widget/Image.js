@@ -728,7 +728,7 @@ ImageWidget.prototype.openPictureChooser = function(imageView){"use strict";
         }
         else{
             alert("Error: Could not open photo chooser.");
-            this.formObj.sendError("Could not open photo chooser: " + this.instance.label);
+            Utils.sendErrorReport("Could not open photo chooser: " + this.instance.label);
         }
     }
     catch(ex){

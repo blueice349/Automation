@@ -1,5 +1,7 @@
 Ti.include('/lib/functions.js');
 
+var Utils = require('lib/Utils');
+
 /*jslint eqeq:true, regexp: true*/
 
 /*global  Omadi*/
@@ -264,7 +266,7 @@ function addPhotoWidgetOptions(){"use strict";
                                 }
                             }
                             else{
-                                Omadi.service.sendErrorReport("No native path from camera");
+                                Utils.sendErrorReport("No native path from camera");
                                 alert("There was a problem getting the save location. In-app photos will be used.");
                                 Omadi.utils.setPhotoWidget('take');
                                 ev.source.button.setText("Take photos in the app");

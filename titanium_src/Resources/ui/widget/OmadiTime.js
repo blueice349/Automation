@@ -1,6 +1,7 @@
 /*jslint eqeq:true, plusplus: true*/
 
 var Widget, Omadi, dateWindow;
+var Utils = require('lib/Utils');
 Widget = {};
 dateWindow = null;
 
@@ -83,7 +84,7 @@ OmadiTimeWidget.prototype.getFieldView = function(){"use strict";
                 Widget[e.source.fieldName].redraw();
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception in omadi time add another: " + ex);
+                Utils.sendErrorReport("Exception in omadi time add another: " + ex);
             }
         });
         
@@ -172,7 +173,7 @@ OmadiTimeWidget.prototype.getNewElement = function(index){"use strict";
             }
         }
         catch(ex){
-            Omadi.service.sendErrorReport("Exception in omadi time click: " + ex);
+            Utils.sendErrorReport("Exception in omadi time click: " + ex);
         }
     });
     
@@ -394,7 +395,7 @@ OmadiTimeWidget.prototype.displayPicker = function(element) {"use strict";
                 }
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception in ok button click in omadi time: " + ex);
+                Utils.sendErrorReport("Exception in ok button click in omadi time: " + ex);
             }
             
             dateWindow.close();
@@ -413,7 +414,7 @@ OmadiTimeWidget.prototype.displayPicker = function(element) {"use strict";
                 }  
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception in omadi time clear button: " + ex);
+                Utils.sendErrorReport("Exception in omadi time clear button: " + ex);
             }
             
             dateWindow.close();
@@ -433,7 +434,7 @@ OmadiTimeWidget.prototype.displayPicker = function(element) {"use strict";
         dateWindow.open();
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in omadi time display picker: " + ex);
+        Utils.sendErrorReport("Exception in omadi time display picker: " + ex);
     }
 };
 
@@ -489,7 +490,7 @@ OmadiTimeWidget.prototype.cleanUp = function(){"use strict";
     }
     catch(ex){
         try{
-            Omadi.service.sendErrorReport("Exception cleaning up time widget field: " + ex);
+            Utils.sendErrorReport("Exception cleaning up time widget field: " + ex);
         }
         catch(ex1){}
     }

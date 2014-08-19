@@ -2,6 +2,8 @@ Omadi.bundles.companyVehicle = {};
 
 /*jslint eqeq: true, plusplus: true*/
 
+var Utils = require('lib/Utils');
+
 Omadi.bundles.companyVehicle.askAboutVehicle = function() {"use strict";
     var dialog, bundle, newWin, vehicles, options, i;
     /*global roles, ROLE_ID_FIELD, alertQueue*/
@@ -44,7 +46,7 @@ Omadi.bundles.companyVehicle.askAboutVehicle = function() {"use strict";
                 }
             }
             catch(ex){
-                Omadi.service.sendErrorReport("exception selecting vehicle: " + ex);
+                Utils.sendErrorReport("exception selecting vehicle: " + ex);
             }
         });
 
@@ -118,7 +120,7 @@ Omadi.bundles.companyVehicle.setUserVehicle = function(vehicle_nid) {"use strict
                 dialog.show();
             }
             
-            Omadi.service.sendErrorReport('Could not select vehicle' + JSON.stringify(e));
+            Utils.sendErrorReport('Could not select vehicle' + JSON.stringify(e));
         };
     
         http.send(JSON.stringify({
@@ -197,11 +199,11 @@ Omadi.bundles.companyVehicle.exitVehicle = function(){"use strict";
                         dialog.show();
                     }
                     
-                    Omadi.service.sendErrorReport('Could not exit vehicle' + JSON.stringify(e));
+                    Utils.sendErrorReport('Could not exit vehicle' + JSON.stringify(e));
                 }
                 catch(ex){
                     
-                    Omadi.service.sendErrorReport('Exception exiting vehicle' + JSON.stringify(ex));
+                    Utils.sendErrorReport('Exception exiting vehicle' + JSON.stringify(ex));
                 }
             };
         

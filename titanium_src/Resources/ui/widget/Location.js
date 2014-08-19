@@ -2,6 +2,8 @@
 
 var Widget, Omadi;
 
+var Utils = require('lib/Utils');
+
 Widget = {};
 
 function LocationWidget(formObj, instance, fieldViewWrapper){"use strict";
@@ -44,7 +46,7 @@ function LocationWidget(formObj, instance, fieldViewWrapper){"use strict";
         }
     }
     else {
-        this.formObj.sendError("There should be parts to this location field!!! " + this.instance.label);
+        Utils.sendErrorReport("There should be parts to this location field!!! " + this.instance.label);
     }
 }
 
@@ -216,14 +218,14 @@ LocationWidget.prototype.setupNewElement = function(index){"use strict";
                         }
                     }
                     catch(ex){
-                        Omadi.service.sendErrorReport("Exception in location province dialog click: " + ex);
+                        Utils.sendErrorReport("Exception in location province dialog click: " + ex);
                     }
                 });
                 
                 postDialog.show();
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception in location province click: " + ex);
+                Utils.sendErrorReport("Exception in location province click: " + ex);
             }
         });
     }
@@ -509,7 +511,7 @@ LocationWidget.prototype.cleanUp = function(){"use strict";
     }
     catch(ex){
         try{
-            Omadi.service.sendErrorReport("Exception cleaning up location widget field: " + ex);
+            Utils.sendErrorReport("Exception cleaning up location widget field: " + ex);
         }
         catch(ex1){}
     }

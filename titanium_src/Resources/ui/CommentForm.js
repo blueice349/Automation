@@ -407,7 +407,7 @@ CommentForm.prototype.setConditionallyRequiredLabelForInstance = function(instan
         }
     }
     catch(ex){
-        this.sendError("Changing conditional value: " + ex);
+        Utils.sendErrorReport("Changing conditional value: " + ex);
     }
 };
 
@@ -520,16 +520,10 @@ CommentForm.prototype.getRegularLabelView = function(instance){"use strict";
         this.labelViews[instance.field_name] = labelView;
     }
     catch(ex){
-        this.sendError("Could not get regular label: " + ex);
+        Utils.sendErrorReport("Could not get regular label: " + ex);
     }
     
     return labelView;
-};
-
-CommentForm.prototype.sendError = function(message){"use strict";
-    message += JSON.stringify(this.node);
-    Ti.API.error(message);
-    Utils.sendErrorReport(message);
 };
 
 CommentForm.prototype.initNewNode = function(){"use strict";
@@ -594,7 +588,7 @@ CommentForm.prototype.formToNode = function(){"use strict";
        }
    }
    catch(ex){
-       this.sendError("Bundling comment from form: " + ex);
+       Utils.sendErrorReport("Bundling comment from form: " + ex);
        alert("There was a problem bundling the submitted comment. The cause of the error was sent to support.");
    }
 };
@@ -958,7 +952,7 @@ CommentForm.prototype.validateRequired = function(instance){"use strict";
                         break;
                     
                     default: 
-                        this.sendError("Missing field type def in validate_form_data for field_name " + instance.field_name);
+                        Utils.sendErrorReport("Missing field type def in validate_form_data for field_name " + instance.field_name);
                         break;
                 }
             }
@@ -991,7 +985,7 @@ CommentForm.prototype.validateRequired = function(instance){"use strict";
         }
     }
     catch(ex){
-        this.sendError("Exception in validate required: " + ex);
+        Utils.sendErrorReport("Exception in validate required: " + ex);
     }
 };
 
@@ -1082,7 +1076,7 @@ CommentForm.prototype.validateEmail = function(instance){"use strict";
         }
     }
     catch(ex){
-        this.sendError("Exception in validate email: " + ex);
+        Utils.sendErrorReport("Exception in validate email: " + ex);
     }
 };
 
@@ -1103,7 +1097,7 @@ CommentForm.prototype.validatePhone = function(instance){"use strict";
         }
     }
     catch(ex){
-        this.sendError("Exception in validate phone: " + ex);
+        Utils.sendErrorReport("Exception in validate phone: " + ex);
     }
 };
 
@@ -1130,7 +1124,7 @@ CommentForm.prototype.validateMinLength = function(instance){"use strict";
         }
     }
     catch(ex){
-        this.sendError("Exception in validate min length: " + ex);
+        Utils.sendErrorReport("Exception in validate min length: " + ex);
     }
 };
 
@@ -1155,7 +1149,7 @@ CommentForm.prototype.validateMaxLength = function(instance){"use strict";
         }
     }
     catch(ex){
-        this.sendError("Exception in validate max length: " + ex);
+        Utils.sendErrorReport("Exception in validate max length: " + ex);
     }
 };
 
@@ -1189,7 +1183,7 @@ CommentForm.prototype.validateMinValue = function(instance){"use strict";
         }
     }
     catch(ex){
-        this.sendError("Exception in validate min value: " + ex);
+        Utils.sendErrorReport("Exception in validate min value: " + ex);
     }
 };
 
@@ -1225,7 +1219,7 @@ CommentForm.prototype.validateMaxValue = function(instance){"use strict";
         }
     }
     catch(ex){
-        this.sendError("Exception in validate max value: " + ex);
+        Utils.sendErrorReport("Exception in validate max value: " + ex);
     }
 };
 

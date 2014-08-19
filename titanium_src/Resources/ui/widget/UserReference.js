@@ -1,6 +1,8 @@
 /*jslint eqeq:true, plusplus: true*/
 
 var Widget, Omadi;
+var Utils = require('lib/Utils');
+
 Widget = {};
 
 function UserReferenceWidget(formObj, instance, fieldViewWrapper){"use strict";
@@ -186,13 +188,13 @@ UserReferenceWidget.prototype.getNewElement = function(index){"use strict";
                             }
                         }
                         catch(ex){
-                            Omadi.service.sendErrorReport("Exception in user reference dialog click: " + ex);
+                            Utils.sendErrorReport("Exception in user reference dialog click: " + ex);
                         }
                     });
                 }
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception in user reference widget click: " + ex);
+                Utils.sendErrorReport("Exception in user reference widget click: " + ex);
             }
         });
     }
@@ -279,7 +281,7 @@ UserReferenceWidget.prototype.cleanUp = function(){"use strict";
     }
     catch(ex){
         try{
-            Omadi.service.sendErrorReport("Exception cleaning up user widget field: " + ex);
+            Utils.sendErrorReport("Exception cleaning up user widget field: " + ex);
         }
         catch(ex1){}
     }

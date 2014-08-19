@@ -3,6 +3,8 @@
 
 var Widget, Omadi;
 
+var Utils = require('lib/Utils');
+
 Widget = {};
 
 function AutoIncrementWidget(formObj, instance, fieldViewWrapper){"use strict";
@@ -153,7 +155,7 @@ AutoIncrementWidget.prototype.cleanUp = function(){"use strict";
     }
     catch(ex){
         try{
-            Omadi.service.sendErrorReport("Exception cleaning up auto increment widget field: " + ex);
+            Utils.sendErrorReport("Exception cleaning up auto increment widget field: " + ex);
         }
         catch(ex1){}
     }

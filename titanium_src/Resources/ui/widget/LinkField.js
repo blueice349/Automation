@@ -2,6 +2,8 @@
 
 var Widget, Omadi;
 
+var Utils = require('lib/Utils');
+
 Widget = {};
 
 function LinkFieldWidget(formObj, instance, fieldViewWrapper){"use strict";
@@ -84,7 +86,7 @@ LinkFieldWidget.prototype.getFieldView = function(){"use strict";
                 Widget[e.source.fieldName].redraw();
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception in link field add another: " + ex);
+                Utils.sendErrorReport("Exception in link field add another: " + ex);
             }
         });
         
@@ -217,7 +219,7 @@ LinkFieldWidget.prototype.cleanUp = function(){"use strict";
     }
     catch(ex){
         try{
-            Omadi.service.sendErrorReport("Exception cleaning up link widget field: " + ex);
+            Utils.sendErrorReport("Exception cleaning up link widget field: " + ex);
         }
         catch(ex1){}
     }

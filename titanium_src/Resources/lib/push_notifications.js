@@ -3,6 +3,8 @@
 
 Omadi.push_notifications = {};
 
+var Utils = require('lib/Utils');
+
 var Cloud = require('ti.cloud');
 
 var CloudPush;
@@ -38,7 +40,7 @@ Omadi.push_notifications.registerAndroid = function() {"use strict";
     }
     catch(ex){
         Ti.API.error("Could not clear cloudpush status: " + ex);
-        Omadi.service.sendErrorReport("Could not clear cloudpush status: " + ex);
+        Utils.sendErrorReport("Could not clear cloudpush status: " + ex);
     }
     
     CloudPush.retrieveDeviceToken({
@@ -67,7 +69,7 @@ Omadi.push_notifications.registerAndroid = function() {"use strict";
                 dialog.show();
             }
             //alert("There was a problem enabling push notifications.");
-            Omadi.service.sendErrorReport('onAndroidRegister' + JSON.stringify(e));
+            Utils.sendErrorReport('onAndroidRegister' + JSON.stringify(e));
         }
     });
     
@@ -128,7 +130,7 @@ Omadi.push_notifications.registeriOS = function() {"use strict";
                 dialog.show();
             }
             //alert("There was a problem enabling push notifications.");
-            Omadi.service.sendErrorReport('onIOSRegister' + JSON.stringify(e));
+            Utils.sendErrorReport('onIOSRegister' + JSON.stringify(e));
         },
         callback : function(e) {
             var sound, dialog;
@@ -170,7 +172,7 @@ Omadi.push_notifications.getUserName = function() {"use strict";
         clientAccount = Omadi.utils.getClientAccount();
     }
     catch(ex){
-        Omadi.service.sendErrorReport('error getting push username' + JSON.stringify(ex));
+        Utils.sendErrorReport('error getting push username' + JSON.stringify(ex));
     }
 
     return clientAccount + '_' + uid;
@@ -184,7 +186,7 @@ Omadi.push_notifications.getPassword = function() {"use strict";
         password = md5.substring(0, 20);
     }
     catch(ex){
-        Omadi.service.sendErrorReport('error getting push password' + JSON.stringify(ex));
+        Utils.sendErrorReport('error getting push password' + JSON.stringify(ex));
     }
 
     return password;
@@ -211,7 +213,7 @@ Omadi.push_notifications.logoutUser = function(callback) {"use strict";
            
             dialog.show();
            
-            Omadi.service.sendErrorReport('onACSLogout ' + JSON.stringify(e));
+            Utils.sendErrorReport('onACSLogout ' + JSON.stringify(e));
         }
         
         if(callback !== null){
@@ -250,7 +252,7 @@ Omadi.push_notifications.unsubscribeACSPush = function(callback){"use strict";
                 });
                 
                 dialog.show();
-                Omadi.service.sendErrorReport('onACSUnsubscribe ' + JSON.stringify(e));
+                Utils.sendErrorReport('onACSUnsubscribe ' + JSON.stringify(e));
             }
         }
         
@@ -292,7 +294,7 @@ Omadi.push_notifications.setupACSPush = function() {"use strict";
                 dialog.show();
             }
 
-            Omadi.service.sendErrorReport('onACSSubscribe' + JSON.stringify(e));
+            Utils.sendErrorReport('onACSSubscribe' + JSON.stringify(e));
         }
     });
 };
@@ -330,7 +332,7 @@ Omadi.push_notifications.loginUser = function() {"use strict";
                         }
                     }
                     catch(ex){
-                        Omadi.service.sendErrorReport("exception in second try init push notifications: " + ex);
+                        Utils.sendErrorReport("exception in second try init push notifications: " + ex);
                     }
                 });
                 
@@ -341,7 +343,7 @@ Omadi.push_notifications.loginUser = function() {"use strict";
                     dialog.show();
                 }
 
-                Omadi.service.sendErrorReport('onACSLoginUser' + JSON.stringify(e));
+                Utils.sendErrorReport('onACSLoginUser' + JSON.stringify(e));
             }
         }
     });
@@ -370,7 +372,7 @@ Omadi.push_notifications.createUser = function() {"use strict";
             else {
                 dialog.show();
             }
-            Omadi.service.sendErrorReport('onACSCreateUser' + JSON.stringify(e));
+            Utils.sendErrorReport('onACSCreateUser' + JSON.stringify(e));
         }
     });
 };
@@ -414,7 +416,7 @@ Omadi.push_notifications.needToLinkUser = function() {"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in needtolinkuser: " + ex);
+        Utils.sendErrorReport("Exception in needtolinkuser: " + ex);
     }
     
     return retval;
@@ -440,7 +442,7 @@ Omadi.push_notifications.linkACSUserId = function() {"use strict";
             else {
                 dialog.show();
             }
-            Omadi.service.sendErrorReport('onACSShowMe' + JSON.stringify(e));
+            Utils.sendErrorReport('onACSShowMe' + JSON.stringify(e));
         }
     });
 };
@@ -472,10 +474,10 @@ Omadi.push_notifications.sendACSUserId = function(acsUserID) {"use strict";
             else {
                 dialog.show();
             }
-            Omadi.service.sendErrorReport('onACSLink' + JSON.stringify(e));
+            Utils.sendErrorReport('onACSLink' + JSON.stringify(e));
         }
         catch(ex){
-            Omadi.service.sendErrorReport('onACSLink Exception' + JSON.stringify(ex));
+            Utils.sendErrorReport('onACSLink Exception' + JSON.stringify(ex));
         }
     };
 

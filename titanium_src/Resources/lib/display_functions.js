@@ -4,6 +4,8 @@
 
 Omadi.display = Omadi.display || {};
 
+var Utils = require('lib/Utils');
+
 Omadi.display.backgroundGradientBlue = {
     type : 'linear',
     startPoint : {
@@ -110,7 +112,7 @@ Omadi.display.showBigImage = function(imageView) {"use strict";
                         Omadi.display.largePhotoWindow = null;
                     }
                     catch(ex){
-                        Omadi.service.sendErrorReport("exception on back button with show big image: " + ex);
+                        Utils.sendErrorReport("exception on back button with show big image: " + ex);
                     }
                 });
             
@@ -172,7 +174,7 @@ Omadi.display.showBigImage = function(imageView) {"use strict";
                     }
                 }
                 catch(ex){
-                    Omadi.service.sendErrorReport("Exception setting bigImg: " + ex);
+                    Utils.sendErrorReport("Exception setting bigImg: " + ex);
                     alert("A Problem occurred opening the file.");
                     return;
                 }
@@ -340,7 +342,7 @@ Omadi.display.showBigImage = function(imageView) {"use strict";
             }
         }
         catch(ex1){
-            Omadi.service.sendErrorReport("Exception showing large photo: " + ex1);
+            Utils.sendErrorReport("Exception showing large photo: " + ex1);
         }
     }
 };
@@ -359,7 +361,7 @@ Omadi.display.iOSBackToolbar = function(actualWindow, label){"use strict";
                 actualWindow.close();
             }
             catch(ex){
-                Omadi.service.sendErrorReport("exception on back for iosbacktoolbar: " + ex);
+                Utils.sendErrorReport("exception on back for iosbacktoolbar: " + ex);
             }
         });
     
@@ -412,7 +414,7 @@ Omadi.display.showLogoutDialog = function(){"use strict";
                 }
             }
             catch(ex){
-                Omadi.service.sendErrorReport("exception on really logout verify logout: " + ex);
+                Utils.sendErrorReport("exception on really logout verify logout: " + ex);
             }
         });
 
@@ -703,7 +705,7 @@ Omadi.display.openWebView = function(nid){"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception setting cookies for web view: " + ex);
+        Utils.sendErrorReport("Exception setting cookies for web view: " + ex);
     }
     
     webView = Ti.UI.createWebView({
@@ -761,7 +763,7 @@ Omadi.display.openViewWindow = function(type, nid, win) {"use strict";
         viewWindow.open();
     }
     else{
-        Omadi.service.sendErrorReport("Could not open dispatch form window");
+        Utils.sendErrorReport("Could not open dispatch form window");
         alert("Could not open the view.");
         Omadi.display.doneLoading();
     }
@@ -877,7 +879,7 @@ Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
             }
         }
         catch(copyEx){
-            Omadi.service.sendErrorReport("Exception with custom copy in dispatch: " + copyEx);
+            Utils.sendErrorReport("Exception with custom copy in dispatch: " + copyEx);
         }
         
         //if(isDispatch){
@@ -894,7 +896,7 @@ Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
                 node = Omadi.display.FormTabs.getNode();
             }
             else{
-                Omadi.service.sendErrorReport("Could not open dispatch form window");
+                Utils.sendErrorReport("Could not open dispatch form window");
                 Omadi.display.doneLoading();
             }
             
@@ -914,7 +916,7 @@ Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
                 // node = Omadi.display.FormModule.getNode(type);
             // }
             // else{
-                // Omadi.service.sendErrorReport("Could not open regular form window");
+                // Utils.sendErrorReport("Could not open regular form window");
                 // Omadi.display.doneLoading();
             // }
         // }
@@ -925,7 +927,7 @@ Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception opening form: " + ex);
+        Utils.sendErrorReport("Exception opening form: " + ex);
     }
     return formWindow;
 };
@@ -1033,7 +1035,7 @@ Omadi.display.showNewNotificationDialog = function(){"use strict";
                         }
                     }
                     catch(ex){
-                        Omadi.service.sendErrorReport("exception view the notification list?: " + ex);
+                        Utils.sendErrorReport("exception view the notification list?: " + ex);
                     }
                 });
                 
@@ -1069,7 +1071,7 @@ Omadi.display.showNewNotificationDialog = function(){"use strict";
                         }
                     }
                     catch(ex){
-                        Omadi.service.sendErrorReport("exception read the notification now?: " + ex);
+                        Utils.sendErrorReport("exception read the notification now?: " + ex);
                     }
                 });
                 
@@ -1287,7 +1289,7 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
                     }
                 }
                 catch(ex){
-                    Omadi.service.sendErrorReport("exception dialog form options: " + ex);
+                    Utils.sendErrorReport("exception dialog form options: " + ex);
                 }
             });
         }
@@ -1405,7 +1407,7 @@ Omadi.display.getDrivingDirectionsTo = function(addressString){"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception getting driving directions: " + ex);
+        Utils.sendErrorReport("Exception getting driving directions: " + ex);
     }
 };
 
@@ -1474,7 +1476,7 @@ Omadi.display.displayFile = function(nid, fid, title) {"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in display file: " + ex);
+        Utils.sendErrorReport("Exception in display file: " + ex);
     }
 };
 
@@ -1530,16 +1532,16 @@ Omadi.display.displayFullImage = function(imageView) {"use strict";
             catch(e) {
                 Omadi.display.doneLoading();
                 alert("There was an error retrieving the file.");
-                Omadi.service.sendErrorReport("Exception showing full photo file: " + e);
+                Utils.sendErrorReport("Exception showing full photo file: " + e);
             }
         }
         else{
             alert("The photo could not be displayed.");
-            Omadi.service.sendErrorReport("Could not show full photo file.");
+            Utils.sendErrorReport("Could not show full photo file.");
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception showing full photo: " + ex);
+        Utils.sendErrorReport("Exception showing full photo: " + ex);
     }
 };
 
@@ -1595,7 +1597,7 @@ Omadi.display.displayLargeImage = function(imageView, nid, file_id, showInImageV
                         imageView.fullImageLoaded = true;
                     }
                     catch(ex){
-                        Omadi.service.sendErrorReport("Exception downloading image: " + ex);
+                        Utils.sendErrorReport("Exception downloading image: " + ex);
                     }
                 };
     
@@ -1610,12 +1612,12 @@ Omadi.display.displayLargeImage = function(imageView, nid, file_id, showInImageV
             catch(e) {
                 Omadi.display.doneLoading();
                 alert("There was an error retrieving the file.");
-                Omadi.service.sendErrorReport("exception in retrieving large image file: " + e);
+                Utils.sendErrorReport("exception in retrieving large image file: " + e);
             }
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("exception in retrieving large image: " + ex);
+        Utils.sendErrorReport("exception in retrieving large image: " + ex);
     }
 };
 
@@ -1645,7 +1647,7 @@ Omadi.display.getImageViewFromData = function(blobImage, maxWidth, maxHeight) {"
                 imageView.image = imageView.toImage();   
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception setting image in Omadi.display.getImageViewFromData: " + ex);
+                Utils.sendErrorReport("Exception setting image in Omadi.display.getImageViewFromData: " + ex);
             }
         }
 
@@ -1689,7 +1691,7 @@ Omadi.display.openTermsOfService = function(){"use strict";
                     win.close();
                 }
                 catch(ex){
-                    Omadi.service.sendErrorReport("exception with back button for open terms of service: " + ex);
+                    Utils.sendErrorReport("exception with back button for open terms of service: " + ex);
                 }
             });
             
@@ -1721,7 +1723,7 @@ Omadi.display.openTermsOfService = function(){"use strict";
         win.open();
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception opening terms of service: " + ex);
+        Utils.sendErrorReport("Exception opening terms of service: " + ex);
     }
 };
 
@@ -1748,7 +1750,7 @@ Omadi.display.setImageViewThumbnail = function(imageView, nid, file_id) {"use st
                     imageView.setImage(this.responseData);
                 }
                 catch(ex){
-                    Omadi.service.sendErrorReport("Exception displaying image thumbnail in Omadi.display.setImageViewThumbnail: " + ex);
+                    Utils.sendErrorReport("Exception displaying image thumbnail in Omadi.display.setImageViewThumbnail: " + ex);
                 }
                 
                 imageView.height = null;
@@ -1797,7 +1799,7 @@ Omadi.display.setImageViewVideoThumbnail = function(imageView, nid, file_id, fie
                     imageView.setImage(this.responseData);
                 }
                 catch(ex){
-                    //Omadi.service.sendErrorReport("Exception displaying video thumbnail: " + ex);
+                    //Utils.sendErrorReport("Exception displaying video thumbnail: " + ex);
                     imageView.setImage('/images/video_loading.png');
                 }
                 
@@ -1906,7 +1908,7 @@ Omadi.display.loading = function(message, win) {"use strict";
                 e.source.hide();
             }
             catch(ex){
-                Omadi.service.sendErrorReport("exception hiding the indicator: " + ex);
+                Utils.sendErrorReport("exception hiding the indicator: " + ex);
             }
         });
         
@@ -1937,7 +1939,7 @@ Omadi.display.doneLoading = function() {"use strict";
         }
     }
     catch(ex){
-        Omadi.service.sendErrorReport("doneLoading: " + ex);
+        Utils.sendErrorReport("doneLoading: " + ex);
     }
 };
 

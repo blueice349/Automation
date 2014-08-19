@@ -3,6 +3,8 @@
 
 Ti.include('/lib/functions.js');
 
+var Utils = require('lib/Utils');
+
 var curWin = Ti.UI.currentWindow;
 var wrapperView;
 
@@ -427,7 +429,7 @@ function loggingOutJobs(){"use strict";
             }
         }
         catch(ex){
-            Omadi.service.sendErrorReport("Exception with jobs tableview click: " + ex);
+            Utils.sendErrorReport("Exception with jobs tableview click: " + ex);
         }
     });
     

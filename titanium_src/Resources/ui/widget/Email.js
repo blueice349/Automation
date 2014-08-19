@@ -2,6 +2,8 @@
 
 var Widget, Omadi;
 
+var Utils = require('lib/Utils');
+
 Widget = {};
 
 function EmailWidget(formObj, instance, fieldViewWrapper){"use strict";
@@ -85,7 +87,7 @@ EmailWidget.prototype.getFieldView = function(){"use strict";
                 Widget[e.source.fieldName].redraw();
             }
             catch(ex){
-                Omadi.service.sendErrorReport("Exception adding another to email: " + ex);
+                Utils.sendErrorReport("Exception adding another to email: " + ex);
             }
         });
         
@@ -216,7 +218,7 @@ EmailWidget.prototype.cleanUp = function(){"use strict";
     }
     catch(ex){
         try{
-            Omadi.service.sendErrorReport("Exception cleaning up email widget field: " + ex);
+            Utils.sendErrorReport("Exception cleaning up email widget field: " + ex);
         }
         catch(ex1){}
     }

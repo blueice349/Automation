@@ -1,6 +1,8 @@
 /*jslint eqeq:true*/
 Omadi.bundles.timecard = {};
 
+var Utils = require('lib/Utils');
+
 Omadi.bundles.timecard.askClockOutLogout = function(){"use strict";
     var verifyLogout;
     
@@ -23,7 +25,7 @@ Omadi.bundles.timecard.askClockOutLogout = function(){"use strict";
                 }
             }
             catch(ex){
-                Omadi.service.sendErrorReport("exception verify logout: " + ex);
+                Utils.sendErrorReport("exception verify logout: " + ex);
             }
         });
     }
@@ -42,7 +44,7 @@ Omadi.bundles.timecard.askClockOutLogout = function(){"use strict";
                 }
             }
             catch(ex){
-                Omadi.service.sendErrorReport("exception verify logout 2: " + ex);
+                Utils.sendErrorReport("exception verify logout 2: " + ex);
             }
         });
     }
@@ -75,7 +77,7 @@ Omadi.bundles.timecard.askClockIn = function(){"use strict";
                    }
                 }
                 catch(ex){
-                    Omadi.service.sendErrorReport("exception in clock in now?: " + ex);
+                    Utils.sendErrorReport("exception in clock in now?: " + ex);
                 }
             });
             
@@ -151,13 +153,13 @@ Omadi.bundles.timecard.doClockIn = function() {"use strict";
         else{
             //Omadi.bundles.timecard.removeStatus();
             alert("A problem occurred clocking in. Please try again.");
-            Omadi.service.sendErrorReport("Could not do a clock in timecard entry: not saved");
+            Utils.sendErrorReport("Could not do a clock in timecard entry: not saved");
         }
     }
     catch(ex){
         //Omadi.bundles.timecard.removeStatus();
         alert("A problem occurred clocking in. Please try again.");
-        Omadi.service.sendErrorReport("Could not save a timecard entry: " + ex);
+        Utils.sendErrorReport("Could not save a timecard entry: " + ex);
     }
 };
 
@@ -202,7 +204,7 @@ Omadi.bundles.timecard.getLastClockInNid = function(){"use strict";
         result.close();
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception getting lastclockinnid: " + ex);
+        Utils.sendErrorReport("Exception getting lastclockinnid: " + ex);
     }
     
     db.close();
@@ -238,13 +240,13 @@ Omadi.bundles.timecard.doClockOut = function(logoutNext) {"use strict";
         else{
             Omadi.bundles.timecard.removeStatus();
             alert("A problem occurred clocking out. Please try again.");
-            Omadi.service.sendErrorReport("Could not do a clock out timecard entry: not saved");
+            Utils.sendErrorReport("Could not do a clock out timecard entry: not saved");
         }
     }
     catch(ex){
         Omadi.bundles.timecard.removeStatus();
         alert("A problem occurred clocking out. Please try again.");
-        Omadi.service.sendErrorReport("Could not do a clock out timecard entry: " + ex);
+        Utils.sendErrorReport("Could not do a clock out timecard entry: " + ex);
     }
     
     if(logoutNext){

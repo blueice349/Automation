@@ -441,7 +441,7 @@ NodeViewTabs.prototype.getTabs = function(){"use strict";
                 this.tabGroup.addTab(this.commentsTab);
             }
             catch(commentEx){
-                this.sendError("Exception with comments: " + commentEx);
+                Utils.sendErrorReport("Exception with comments: " + commentEx);
             }
         }
     }
@@ -500,12 +500,6 @@ NodeViewTabs.prototype.close = function(){"use strict";
         }
     }
     catch(ex1){}
-};
-
-NodeViewTabs.prototype.sendError = function(message){"use strict";
-    message += JSON.stringify(this.node);
-    Ti.API.error(message);
-    Utils.sendErrorReport(message);
 };
 
 

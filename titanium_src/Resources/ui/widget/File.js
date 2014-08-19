@@ -4,6 +4,8 @@ var Widget, Omadi;
 
 Widget = {};
 
+var Utils = require('lib/Utils');
+
 function FileWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.formObj = formObj;
     this.instance = instance;
@@ -170,7 +172,7 @@ FileWidget.prototype.cleanUp = function(){"use strict";
     }
     catch(ex){
         try{
-            Omadi.service.sendErrorReport("Exception cleaning up file widget field: " + ex);
+            Utils.sendErrorReport("Exception cleaning up file widget field: " + ex);
         }
         catch(ex1){}
     }
