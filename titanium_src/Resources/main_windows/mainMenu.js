@@ -1025,10 +1025,18 @@ function userInitiatedUpdateCheck(){"use strict";
 }
 
 function switchedNodeIdMainMenu(e){"use strict";
-    Ti.API.error("Switched it up: " + JSON.stringify(e));
+    Ti.API.debug("Switched it up: " + JSON.stringify(e));
     
     if(typeof Omadi.display.FormTabs !== 'undefined' && Omadi.display.FormTabs !== null){
         Omadi.display.FormTabs.switchedNid(e);
+    }
+}
+
+function addNewFilesMainMenu(e) {"use strict";
+	Ti.API.debug("Added new files: " + JSON.stringify(e));
+    
+    if(typeof Omadi.display.FormTabs !== 'undefined' && Omadi.display.FormTabs !== null){
+        Omadi.display.FormTabs.addNewFiles(e);
     }
 }
 
@@ -1151,8 +1159,8 @@ function openFormWindow(e){"use strict";
     Ti.App.removeEventListener('switchedItUp', switchedNodeIdMainMenu);
     Ti.App.addEventListener('switchedItUp', switchedNodeIdMainMenu);
     
-    Ti.App.removeEventListener('photoUploaded', photoUploadedMainMenu);
-    Ti.App.addEventListener('photoUploaded', photoUploadedMainMenu);
+    Ti.App.removeEventListener('newFilesAdded', addNewFilesMainMenu);
+    Ti.App.addEventListener('newFilesAdded', addNewFilesMainMenu);
     
     Ti.App.removeEventListener('openFormWindow', openFormWindow);
     Ti.App.addEventListener('openFormWindow', openFormWindow);
@@ -1249,8 +1257,8 @@ function openFormWindow(e){"use strict";
             Ti.App.removeEventListener('omadi:finishedDataSync', setupBottomButtons);
             Ti.App.removeEventListener('normal_update_from_menu', normalUpdateFromMenu);
             Ti.App.removeEventListener('full_update_from_menu', fullUpdateFromMenu);
-            Ti.App.removeEventListener('switchedItUp', switchedNodeIdMainMenu); 
-            Ti.App.removeEventListener('photoUploaded', photoUploadedMainMenu);
+            Ti.App.removeEventListener('switchedItUp', switchedNodeIdMainMenu);
+            Ti.App.removeEventListener('newFilesAdded', addNewFilesMainMenu);
             Ti.App.removeEventListener('openFormWindow', openFormWindow);
             
             Ti.Network.removeEventListener('change', networkChangedMainMenu);

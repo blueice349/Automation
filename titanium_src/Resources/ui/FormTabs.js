@@ -163,7 +163,7 @@ FormTabs.prototype.doDispatchSave = function(saveType){"use strict";
 					} else {
 	                    // Save each form individually
 	                    if(Dispatch.dispatchObj){
-	                        Dispatch.dispatchObj.saveForm('normal');
+	                        Dispatch.dispatchObj.saveForm(saveType == 'draft' ? 'draft' : 'normal');
 	                    }
 	                    
 	                    // Save each form individually
@@ -1270,6 +1270,60 @@ exports.switchedNid = function(e){"use strict";
     }
 };
 
+exports.addNewFiles = function(e) {"use strict";
+	if(Dispatch.workObj !== null){
+        var files = processNewFilesForObjectInsertion(e.newFiles);
+        for (var fieldName in files) {
+        	var widget = Dispatch.workObj.fieldObjects[fieldName];
+        	if (widget) {
+        		widget.updateFidsOfNewFiles(files[fieldName]);
+        	}
+        }
+    }
+};
+
+function processNewFilesForObjectInsertion(files) {
+	var result = {};
+	for (var i = 0, file; file = files[i]; i++) {
+		if (!result[file.fieldName]) {
+			result[file.fieldName] = [];
+		}
+		result[file.fieldName].push(file.fid);
+	}
+	
+	return result;
+}
+
+exports.photoUploaded = function(e){"use strict";
+    var i, nid, delta, fid, field_name, dbValues;
+    Ti.API.info("In photo Uploaded: " + JSON.stringify(e));
+    
+    // Currently, only supporting images in the work node, so nothing should be done in the dispatch form until it's supported
+    
+    if (Dispatch.workObj !== null) {
+           try{
+               nid = parseInt(e.nid, 10);
+               delta = parseInt(e.delta, 10);
+               field_name = e.field_name;
+               fid = parseInt(e.fid, 10);
+               
+               if(Dispatch.workObj.nid == nid){
+                   if(typeof Dispatch.workObj.fieldWrappers[field_name] !== 'undefined'){
+                       
+                       Ti.API.info("Just inserted a photo uploaded with delta: " + delta + ", fid: " + fid + ", field_name: " + field_name);
+                       
+                       Dispatch.workObj.setValueWidgetProperty(field_name, 'dbValue', fid, delta);
+                       Dispatch.workObj.setValueWidgetProperty(field_name, 'fid', fid, delta);
+                   }
+               }
+           }
+           catch(ex){
+               Utils.sendErrorReport("Exception switching the photo id in a form: " + ex);
+           }
+    }
+};
+
+
 function switchNidForObject(obj, e) {
     Ti.API.info("In switched nid: " + JSON.stringify(e));
     
@@ -1285,36 +1339,6 @@ function switchNidForObject(obj, e) {
     catch(ex){
         Utils.sendErrorReport("Exception switching the nid in a form: " + ex);
     }	
-};
-
-
-exports.photoUploaded = function(e){"use strict";
-    var i, nid, delta, fid, field_name, dbValues;
-    Ti.API.info("In photo Uploaded: " + JSON.stringify(e));
-    
-    // Currently, only supporting images in the work node, so nothing should be done in the dispatch form until it's supported
-    
-    if (Dispatch.workObj !== null) {
-	    try{
-	        nid = parseInt(e.nid, 10);
-	        delta = parseInt(e.delta, 10);
-	        field_name = e.field_name;
-	        fid = parseInt(e.fid, 10);
-	        
-	        if(Dispatch.workObj.nid == nid){
-	            if(typeof Dispatch.workObj.fieldWrappers[field_name] !== 'undefined'){
-	                
-	                Ti.API.info("Just inserted a photo uploaded with delta: " + delta + ", fid: " + fid + ", field_name: " + field_name);
-	                
-	                Dispatch.workObj.setValueWidgetProperty(field_name, 'dbValue', fid, delta);
-	                Dispatch.workObj.setValueWidgetProperty(field_name, 'fid', fid, delta);
-	            }
-	        }
-	    }
-	    catch(ex){
-	        Utils.sendErrorReport("Exception switching the photo id in a form: " + ex);
-	    }
-    }
 };
 
 FormTabs.prototype.restFormObjects = function() {

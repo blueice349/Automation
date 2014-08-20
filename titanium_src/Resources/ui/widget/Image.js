@@ -14,10 +14,10 @@ if(Ti.App.isIOS){
 var IMAGE_MAX_BYTES = 524258;
 
 function ImageWidget(formObj, instance, fieldViewWrapper){"use strict";
-    this.formObj = formObj;
+    this.formObj = formObj || {};
     this.instance = instance;
     this.fieldView = null;
-    this.node = formObj.node;
+    this.node = this.formObj.node || {};
     this.dbValues = [];
     this.textValues = [];
     this.nodeElement = null;
@@ -100,11 +100,19 @@ ImageWidget.prototype.redraw = function(){"use strict";
     this.fieldViewWrapper.remove(origFieldView);
 };
 
+ImageWidget.prototype.getImageNid = function() {
+	var imageNid = this.formObj.nid;
+    if(typeof this.formObj.origNid !== 'undefined'){
+        imageNid = this.formObj.origNid;
+    }
+    return imageNid;
+};
+
 ImageWidget.prototype.getNewElement = function(index){"use strict";
-    var widgetView, dbValue, imageData, degreeData, i, j, localDelta, 
+    var widgetView, dbValues, imageData, degreeData, i, j, localDelta, 
             numImagesShowing = 0, contentWidth, imageNid, deltaData, imageDataAdded, thumbData;
 
-    dbValue = [];
+    dbValues = [];
     imageData = [];
     degreeData = [];
     deltaData = [];
@@ -112,14 +120,15 @@ ImageWidget.prototype.getNewElement = function(index){"use strict";
 
     if ( typeof this.node[this.instance.field_name] !== 'undefined') {
         if ( typeof this.node[this.instance.field_name].dbValues !== 'undefined') {
-            dbValue = this.node[this.instance.field_name].dbValues;
+            dbValues = this.node[this.instance.field_name].dbValues;
         }
-        if ( typeof this.node[this.instance.field_name].imageData !== 'undefined') {
-            imageData = this.node[this.instance.field_name].imageData;
-            degreeData = this.node[this.instance.field_name].degrees;
-            deltaData = this.node[this.instance.field_name].deltas;
-            thumbData = this.node[this.instance.field_name].thumbData;
-        }
+        // TODO remove
+        // if ( typeof this.node[this.instance.field_name].imageData !== 'undefined') {
+            // imageData = this.node[this.instance.field_name].imageData;
+            // degreeData = this.node[this.instance.field_name].degrees;
+            // deltaData = this.node[this.instance.field_name].deltas;
+            // thumbData = this.node[this.instance.field_name].thumbData;
+        // }
     }
 
     Ti.API.debug("Creating image field: " + this.instance.label);
@@ -137,67 +146,81 @@ ImageWidget.prototype.getNewElement = function(index){"use strict";
         instance : this.instance
     });
     
-    imageNid = this.formObj.nid;
-    if(typeof this.formObj.origNid !== 'undefined'){
-        imageNid = this.formObj.origNid;
-    }
+    imageNid = this.getImageNid();
     
     imageDataAdded = [];
     numImagesShowing = 0;
 
-    if (typeof dbValue.length !== 'undefined') {
-        for ( i = 0; i < dbValue.length; i++) {
-            if (dbValue[i] > 0) {
-                Ti.API.debug("Adding image to scroll view");
-                
-                // See if any non-uploaded photos need to replace the "Uploading photo thumbnail"
-                localDelta = null;
-                for(j = 0; j < deltaData.length; j ++){
-                    if(deltaData[j] == i){
-                        localDelta = j;
-                        break;
-                    }
-                }
-                
-                Ti.API.debug("imageNid: " + imageNid + ", dbValue:" + dbValue[i]);
-                
-                if(localDelta === null){
-                    Ti.API.debug("Uploaded index: " + i);
-                    widgetView.add(this.getImageView(widgetView, i, imageNid, dbValue[i], null, null, 0));
-                }
-                else{
-                    Ti.API.debug("Local delta index: " + localDelta + " and index: " + i);
-                    widgetView.add(this.getImageView(widgetView, i, imageNid, null, imageData[localDelta], thumbData[localDelta], degreeData[localDelta]));
-                    imageDataAdded.push(localDelta);
-                }
-                
-                numImagesShowing ++;   
-            }
-        }
-    }
+	this.addImageViewsToWidgetView(dbValues, widgetView);
+	
+    //if (dbValues.length != 0) {
+    	
+    	
+    	// TODO remove
+        //for ( i = 0; i < dbValues.length; i++) {
+        	// Look in db
+        	
+        	
+            // if (dbValues[i] > 0) {
+                // Ti.API.debug("Adding image to scroll view");
+//                 
+                // // See if any non-uploaded photos need to replace the "Uploading photo thumbnail"
+                // localDelta = null;
+                // for(j = 0; j < deltaData.length; j ++){
+                    // if(deltaData[j] == i){
+                        // localDelta = j;
+                        // break;
+                    // }
+                // }
+//                 
+                // Ti.API.debug("imageNid: " + imageNid + ", dbValue:" + dbValue[i]);
+//                 
+                // if(localDelta === null){
+                    // Ti.API.debug("Uploaded index: " + i);
+                    // widgetView.add(this.getImageView(widgetView, i, imageNid, dbValue[i], null, null, 0));
+                // }
+                // else{
+                    // Ti.API.debug("Local delta index: " + localDelta + " and index: " + i);
+                    // widgetView.add(this.getImageView(widgetView, i, imageNid, null, imageData[localDelta], thumbData[localDelta], degreeData[localDelta]));
+                    // imageDataAdded.push(localDelta);
+                // }
+//                 
+                // numImagesShowing ++;   
+            // }
+        //}
+    //}
 
-    if (typeof imageData.length !== 'undefined' && imageDataAdded.length < imageData.length) {
-        for ( i = 0; i < imageData.length; i++) {
-            if(imageDataAdded.indexOf(i) == -1){
-                Ti.API.debug("Adding local image index: " + numImagesShowing);
-                widgetView.add(this.getImageView(widgetView, numImagesShowing, imageNid, null, imageData[i], thumbData[i], degreeData[i]));
-                numImagesShowing ++;
-            }
-        }
-    }
+	// TODO remove
+    // if (typeof imageData.length !== 'undefined' && imageDataAdded.length < imageData.length) {
+        // for ( i = 0; i < imageData.length; i++) {
+            // if(imageDataAdded.indexOf(i) == -1){
+                // Ti.API.debug("Adding local image index: " + numImagesShowing);
+                // widgetView.add(this.getImageView(widgetView, numImagesShowing, imageNid, null, imageData[i], thumbData[i], degreeData[i]));
+                // numImagesShowing ++;
+            // }
+        // }
+    // }
     
-    Ti.API.debug("Num images showing 2: " + numImagesShowing);
+    //Ti.API.debug("Num images showing 2: " + numImagesShowing);
 
-    contentWidth = numImagesShowing * 110;
+    // contentWidth = numImagesShowing * 110;
+// 
+    // if (this.instance.can_edit && (this.instance.settings.cardinality == -1 || (numImagesShowing < this.instance.settings.cardinality))) {
+//         
+        // widgetView.add(this.getImageView(widgetView, numImagesShowing, null, null, null, null, 0));
+// 
+        // contentWidth += 110;
+    // }
+// 
+    // widgetView.contentWidth = contentWidth;
 
-    if (this.instance.can_edit && (this.instance.settings.cardinality == -1 || (numImagesShowing < this.instance.settings.cardinality))) {
-        
-        widgetView.add(this.getImageView(widgetView, numImagesShowing, null, null, null, null, 0));
-
-        contentWidth += 110;
-    }
-
-    widgetView.contentWidth = contentWidth;
+	var contentWidth = 110 * dbValues.length;
+	if (this.instance.can_edit && (this.instance.settings.cardinality == -1 || (numImagesShowing < this.instance.settings.cardinality))) {
+		widgetView.add(this.getTakePhotoButtonView());
+		contentWidth += 110;
+	}
+	
+	widgetView.contentWidth = contentWidth;
 
     widgetView.check_conditional_fields = this.formObj.affectsAnotherConditionalField(this.instance);
     this.formObj.addCheckConditionalFields(widgetView.check_conditional_fields);
@@ -215,9 +238,182 @@ ImageWidget.prototype.getNewElement = function(index){"use strict";
         }
     }
 
+	
     return widgetView;
 };
 
+ImageWidget.prototype.addImageViewsToWidgetView = function(fids, widgetView) {
+	try {
+		var localImages = this.getLocalImages();
+		for (var i = 0, j = 0; i < fids.length; i++) {
+			var imageView = null; 
+			if (fids[i] === -1) {
+				imageView = this.getLocalImageView(fids[i], localImages[0][j++], i);
+			} else if (localImages[fids[i]]) {
+				imageView = this.getLocalImageView(fids[i], localImages[fids[i]], i);
+			} else {
+				imageView = this.getRemoteImageView(fids[i], i);
+			}
+			
+			var self = this;
+			imageView.addEventListener('click', function(e) {
+				self.showPhotoOptions(e.source);
+			});
+			
+			widgetView.add(imageView);
+		}
+	} catch (e) {
+		Utils.sendErrorReport('Error in addImageViewsToWidgetView: ' + e);
+	}
+};
+
+ImageWidget.prototype.getLocalImages = function() {
+	var localImages = {0: []};
+	try {
+	var db = Omadi.utils.openListDatabase();
+	var result = db.execute('SELECT file_path, fid, degrees, thumb_path FROM _files WHERE nid=' + this.getImageNid() + ' AND field_name="' + this.instance.field_name + '" ORDER BY timestamp ASC');
+	
+	while(result.isValidRow()) {
+		if (result.fieldByName('fid') == '0') {
+			localImages[0].push({
+				filePath: result.fieldByName('file_path'),
+				thumbPath: result.fieldByName('thumb_path'),
+				degrees: result.fieldByName('degrees')
+			});
+		} else {
+			localImages[parseInt(result.fieldByName('fid'), 10)] = {
+				filePath: result.fieldByName('file_path'),
+				thumbPath: result.fieldByName('thumb_path'),
+				degrees: result.fieldByName('degrees')
+			};
+		}
+		result.next();
+	}
+	
+	result.close();
+	db.close();
+	} catch (e) {
+		Utils.sendErrorReport('Error in getLocalImages: ' + e);
+	}
+	
+	return localImages;
+};
+
+ImageWidget.prototype.getLocalImageView = function(fid, imageData, index) {
+	var image = '';
+	if (Ti.App.Properties.getBool('omadi:image:skipThumbnail', false)) {
+        image = '/images/video_selected.png';
+    } else {
+    	image = imageData.thumbPath ? imageData.thumbPath : imageData.filePath;
+    }
+	var imageView = Ti.UI.createImageView({
+        left : 5,
+        height : 100,
+        width : 100,
+        image : image,
+        autorotate: true,
+        thumbnailLoaded : false,
+        fullImageLoaded : false,
+        isImageData : false,
+        bigImg : null,
+        touchEnabled: true,
+        nid : this.getImageNid(),
+        fid : fid,
+        imageIndex : index,
+        dbValue : fid,
+        instance : this.instance,
+        degrees: imageData.degrees,
+        filePath : imageData.filePath
+    });
+    
+    return imageView;
+};
+
+ImageWidget.prototype.getRemoteImageView = function(fid, index) {
+	var imageView = Ti.UI.createImageView({
+        left : 5,
+        height : 100,
+        width : 100,
+        image : '/images/photo_loading.png',
+        autorotate: true,
+        thumbnailLoaded : false,
+        fullImageLoaded : false,
+        isImageData : false,
+        bigImg : null,
+        touchEnabled: true,
+        fid : fid,
+        nid : this.getImageNid(),
+        imageIndex : index,
+        dbValue : fid,
+        instance : this.instance
+    });
+    
+    Omadi.display.setImageViewThumbnail(imageView, this.getImageNid(), fid);
+    
+    return imageView;
+};
+
+ImageWidget.prototype.getTakePhotoButtonView = function() {
+	
+	var widgetType = Ti.App.Properties.getString("photoWidget", 'take');
+    if(widgetType == 'choose' && this.getPhotoChooserDir() === null){
+        widgetType = 'take';
+    }
+    
+	var takePhotoView = Ti.UI.createImageView({
+        left : 5,
+        height : 100,
+        width : 100,
+        image : widgetType == 'choose' ? '/images/choose-a-photo.png' : '/images/take_photo.png',
+        autorotate: true,
+        thumbnailLoaded : false,
+        fullImageLoaded : false,
+        isImageData : false,
+        bigImg : null,
+        touchEnabled: true,
+        imageIndex : 0,
+        instance : this.instance,
+    });
+    
+	var self = this;
+	takePhotoView.addEventListener('click', function(e) {
+		e.source.setTouchEnabled(false);
+		
+		if (widgetType == 'choose') {
+			self.openPictureChooser(e.source);
+		} else {
+			Omadi.display.loading();
+			self.openCamera(e.source);
+			Omadi.display.doneLoading();
+		}
+		
+		setTimeout(function(){
+            takePhotoView.setTouchEnabled(true);
+        }, 1000);
+	});
+    
+    return takePhotoView;
+};
+
+ImageWidget.prototype.setFid = function(i, fid) {
+	if (typeof this.dbValues[i] === 'undefined') {
+		return;
+	}
+	
+	this.dbValues[i] = fid;
+	
+	var imageView = this.elements[0].getChildren()[i];
+	imageView.fid = fid;
+	imageView.dbValue = fid;
+};
+
+ImageWidget.prototype.updateFidsOfNewFiles = function(newFids) {
+	for (var i = 0, j = 0; i < this.dbValues.length && j < newFids.length; i++) {
+		if (this.dbValues[i] == -1) {
+			this.setFid(i, newFids[j++]);
+		}
+	}
+};
 
 ImageWidget.prototype.getImageView = function(widgetView, index, nid, fid, filePath, thumbPath, degrees) {"use strict";
     var imageView, transform, rotateDegrees, image, widgetType;
@@ -347,11 +543,14 @@ ImageWidget.prototype.getImageView = function(widgetView, index, nid, fid, fileP
 ImageWidget.prototype.showPhotoOptions = function(imageView){"use strict";
     var dialog, isDeletePhoto, options;
     
+    if (!this.instance.can_edit) {
+    	Omadi.display.displayFullImage(imageView);
+    	return;
+    }
+    
     options = ['View Photo'];
     
-    if(typeof imageView.filePath !== 'undefined' && 
-              imageView.filePath != null && 
-              Omadi.utils.getPhotoWidget() == 'take'){
+    if(imageView.dbValue <= 0 && Omadi.utils.getPhotoWidget() == 'take'){
         isDeletePhoto = true;
         options.push('Delete Photo');
     }
@@ -551,7 +750,7 @@ ImageWidget.prototype.openPictureChooser = function(imageView){"use strict";
                                 
                                 if (localImageView.instance.settings.cardinality == -1 || (localImageView.imageIndex + 1) < localImageView.instance.settings.cardinality) {
                                     newImageView = Widget[e.source.instance.field_name].getImageView(parentView, localImageView.imageIndex, null, null, dbPath, null, 0);
-                                    chooseNextImageView = Widget[e.source.instance.field_name].getImageView(parentView, localImageView.imageIndex + 1, null, null, null, null, 0);
+                                    chooseNextImageView = Widget[e.source.instance.field_name].getTakePhotoButtonView();
                                     
                                     parentView.add(newImageView);
                                     parentView.add(chooseNextImageView);
@@ -831,7 +1030,7 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
                         Ti.API.debug("last Index: " + lastIndex);
                         
                         if(cardinality == -1 || (lastIndex + 1) < cardinality){
-                            takeNextPhotoView = Widget[imageView.instance.field_name].getImageView(parentView, lastIndex + 1, null, null, null, null, 0);
+                            takeNextPhotoView = Widget[imageView.instance.field_name].getTakePhotoButtonView();
                             parentView.add(takeNextPhotoView);
                         }
                         
@@ -1044,7 +1243,7 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
                             if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
                                 
                                 newImageView = Widget[imageView.instance.field_name].getImageView(parentView, imageView.imageIndex, null, null, filePath, thumbPath, 0);
-                                takeNextPhotoView = Widget[imageView.instance.field_name].getImageView(parentView, imageView.imageIndex + 1, null, null, null, null, 0);
+                                takeNextPhotoView = Widget[imageView.instance.field_name].getTakePhotoButtonView();
                                 
                                 parentView.add(newImageView);
                                 parentView.add(takeNextPhotoView);

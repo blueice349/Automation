@@ -1364,51 +1364,6 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
                 subResult = subDB.execute("SELECT settings FROM fields WHERE bundle='" + tableName + "' and type IN ('image','file') AND field_name='" + json.field_name + "'");
                 fieldSettings = JSON.parse(subResult.fieldByName('settings'));
                 subResult.close();
-        
-                if (fieldSettings != null && 
-                    typeof fieldSettings.cardinality !== 'undefined' && 
-                    (fieldSettings.cardinality > 1 || fieldSettings.cardinality < 0)) {
-                    
-                    if(typeof json.field_value !== 'undefined'){
-                        // This is here since 2.5.13
-                        jsonArray = json.field_value;
-                        Ti.API.info("Field Value");
-                        Ti.API.info(JSON.stringify(json.field_value));
-                    }
-                    else{
-                        
-                        // In case field_value is not in the json -- should remove this block soon
-                        subResult = subDB.execute("SELECT " + json.field_name + " FROM " + tableName + " WHERE nid=" + json.nid);
-        
-                        jsonArray = [];
-            
-                        if (subResult.isValidRow()) {
-                            multipleValue = Omadi.utils.getParsedJSON(subResult.fieldByName(json.field_name));
-                            if (Omadi.utils.isArray(multipleValue)) {
-                                jsonArray = multipleValue;
-                            }
-                        }
-        
-                        jsonArray[parseInt(json.delta, 10)] = json.file_id;
-                    }
-                    
-                    Ti.API.debug("Json Array: " + JSON.stringify(jsonArray));
-                    
-                    try{
-                        subDB.execute("UPDATE " + tableName + " SET " + json.field_name + "='" + dbEsc(JSON.stringify(jsonArray)) + "' WHERE nid=" + json.nid);
-                    }
-                    catch(sqlEx4){
-                        Utils.sendErrorReport("Exception in upload success ex4: " + sqlEx4 + ", json: " + JSON.stringify(json));
-                    }
-                }
-                else {
-                    try{
-                        subDB.execute("UPDATE " + tableName + " SET " + json.field_name + "='" + json.file_id + "' WHERE nid='" + json.nid + "'");
-                    }
-                    catch(sqlEx3){
-                        Utils.sendErrorReport("Exception in upload success ex3: " + sqlEx3 + ", json: " + JSON.stringify(json));
-                    }
-                }
             }
                
             subResult = listDB.execute("SELECT id, file_path, thumb_path, filesize FROM _files WHERE id = " + photoId);   
@@ -1716,7 +1671,7 @@ Omadi.service.verifyStartMillis = function(isBackground){"use strict";
 	if (typeof Ti.UI.currentWindow.appStartMillis === 'undefined') {
 		var windowURL = Ti.UI.currentWindow.url || '';
         Utils.sendErrorReport("AppStartMillis upload was undefined, background: " + isBackground + ", url: " + windowURL);
-        return false;
+        return true;
 	}
 	
 	var origAppStartMillis = Ti.App.Properties.getDouble('omadi:appStartMillis', 0);
@@ -1724,14 +1679,12 @@ Omadi.service.verifyStartMillis = function(isBackground){"use strict";
 	
 	// Verify that start millis is a number
 	if (isNaN(origAppStartMillis) || isNaN(currentWinStartMillis)) {
-		Ti.API.error("start millis is NaN: " + currentWinStartMillis + " - " + origAppStartMillis);
         Utils.sendErrorReport("start millis is NaN: " + currentWinStartMillis + " - " + origAppStartMillis);
         return false;
 	}
 	
 	// Verify that start millis is not zero
 	if (origAppStartMillis == 0 || currentWinStartMillis == 0) {
-        Ti.API.error("AppStartMillis upload was zero: " + origAppStartMillis + " - " + currentWinStartMillis + ", background: " + isBackground);
         Utils.sendErrorReport("AppStartMillis upload was zero: " + origAppStartMillis + " - " + currentWinStartMillis + ", background: " + isBackground);
         return false;
     }
@@ -1740,9 +1693,9 @@ Omadi.service.verifyStartMillis = function(isBackground){"use strict";
     if(origAppStartMillis != Ti.UI.currentWindow.appStartMillis){
         if(Ti.App.isAndroid){
             Utils.sendErrorReport("An extra android upload activity is being REJECTED, background: " + isBackground + " : "  + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
-            return false;
+        } else {
+        	Utils.sendErrorReport("An extra iOS upload event is being REJECTED, background: " + isBackground + " : " + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
         }
-        Utils.sendErrorReport("An extra iOS upload event is being REJECTED, background: " + isBackground + " : " + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
         return false;
     }
     

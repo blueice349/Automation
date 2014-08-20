@@ -1626,9 +1626,8 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                                     break;
                                     
                                 case 'image':
-                                case 'file':
                                     // This includes signature and video fields
-                                    
+                                    /* TODO remove
                                     subResult = listDB.execute('SELECT * FROM _files WHERE finished = 0 AND nid IN(' + node.nid + ',0) AND field_name ="' + field_name + '" ORDER BY delta ASC');
     
                                     node[field_name].imageData = [];
@@ -1650,7 +1649,10 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                                         }
                                     }
                                     subResult.close();
+                                    */
+                                    break;
                                     
+                                case 'file':
                                     // Special case for only file-type fields
                                     if(instances[field_name].type == 'file'){
                                         
@@ -3366,6 +3368,19 @@ Omadi.data.processUsersJson = function(mainDB) {"use strict";
     }
 };
 
+Omadi.data.updateFidsOnNewFiles = function(nid, newFiles) {"use strict";
+	var db = Omadi.utils.openListDatabase();
+	try {
+		for (var i = 0; i < newFiles.length; i++) {
+			var result = db.execute('SELECT id FROM _files WHERE nid=' + nid + ' AND field_name="' + newFiles[i].fieldName + '" AND fid=0 ORDER BY timestamp ASC LIMIT 1');
+			db.execute('UPDATE _files SET fid=' + newFiles[i].fid + ' WHERE id=' + result.fieldByName('id'));
+		}
+	} catch (e) {
+		Utils.sendErrorReport('Error in updateFidsOnNewFiles: ' + e);
+	}
+	db.close();
+};
+
 Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
     /*jslint nomen: true*/
 
@@ -3658,12 +3673,16 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                                 
                                 Ti.App.deletedNegatives[Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid] = Omadi.service.fetchedJSON.node[type].insert[i].nid;
                                 
+                                
                                 queries.push('DELETE FROM ' + type + ' WHERE nid=' + Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid);
                                 queries.push('DELETE FROM node WHERE nid=' + Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid);
                                 
                                 listDB = Omadi.utils.openListDatabase();
                                 listDB.execute("UPDATE _files SET nid =" + Omadi.service.fetchedJSON.node[type].insert[i].nid + " WHERE nid=" + Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid);
+                                listDB.execute("DELETE FROM _files WHERE nid=" + Omadi.service.fetchedJSON.node[type].insert[i].nid + " AND type='signature'");
                                 listDB.close();
+                                
+                                
                                 
                                 // Make sure we don't add a duplicate from doing a next_part action directly after a node save
                                 //if(typeof Ti.UI.currentWindow.nid !== 'undefined' && Ti.UI.currentWindow.nid == Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid){
@@ -3679,6 +3698,19 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                                     Utils.sendErrorReport("exception switching it up: " + switchedEx);
                                 }
                             }
+
+							var newFiles = Omadi.service.fetchedJSON.node[type].insert[i].__newFiles;
+                            if (newFiles && newFiles.length > 0) {
+                            	try{
+	                                Ti.App.fireEvent('newFilesAdded', {
+	                                    newFiles : newFiles,
+	                                });
+	                            }
+	                            catch(e){
+	                                Utils.sendErrorReport("Exception firing newFilesAdded event: " + e);
+	                            }
+                            }
+                            
                             
                             // Set signature fields to show as uploaded
                             for (field_name in instances) {
@@ -3701,6 +3733,11 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                                     }
                                 }
                             }
+                        
+                        	if (Omadi.service.fetchedJSON.node[type].insert[i].__newFiles) {
+                        		var queriesToUpdateFids = Omadi.data.updateFidsOnNewFiles(Omadi.service.fetchedJSON.node[type].insert[i].nid, Omadi.service.fetchedJSON.node[type].insert[i].__newFiles);
+                        		queries.concat(queriesToUpdateFids);
+                        	}
                         }
                     }
                 }

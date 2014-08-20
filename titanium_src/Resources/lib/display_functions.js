@@ -1537,7 +1537,7 @@ Omadi.display.displayFullImage = function(imageView) {"use strict";
         }
         else{
             alert("The photo could not be displayed.");
-            Utils.sendErrorReport("Could not show full photo file.");
+            Utils.sendErrorReport("Could not show full photo file. nid: " + imageView.nid + ', imageView.fid: ' + imageView.fid);
         }
     }
     catch(ex){
