@@ -22,7 +22,7 @@ wrapperView = Ti.UI.createView({
 });
 
 if(Ti.App.isIOS7){
-    wrapperView.top = 20;
+    wrapperView.top = 20; 
 }
 
 function getRecentNodeData(orderField){"use strict";
@@ -326,16 +326,8 @@ function searchAndroidFocusHandler(){"use strict";
         hintText : 'Search...',
         autocorrect : false,
         showCancel: true,
-        height : 35,
-        barColor: '#111'
+        height : 35
     });
-    
-    // if(Ti.App.isAndroid){
-//         
-        // search.softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
-//         
-        // search.addEventListener('click', searchAndroidFocusHandler);
-    // }
     
     if(Ti.App.isAndroid){
         search.height = 45;

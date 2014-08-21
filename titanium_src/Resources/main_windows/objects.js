@@ -619,8 +619,7 @@ function setTableData() {"use strict";
             search = Ti.UI.createSearchBar({
                 hintText : 'Search...',
                 autocorrect : false,
-                focusable : false,
-                barColor: '#111'
+                focusable : false
             });
             
             if(Ti.App.isAndroid){
