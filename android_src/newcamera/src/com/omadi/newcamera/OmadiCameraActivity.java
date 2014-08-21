@@ -511,16 +511,6 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 					
 					NewcameraModule.addedPhotoCallback.callAsync(NewcameraModule.getInstance().getKrollObject(), hm);
 					
-					//cameraActivity.setResult(Activity.RESULT_OK);
-					
-					try{
-						MediaScannerClient mediaScanner = new MediaScannerClient(cameraActivity, new String[] {localPath}, null, null);
-						mediaScanner.scan();
-					}
-					catch(Exception e){
-						// Don't worry about this failing
-					}
-					
 					Log.d("CAMERA", "CAMERA Image saved Correctly");
 					
 					if(photosTaken < NewcameraModule.maxPhotos || NewcameraModule.maxPhotos == -1){

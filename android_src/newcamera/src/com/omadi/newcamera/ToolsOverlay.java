@@ -139,7 +139,6 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 										camera.autoFocus(toolsOverlay);
 									}
 									catch(Exception e){
-										NewcameraModule.sendErrorReport("Error trying to autoFocus camera: " + e.getMessage());
 										OmadiCameraActivity.cameraActivity.takePicture();
 									}
 								}
