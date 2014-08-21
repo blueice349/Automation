@@ -7,7 +7,8 @@ var Utils = require('lib/Utils');
 Omadi.service = Omadi.service || {};
 
 Omadi.service.fetchedJSON = null;
-Omadi.service.progressBar = null;
+Omadi.service.initialSyncProgressBar = null;
+Omadi.service.fetchUpdatesProgressBar = null;
 
 Omadi.service.refreshSession = function() {"use strict";
     var http;
@@ -175,7 +176,7 @@ Omadi.service.syncInitialFormItems = function(nodeCount, commentCount, numPages)
         
         max = count + (numPages * 100);
         
-        Omadi.service.progressBar = new Omadi.display.DefaultProgressBar(max, 'Syncing ' + count + ' form items ...');
+        Omadi.service.initialSyncProgressBar = new Omadi.display.DefaultProgressBar(max, 'Syncing ' + count + ' form items ...');
         
         Ti.API.debug("Syncing initial form items: " + count);
         
@@ -195,6 +196,7 @@ Omadi.service.syncInitialFormItems = function(nodeCount, commentCount, numPages)
         Omadi.service.syncInitialInstallDownloadNextPage();
     }
     catch(ex1){
+    	Omadi.data.setUpdating(false);
         Utils.sendErrorReport("Exception in paging retrieval setup: " + ex1);    
     }
 };
@@ -204,7 +206,10 @@ Omadi.service.syncInitialInstallDownloadNextPage = function(){"use strict";
     Omadi.service.initialInstallPage ++;
     Omadi.service.syncInitialInstallRetryCount = 0;
     
+    Omadi.data.setUpdating(true);
+    
     if(Omadi.service.initialInstallPage < Omadi.service.initialInstallTotalPages){
+    	
         // Make sure the update timestamp is 0 because the sync is not complete    
         Ti.API.debug("About to sync page " + Omadi.service.initialInstallPage);
         Omadi.data.setLastUpdateTimestamp(0);
@@ -213,8 +218,8 @@ Omadi.service.syncInitialInstallDownloadNextPage = function(){"use strict";
     else{
         Omadi.data.setUpdating(false);
         
-        if(Omadi.service.progressBar !== null){
-            Omadi.service.progressBar.close();
+        if(Omadi.service.initialSyncProgressBar !== null){
+            Omadi.service.initialSyncProgressBar.close();
         }
         
         Ti.API.error("NOW DO AN INCREMENTAL SYNC");
@@ -242,9 +247,9 @@ Omadi.service.syncInitialInstallDownloadRetry = function(){"use strict";
         else{
             Utils.sendErrorReport("in else in syncInitialInstallDownloadRetry: page=" + Omadi.service.initialInstallPage + ', total=' + Omadi.service.initialInstallTotalPages);
             
-            if(Omadi.service.progressBar !== null){
-                Omadi.service.progressBar.close();
-                Omadi.service.progressBar = null;
+            if(Omadi.service.initialSyncProgressBar !== null){
+                Omadi.service.initialSyncProgressBar.close();
+                Omadi.service.initialSyncProgressBar = null;
             }
         }
     }
@@ -317,7 +322,7 @@ Omadi.service.syncInitialFormPage = function(page){"use strict";
         
         // While streaming - following method should be called before open URL
         http.ondatastream = function(e) {
-            Omadi.service.progressBar.add((e.progress - Omadi.service.syncInitialLastProgress) * 100);
+            Omadi.service.initialSyncProgressBar.add((e.progress - Omadi.service.syncInitialLastProgress) * 100);
             Omadi.service.syncInitialLastProgress = e.progress;
         };
         
@@ -403,9 +408,9 @@ Omadi.service.syncInitialFormPage = function(page){"use strict";
                             }
                             else{
                                 Utils.sendErrorReport("Text is not json");
-                                if (Omadi.service.progressBar !== null) {
-                                    Omadi.service.progressBar.close();
-                                    Omadi.service.progressBar = null;
+                                if (Omadi.service.initialSyncProgressBar !== null) {
+                                    Omadi.service.initialSyncProgressBar.close();
+                                    Omadi.service.initialSyncProgressBar = null;
                                 }
                             }
                         }
@@ -568,14 +573,14 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
         if(typeof userInitiated === 'undefined'){
             userInitiated = false;
         }
-
-        if (!Omadi.data.isUpdating()) {
+		
+		if (!Omadi.data.isUpdating()) {
 
             if (Ti.Network.online) {
                 Omadi.data.setUpdating(true);
 
                 if (useProgressBar) {
-                    Omadi.service.progressBar = new Omadi.display.ProgressBar(0, 100);
+                    Omadi.service.fetchUpdatesProgressBar = new Omadi.display.ProgressBar(0, 100);
                 }
 
                 lastSyncTimestamp = Omadi.data.getLastUpdateTimestamp();
@@ -599,16 +604,16 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
                 //While streamming - following method should be called b4 open URL
                 http.ondatastream = function(e) {
                     //ind.value = e.progress ;
-                    if (Omadi.service.progressBar !== null) {
-                        Omadi.service.progressBar.set_download(e.progress);
+                    if (Omadi.service.fetchUpdatesProgressBar !== null) {
+                        Omadi.service.fetchUpdatesProgressBar.set_download(e.progress);
                         //Ti.API.debug(' ONDATASTREAM1 - PROGRESS: ' + e.progress);
                     }
                 };
                 
                 http.onreadystatechange = function(e){
                     if(this.readyState == this.LOADING){
-                        if(typeof Omadi.display.progressBar !== 'undefined' && Omadi.display.progressBar !== null){
-                            Omadi.display.progressBar.setMessage('Downloading...');
+                        if(Omadi.service.fetchUpdatesProgressBar !== null){
+                            Omadi.service.fetchUpdatesProgressBar.setMessage('Downloading...');
                         }
                     }
                 };
@@ -695,9 +700,9 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
                                     }
                                     else{
                                         Utils.sendErrorReport("Text is not json");
-                                        if (Omadi.service.progressBar !== null) {
-                                            Omadi.service.progressBar.close();
-                                            Omadi.service.progressBar = null;
+                                        if (Omadi.service.fetchUpdatesProgressBar !== null) {
+                                            Omadi.service.fetchUpdatesProgressBar.close();
+                                            Omadi.service.fetchUpdatesProgressBar = null;
                                         }
                                     }
                                 }
@@ -719,9 +724,9 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
                         }
                         else{
                             Ti.API.debug("No data was found.");
-                            if (Omadi.service.progressBar !== null) {
-                                Omadi.service.progressBar.close();
-                                Omadi.service.progressBar = null;
+                            if (Omadi.service.fetchUpdatesProgressBar !== null) {
+                                Omadi.service.fetchUpdatesProgressBar.close();
+                                Omadi.service.fetchUpdatesProgressBar = null;
                             }
                 
                             Utils.sendErrorReport("Bad response text and data for download: " + this.responseText + ", stautus: " + this.status + ", statusText: " + this.statusText);
@@ -751,9 +756,9 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
                     Ti.API.error('CODE ERROR = ' + this.status);
                     //Ti.API.info("Progress bar = " + progress);
 
-                    if (Omadi.service.progressBar !== null) {
-                        Omadi.service.progressBar.close();
-                        Omadi.service.progressBar = null;
+                    if (Omadi.service.fetchUpdatesProgressBar !== null) {
+                        Omadi.service.fetchUpdatesProgressBar.close();
+                        Omadi.service.fetchUpdatesProgressBar = null;
                     }
 
                     if (this.status == 403) {
@@ -935,9 +940,9 @@ Omadi.service.sendDataOnLoad = function(e){"use strict";
                     }
                     else{
                         Utils.sendErrorReport("Text is not json");
-                        if (Omadi.service.progressBar !== null) {
-                            Omadi.service.progressBar.close();
-                            Omadi.service.progressBar = null;
+                        if (Omadi.service.fetchUpdatesProgressBar !== null) {
+                            Omadi.service.fetchUpdatesProgressBar.close();
+                            Omadi.service.fetchUpdatesProgressBar = null;
                         }
                     }
                 }

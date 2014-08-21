@@ -19,22 +19,6 @@ Omadi.data.cameraAndroid = null;
 Omadi.data.isUpdating = function() {"use strict";
 
     return Ti.App.Properties.getBool("isUpdating", false);
-
-    // var db = Omadi.utils.openMainDatabaseOmadi.utils.openMainDatabase();
-    // var res_set = db_gu.execute('SELECT updating FROM updated WHERE rowid=1');
-    //
-    // if (res_set.fieldByName('updating') == 1) {
-    // res_set.close();
-    // db_gu.close();
-    // Ti.API.info("App is updating");
-    // return true;
-    // }
-    // else {
-    // res_set.close();
-    // db_gu.close();
-    // Ti.API.info("App is idle");
-    // return false;
-    // }
 };
 
 function dbEsc(string) {"use strict";
@@ -2671,19 +2655,19 @@ Omadi.data.processFetchedJson = function(){"use strict";
             //mainDB.execute('UPDATE updated SET "timestamp"=' + json.request_time + ' WHERE "rowid"=1');
             Omadi.data.setLastUpdateTimestamp(Omadi.service.fetchedJSON.request_time);
             
-            if (Omadi.service.progressBar !== null) {
-                Omadi.service.progressBar.increment();
-                Omadi.service.progressBar.close();
-                Omadi.service.progressBar = null;
+            if (Omadi.service.fetchUpdatesProgressBar !== null) {
+                Omadi.service.fetchUpdatesProgressBar.increment();
+                Omadi.service.fetchUpdatesProgressBar.close();
+                Omadi.service.fetchUpdatesProgressBar = null;
             }
             Ti.API.debug("Done with install - no items");
         }
         else {
             mainDB = Omadi.utils.openMainDatabase();
         
-            if (Omadi.service.progressBar !== null) {
+            if (Omadi.service.fetchUpdatesProgressBar !== null) {
                 //Set max value for progress bar
-                Omadi.service.progressBar.set_max(numItems);
+                Omadi.service.fetchUpdatesProgressBar.set_max(numItems);
             }
             
             if (Omadi.data.getLastUpdateTimestamp() === 0) {
@@ -2755,9 +2739,9 @@ Omadi.data.processFetchedJson = function(){"use strict";
             Omadi.data.setLastUpdateTimestamp(Omadi.service.fetchedJSON.request_time);
 
             //Ti.API.info("SUCCESS");
-            if (Omadi.service.progressBar !== null) {
-                Omadi.service.progressBar.close();
-                Omadi.service.progressBar = null;
+            if (Omadi.service.fetchUpdatesProgressBar !== null) {
+                Omadi.service.fetchUpdatesProgressBar.close();
+                Omadi.service.fetchUpdatesProgressBar = null;
             }
             
             Ti.App.fireEvent("omadi:syncInstallComplete");   
@@ -2830,8 +2814,8 @@ Omadi.data.processFakeFieldsJson = function(mainDB) {"use strict";
 
                 for ( i = 0; i < Omadi.service.fetchedJSON.fake_fields.insert.length; i++) {
 
-                    if (Omadi.service.progressBar != null) {
-                        Omadi.service.progressBar.increment();
+                    if (Omadi.service.fetchUpdatesProgressBar != null) {
+                        Omadi.service.fetchUpdatesProgressBar.increment();
                     }
                     
                     field_name = Omadi.service.fetchedJSON.fake_fields.insert[i].field_name;
@@ -2894,8 +2878,8 @@ Omadi.data.processFieldsJson = function(mainDB) {"use strict";
 
                 for ( i = 0; i < Omadi.service.fetchedJSON.fields.insert.length; i++) {
 
-                    if (Omadi.service.progressBar != null) {
-                        Omadi.service.progressBar.increment();
+                    if (Omadi.service.fetchUpdatesProgressBar != null) {
+                        Omadi.service.fetchUpdatesProgressBar.increment();
                     }
                     
                     field_name = Omadi.service.fetchedJSON.fields.insert[i].field_name;
@@ -3096,9 +3080,9 @@ Omadi.data.processCommentJson = function(mainDB) {"use strict";
         if (Omadi.service.fetchedJSON.comment.insert) {
             if (Omadi.service.fetchedJSON.comment.insert.length) {
                 for ( i = 0; i < Omadi.service.fetchedJSON.comment.insert.length; i++) {
-                    if (Omadi.service.progressBar != null) {
+                    if (Omadi.service.fetchUpdatesProgressBar != null) {
                         //Increment Progress Bar
-                        Omadi.service.progressBar.set();
+                        Omadi.service.fetchUpdatesProgressBar.set();
                     }
                     
                     tableName = Omadi.service.fetchedJSON.comment.insert[i].node_type;
@@ -3250,9 +3234,9 @@ Omadi.data.processCommentJson = function(mainDB) {"use strict";
         // if (Omadi.service.fetchedJSON.users["delete"]) {
             // if (Omadi.service.fetchedJSON.users["delete"].length) {
                 // for ( i = 0; i < Omadi.service.fetchedJSON.users["delete"].length; i++) {
-                    // if (Omadi.service.progressBar != null) {
+                    // if (Omadi.service.fetchUpdatesProgressBar != null) {
                         // //Increment Progress Bar
-                        // Omadi.service.progressBar.set();
+                        // Omadi.service.fetchUpdatesProgressBar.set();
                     // }
 // 
                     // //Deletes current row (contact)
@@ -3290,9 +3274,9 @@ Omadi.data.processUsersJson = function(mainDB) {"use strict";
         if (Omadi.service.fetchedJSON.users.insert) {
             if (Omadi.service.fetchedJSON.users.insert.length) {
                 for ( i = 0; i < Omadi.service.fetchedJSON.users.insert.length; i++) {
-                    if (Omadi.service.progressBar != null) {
+                    if (Omadi.service.fetchUpdatesProgressBar != null) {
                         //Increment Progress Bar
-                        Omadi.service.progressBar.increment();
+                        Omadi.service.fetchUpdatesProgressBar.increment();
                     }
 
                     queries.push('INSERT OR REPLACE  INTO user (uid, username, mail, realname, status ) VALUES (' + Omadi.service.fetchedJSON.users.insert[i].uid + ",'" + dbEsc(Omadi.service.fetchedJSON.users.insert[i].username) + "','" + dbEsc(Omadi.service.fetchedJSON.users.insert[i].mail) + "','" + dbEsc(Omadi.service.fetchedJSON.users.insert[i].realname) + "'," + Omadi.service.fetchedJSON.users.insert[i].status + ')');
@@ -3313,9 +3297,9 @@ Omadi.data.processUsersJson = function(mainDB) {"use strict";
         if (Omadi.service.fetchedJSON.users.update) {
             if (Omadi.service.fetchedJSON.users.update.length) {
                 for ( i = 0; i < Omadi.service.fetchedJSON.users.update.length; i++) {
-                    if (Omadi.service.progressBar != null) {
+                    if (Omadi.service.fetchUpdatesProgressBar != null) {
                         //Increment Progress Bar
-                        Omadi.service.progressBar.increment();
+                        Omadi.service.fetchUpdatesProgressBar.increment();
                     }
                     queries.push("UPDATE user SET username='" + dbEsc(Omadi.service.fetchedJSON.users.update[i].username) + "', mail='" + dbEsc(Omadi.service.fetchedJSON.users.update[i].mail) + "', realname='" + dbEsc(Omadi.service.fetchedJSON.users.update[i].realname) + "', status=" + Omadi.service.fetchedJSON.users.update[i].status + ' WHERE uid=' + Omadi.service.fetchedJSON.users.update[i].uid);
 
@@ -3341,9 +3325,9 @@ Omadi.data.processUsersJson = function(mainDB) {"use strict";
         if (Omadi.service.fetchedJSON.users["delete"]) {
             if (Omadi.service.fetchedJSON.users["delete"].length) {
                 for ( i = 0; i < Omadi.service.fetchedJSON.users["delete"].length; i++) {
-                    if (Omadi.service.progressBar != null) {
+                    if (Omadi.service.fetchUpdatesProgressBar != null) {
                         //Increment Progress Bar
-                        Omadi.service.progressBar.increment();
+                        Omadi.service.fetchUpdatesProgressBar.increment();
                     }
 
                     //Deletes current row (contact)
@@ -3767,14 +3751,14 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
 
             mainDB.execute("BEGIN IMMEDIATE TRANSACTION");
 
-            if (Omadi.service.progressBar != null) {
+            if (Omadi.service.fetchUpdatesProgressBar != null) {
                 for ( i = 0; i < queries.length; i++) {
                     // Don't allow one bad node to ruin the rest of the inserts
                     // Do a try/catch for each one
                     try{
                         mainDB.execute(queries[i]);
                         if (i % 4 == 0) {
-                            Omadi.service.progressBar.increment();
+                            Omadi.service.fetchUpdatesProgressBar.increment();
                             numSets++;
                         }   
                     }
@@ -3801,9 +3785,9 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
             mainDB.execute("COMMIT TRANSACTION");
         }
 
-        if (Omadi.service.progressBar != null && typeof Omadi.service.fetchedJSON.node[type].insert != 'undefined') {
+        if (Omadi.service.fetchUpdatesProgressBar != null && typeof Omadi.service.fetchedJSON.node[type].insert != 'undefined') {
             for ( i = numSets; i < Omadi.service.fetchedJSON.node[type].insert.length; i++) {
-                Omadi.service.progressBar.increment();
+                Omadi.service.fetchUpdatesProgressBar.increment();
             }
         }
     }
@@ -3838,8 +3822,8 @@ Omadi.data.processVocabulariesJson = function(mainDB) {"use strict";
     
                     for ( i = 0; i < Omadi.service.fetchedJSON.vocabularies.insert.length; i++) {
                         //Increment Progress Bar
-                        if (Omadi.service.progressBar != null) {
-                            Omadi.service.progressBar.increment();
+                        if (Omadi.service.fetchUpdatesProgressBar != null) {
+                            Omadi.service.fetchUpdatesProgressBar.increment();
                         }
                         vid = Omadi.service.fetchedJSON.vocabularies.insert[i].vid;
                         name = Omadi.service.fetchedJSON.vocabularies.insert[i].name;
@@ -3854,9 +3838,9 @@ Omadi.data.processVocabulariesJson = function(mainDB) {"use strict";
                 Omadi.service.fetchedJSON.vocabularies.update.length) {
                     
                     for ( i = 0; i < Omadi.service.fetchedJSON.vocabularies.update.length; i++) {
-                        if (Omadi.service.progressBar != null) {
+                        if (Omadi.service.fetchUpdatesProgressBar != null) {
                             //Increment Progress Bar
-                            Omadi.service.progressBar.increment();
+                            Omadi.service.fetchUpdatesProgressBar.increment();
                         }
     
                         queries.push("UPDATE vocabulary SET name='" + dbEsc(Omadi.service.fetchedJSON.vocabularies.insert[i].name) + "', machine_name='" + dbEsc(Omadi.service.fetchedJSON.vocabularies.update[i].machine_name) + "' WHERE vid=" + Omadi.service.fetchedJSON.vocabularies.update[i].vid);
@@ -3868,9 +3852,9 @@ Omadi.data.processVocabulariesJson = function(mainDB) {"use strict";
                 Omadi.service.fetchedJSON.vocabularies["delete"].length) {
              
                     for ( i = 0; i < Omadi.service.fetchedJSON.vocabularies["delete"].length; i++) {
-                        if (Omadi.service.progressBar != null) {
+                        if (Omadi.service.fetchUpdatesProgressBar != null) {
                             //Increment Progress Bar
-                            Omadi.service.progressBar.increment();
+                            Omadi.service.fetchUpdatesProgressBar.increment();
                         }
     
                         //Deletes rows from terms
@@ -3907,9 +3891,9 @@ Omadi.data.processRegionsJson = function(mainDB) {"use strict";
         if (Omadi.service.fetchedJSON.regions.insert) {
             if (Omadi.service.fetchedJSON.regions.insert.length) {
                 for ( i = 0; i < Omadi.service.fetchedJSON.regions.insert.length; i++) {
-                    if (Omadi.service.progressBar != null) {
+                    if (Omadi.service.fetchUpdatesProgressBar != null) {
                         //Increment Progress Bar
-                        Omadi.service.progressBar.increment();
+                        Omadi.service.fetchUpdatesProgressBar.increment();
                     }
 
                     //Encode:
@@ -3924,8 +3908,8 @@ Omadi.data.processRegionsJson = function(mainDB) {"use strict";
         if (Omadi.service.fetchedJSON.regions.update) {
             if (Omadi.service.fetchedJSON.regions.update.length) {
                 for ( i = 0; i < Omadi.service.fetchedJSON.regions.update.length; i++) {
-                    if (Omadi.service.progressBar != null) {
-                        Omadi.service.progressBar.increment();
+                    if (Omadi.service.fetchUpdatesProgressBar != null) {
+                        Omadi.service.fetchUpdatesProgressBar.increment();
                     }
                     queries.push("UPDATE regions SET node_type='" + dbEsc(Omadi.service.fetchedJSON.regions.update[i].node_type) + "', label='" + dbEsc(Omadi.service.fetchedJSON.regions.update[i].label) + "', region_name='" + dbEsc(Omadi.service.fetchedJSON.regions.update[i].region_name) + "', weight=" + Omadi.service.fetchedJSON.regions.update[i].weight + ", settings='" + dbEsc(JSON.stringify(Omadi.service.fetchedJSON.regions.update[i].settings)) + "' WHERE rid=" + Omadi.service.fetchedJSON.regions.update[i].rid);
                 }
@@ -3936,8 +3920,8 @@ Omadi.data.processRegionsJson = function(mainDB) {"use strict";
         if (Omadi.service.fetchedJSON.regions["delete"]) {
             if (Omadi.service.fetchedJSON.regions["delete"].length) {
                 for ( i = 0; i < Omadi.service.fetchedJSON.regions["delete"].length; i++) {
-                    if (Omadi.service.progressBar != null) {
-                        Omadi.service.progressBar.increment();
+                    if (Omadi.service.fetchUpdatesProgressBar != null) {
+                        Omadi.service.fetchUpdatesProgressBar.increment();
                     }
                     queries.push('DELETE FROM regions WHERE rid=' + Omadi.service.fetchedJSON.regions["delete"][i].rid);
                 }
@@ -3974,9 +3958,9 @@ Omadi.data.processTermsJson = function(mainDB) {"use strict";
             if (Omadi.service.fetchedJSON.terms.insert.length) {
 
                 for ( i = 0; i < Omadi.service.fetchedJSON.terms.insert.length; i++) {
-                    if (Omadi.service.progressBar != null) {
+                    if (Omadi.service.fetchUpdatesProgressBar != null) {
                         //Increment Progress Bar
-                        Omadi.service.progressBar.increment();
+                        Omadi.service.fetchUpdatesProgressBar.increment();
                     }
 
                     vid = Omadi.service.fetchedJSON.terms.insert[i].vid;
@@ -4001,9 +3985,9 @@ Omadi.data.processTermsJson = function(mainDB) {"use strict";
             if (Omadi.service.fetchedJSON.terms.update.length) {
                 for ( i = 0; i < Omadi.service.fetchedJSON.terms.update.length; i++) {
 
-                    if (Omadi.service.progressBar != null) {
+                    if (Omadi.service.fetchUpdatesProgressBar != null) {
                         //Increment Progress Bar
-                        Omadi.service.progressBar.increment();
+                        Omadi.service.fetchUpdatesProgressBar.increment();
                     }
                     
                     vid = Omadi.service.fetchedJSON.terms.update[i].vid;
@@ -4024,9 +4008,9 @@ Omadi.data.processTermsJson = function(mainDB) {"use strict";
         if (Omadi.service.fetchedJSON.terms["delete"]) {
             if (Omadi.service.fetchedJSON.terms["delete"].length) {
                 for ( i = 0; i < Omadi.service.fetchedJSON.terms["delete"].length; i++) {
-                    if (Omadi.service.progressBar != null) {
+                    if (Omadi.service.fetchUpdatesProgressBar != null) {
                         //Increment Progress Bar
-                        Omadi.service.progressBar.increment();
+                        Omadi.service.fetchUpdatesProgressBar.increment();
                     }
                     queries.push('DELETE FROM term_data WHERE tid=' + Omadi.service.fetchedJSON.terms["delete"][i].tid);
                 }
@@ -4073,8 +4057,8 @@ Omadi.data.processNodeTypeJson = function(mainDB) {"use strict";
                     if (type != 'user' && type != '') {
                         
                         //Increment the progress bar
-                        if (Omadi.service.progressBar != null) {
-                            Omadi.service.progressBar.increment();
+                        if (Omadi.service.fetchUpdatesProgressBar != null) {
+                            Omadi.service.fetchUpdatesProgressBar.increment();
                         }
 
                         bundle_result = mainDB.execute("SELECT COUNT(*) FROM bundles WHERE bundle_name = '" + type + "'");
@@ -4177,8 +4161,8 @@ Omadi.data.processNodeTypeJson = function(mainDB) {"use strict";
 
                 for ( i = 0; i < Omadi.service.fetchedJSON.node_type['delete'].length; i++) {
                     //Increment the progress bar
-                    if (Omadi.service.progressBar !== null) {
-                        Omadi.service.progressBar.increment();
+                    if (Omadi.service.fetchUpdatesProgressBar !== null) {
+                        Omadi.service.fetchUpdatesProgressBar.increment();
                     }
                     queries.push("DROP TABLE " + Omadi.service.fetchedJSON.node_type.insert[i].type);
                     queries.push("DELETE FROM bundles WHERE bundle_name = '" + Omadi.service.fetchedJSON.node_type.insert[i].type + "'");
@@ -4187,8 +4171,8 @@ Omadi.data.processNodeTypeJson = function(mainDB) {"use strict";
             }
             //Unique node deletion
             else {
-                if (Omadi.service.progressBar !== null) {
-                    Omadi.service.progressBar.increment();
+                if (Omadi.service.fetchUpdatesProgressBar !== null) {
+                    Omadi.service.fetchUpdatesProgressBar.increment();
                 }
                 queries.push("DROP TABLE " + Omadi.service.fetchedJSON.node_type.insert.type);
                 queries.push("DELETE FROM bundles WHERE bundle_name = '" + Omadi.service.fetchedJSON.node_type.insert.type + "'");
