@@ -242,6 +242,20 @@ ImageWidget.prototype.getNewElement = function(index){"use strict";
     return widgetView;
 };
 
+function processAllFilesDebug(allFiles) {
+	var files = [];
+	for (var i = 0; i < allFiles.length; i++) {
+		var file = {
+			field_name: allFiles[i].field_name,
+			nid: allFiles[i].nid,
+			fid: allFiles[i].fid,
+			id: allFiles[i].id
+		};
+		files.push(file);
+	}
+	return files;
+}
+
 ImageWidget.prototype.addImageViewsToWidgetView = function(fids, widgetView) {
 	try {
 		var localImages = this.getLocalImages();
@@ -270,28 +284,27 @@ ImageWidget.prototype.addImageViewsToWidgetView = function(fids, widgetView) {
 ImageWidget.prototype.getLocalImages = function() {
 	var localImages = {0: []};
 	try {
-	var db = Omadi.utils.openListDatabase();
-	var result = db.execute('SELECT file_path, fid, degrees, thumb_path FROM _files WHERE nid=' + this.getImageNid() + ' AND field_name="' + this.instance.field_name + '" ORDER BY timestamp ASC');
-	
-	while(result.isValidRow()) {
-		if (result.fieldByName('fid') == '0') {
-			localImages[0].push({
-				filePath: result.fieldByName('file_path'),
-				thumbPath: result.fieldByName('thumb_path'),
-				degrees: result.fieldByName('degrees')
-			});
-		} else {
-			localImages[parseInt(result.fieldByName('fid'), 10)] = {
+		var db = Omadi.utils.openListDatabase();
+		var result = db.execute('SELECT file_path, fid, degrees, thumb_path FROM _files WHERE nid IN (' + this.getImageNid() + ', 0) AND field_name="' + this.instance.field_name + '" ORDER BY timestamp ASC');
+		
+		while(result.isValidRow()) {
+			
+			var localImage = {
 				filePath: result.fieldByName('file_path'),
 				thumbPath: result.fieldByName('thumb_path'),
 				degrees: result.fieldByName('degrees')
 			};
+			
+			if (result.fieldByName('fid') == '0') {
+				localImages[0].push(localImage);
+			} else {
+				localImages[parseInt(result.fieldByName('fid'), 10)] = localImage;
+			}
+			result.next();
 		}
-		result.next();
-	}
-	
-	result.close();
-	db.close();
+		
+		result.close();
+		db.close();
 	} catch (e) {
 		Utils.sendErrorReport('Error in getLocalImages: ' + e);
 	}

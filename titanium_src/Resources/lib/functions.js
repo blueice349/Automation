@@ -13,6 +13,14 @@ if(Ti.App.isIOS){
         Ti.App.isIOS7 = true;
     }
 }
+Ti.App.isAndroid3OrBelow = false;
+if (Ti.App.isAndroid) {
+	var version = Ti.Platform.version.split(".");
+    var major = parseInt(version[0]);
+    if (major <= 3) {
+        Ti.App.isAndroid3OrBelow = true;
+    }
+}
 
 Ti.include('/lib/encoder_base_64.js');
 Ti.include('/lib/util_functions.js');

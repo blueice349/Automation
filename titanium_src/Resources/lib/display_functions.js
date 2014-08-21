@@ -53,7 +53,6 @@ Omadi.display.backgroundGradientGray = {
 Omadi.display.largePhotoWindow = null;
 
 Omadi.display.showBigImage = function(imageView) {"use strict";
-
     var fullImage, background, transform, rotateDegrees, 
         orientation, screenWidth, screenHeight, picWidth, picHeight, 
         scrollView, picBlob, toolbar, isRotated, back, space, label, 
@@ -75,23 +74,6 @@ Omadi.display.showBigImage = function(imageView) {"use strict";
                 modalStyle: Ti.UI.iPhone.MODAL_PRESENTATION_FORMSHEET,
                 navBarHidden: true
             });
-            
-            
-            if(Ti.App.isAndroid){
-                // Hide the Android action bar
-                Omadi.display.largePhotoWindow.addEventListener('open', function(){
-                    //Omadi.display.largePhotoWindow.activity.actionBar.hide();
-                });
-            }
-            
-            // scrollView = Ti.UI.createScrollView({
-                // width: Ti.UI.FILL,
-                // height: Ti.UI.FILL,
-                // contentWidth: 'auto',
-                // contentHeight: 'auto',
-                // top: 0,
-                // scrollType: 'horizontal'
-            // });
             
             if(Ti.App.isAndroid){
                 Omadi.display.largePhotoWindow.addEventListener("android:back", function(e){
@@ -142,18 +124,6 @@ Omadi.display.showBigImage = function(imageView) {"use strict";
                 Omadi.display.largePhotoWindow.add(toolbar);
             }
             
-            // orientation = Ti.Gesture.getOrientation();
-        //     
-            // screenWidth = Ti.Platform.displayCaps.platformWidth;
-            // screenHeight = Ti.Platform.displayCaps.platformHeight;
-        //     
-            // if(orientation == Ti.UI.PORTRAIT || orientation == Ti.UI.UPSIDE_PORTRAIT){
-        //         
-            // }
-            // else{
-        //         
-            // }
-            
             imageData = null;
             
             if(typeof imageView.filePath !== 'undefined' && imageView.filePath !== null){
@@ -164,13 +134,6 @@ Omadi.display.showBigImage = function(imageView) {"use strict";
                     
                     if(imageFile.exists()){
                         imageData = imageFile.read();
-                        // fullImage = Ti.UI.createImageView({
-                           // image: imageFile,
-                           // autorotate: true,
-                           // height: Ti.UI.FILL
-                        // });
-//                         
-                        // imageData = fullImage.toImage();
                     }
                 }
                 catch(ex){
@@ -179,20 +142,12 @@ Omadi.display.showBigImage = function(imageView) {"use strict";
                     return;
                 }
             }
-            else if(imageView.bigImg !== null){ 
-                //fullImage = Omadi.display.getImageViewFromData(imageView.bigImg, Ti.Platform.displayCaps.platformWidth, Ti.Platform.displayCaps.platformHeight - 50);    
+            else if(imageView.bigImg !== null){
                 Ti.API.debug("DISPLAYING FULL IMAGE FROM BLOB");
                 imageData = imageView.bigImg;
                 
                 
                 Ti.API.debug("Image data size: " + imageData.length);
-                // fullImage = Ti.UI.createImageView({
-                  // image: imageView.bigImg,
-                  // autorotate: true,
-                  // height: Ti.UI.FILL
-                // });
-//                 
-                // imageData = fullImage.toImage();
             }
             
             if(imageData === null){
@@ -201,144 +156,22 @@ Omadi.display.showBigImage = function(imageView) {"use strict";
             }
             else{
                 
-                webView = Ti.UI.createWebView({
-                    data: imageData
-                });
+                if (Ti.App.isAndroid3OrBelow) {
+                	// WebViews are scalable but they render as junk text on older android phones
+                	webView = Ti.UI.createImageView({
+	                    image: imageData
+	                });
+                } else {
+	                webView = Ti.UI.createWebView({
+	                    data: imageData
+	                });
+                }
+                    
+                Omadi.display.largePhotoWindow.add(webView);
                 
-                // timestamp = (new Date()).getTime();
-                // fullImage.lastAnimation = timestamp;
-        //         
-                // isRotated = false;
-                // Ti.API.debug("before dim");
-        //         
-                // picWidth = imageView.bigImg.width;
-                // picHeight = imageView.bigImg.height;
-        //         
-                // Ti.API.debug("dimensions: " + picWidth + "x" + picHeight);
-        //         
-                // if(Omadi.utils.getPhotoWidget() == 'choose'){
-                    // // For the photo chooser, we don't know about any degrees saved
-                    // // No zooming will be allowed for now
-                    // picWidth = 1;
-                    // picHeight = 1;
-                // }
-                // else if(Ti.App.isAndroid && (imageView.degrees == 270 || imageView.degrees == 90)){    
-                    // isRotated = true;
-        //             
-                    // picWidth = imageView.bigImg.height;
-                    // picHeight = imageView.bigImg.width;
-                // }
-        //        
-                // if (typeof fullImage !== 'undefined' && fullImage != null) {
-        //             
-                    // Ti.API.debug("Full Image");
-        //             
-                    // Omadi.display.largePhotoWindow.add(fullImage);
-        // 
-                    // if(picWidth > 150 && picHeight > 150){
-                        // // Pinch zoom is enabled as baseWidth is defined
-                        // fullImage.baseHeight = picHeight;
-                        // fullImage.baseWidth = picWidth;
-                        // fullImage.height = picHeight;
-                        // fullImage.width = picWidth;
-        //                 
-                        // imageView.baseHeight = picHeight;
-                        // imageView.baseWidth = picWidth;
-                    // }
-                    // else if(typeof imageView.baseHeight !== 'undefined' && imageView.baseHeight > 1){
-                        // // Had to add in this condition because the second time coming into the same photo
-                        // // it would have a picHeight and picWidth of 1, so zooming wouldn't be possible
-                        // fullImage.baseHeight = imageView.baseHeight;
-                        // fullImage.baseWidth = imageView.baseWidth;
-                        // fullImage.height = imageView.baseHeight;
-                        // fullImage.width = imageView.baseWidth;
-                    // }
-                    // else{
-        //                 
-                        // fullImage.height = Ti.UI.SIZE;
-                        // fullImage.width = Ti.UI.SIZE;
-                    // }
-        //             
-                    // fullImage.addEventListener('touchstart', function(e){
-                        // e.source.baseHeight = e.source.height;
-                        // e.source.baseWidth = e.source.width; 
-                    // });
-        //             
-                    // fullImage.addEventListener('pinch', function(e){
-                        // var now = (new Date()).getTime();
-                        // if(now - e.source.lastAnimation > 30 && e.source.baseWidth > 0){
-        //                     
-                            // //Ti.API.debug("pinch: " + e.scale);
-        //                     
-                            // e.source.height = e.source.baseHeight * e.scale;
-                            // e.source.width = e.source.baseWidth * e.scale; 
-                            // e.source.lastAnimation = now;
-                        // }
-                    // });
-        //             
-                    // fullImage.addEventListener('touchstart', function(e){
-        //                
-                       // if(e.source.baseWidth > 0){
-        //                    
-                           // //Ti.API.debug("start: " + e.x + " " + e.y);
-        //                    
-                           // e.source.touchStartY = Math.floor(e.y);
-                           // e.source.touchStartX = Math.floor(e.x);
-                           // e.source.touchStartTop = parseInt(e.source.top, 10);
-                           // e.source.touchStartLeft = parseInt(e.source.left, 10);
-        //                    
-                           // if(isNaN(e.source.touchStartTop)){
-                               // e.source.touchStartTop = 0;
-                           // }
-        //                    
-                           // if(isNaN(e.source.touchStartLeft)){
-                               // e.source.touchStartLeft = 0;
-                           // }
-                       // }
-                    // });
-        //             
-                    // // fullImage.addEventListener('touchmove', function(e){
-        // //                
-                       // // var now = (new Date()).getTime();
-                       // // Ti.API.debug(now - e.source.lastAnimation);
-                       // // Ti.API.debug(e.source.touchStartLeft);
-                       // // if(now - e.source.lastAnimation > 30 && e.source.baseWidth > 0 && typeof e.source.touchStartLeft !== 'undefined'){
-        // //                    
-                           // // Ti.API.debug("move: " + e.x + " " + e.y);
-        // //                    
-                           // // e.source.top += Math.floor(e.y) - e.source.touchStartY;
-                           // // e.source.left += Math.floor(e.x) - e.source.touchStartX;
-        // //                    
-                           // // if(e.source.top < 0 && e.source.height < Ti.Platform.displayCaps.platformHeight){
-                               // // e.source.top = 0;
-                           // // }
-        // //                    
-                           // // if(e.source.left < 0 && e.source.width < Ti.Platform.displayCaps.platformWidth){
-                               // // e.source.left = 0;
-                           // // }
-        // //                    
-                           // // e.source.lastAnimation = now;
-                       // // }
-                    // // });
-        //             
-                    // fullImage.addEventListener('postlayout', function(e){
-                        // Ti.API.debug("Rect: " + e.source.rect.width + "x" + e.source.rect.height);
-                        // e.source.width = e.source.rect.width;
-                        // e.source.height = e.source.rect.height;
-                    // });
-        //             
-                    // Omadi.display.largePhotoWindow.fullImage = fullImage;
-                    
-                    Omadi.display.largePhotoWindow.add(webView);
-                    
-                    Omadi.display.largePhotoWindow.open();
-                    
-                    Ti.API.debug("large photo window showing...");
-                // }
-                // else{
-                    // alert("Could not open the photo.");
-                    // Omadi.display.largePhotoWindow = null;
-                // }
+                Omadi.display.largePhotoWindow.open();
+                
+                Ti.API.debug("large photo window showing...");
             }
         }
         catch(ex1){
@@ -1492,7 +1325,6 @@ Omadi.display.displayFullImage = function(imageView) {"use strict";
             Omadi.display.doneLoading();
         }
         else if (imageView.nid > 0 && imageView.fid > 0) {
-            
             Omadi.display.loading();
             
             try {
