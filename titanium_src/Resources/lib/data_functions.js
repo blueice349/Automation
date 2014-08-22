@@ -3793,10 +3793,10 @@ Omadi.data.updateSignatureFids = function(node) {
     var result = db.execute('SELECT field_name FROM _files WHERE nid=' + node.nid + ' AND type="signature"');
     
     while(result.isValidRow()) {
-    	var fieldName = result.fieldByName('fieldName');
+    	var fieldName = result.fieldByName('field_name');
     	var fid = node[fieldName];
     	
-    	db.execute('UPDATE _fields SET fid=' + fid + ' WHERE nid=' + node.nid + ' AND field_name="' + fieldName + '"');
+    	db.execute('UPDATE _files SET fid=' + fid + ' WHERE nid=' + node.nid + ' AND field_name="' + fieldName + '"');
     	result.next(); 
     }
     

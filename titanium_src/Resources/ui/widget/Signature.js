@@ -95,6 +95,14 @@ SignatureWidget.prototype.redraw = function(){"use strict";
     this.fieldViewWrapper.remove(origFieldView);
 };
 
+SignatureWidget.prototype.getImageNid = function() {
+	var imageNid = this.formObj.nid;
+    if(typeof this.formObj.origNid !== 'undefined'){
+        imageNid = this.formObj.origNid;
+    }
+    return imageNid;
+};
+
 SignatureWidget.prototype.getNewElement = function(index){"use strict";
     var widgetView, dbValue, imageData, i, numImagesShowing = 0, 
         signNowButton, imageNid, buttonView, imageWrapper, sigLine, thex, isSigned;
@@ -113,10 +121,7 @@ SignatureWidget.prototype.getNewElement = function(index){"use strict";
         }
     }
     
-    imageNid = this.formObj.nid;
-    if(typeof this.formObj.origNid !== 'undefined'){
-        imageNid = this.formObj.origNid;
-    }
+    imageNid = this.getImageNid();
     
     Ti.API.debug("Creating signature field: " + this.instance.label);
     
@@ -158,7 +163,7 @@ SignatureWidget.prototype.getNewElement = function(index){"use strict";
     if (isSigned) {
     	if (dbValue == -1) {
 	    	var db = Omadi.utils.openListDatabase();
-	    	var result = db.execute('SELECT file_path FROM _files WHERE nid=0 AND field_name="' + this.instance.field_name + '"');
+	    	var result = db.execute('SELECT file_path FROM _files WHERE nid IN (' + this.getImageNid() + ', 0) AND field_name="' + this.instance.field_name + '"');
 	    	if (result.isValidRow()) {
 	    		image = result.fieldByName('file_path');
 	    	}
