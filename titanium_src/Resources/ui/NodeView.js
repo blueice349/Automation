@@ -71,6 +71,107 @@ function NodeView(type, nid){"use strict";
     this.nodeViewTabsObj = null; 
 }
 
+NodeView.prototype.actionsEventHandler = function(e) {
+	var db, result, bundle, btn_tt, btn_id, form_part, postDialog, to_type, to_bundle, nodeViewTabsObj;
+        
+    try{
+        nodeViewTabsObj = ActiveObj.nodeViewTabsObj;
+        
+        bundle = Omadi.data.getBundle(nodeViewTabsObj.workNode.type);
+        
+        form_part = nodeViewTabsObj.workNode.form_part;
+        
+        Ti.API.debug("The node: " + JSON.stringify(nodeViewTabsObj.workNode));
+        
+        Ti.API.debug("The form part: " + form_part);
+        
+        
+        btn_tt = [];
+        btn_id = [];
+        
+        if (bundle.data.form_parts != null && bundle.data.form_parts != "") {
+
+            if (bundle.data.form_parts.parts.length >= form_part + 2) {
+               
+                btn_tt.push(bundle.data.form_parts.parts[form_part + 1].label);
+                btn_id.push(form_part + 1);
+            }
+        }
+
+        btn_tt.push('Edit');
+        btn_id.push(form_part);
+        
+        if(Omadi.print.canPrintReceipt(nodeViewTabsObj.workNode.nid)){
+            
+            btn_tt.push('Print');
+            btn_id.push('_print');
+        }
+
+        if(typeof bundle.data.custom_copy !== 'undefined'){
+            for(to_type in bundle.data.custom_copy){
+                if(bundle.data.custom_copy.hasOwnProperty(to_type)){
+                    to_bundle = Omadi.data.getBundle(to_type);
+                    if(to_bundle && to_bundle.can_create == 1){
+                        
+                        if(typeof bundle.data.custom_copy[to_type] !== 'undefined' && 
+                            typeof bundle.data.custom_copy[to_type].conversion_type !== 'undefined' &&
+                            bundle.data.custom_copy[to_type].conversion_type == 'change'){
+                            
+                                btn_tt.push("Change to " + to_bundle.label);
+                                btn_id.push(to_type); 
+                        }
+                        else{
+                            btn_tt.push("Copy to " + to_bundle.label);
+                            btn_id.push(to_type);
+                        }
+                    }
+                }
+            }
+        }
+        
+        btn_tt.push('Cancel');
+
+        postDialog = Titanium.UI.createOptionDialog();
+        postDialog.options = btn_tt;
+        postDialog.cancel = btn_tt.length - 1;
+        postDialog.show();
+
+        postDialog.addEventListener('click', function(ev) {
+            var formPart, nodeViewTabsObj;
+            
+            try{
+                nodeViewTabsObj = ActiveObj.nodeViewTabsObj;
+                
+                if (ev.index == ev.source.cancel) {
+                    Ti.API.info("Fix this logic");
+                }
+                else if (ev.index != -1) {
+                    
+                    formPart = btn_id[ev.index];
+                    
+                    if(formPart == '_print'){
+                        Omadi.print.printReceipt(nodeViewTabsObj.workNode.nid);
+                    }
+                    else{
+                        
+                        Ti.App.fireEvent('openFormWindow', {
+                            node_type: nodeViewTabsObj.workNode.type,
+                            nid: nodeViewTabsObj.workNode.nid,
+                            form_part: formPart 
+                        });
+                    }
+                }
+            }
+            catch(ex){
+                Utils.sendErrorReport("Exception with action click on view 2: " + ex);
+            }
+        });
+    }
+    catch(ex){
+        Utils.sendErrorReport("Exception with viewing actions on view 2: " + ex);
+    }
+};
+
 NodeView.prototype.addIOSToolbar = function(){"use strict";
     var back, space, label, edit, arr, toolbar, canEdit;
     
@@ -106,106 +207,7 @@ NodeView.prototype.addIOSToolbar = function(){"use strict";
         style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
     });
 
-    edit.addEventListener('click', function() {
-        var db, result, bundle, btn_tt, btn_id, form_part, postDialog, to_type, to_bundle, nodeViewTabsObj;
-        
-        try{
-            nodeViewTabsObj = ActiveObj.nodeViewTabsObj;
-            
-            bundle = Omadi.data.getBundle(nodeViewTabsObj.workNode.type);
-            
-            form_part = nodeViewTabsObj.workNode.form_part;
-            
-            Ti.API.debug("The node: " + JSON.stringify(nodeViewTabsObj.workNode));
-            
-            Ti.API.debug("The form part: " + form_part);
-            
-            
-            btn_tt = [];
-            btn_id = [];
-            
-            if (bundle.data.form_parts != null && bundle.data.form_parts != "") {
-    
-                if (bundle.data.form_parts.parts.length >= form_part + 2) {
-                   
-                    btn_tt.push(bundle.data.form_parts.parts[form_part + 1].label);
-                    btn_id.push(form_part + 1);
-                }
-            }
-    
-            btn_tt.push('Edit');
-            btn_id.push(form_part);
-            
-            if(Omadi.print.canPrintReceipt(nodeViewTabsObj.workNode.nid)){
-                
-                btn_tt.push('Print');
-                btn_id.push('_print');
-            }
-    
-            if(typeof bundle.data.custom_copy !== 'undefined'){
-                for(to_type in bundle.data.custom_copy){
-                    if(bundle.data.custom_copy.hasOwnProperty(to_type)){
-                        to_bundle = Omadi.data.getBundle(to_type);
-                        if(to_bundle && to_bundle.can_create == 1){
-                            
-                            if(typeof bundle.data.custom_copy[to_type] !== 'undefined' && 
-                                typeof bundle.data.custom_copy[to_type].conversion_type !== 'undefined' &&
-                                bundle.data.custom_copy[to_type].conversion_type == 'change'){
-                                
-                                    btn_tt.push("Change to " + to_bundle.label);
-                                    btn_id.push(to_type); 
-                            }
-                            else{
-                                btn_tt.push("Copy to " + to_bundle.label);
-                                btn_id.push(to_type);
-                            }
-                        }
-                    }
-                }
-            }
-            
-            btn_tt.push('Cancel');
-    
-            postDialog = Titanium.UI.createOptionDialog();
-            postDialog.options = btn_tt;
-            postDialog.cancel = btn_tt.length - 1;
-            postDialog.show();
-    
-            postDialog.addEventListener('click', function(ev) {
-                var formPart, nodeViewTabsObj;
-                
-                try{
-                    nodeViewTabsObj = ActiveObj.nodeViewTabsObj;
-                    
-                    if (ev.index == ev.source.cancel) {
-                        Ti.API.info("Fix this logic");
-                    }
-                    else if (ev.index != -1) {
-                        
-                        formPart = btn_id[ev.index];
-                        
-                        if(formPart == '_print'){
-                            Omadi.print.printReceipt(nodeViewTabsObj.workNode.nid);
-                        }
-                        else{
-                            
-                            Ti.App.fireEvent('openFormWindow', {
-                                node_type: nodeViewTabsObj.workNode.type,
-                                nid: nodeViewTabsObj.workNode.nid,
-                                form_part: formPart 
-                            });
-                        }
-                    }
-                }
-                catch(ex){
-                    Utils.sendErrorReport("Exception with action click on view: " + ex);
-                }
-            });
-        }
-        catch(ex){
-            Utils.sendErrorReport("Exception with viewing actions on view: " + ex);
-        }
-    });
+    edit.addEventListener('click', this.actionsEventHandler);
     
     canEdit = false;
     try{
@@ -854,6 +856,26 @@ NodeView.prototype.getWindow = function(){"use strict";
     if(Ti.App.isIOS){
         this.addIOSToolbar();
         this.scrollView.top = 60;
+    } else {
+    	var actionsButton = Ti.UI.createLabel({
+	        text : 'Actions',
+            color : '#fff',
+	        width : Ti.UI.FILL,
+	        height : 35,
+            backgroundGradient : Omadi.display.backgroundGradientBlue,
+            borderRadius : 5,
+            top: 5,
+            left: 5,
+            right: 5,
+            bottom: 5,
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+            font: {
+                fontSize: 16,
+                fontWeight: 'bold'
+            }
+	    });
+	    actionsButton.addEventListener('click', this.actionsEventHandler);
+	    this.scrollView.add(actionsButton);
     }
     
     for (regionName in this.regions) {
