@@ -700,24 +700,9 @@ Omadi.data.nodeSave = function(node) {"use strict";
                 if (node._isContinuous) {          
                     Ti.API.debug("SAVING TO CONTINUOUS: " + saveNid + " " + origNid + " " + node.dispatch_nid);    
                     
-                    // continuousNid = node.continuous_nid;
-                    // if(continuousNid == 'new'){
-                        // continuousNid = 0;
-                    // }
                     query = "INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid, dispatch_nid, copied_from_nid) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",4,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1," + origNid + "," + node.dispatch_nid + "," + node.custom_copy_orig_nid + ")";
                 }
                 else if (node._isDraft) {
-                    // if (saveNid > 0) {
-                        // db.execute("UPDATE node SET changed=" + node.changed + ", changed_uid=" + node.changed_uid + ", title='" + dbEsc(node.title) + "', flag_is_updated=3, table_name='" + node.type + "', form_part=" + node.form_part + ", no_data_fields='" + node.no_data + "',viewed=" + node.viewed + " WHERE nid=" + saveNid);
-                    // }
-                    // else {
-                    // origNid = 0;
-                    // if(typeof node.origNid !== 'undefined'){
-                        // origNid = node.origNid;
-                    // }
-    //                 
-                    // Ti.API.debug("SAVING DRAFT: " + saveNid + " " + origNid);
-                    //Utils.sendErrorReport("Saved draft: saveNid = " + saveNid + ", origNid = " + origNid + ", winNid = " + Ti.UI.currentWindow.nid + ", continuous = " + Ti.UI.currentWindow.continuous_nid);
                     // Only save drafts as a negative nid
                     query = "INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid, dispatch_nid, copied_from_nid) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",3,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1," + node.origNid + "," + node.dispatch_nid + "," + node.custom_copy_orig_nid + ")";
                 }
@@ -3334,7 +3319,11 @@ Omadi.data.updateFidsOnNewFiles = function(nid, newFiles) {"use strict";
 	try {
 		for (var i = 0; i < newFiles.length; i++) {
 			var result = db.execute('SELECT id FROM _files WHERE nid=' + nid + ' AND field_name="' + newFiles[i].fieldName + '" AND fid=0 ORDER BY timestamp ASC LIMIT 1');
-			db.execute('UPDATE _files SET fid=' + newFiles[i].fid + ' WHERE id=' + result.fieldByName('id'));
+			if (result.isValidRow()) {
+				db.execute('UPDATE _files SET fid=' + newFiles[i].fid + ' WHERE id=' + result.fieldByName('id'));
+			} else {
+				Utils.sendErrorReport('Could not find matching file in updateFidsOnNewFiles: SELECT id FROM _files WHERE nid=' + nid + ' AND field_name="' + newFiles[i].fieldName + '" AND fid=0 ORDER BY timestamp ASC LIMIT 1');
+			}
 		}
 	} catch (e) {
 		Utils.sendErrorReport('Error in updateFidsOnNewFiles: ' + e);

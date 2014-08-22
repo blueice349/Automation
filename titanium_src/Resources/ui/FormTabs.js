@@ -1149,7 +1149,7 @@ FormTabs.prototype.savedDispatchNode = function(e){"use strict";
         // Allow the updates to go through now that all the data is present
         Omadi.service.setSendingData(false);
         
-        Ti.App.fireEvent('sendUpdates');
+        Omadi.service.checkUpdate;
         
         Omadi.data.deleteContinuousNodes();
 
