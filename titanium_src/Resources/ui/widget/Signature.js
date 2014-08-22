@@ -102,6 +102,7 @@ SignatureWidget.prototype.getNewElement = function(index){"use strict";
     dbValue = null;
     imageData = [];
     
+    
     if ( typeof this.node[this.instance.field_name] !== 'undefined') {
         if ( typeof this.node[this.instance.field_name].dbValues !== 'undefined' && typeof this.node[this.instance.field_name].dbValues[0] !== 'undefined') {
             dbValue = this.node[this.instance.field_name].dbValues[0];
@@ -152,12 +153,24 @@ SignatureWidget.prototype.getNewElement = function(index){"use strict";
         visible: false
     });
     
-    isSigned = (typeof dbValue === 'number');
+    var image = '/images/signature-loading.png';
+    var isSigned = (typeof dbValue === 'number');
+    if (isSigned) {
+    	if (dbValue == -1) {
+	    	var db = Omadi.utils.openListDatabase();
+	    	var result = db.execute('SELECT file_path FROM _files WHERE nid=0 AND field_name="' + this.instance.field_name + '"');
+	    	if (result.isValidRow()) {
+	    		image = result.fieldByName('file_path');
+	    	}
+	    }
+    } else {
+    	image = dbValue;
+    }
     
     this.imageView = Ti.UI.createImageView({
         width: '100%',
         height: 200,
-        image : (isSigned ? '/images/signature-loading.png' : dbValue),
+        image : image,
         thumbnailLoaded : false,
         fullImageLoaded : false,
         isImageData : false,

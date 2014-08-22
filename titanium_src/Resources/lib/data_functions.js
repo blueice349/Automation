@@ -3640,8 +3640,9 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                                 
                                 listDB = Omadi.utils.openListDatabase();
                                 listDB.execute("UPDATE _files SET nid =" + Omadi.service.fetchedJSON.node[type].insert[i].nid + " WHERE nid=" + Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid);
-                                listDB.execute("DELETE FROM _files WHERE nid=" + Omadi.service.fetchedJSON.node[type].insert[i].nid + " AND type='signature'");
                                 listDB.close();
+                                
+                                Omadi.data.updateSignatureFids(Omadi.service.fetchedJSON.node[type].insert[i]);
                                 
                                 
                                 
@@ -3785,6 +3786,22 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
         }
     }
 
+};
+
+Omadi.data.updateSignatureFids = function(node) {
+	var db = listDB = Omadi.utils.openListDatabase();
+    var result = db.execute('SELECT field_name FROM _files WHERE nid=' + node.nid + ' AND type="signature"');
+    
+    while(result.isValidRow()) {
+    	var fieldName = result.fieldByName('fieldName');
+    	var fid = node[fieldName];
+    	
+    	db.execute('UPDATE _fields SET fid=' + fid + ' WHERE nid=' + node.nid + ' AND field_name="' + fieldName + '"');
+    	result.next(); 
+    }
+    
+    result.close();
+    db.close();
 };
 
 Omadi.data.processVocabulariesJson = function(mainDB) {"use strict";
