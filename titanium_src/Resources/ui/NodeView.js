@@ -355,9 +355,6 @@ NodeView.prototype.init = function(){"use strict";
 
 
 NodeView.prototype.addRegion = function(regionObj) {"use strict";
-
-    var i, partsFieldsDone = {}, field_name, field_parts, top;
-    
     this.scrollView.add(Ti.UI.createLabel({
         text : regionObj.label.toUpperCase(),
         color : '#ddd',
@@ -395,17 +392,15 @@ NodeView.prototype.addRegion = function(regionObj) {"use strict";
         top: 0
     }));
 
-    if ( typeof regionObj.fields !== 'undefined') {
-      
-
-        for ( i = 0; i < regionObj.fields.length; i += 1) {
-        
-            field_name = regionObj.fields[i].field_name;
-            if (field_name.indexOf("___") !== -1) {
-                field_parts = field_name.split("___");
-                if ( typeof partsFieldsDone[field_parts[0]] === 'undefined') {
+	var partsFieldsDone = {};
+    if (regionObj.fields) {
+        for (var i = 0; i < regionObj.fields.length; i++) {
+            var fieldName = regionObj.fields[i].field_name;
+            if (fieldName.indexOf("___") !== -1) {
+                var fieldParts = fieldName.split("___");
+                if (!partsFieldsDone[fieldParts[0]]) {
                     this.addField(regionObj.fields[i]);
-                    partsFieldsDone[field_parts[0]] = true;
+                    partsFieldsDone[fieldParts[0]] = true;
                 }
             }
             else {
@@ -566,32 +561,6 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
                     
                     contentWidth = 0;
     
-                    // for ( i = 0; i < this.node[fieldObj.field_name].dbValues.length; i += 1) {
-//     
-                        // if (this.node[fieldObj.field_name].dbValues[i] > 0) {
-                            // fileId = this.node[fieldObj.field_name].dbValues[i];
-                            // contentImage = Ti.UI.createImageView({
-                                // height : 100,
-                                // width : 100,
-                                // left : 10,
-                                // top : 0,
-                                // image : '/images/photo_loading.png',
-                                // autorotate: true,
-                                // borderColor : '#333',
-                                // borderWidth : 2,
-                                // fid : fileId,
-                                // bigImg : null,
-                                // nid: this.node.nid
-                            // });
-//     
-                            // contentImage.addEventListener('click', displayLargeImage);
-//                             
-                            // valueView.add(contentImage);
-                            // Omadi.display.setImageViewThumbnail(contentImage, this.node.nid, fileId);
-                            // contentWidth += 110;
-                        // }
-                    // }
-    
 					try {
 						var formObj = {node: this.node, nid: this.node.nid};
 	    				var imageObject = ImageWidget.getFieldObject(Omadi, formObj, fieldObj, null);
@@ -599,37 +568,8 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
 					} catch(e) {
 						Utils.sendErrorReport('Error adding image views to widget view (A): ' + e);
 					}
-    				
-    				// TODO remove
-                    // for ( i = 0; i < this.node[fieldObj.field_name].imageData.length; i += 1) {
-//     
-                        // if (this.node[fieldObj.field_name].imageData[i] > "") {
-                            // fileId = this.node[fieldObj.field_name].dbValues[i];
-//                             
-                            // imagePath = this.node[fieldObj.field_name].imageData[i];
-//                             
-                            // degrees = this.node[fieldObj.field_name].degrees[i];
-//                             
-                            // contentImage = Ti.UI.createImageView({
-                                // height : 100,
-                                // width : 100,
-                                // left : 10,
-                                // top : 0,
-                                // image : imagePath,
-                                // autorotate: true,
-                                // borderColor : '#333',
-                                // borderWidth : 2,
-                                // filePath : imagePath,
-                                // isImage : true
-                            // });
-//                             
-                            // contentImage.addEventListener('click', displayFullImage);
-//                             
-                            // valueView.add(contentImage);
-//                             
-                            // contentWidth += 110;
-                        // }
-                    // }
+                    
+                    
                     
                     valueView.setContentWidth(110 * this.node[fieldObj.field_name].dbValues.length);
     
@@ -646,7 +586,12 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
                     
                     this.scrollView.add(labelView);
                 }
-                else if (fieldObj.type === 'file' && typeof fieldObj.settings !== 'undefined' && fieldObj.settings._display !== 'undefined' && fieldObj.settings._display['default'].type !== 'undefined' && fieldObj.settings._display['default'].type == 'omadi_file_video') {
+                else if (fieldObj.type === 'file' && 
+                		fieldObj.settings &&
+                		fieldObj.settings._display &&
+                		fieldObj.settings._display['default'] &&
+                		fieldObj.settings._display['default'].type == 'omadi_file_video') {
+                			
                     valueView = Ti.UI.createScrollView({
                         contentHeight : 100,
                         arrImages : null,
@@ -660,7 +605,6 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
                     contentWidth = 0;
     				
                     for ( i = 0; i < this.node[fieldObj.field_name].dbValues.length; i += 1) {
-    
                         if (this.node[fieldObj.field_name].dbValues[i] > 0) {
                             
                             fileId = this.node[fieldObj.field_name].dbValues[i];
@@ -691,33 +635,33 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
                         }
                     }
     				
-    				
-                    for ( i = 0; i < this.node[fieldObj.field_name].imageData.length; i += 1) {
-    
-                        if (this.node[fieldObj.field_name].imageData[i] > "") {
-                            fileId = this.node[fieldObj.field_name].dbValues[i];
-                            
-                            imagePath = this.node[fieldObj.field_name].imageData[i];
-                            degrees = this.node[fieldObj.field_name].degrees[i];
-                            
-                            contentImage = Ti.UI.createImageView({
-                                height : 100,
-                                width : 100,
-                                left : 10,
-                                top : 0,
-                                image : imagePath,
-                                autorotate: true,
-                                borderColor : '#333',
-                                borderWidth : 2,
-                                isImage : true,
-                                filePath : imagePath
-                            });
-                            
-                            valueView.add(contentImage);
-                            
-                            contentWidth += 110;
-                        }
-                    }
+    				if (this.node[fieldObj.field_name].imageData) {
+	                    for ( i = 0; i < this.node[fieldObj.field_name].imageData.length; i += 1) {
+	                        if (this.node[fieldObj.field_name].imageData[i] > "") {
+	                            fileId = this.node[fieldObj.field_name].dbValues[i];
+	                            
+	                            imagePath = this.node[fieldObj.field_name].imageData[i];
+	                            degrees = this.node[fieldObj.field_name].degrees[i];
+	                            
+	                            contentImage = Ti.UI.createImageView({
+	                                height : 100,
+	                                width : 100,
+	                                left : 10,
+	                                top : 0,
+	                                image : imagePath,
+	                                autorotate: true,
+	                                borderColor : '#333',
+	                                borderWidth : 2,
+	                                isImage : true,
+	                                filePath : imagePath
+	                            });
+	                            
+	                            valueView.add(contentImage);
+	                            
+	                            contentWidth += 110;
+	                        }
+	                    }
+					}
                     
                     valueView.setContentWidth(contentWidth);
     

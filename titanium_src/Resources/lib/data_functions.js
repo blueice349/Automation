@@ -1611,29 +1611,6 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                                     
                                 case 'image':
                                     // This includes signature and video fields
-                                    /* TODO remove
-                                    subResult = listDB.execute('SELECT * FROM _files WHERE finished = 0 AND nid IN(' + node.nid + ',0) AND field_name ="' + field_name + '" ORDER BY delta ASC');
-    
-                                    node[field_name].imageData = [];
-                                    node[field_name].degrees = [];
-                                    node[field_name].deltas = [];
-                                    node[field_name].thumbData = [];
-                                    
-                                    if (subResult.rowCount > 0) {
-                                        while (subResult.isValidRow()) {
-                                            
-                                            node[field_name].imageData.push(subResult.fieldByName('file_path'));
-                                            node[field_name].deltas.push(subResult.fieldByName('delta'));
-                                            node[field_name].degrees.push(subResult.fieldByName('degrees', Ti.Database.FIELD_TYPE_INT));
-                                            node[field_name].thumbData.push(subResult.fieldByName('thumb_path'));
-                                            
-                                            //Ti.API.debug(JSON.stringify(node[field_name]));
-                                            
-                                            subResult.next();
-                                        }
-                                    }
-                                    subResult.close();
-                                    */
                                     break;
                                     
                                 case 'file':

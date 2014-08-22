@@ -122,13 +122,6 @@ ImageWidget.prototype.getNewElement = function(index){"use strict";
         if ( typeof this.node[this.instance.field_name].dbValues !== 'undefined') {
             dbValues = this.node[this.instance.field_name].dbValues;
         }
-        // TODO remove
-        // if ( typeof this.node[this.instance.field_name].imageData !== 'undefined') {
-            // imageData = this.node[this.instance.field_name].imageData;
-            // degreeData = this.node[this.instance.field_name].degrees;
-            // deltaData = this.node[this.instance.field_name].deltas;
-            // thumbData = this.node[this.instance.field_name].thumbData;
-        // }
     }
 
     Ti.API.debug("Creating image field: " + this.instance.label);
@@ -152,67 +145,6 @@ ImageWidget.prototype.getNewElement = function(index){"use strict";
     numImagesShowing = 0;
 
 	this.addImageViewsToWidgetView(dbValues, widgetView);
-	
-    //if (dbValues.length != 0) {
-    	
-    	
-    	// TODO remove
-        //for ( i = 0; i < dbValues.length; i++) {
-        	// Look in db
-        	
-        	
-            // if (dbValues[i] > 0) {
-                // Ti.API.debug("Adding image to scroll view");
-//                 
-                // // See if any non-uploaded photos need to replace the "Uploading photo thumbnail"
-                // localDelta = null;
-                // for(j = 0; j < deltaData.length; j ++){
-                    // if(deltaData[j] == i){
-                        // localDelta = j;
-                        // break;
-                    // }
-                // }
-//                 
-                // Ti.API.debug("imageNid: " + imageNid + ", dbValue:" + dbValue[i]);
-//                 
-                // if(localDelta === null){
-                    // Ti.API.debug("Uploaded index: " + i);
-                    // widgetView.add(this.getImageView(widgetView, i, imageNid, dbValue[i], null, null, 0));
-                // }
-                // else{
-                    // Ti.API.debug("Local delta index: " + localDelta + " and index: " + i);
-                    // widgetView.add(this.getImageView(widgetView, i, imageNid, null, imageData[localDelta], thumbData[localDelta], degreeData[localDelta]));
-                    // imageDataAdded.push(localDelta);
-                // }
-//                 
-                // numImagesShowing ++;   
-            // }
-        //}
-    //}
-
-	// TODO remove
-    // if (typeof imageData.length !== 'undefined' && imageDataAdded.length < imageData.length) {
-        // for ( i = 0; i < imageData.length; i++) {
-            // if(imageDataAdded.indexOf(i) == -1){
-                // Ti.API.debug("Adding local image index: " + numImagesShowing);
-                // widgetView.add(this.getImageView(widgetView, numImagesShowing, imageNid, null, imageData[i], thumbData[i], degreeData[i]));
-                // numImagesShowing ++;
-            // }
-        // }
-    // }
-    
-    //Ti.API.debug("Num images showing 2: " + numImagesShowing);
-
-    // contentWidth = numImagesShowing * 110;
-// 
-    // if (this.instance.can_edit && (this.instance.settings.cardinality == -1 || (numImagesShowing < this.instance.settings.cardinality))) {
-//         
-        // widgetView.add(this.getImageView(widgetView, numImagesShowing, null, null, null, null, 0));
-// 
-        // contentWidth += 110;
-    // }
-// 
-    // widgetView.contentWidth = contentWidth;
 
 	var contentWidth = 110 * dbValues.length;
 	if (this.instance.can_edit && (this.instance.settings.cardinality == -1 || (numImagesShowing < this.instance.settings.cardinality))) {

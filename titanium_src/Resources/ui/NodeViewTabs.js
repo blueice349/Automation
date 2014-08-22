@@ -285,6 +285,7 @@ NodeViewTabs.prototype.getTabs = function(){"use strict";
         });
         
         this.workNode = Omadi.data.nodeLoad(this.nid);
+        
         this.dispatchNode = null;
         
         if(this.workNode){
@@ -355,16 +356,13 @@ NodeViewTabs.prototype.getTabs = function(){"use strict";
         
         //create app tabs
         //this.dispatchObj = NodeViewTabs.getDispatchObject(Omadi, 'dispatch', this.dispatchNode.nid, 0, this);
-        
         if(this.dispatchNode){
-        
             this.dispatchWindow = NodeView.getWindow(Omadi, this, 'dispatch', this.dispatchNode.nid);
             this.dispatchTab = Ti.UI.createTab({
                 title: 'Dispatch',
                 window: this.dispatchWindow,
                 icon: '/images/icon_dispatch_white.png'
             });
-            
             if(Ti.App.isIOS){
                 this.dispatchWindow.addEventListener('closeNodeView', function(){
                     getInstance().close();
@@ -417,6 +415,8 @@ NodeViewTabs.prototype.getTabs = function(){"use strict";
                this.tabGroup.addTab(this.dispatchTab);
            }
         }
+        
+        
         
         Ti.API.debug("Added first tabs");
         
