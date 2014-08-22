@@ -163,7 +163,7 @@ SignatureWidget.prototype.getNewElement = function(index){"use strict";
     if (isSigned) {
     	if (dbValue == -1) {
 	    	var db = Omadi.utils.openListDatabase();
-	    	var result = db.execute('SELECT file_path FROM _files WHERE nid IN (' + this.getImageNid() + ', 0) AND field_name="' + this.instance.field_name + '"');
+	    	var result = db.execute('SELECT file_path FROM _files WHERE nid IN (' + this.getImageNid() + ', ' + this.node.continuous_nid + ', 0) AND field_name="' + this.instance.field_name + '"');
 	    	if (result.isValidRow()) {
 	    		image = result.fieldByName('file_path');
 	    	}

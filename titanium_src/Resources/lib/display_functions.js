@@ -637,7 +637,6 @@ Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
     var db, result, formWindow, intNid, isDispatch, dispatchNid, bundle, Dispatch, formObject, node, 
         FormModule, tempFormPart, fromBundle, to_type, newIsDispatch, isChangeTo, initNewDispatch;
     
-
     try{
         Ti.API.debug("opening form window");
         
@@ -1002,11 +1001,6 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
             buttonData.push({
                 form_part: '_print' 
             });
-            
-            //options.push('Charge');
-            //buttonData.push({
-            //    form_part: '_charge' 
-            //});
         }
     
         if ( typeof bundle.data.custom_copy !== 'undefined') {
