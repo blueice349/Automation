@@ -71,7 +71,46 @@ function NodeView(type, nid){"use strict";
     this.nodeViewTabsObj = null; 
 }
 
-NodeView.prototype.actionsEventHandler = function(e) {
+NodeView.prototype.getActionOptions = function() {
+	var node = ActiveObj.nodeViewTabsObj.workNode;
+	var bundle = Omadi.data.getBundle(node.type);
+	
+	try {
+		var options = [];
+		
+		if (node.perm_edit) {
+			// next part
+			if (bundle.data.form_parts > node.form_part + 1) {
+				options.push(bundle.data.form_parts.parts[node.form_part + 1].label);
+			}
+			
+			// edit
+			options.push('Edit');
+		}
+		
+		// print
+		if(Omadi.print.canPrintReceipt(node.nid)){
+			options.push('Print');
+	    }
+		
+		// change / copy to
+		for (var toType in bundle.data.custom_copy) {
+			var toBundle = Omadi.data.getBundle(toType);
+			if (toBundle && toBundle.can_create == 1) {
+				options.push((bundle.data.custom_copy[toType].conversion_type == 'change' ? 'Change to ' : 'Copy to ') + toBundle.label);
+			}
+		}
+		
+		// cancel
+		options.push('Cancel');
+	} catch (e) {
+		Utils.sendErrorReport('Error in getActionOptions: ' + e);
+	}
+	
+	return options;
+};
+
+NodeView.prototype.actionsEventHandler = function(e) {"use strict";
 	var db, result, bundle, btn_tt, btn_id, form_part, postDialog, to_type, to_bundle, nodeViewTabsObj;
         
     try{
@@ -89,17 +128,17 @@ NodeView.prototype.actionsEventHandler = function(e) {
         btn_tt = [];
         btn_id = [];
         
-        if (bundle.data.form_parts != null && bundle.data.form_parts != "") {
-
-            if (bundle.data.form_parts.parts.length >= form_part + 2) {
-               
-                btn_tt.push(bundle.data.form_parts.parts[form_part + 1].label);
-                btn_id.push(form_part + 1);
-            }
+        if (nodeViewTabsObj.workNode.perm_edit) {
+	        if (bundle.data.form_parts != null && bundle.data.form_parts != "") {
+	            if (bundle.data.form_parts.parts.length >= form_part + 2) {
+	                btn_tt.push(bundle.data.form_parts.parts[form_part + 1].label);
+	                btn_id.push(form_part + 1);
+	            }
+	        }
+	
+	        btn_tt.push('Edit');
+	        btn_id.push(form_part);
         }
-
-        btn_tt.push('Edit');
-        btn_id.push(form_part);
         
         if(Omadi.print.canPrintReceipt(nodeViewTabsObj.workNode.nid)){
             
@@ -172,7 +211,7 @@ NodeView.prototype.actionsEventHandler = function(e) {
     }
 };
 
-NodeView.prototype.addIOSToolbar = function(){"use strict";
+NodeView.prototype.addIOSToolbar = function(allowActions){"use strict";
     var back, space, label, edit, arr, toolbar, canEdit;
     
     back = Ti.UI.createButton({
@@ -209,18 +248,7 @@ NodeView.prototype.addIOSToolbar = function(){"use strict";
 
     edit.addEventListener('click', this.actionsEventHandler);
     
-    canEdit = false;
-    try{
-        if(this.nodeViewTabsObj.workNode.perm_edit == 1){
-            canEdit = true;
-        }
-    }
-    catch(ex){
-        Utils.sendErrorReport("Exception checking edit perm in node view: " + ex);
-    }
-
-    //Check is node editable or not
-    arr = (canEdit) ? [back, space, label, space, edit] : ((Ti.Platform.osname == 'ipad') ? [back, space, label, space] : [back, label, space]);
+    arr = (this.getActionOptions().length > 1 && allowActions) ? [back, space, label, space, edit] : ((Ti.Platform.osname == 'ipad') ? [back, space, label, space] : [back, label, space]);
     
     // create and add toolbar
     toolbar = Ti.UI.iOS.createToolbar({
@@ -473,8 +501,6 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
                     
                     widget = require('ui/widget/CalculationField');
                     tableView = widget.getView(Omadi, this.node, fieldObj);
-                    
-                    //tableView = Omadi.widgets.calculation_field.getTableView(this.node, fieldObj);
     
                     if (tableView.singleValue) {
                         valueView.add(tableView);
@@ -492,8 +518,6 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
             }
             else if (fieldObj.type === 'rules_field') {
                 rowView.add(labelView);
-                
-                //valueView = Omadi.widgets.rules_field.getNewElement(this.node, fieldObj);
                 
                 widget = require('ui/widget/RulesField');
                 valueView = widget.getView(Omadi, this.node, fieldObj);
@@ -513,8 +537,6 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
                 this.scrollView.add(labelView);
                 widget = require('ui/widget/ExtraPrice');
                 tableView = widget.getView(Omadi, this.node, fieldObj);
-                
-                //tableView = Omadi.widgets.extra_price.getTableView(this.node, fieldObj);
                 
                 this.scrollView.add(tableView);
                 this.scrollView.add(Ti.UI.createView({
@@ -763,9 +785,7 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
                             case 'location':
     
                                 field_parts = fieldObj.field_name.split("___");
-                                //var part;
                                 valueLabel.text = "";
-                                //node[field_parts[0]].dbValues.join(', ');
                               
                                 if(typeof this.node[field_parts[0]].parts !== 'undefined'){
                                     if (this.node[field_parts[0]].parts.street.textValue > "") {
@@ -829,8 +849,12 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
     }
 };
 
-NodeView.prototype.getWindow = function(){"use strict";
+NodeView.prototype.getWindow = function(allowActions){"use strict";
     var regionName, i, db, result, usernames, metaDataFields;
+    
+    if (typeof allowActions == 'undefined') {
+    	allowActions = true;
+    }
     
     if(!this.initialized){
         this.init();
@@ -854,7 +878,7 @@ NodeView.prototype.getWindow = function(){"use strict";
     });
     
     if(Ti.App.isIOS){
-        this.addIOSToolbar();
+        this.addIOSToolbar(allowActions);
         this.scrollView.top = 60;
     } else {
     	var actionsButton = Ti.UI.createLabel({
@@ -875,7 +899,9 @@ NodeView.prototype.getWindow = function(){"use strict";
             }
 	    });
 	    actionsButton.addEventListener('click', this.actionsEventHandler);
-	    this.scrollView.add(actionsButton);
+	    if (this.getActionOptions().length > 1 && allowActions) {
+	    	this.scrollView.add(actionsButton);
+	    }
     }
     
     for (regionName in this.regions) {
@@ -977,15 +1003,17 @@ NodeView.prototype.getWindow = function(){"use strict";
     return this.win;
 };
 
-exports.getWindow = function(OmadiObj, nodeViewTabsObj, type, nid){"use strict";
+exports.getWindow = function(OmadiObj, nodeViewTabsObj, type, nid, allowActions){"use strict";
     Omadi = OmadiObj;
+    
+    if (typeof allowActions == 'undefined') {
+    	allowActions = true;
+    }
     
     _instances[type] = new NodeView(type, nid);
     _instances[type].nodeViewTabsObj = nodeViewTabsObj;
     
-    //Ti.API.debug("work node: " + JSON.stringify(nodeViewTabsObj.workNode));
-    
     ActiveObj = _instances[type];
     
-    return _instances[type].getWindow();
+    return _instances[type].getWindow(allowActions);
 };

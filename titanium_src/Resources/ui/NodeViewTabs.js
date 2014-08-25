@@ -41,80 +41,6 @@ function getInstance(){"use strict";
     return _instance;
 }
 
-// NodeViewTabs.prototype.showActionsOptions = function(e){"use strict";
-    // var bundle, btn_tt, btn_id, postDialog, windowFormPart;
-//     
-    // bundle = Omadi.data.getBundle(Dispatch.workObj.type);
-    // btn_tt = [];
-    // btn_id = [];
-// 
-    // btn_tt.push('Save');
-    // btn_id.push('normal');
-//   
-    // btn_tt.push('Cancel');
-    // btn_id.push('cancel');
-// 
-    // postDialog = Titanium.UI.createOptionDialog();
-    // postDialog.options = btn_tt;
-    // postDialog.cancel = btn_tt.length - 1;
-    // postDialog.show();
-// 
-    // postDialog.addEventListener('click', function(ev) {
-        // var form_errors, dialog, i;
-        // try{
-            // if(ev.index >= 0 && ev.index != ev.source.cancel){
-                // if(Dispatch.workObj.nodeSaved === false){
-//                     
-                    // Dispatch.workObj.formToNode();
-                    // Dispatch.dispatchObj.formToNode();
-//                     
-                    // Dispatch.workObj.validate_form_data(btn_id[ev.index]);
-                    // Dispatch.dispatchObj.validate_form_data(btn_id[ev.index]);
-//                     
-                    // form_errors = Dispatch.workObj.form_errors;
-                    // for(i = 0; i < Dispatch.dispatchObj.form_errors.length; i ++){
-                        // form_errors.push(Dispatch.dispatchObj.form_errors[i] + " (dispatch Tab)");
-                    // }
-//                     
-                    // if(form_errors.length > 0){
-                        // dialog = Titanium.UI.createAlertDialog({
-                            // title : 'Dispatch Validation',
-                            // buttonNames : ['OK'],
-                            // message: form_errors.join("\n")
-                        // });
-//                         
-                        // dialog.show();
-                    // }
-                    // else{
-//                     
-                        // // if(btn_id[ev.index] == 'next'){
-                            // // ActiveFormObj.saveForm('next_part');
-                        // // }
-                        // // else if(btn_id[ev.index] == 'draft'){
-                            // // ActiveFormObj.saveForm('draft');
-                        // // }
-                        // // else if(btn_id[ev.index] == 'new'){
-                            // // ActiveFormObj.saveForm('new');
-                        // // }
-                        // // else if(btn_id[ev.index] == 'normal'){
-                            // // ActiveFormObj.saveForm('normal');
-                        // // }
-//                         
-                        // Dispatch.dispatchObj.saveForm('normal');
-                        // Dispatch.workObj.saveForm('normal');
-                    // }
-                // }
-                // else{
-                    // alert("The form data was saved correctly, but this screen didn't close for some reason. You can exit safely.");
-                // }
-            // }
-        // }
-        // catch(ex){
-            // Utils.sendErrorReport("Exception in dispatch form dispatch post dialog click: " + ex);
-        // }
-    // });
-// };
-
 function incrementCommentTab(e){"use strict";
     var count, title;
     try{
@@ -147,22 +73,6 @@ NodeViewTabs.prototype.addActions = function(){"use strict";
     if(this.workNode !== null){
             
         if (Ti.App.isAndroid) {
-            
-            try{
-                // actionBar = getInstance().tabGroup.activity.actionBar;
-                // actionBar.setHomeAsUp = true;
-                // actionBar.onHomeIconItemSelected = function(){
-                    // getInstance().close();  
-                // };
-//                 
-                // if(this.dispatchTab === null && this.commentsTab === null){
-                    // // When only the work tab is visible, do not show any tabs
-                    // actionBar.navigationMode = Ti.Android.NAVIGATION_MODE_STANDARD;
-                // }
-            }
-            catch(ex){
-                Utils.sendErrorReport("Exception setting up action bar in view: " + ex);
-            }
             
             this.tabGroup.activity.onCreateOptionsMenu = function(e) {
                 var db, result, bundle, menu_zero, menu_edit, 
@@ -207,19 +117,6 @@ NodeViewTabs.prototype.addActions = function(){"use strict";
                     });
                     
                     order ++;
-                    
-                    // menu_charge = e.menu.add({
-                        // title : 'Charge',
-                        // order : order 
-                    // });
-        //             
-                    // //menu_charge.setIcon("/images/printer_white.png");
-        //             
-                    // menu_charge.addEventListener('click', function(){
-                        // Omadi.print.chargeCard(curWin.nid);
-                    // });
-        //             
-                    // order ++;
                 }
                 
                 if(typeof bundle.data.custom_copy !== 'undefined'){
@@ -268,9 +165,13 @@ NodeViewTabs.prototype.addActions = function(){"use strict";
 
 
 
-NodeViewTabs.prototype.getTabs = function(){"use strict";
+NodeViewTabs.prototype.getTabs = function(allowActions){"use strict";
     var dispatchWin, workWin, allowRecover, openDispatch, workBundle, db, result, 
         tempDispatchNid, iconFile, tempFormPart, origNid, copyToBundle, commentsCount;
+    
+    if (typeof allowActions == 'undefined') {
+    	allowActions = true;
+    }
     
     try{
         openDispatch = false;
@@ -351,13 +252,9 @@ NodeViewTabs.prototype.getTabs = function(){"use strict";
             alert("A problem occurred loading this dispatch. Omadi support has been notified about this issue.");
             Utils.sendErrorReport("The work node passed into the dispatch form is invalid: " + this.nid);   
         }
-        
-        
-        
-        //create app tabs
-        //this.dispatchObj = NodeViewTabs.getDispatchObject(Omadi, 'dispatch', this.dispatchNode.nid, 0, this);
+
         if(this.dispatchNode){
-            this.dispatchWindow = NodeView.getWindow(Omadi, this, 'dispatch', this.dispatchNode.nid);
+            this.dispatchWindow = NodeView.getWindow(Omadi, this, 'dispatch', this.dispatchNode.nid, allowActions);
             this.dispatchTab = Ti.UI.createTab({
                 title: 'Dispatch',
                 window: this.dispatchWindow,
@@ -370,17 +267,11 @@ NodeViewTabs.prototype.getTabs = function(){"use strict";
             }
         }
         
-        //this.dispatchObj.win.dispatchTabGroup = this.tabGroup;
-        
         if(this.workNode && this.workNode.type !== null){
-             
-            //this.workObj = this.FormModule.getDispatchObject(Omadi, this.workNode.type, this.workNode.nid, this.workNode.form_part, this);
-            
-            //this.workNode = this.workObj.node;
             
             workBundle = Omadi.data.getBundle(this.workNode.type);
             
-            this.workWindow = NodeView.getWindow(Omadi, this, this.workNode.type, this.workNode.nid);
+            this.workWindow = NodeView.getWindow(Omadi, this, this.workNode.type, this.workNode.nid, allowActions);
             
             this.workTab = Ti.UI.createTab({
                 title: workBundle.label,
@@ -393,8 +284,6 @@ NodeViewTabs.prototype.getTabs = function(){"use strict";
                     getInstance().close();
                 });
             }
-            
-            //this.workObj.win.dispatchTabGroup = this.tabGroup;
         }
          
         if(openDispatch && this.dispatchNode){
@@ -471,8 +360,10 @@ NodeViewTabs.prototype.getTabs = function(){"use strict";
     return this.tabGroup;
 };
 
-NodeViewTabs.prototype.savedNode = function(){"use strict";
-    _instance.close();
+NodeViewTabs.prototype.savedNode = function(e){"use strict";
+	if (e.saveType != 'continuous') {
+    	_instance.close();
+    }
 };
 
 NodeViewTabs.prototype.loggingOut = function(){"use strict";
@@ -503,9 +394,13 @@ NodeViewTabs.prototype.close = function(){"use strict";
 };
 
 
-exports.getTabs = function(OmadiObj, type, nid){"use strict";
+exports.getTabs = function(OmadiObj, type, nid, allowActions){"use strict";
     Omadi = OmadiObj;
     
+    if (typeof allowActions == 'undefined') {
+    	allowActions = true;
+    }
+        
     _instance = new NodeViewTabs(type, nid);
-    return _instance.getTabs();
+    return _instance.getTabs(allowActions);
 };

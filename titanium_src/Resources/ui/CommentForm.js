@@ -6,17 +6,12 @@ var Utils = require('lib/Utils');
 function CommentForm(nid){"use strict";
     //create module instance
     
-    // if(typeof cid === 'undefined'){
-        // cid = 0;
-    // }
-    
     this.formView = null;
     this.isFormShowing = false;
     this.isSaving = false;
     
     this.instances = {};
     this.nid = nid;
-    //this.cid = cid;
     this.fieldObjects = {};
     this.fieldWrappers = {};
     this.labelViews = {};
@@ -162,14 +157,12 @@ CommentForm.prototype.setConditionallyRequiredLabelForInstance = function(instan
                     search_value = criteria_row.value;
                     values = [];
                     
-                    //Ti.API.debug(field_name);
                     if(typeof this.node[field_name] !== 'undefined'){
                        values = this.node[field_name].dbValues;
                     }
                     
                     if(typeof this.instances[field_name] !== 'undefined' && typeof this.instances[field_name].type !== 'undefined'){
                     
-                        //Ti.API.debug(JSON.stringify(values));
                         switch(this.instances[field_name].type) {
                             case 'text':
                             case 'text_long':
@@ -207,32 +200,6 @@ CommentForm.prototype.setConditionallyRequiredLabelForInstance = function(instan
                                     }
                                 }
                                 break;
-                                
-                            //case 'location':
-                                
-                                // Ti.API.debug(instances[field_name]);
-                                
-                                // if (search_operator == '__filled') {
-                                    // for (i = 0; i < values.length; i++) {
-                                        // if (values[i] != null && values[i] != "") {
-                                            // row_matches[row_idx] = true;
-                                        // }
-                                    // }
-                                // }
-                                // else {
-                                    // if (values.length == 0) {
-                                        // row_matches[row_idx] = true;
-                                    // }
-                                    // else {
-                                        // for (i = 0; i < values.length; i ++){
-                                            // if (values[i] == null || values[i] == "") {
-                                                // row_matches[row_idx] = true;
-                                            // }
-                                        // }
-                                    // }
-                                // }
-                                //break;
-                                
                             case 'taxonomy_term_reference':
                             case 'user_reference':
         
@@ -334,8 +301,6 @@ CommentForm.prototype.setConditionallyRequiredLabelForInstance = function(instan
     
             makeRequired = true;
             
-            //Ti.API.error(JSON.stringify(row_matches));
-            
             if (row_matches.length == 1) {
                 makeRequired = row_matches[0];
             }
@@ -344,7 +309,6 @@ CommentForm.prototype.setConditionallyRequiredLabelForInstance = function(instan
                 and_groups = [];
                 and_group_index = 0;
                 and_groups[and_group_index] = [];
-                //print_r($criteria['search_criteria']);
                 for (i in search_criteria) {
                     if(search_criteria.hasOwnProperty(i)){
                         criteria_row = search_criteria[i];
@@ -616,7 +580,6 @@ CommentForm.prototype.getDBValues = function(fieldWrapper){"use strict";
                     if(typeof subChildren[j].dbValue !== 'undefined'){
                         
                         if(typeof subChildren[j].dbValue === 'object' && subChildren[j].dbValue instanceof Array){
-                            //Ti.API.debug(JSON.stringify(subChildren[j].dbValue));
                             dbValues = subChildren[j].dbValue;
                         }
                         else{
@@ -779,7 +742,6 @@ CommentForm.prototype.getTextField = function(instance){"use strict";
         focusable: true,
         
         // iOS options
-        //borderStyle: Ti.UI.INPUT_BORDERSTYLE_ROUNDED,
         leftButtonPadding: 8,
         suppressReturn: true,
         

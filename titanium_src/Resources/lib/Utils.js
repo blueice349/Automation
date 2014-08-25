@@ -170,7 +170,6 @@ exports.secondsToString = function(seconds) {"use strict";
     var format, am_pm, hours, hours_str, minutes, time_string, new_hours;
     
     format = getInstance().getTimeFormat();
-    //Ti.API.error(format);
 
     am_pm = (format.indexOf('H') === -1);
 

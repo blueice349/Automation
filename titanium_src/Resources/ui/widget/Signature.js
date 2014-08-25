@@ -69,8 +69,6 @@ SignatureWidget.prototype.redraw = function(){"use strict";
     var origFieldView;
     
     this.formObj.formToNode();
-        
-    //Ti.API.debug(JSON.stringify(this.formObj.node));
     
     this.node = this.formObj.node;
     if(typeof this.node[this.instance.field_name] !== 'undefined'){
@@ -163,7 +161,7 @@ SignatureWidget.prototype.getNewElement = function(index){"use strict";
     if (isSigned) {
     	if (dbValue == -1) {
 	    	var db = Omadi.utils.openListDatabase();
-	    	var result = db.execute('SELECT file_path FROM _files WHERE nid IN (' + this.getImageNid() + ', ' + this.node.continuous_nid + ', 0) AND field_name="' + this.instance.field_name + '"');
+	    	var result = db.execute('SELECT file_path FROM _files WHERE nid IN (' + this.getImageNid() + ', ' + (this.node.continuous_nid || 0) + ', 0) AND field_name="' + this.instance.field_name + '"');
 	    	if (result.isValidRow()) {
 	    		image = result.fieldByName('file_path');
 	    	}

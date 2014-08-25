@@ -399,7 +399,6 @@ function searchAndroidFocusHandler(){"use strict";
         Ti.App.removeEventListener("savedNode", savedNodeRecent);
         
         // Clean up memory
-        //Ti.UI.currentWindow.remove(wrapperView);
         wrapperView = null;
         curWin = null;
     });

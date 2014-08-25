@@ -111,11 +111,7 @@ FormTabs.prototype.doDispatchSave = function(saveType){"use strict";
             if(now - Dispatch.lastSaveTime > 1000){
                 Dispatch.lastSaveTime = now;
                 
-                if(Ti.App.isAndroid){
-                    // Android doesn't like adding anything to tab groups
-                    //Omadi.display.loading("Saving...");
-                }
-                else{
+                if(!Ti.App.isAndroid){
                     // iOS won't show the loading screen unless it's on the tabgroup
                     Omadi.display.loading("Saving...", Dispatch.tabGroup);
                 }
@@ -521,7 +517,8 @@ FormTabs.prototype.getWindow = function(initNewDispatch){"use strict";
         
         if(usingDispatch && this.dispatchNode){
             //create app tabs
-            this.dispatchObj = this.FormModule.getDispatchObject(Omadi, 'dispatch', this.dispatchNode.nid, 0, this, usingDispatch);
+            this.dispatchObj = this.FormModule.getDispatchObject(Omadi, 'dispatch', this.dispatchNode.nid, 0, usingDispatch);
+            this.FormModule.setActiveFormObject(this.dispatchObj, this);
             
             this.dispatchTab = Ti.UI.createTab({
                 title: 'Dispatch',
@@ -576,7 +573,8 @@ FormTabs.prototype.getWindow = function(initNewDispatch){"use strict";
                 Utils.sendErrorReport("Exception with custom copy in dispatch: " + copyEx);
             }
             
-            this.workObj = this.FormModule.getDispatchObject(Omadi, this.workNode.type, this.workNode.nid, this.workNode.form_part, this, usingDispatch);
+            this.workObj = this.FormModule.getDispatchObject(Omadi, this.workNode.type, this.workNode.nid, this.workNode.form_part, usingDispatch);
+            this.FormModule.setActiveFormObject(this.workObj, this);
             
             this.workNode = this.workObj.node;
             
@@ -670,19 +668,6 @@ FormTabs.prototype.getWindow = function(initNewDispatch){"use strict";
         
         
         this.setupMenu();
-        
-        // if(Ti.App.isAndroid){
-            // this.tabGroup.addEventListener("open", function(e) {
-                // Dispatch.tabGroup.activity.onCreateOptionsMenu = function(e) {
-                    // var menuItem = e.menu.add({
-                        // title : "Save",
-                        // icon : "/images/save_light_blue.png",
-                        // showAsAction : Ti.Android.SHOW_AS_ACTION_ALWAYS
-                    // });
-                    // menuItem.addEventListener("click", Dispatch.doDispatchSave);
-                // };
-            // });
-        // }
     }
     catch(ex){
         Utils.sendErrorReport("Could not open dispatch window: " + ex);
@@ -702,27 +687,11 @@ FormTabs.prototype.setupMenu = function(){"use strict";
         if(Ti.App.isAndroid){
             
             this.tabGroup.addEventListener('open', function(){
-                try{
-                    // var actionBar = Dispatch.tabGroup.activity.actionBar;
-                    // actionBar.setHomeAsUp = true;
-                    // actionBar.onHomeIconItemSelected = function(){
-                        // Dispatch.close();
-                    // };
-//                     
-                    // if(Dispatch.dispatchTab === null && Dispatch.commentsTab === null){
-                        // // When only the work tab is visible, do not show any tabs
-                        // //actionBar.navigationMode = Ti.Android.NAVIGATION_MODE_STANDARD;
-                    // }
-                }
-                catch(ex){}
             
                 Dispatch.tabGroup.activity.onCreateOptionsMenu = function(e) {
                     var db, result, menu_zero, 
                         menu_first, menu_second, menu_third, menu_save_new, 
                         iconFile, windowFormPart, bundle;
-                        
-                   // btn_tt = [];
-                    // btn_id = [];
                     
                     Ti.API.debug("Creating options menu");
                     
@@ -831,6 +800,10 @@ FormTabs.prototype.close = function(callback){"use strict";
 	                
 	                if(Dispatch.workObj !== null){
 	                    Dispatch.workObj.closeWindow();
+	                }
+	                
+	                if(Dispatch.commentsTab) {
+	                	Dispatch.commentsTab.window.close();
 	                }
 	                
 	                // Remove any fully-saved nodes that may not have been linked
@@ -1167,6 +1140,10 @@ FormTabs.prototype.savedDispatchNode = function(e){"use strict";
 	            if(Dispatch.workObj !== null){
 	                Dispatch.workObj.closeWindow();
 	            }
+	            
+                if(Dispatch.commentsTab) {
+                	Dispatch.commentsTab.window.close();
+                }
 	        }
         	Dispatch.tabGroup.close();
         } else if (e.saveType == 'next_part') {
@@ -1191,7 +1168,8 @@ FormTabs.prototype.towTypeChanged = function(e) {"use strict";
                 Dispatch.workObj.initNewNodeTypeForDispatch(newNodeType);   
             }
             else{
-                Dispatch.workObj = Dispatch.FormModule.getDispatchObject(Omadi, newNodeType, 'new', -1, Dispatch, true);
+                Dispatch.workObj = Dispatch.FormModule.getDispatchObject(Omadi, newNodeType, 'new', -1, true);
+                Dispatch.FormModule.setActiveFormObject(Dispatch.workObj, Dispatch);
                 
                 Dispatch.workTab = Ti.UI.createTab({
                     title: newBundle.label,
@@ -1243,6 +1221,10 @@ exports.loggingOut = function(){"use strict";
     
     if(Dispatch.workObj !== null){
         Dispatch.workObj.closeWindow();
+    }
+	                
+    if(Dispatch.commentsTab) {
+    	Dispatch.commentsTab.window.close();
     }
     
     if(Dispatch.setSendingData){

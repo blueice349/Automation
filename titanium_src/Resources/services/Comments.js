@@ -30,7 +30,6 @@ var sendOnLoad = function(e){"use strict";
     var dialog, json, nameTable, dir, file, string, commentsInstance;
     
     commentsInstance = getInstance();
-   // Omadi.display.doneLoading();
    
     try{
         if (this.responseText !== null && this.responseText !== "null" && this.responseText !== "" && this.responseText !== "") {
@@ -111,8 +110,6 @@ var sendOnLoad = function(e){"use strict";
             dialog.addEventListener('click', function(e) {
                 try{
                     Ti.App.Properties.setString('logStatus', "The server logged you out");
-                    //Ti.API.info('From Functions ... Value is : ' + Ti.App.Properties.getString('logStatus'));
-                    //Omadi.service.logout();
                     
                     // TODO: Make sure this event works
                     Ti.App.fireEvent('logout');
@@ -135,8 +132,6 @@ var sendOnError = function(e){"use strict";
     var dialog, commentsInstance, commentText;
     
     try{
-        //Omadi.display.doneLoading();
-        
         try{
             Ti.Media.vibrate();
         }
@@ -204,9 +199,6 @@ var sendOnError = function(e){"use strict";
         }
         
         Database.query("UPDATE comment set sync_attempts = (sync_attempts + 1) WHERE cid = " + this.cid);
-        
-        //Omadi.service.setSendingData(false);
-        //Ti.App.fireEvent("doneSendingComment");
     }
     catch(ex){
         Utils.sendErrorReport("Exception with update comment onerror callback: " + ex);
@@ -300,10 +292,6 @@ Comments.prototype.sendComment = function(cid) {"use strict";
                 http.onerror = sendOnError;
                 
                 http.send(commentOutput);
-                
-                //Ti.App.fireEvent("sendingData", {
-                //    message : 'Saving comments to server...'
-                //});
             }
         }
         else{

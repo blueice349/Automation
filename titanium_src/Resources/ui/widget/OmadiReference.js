@@ -171,7 +171,7 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
             if(typeof widget.elements[0] !== 'undefined' && widget.elements[0].dbValue !== null && widget.elements[0].dbValue > 0){
                 node = Omadi.data.nodeLoad(widget.elements[0].dbValue);
                 if(node){
-                    Omadi.display.openViewWindow(node.type, node.nid);
+                    Omadi.display.openViewWindow(node.type, node.nid, false);
                 }
             }
         }
@@ -352,9 +352,6 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
                         // Make sure the cursor is at the end of the text
                         widget.elements[0].setSelection(widget.elements[0].value.length, widget.elements[0].value.length);
                     }
-        
-                    // Pretend like this is just loaded - mainly a fix for android, but makes sense for both
-                    //e.source.textField.touched = false;
                     
                     widget.elements[0].clickedAutocomplete = true;
                     
@@ -392,10 +389,12 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
             this.elements[0].addEventListener('blur', function(e) {
                 try{
                     var widget = Widget[e.source.instance.field_name];
-                    widget.autocomplete_table.setBorderWidth(0);
-                    widget.autocomplete_table.setHeight(0);
-                    widget.autocomplete_table.setVisible(false);
-                    widget.elements[0].blurred = true;
+                    if (widget) {
+	                    widget.autocomplete_table.setBorderWidth(0);
+	                    widget.autocomplete_table.setHeight(0);
+	                    widget.autocomplete_table.setVisible(false);
+	                    widget.elements[0].blurred = true;
+                    }
                 }
                 catch(ex){
                     try{
@@ -403,21 +402,6 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
                     }catch(ex1){}
                 }
             });
-            
-            // TODO: get this part working with the formmodule
-            // Ti.UI.currentWindow.addEventListener("customCopy", function(){
-                // var i, callback;
-//                     
-                // Ti.API.debug("In CUSTOM COPY");
-                // Omadi.widgets.omadi_reference.setChildDefaultValues(widgetView);
-                // //Ti.API.debug(widgetView.onChangeCallbacks);
-                // if (widgetView.onChangeCallbacks.length > 0) {
-                    // for ( i = 0; i < widgetView.onChangeCallbacks.length; i++) {
-                        // callback = widgetView.onChangeCallbacks[i];
-                        // callback(widgetView.onChangeCallbackArgs[i]);
-                    // }
-                // }
-            // });
     
             this.elements[0].addEventListener('change', function(e) {
                 var possibleValues, tableData, i, j, regEx, row, upperCaseValue, 
@@ -502,8 +486,6 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
                                                 color : '#000',
                                                 fieldName: widget.instance.field_name
                                             });
-                                            
-                                            //Ti.API.debug(possibleValues[i].title);
                 
                                             // apply rows to data array
                                             tableData.push(row);

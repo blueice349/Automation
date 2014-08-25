@@ -186,7 +186,6 @@ Omadi.bundles.companyVehicle.exitVehicle = function(){"use strict";
                     
                     Ti.App.fireEvent('exitedVehicle');
                     
-                    //Ti.API.error(JSON.stringify(e));
                     dialog = Ti.UI.createOptionDialog({
                         message : 'Exiting the vehicle was not saved. Please try again.',
                         buttonNames: ['OK']

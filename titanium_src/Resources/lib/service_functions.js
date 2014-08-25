@@ -341,9 +341,6 @@ Omadi.service.syncInitialFormPage = function(page){"use strict";
             
             try{
                 Ti.API.debug("Initial Sync data loaded");
-                
-                //Ti.API.debug("text: " + (this.responseText !== null));
-                //Ti.API.debug("data: " + (this.responseData !== null));
                 if (typeof this.responseText !== 'undefined' && this.responseText !== null){
                     Ti.API.debug("JSON String Length 1: " + this.responseText.length);
                 }
@@ -355,8 +352,6 @@ Omadi.service.syncInitialFormPage = function(page){"use strict";
                 Ti.API.debug("another sync message");
                 //Parses response into strings
                 if (typeof this.responseText !== 'undefined' && this.responseText !== null && isJsonString(this.responseText) === true) {
-        
-                    //Ti.API.info(this.responseText.substring(0, 3000));
                     
                     Ti.API.debug("JSON String Length: " + this.responseText.length);
                     Omadi.service.fetchedJSON = null;
@@ -454,7 +449,6 @@ Omadi.service.syncInitialFormPage = function(page){"use strict";
             
             Ti.API.error('Code status: ' + e.error);
             Ti.API.error('CODE ERROR = ' + this.status);
-            //Ti.API.info("Progress bar = " + progress);
     
             if (this.status == 403) {
                 
@@ -603,10 +597,8 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
 
                 //While streamming - following method should be called b4 open URL
                 http.ondatastream = function(e) {
-                    //ind.value = e.progress ;
                     if (Omadi.service.fetchUpdatesProgressBar !== null) {
                         Omadi.service.fetchUpdatesProgressBar.set_download(e.progress);
-                        //Ti.API.debug(' ONDATASTREAM1 - PROGRESS: ' + e.progress);
                     }
                 };
                 
@@ -639,21 +631,9 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
                     try{
                         Ti.API.debug("Sync data loaded");
                         
-                        //Ti.API.debug("text: " + (this.responseText !== null));
-                        //Ti.API.debug("data: " + (this.responseData !== null));
-                        //if (typeof this.responseText !== 'undefined' && this.responseText !== null){
-                            //Ti.API.debug("JSON String Length 1: " + this.responseText.length);
-                        //}
-                        
-                        //if (typeof this.responseData !== 'undefined' && this.responseData !== null){
-                            //Ti.API.debug("JSON String Length 2: " + this.responseData.length);
-                        //}
-                        
                         Ti.API.debug("another sync message");
                         //Parses response into strings
                         if (typeof this.responseText !== 'undefined' && this.responseText !== null && isJsonString(this.responseText) === true) {
-                
-                            //Ti.API.info(this.responseText.substring(0, 3000));
                             
                             Ti.API.debug("JSON String Length: " + this.responseText.length);
                             
@@ -754,7 +734,6 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
                     
                     Ti.API.error('Code status: ' + e.error);
                     Ti.API.error('CODE ERROR = ' + this.status);
-                    //Ti.API.info("Progress bar = " + progress);
 
                     if (Omadi.service.fetchUpdatesProgressBar !== null) {
                         Omadi.service.fetchUpdatesProgressBar.close();
@@ -979,7 +958,6 @@ Omadi.service.sendDataOnLoad = function(e){"use strict";
             dialog.addEventListener('click', function(e) {
                 try{
                     Ti.App.Properties.setString('logStatus', "The server logged you out");
-                    //Ti.API.info('From Functions ... Value is : ' + Ti.App.Properties.getString('logStatus'));
                     Omadi.service.logout();
                 }
                 catch(ex){
@@ -1111,14 +1089,10 @@ Omadi.service.sendUpdates = function() {"use strict";
             else{
                 if(origAppStartMillis != Ti.UI.currentWindow.appStartMillis){
                     if(Ti.App.isAndroid){
-                        //Utils.sendErrorReport("An extra android upload activity was REJECTED, background: " + isBackground + " : "  + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
-                        return;
-                        //Ti.Android.currentActivity.finish();
+                    	return;
                     }
-                    //else{
-                        Utils.sendErrorReport("An extra iOS send update event is being REJECTED: " + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
-                        return;
-                    //}
+                    Utils.sendErrorReport("An extra iOS send update event is being REJECTED: " + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
+                    return;
                 }
             }
         }
@@ -1144,10 +1118,8 @@ Omadi.service.sendUpdates = function() {"use strict";
     Omadi.service.lastSendUpdates = timestamp;
 
     if (Ti.Network.online) {
-        //alert("Has network");
         
         isSendingData = Omadi.service.isSendingData();
-        //alert("Is Sending Data: " + isSendingData);
         
         if (isSendingData) {
             
@@ -1285,19 +1257,16 @@ Omadi.service.sendLogoutRequest = function(){"use strict";
     
         http.onload = function(e) {
             Ti.App.Properties.setString('logStatus', "You have successfully logged out");
-            //Ti.API.info('From Functions ... Value is : ' + Ti.App.Properties.getString('logStatus'));
             Omadi.service.doPostLogoutOperations();
         };
     
         http.onerror = function(e) {
-            //Omadi.display.hideLoadingIndicator();
     
             if (this.status == 403 || this.status == 401) {
                 Ti.App.Properties.setString('logStatus', "You are logged out");
             }
             else {
                 Ti.API.info("Failed to log out");
-                //alert("Failed to log out, please try again");
             }
             
             Omadi.service.doPostLogoutOperations();
@@ -1318,7 +1287,6 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
     // Get back the memory used for the photo upload
     Omadi.service.currentFileUpload = null;
     
-    //Ti.API.info('UPLOAD FILE: =========== Success ========' + this.responseText);
     Ti.API.debug("Photo upload succeeded");
     
     photoId = this.photoId;
@@ -1468,9 +1436,6 @@ Omadi.service.photoUploadError = function(e){"use strict";
     
     Ti.API.error("Upload failed. Code: " + e.code + ", Error: " + e.error);
     
-    //Ti.API.error(JSON.stringify(e));
-    //Ti.API.error(JSON.strigify(this));
-    
     incrementTries = false;
     saveFailedUpload = false;
     
@@ -1526,21 +1491,13 @@ Omadi.service.photoUploadError = function(e){"use strict";
     else if(e.code == 410 || e.code == 412){
         // Node was deleted, orso delete db entry immediately and save image to gallery
         saveFailedUpload = true;
-    }
-    else if (e.code == 406){
-        // Something was wrong with the file - too small for a photo or video
-        //saveFailedUpload = true;
-    }
-    else if(e.code == -1){
+    }else if(e.code == -1){
         
         if(e.error == "Gone" || e.error == 'Precondition Failed'){
             saveFailedUpload = true;
         }
         else{
             incrementTries = true;
-            if(numTries > 5){
-                //saveFailedUpload = true;
-            }
         }
     }
     else if(e.code == 2){

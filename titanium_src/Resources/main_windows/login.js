@@ -109,17 +109,14 @@ function createAndroidNotifications() {"use strict";
 
         registerCreate = function() {
             ostate = "create";
-            //createNotification("Create event called ...");
         };
 
         registerStart = function() {
             if (ostate == "create") {
                 ostate = "created";
-                //createNotification("First run event called ...");
             }
             else {
                 ostate = "start";
-                //createNotification("Start event called ...");
             }
         };
 
@@ -135,12 +132,6 @@ function createAndroidNotifications() {"use strict";
         activity.addEventListener('destroy', function() {
             Omadi.display.removeNotifications();
         });
-
-        activity.addEventListener('stop', function() {
-            //createNotification("Stop event called ...");
-        });
-
-        //createNotification("No coordinates uploaded so far");
     }
 }
 
@@ -335,9 +326,6 @@ function startBackgroundUploads(){"use strict";
     
     Ti.App.backgroundPhotoUploadCheck = setInterval(Omadi.service.uploadBackgroundFile, 60000);
     
-    // Stop uploading the initial file while logged in
-    //Omadi.service.abortFileUpload();
-    
     // Immediately try to upload the next file
     Omadi.service.uploadBackgroundFile();
 }
@@ -394,31 +382,6 @@ function openMainScreen(loggedIn){"use strict";
             iOSGPS = require('com.omadi.ios_gps');
             Ti.App.Properties.setBool('deviceHasFlash', iOSGPS.isFlashAvailableInCamera());
         }
-        
-        
-       // else{
-            // Ti.Geolocation.Android.manualMode = true;
-            // var gpsProvider = Ti.Geolocation.Android.createLocationProvider({
-                // name: Ti.Geolocation.PROVIDER_GPS,
-                // minUpdateTime: 20, 
-                // minUpdateDistance: 5
-            // });
-//             
-            // Ti.Geolocation.Android.addLocationProvider(gpsProvider);
-//             
-            // var gpsRule = Ti.Geolocation.Android.createLocationRule({
-                // provider: Ti.Geolocation.PROVIDER_GPS,
-                // // Updates should be accurate to 100m
-                // accuracy: 1000,
-                // // Updates should be no older than 5m
-                // maxAge: 25000,
-                // // But  no more frequent than once per 10 seconds
-                // minAge: 10000
-            // });
-//             
-            // Ti.Geolocation.Android.addLocationRule(gpsRule);
-            
-       // }
 
         Ti.App.Properties.setBool('stopGPS', false);
         Ti.App.Properties.setBool('quitApp', false);
@@ -458,28 +421,6 @@ function openMainScreen(loggedIn){"use strict";
                             }
                         }, 15000);
                     }
-
-                    // if ( typeof Ti.App.service2 !== 'undefined') {
-                        // try {
-                            // if (Ti.App.service2.isStarted) {
-                                // Ti.App.service2.stop();
-                                // Ti.API.info("Stopped service 2.");
-                            // }
-                            // else {
-                                // Ti.API.info("Service 2 was never started");
-                            // }
-                        // }
-                        // catch(ex) {
-                            // Ti.API.error("Could not stop service 2 or already stopped.");
-                        // }
-                    // }
-
-                    // try {
-                    // movement.stopGPSTracking();
-                    // }
-                    // catch(ex2) {
-                    // Ti.API.error("Exception caught when stopping gps: " + ex2);
-                    // }
                 }
             }
         });
@@ -493,12 +434,10 @@ function openMainScreen(loggedIn){"use strict";
         result.close();
         db.close();
 
-        //var locked_field = true;
         db = Omadi.utils.openMainDatabase();
 
         result = db.execute('SELECT timestamp FROM updated WHERE rowid=1');
         if (result.fieldByName('timestamp') != 0) {
-            //  locked_field = false;
             Ti.API.debug("timestamp != 0");
         }
         else {
@@ -694,10 +633,6 @@ function openMainScreen(loggedIn){"use strict";
 
         usernameField.addEventListener('return', function() {
             passwordField.focus();
-        });
-
-        passwordField.addEventListener('return', function() {
-            //loginButton.fireEvent('click');
         });
 
         portal.addEventListener('focus', function(e) {
@@ -942,8 +877,6 @@ function openMainScreen(loggedIn){"use strict";
                             setClientAccount(domainName, db_list);
                             
                             cookie = this.getResponseHeader('Set-Cookie');
-                            
-                            //Ti.API.info("Login Details: " + this.responseText);
         
                             list_result = db_list.execute('SELECT COUNT(*) AS count FROM login WHERE id_log=1');
                             if (list_result.fieldByName('count') > 0) {
@@ -980,17 +913,14 @@ function openMainScreen(loggedIn){"use strict";
                                 alert("You do not have a connection to the Internet. Please connect and try again.");
                             }
                             else if (this.status == 401 || this.status == 404) {
-                                //label_error.text = "Check your username and password. Then try again.";
                                 alert("Make sure client account, username and password are correct.");
                             }
                             else if(this.error && this.error.indexOf("imeout") !== -1){
                                 alert("There was a network error. Make sure you're connected to the Internet.");
-                                //label_error.text = "Network timeout. Please try again.";
                             }
                             else {
                                 alert("There was a problem logging you in. Please try again. Details: " + e.error);
                                 Utils.sendErrorReport("Error logging in: " + e.error);
-                                //label_error.text = "An error has occurred. Please try again.";
                             }
                         }
                         catch(ex){

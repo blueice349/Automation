@@ -74,8 +74,6 @@ ImageWidget.prototype.redraw = function(){"use strict";
     var origFieldView;
     
     this.formObj.formToNode();
-        
-    //Ti.API.debug(JSON.stringify(this.formObj.node));
     
     this.node = this.formObj.node;
     if(typeof this.node[this.instance.field_name] !== 'undefined'){
@@ -217,7 +215,7 @@ ImageWidget.prototype.getLocalImages = function() {
 	var localImages = {0: []};
 	try {
 		var db = Omadi.utils.openListDatabase();
-		var result = db.execute('SELECT file_path, fid, degrees, thumb_path FROM _files WHERE nid IN (' + this.getImageNid() + ', ' + this.node.continuous_nid + ', 0) AND field_name="' + this.instance.field_name + '" ORDER BY timestamp ASC');
+		var result = db.execute('SELECT file_path, fid, degrees, thumb_path FROM _files WHERE nid IN (' + this.getImageNid() + ', ' + (this.node.continuous_nid || 0) + ', 0) AND field_name="' + this.instance.field_name + '" ORDER BY timestamp ASC');
 		
 		while(result.isValidRow()) {
 			
@@ -438,10 +436,8 @@ ImageWidget.prototype.getImageView = function(widgetView, index, nid, fid, fileP
             try{
                 if(e.source.fid === null && e.source.filePath === null){
                     e.source.setTouchEnabled(false);
-                    //Omadi.display.loading();
                     
                     Widget[e.source.instance.field_name].openPictureChooser(e.source);
-                    //Omadi.display.doneLoading();
                     
                     // Allow the imageView to be touched again after waiting a little bit
                     setTimeout(function(){
@@ -1011,7 +1007,7 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
                         rotateDegrees, takeNextPhotoView, thumbPath, startIndex, index, photoIndex;
                     
                     filePath = event.filePath;
-                    thumbPath = ''; //"file://" + event.thumbPath;
+                    thumbPath = '';
                     degrees = event.degrees;
                     
                     startIndex = imageView.imageIndex;

@@ -17,7 +17,6 @@ function addiOSToolbar() {"use strict";
     });
 
     back.addEventListener('click', function() {
-        //Omadi.data.setUpdating(false);
         curWin.close();
     });
 
@@ -139,7 +138,6 @@ function showSpecificTags(tags, title){"use strict";
         });
     
         back.addEventListener('click', function() {
-            //Omadi.data.setUpdating(false);
             specificTagsWindow.close();
             specificTagsWindow = null;
         });

@@ -110,7 +110,6 @@ VideoWidget.prototype.getNewElement = function(index){"use strict";
     widgetView = Ti.UI.createScrollView({
         width : '92%',
         //***** Don't set contentWidth to anything here.  It is set further down ******/
-        //contentWidth : 'auto',
         contentHeight : 100,
         height : 100,
         arrImages : null,
@@ -372,7 +371,6 @@ VideoWidget.prototype.openVideoPlayer = function(imageView){"use strict";
             /*global isJsonString*/
            
             var json;
-            //Ti.API.debug(this.responseText);
             
             if(this.responseText != null && isJsonString(this.responseText)){
                 json = JSON.parse(this.responseText);
@@ -429,7 +427,6 @@ VideoWidget.prototype.openVideoChooser = function(imageView){"use strict";
             type : "video/*"
         });
         
-        //android.media.action.VIDEO_CAPTURE
         intent.addCategory(Ti.Android.CATEGORY_DEFAULT);
         
         Ti.Android.currentActivity.startActivityForResult(intent, function(e) {
@@ -468,8 +465,6 @@ VideoWidget.prototype.openVideoChooser = function(imageView){"use strict";
                                 
                         newImageView = Widget[imageView.instance.field_name].getImageView(imageView.parentView, imageView.imageIndex, null, filePath, 0);
                         takeNextPhotoView = Widget[imageView.instance.field_name].getImageView(imageView.parentView, imageView.imageIndex + 1, null, null, 0);
-                        
-                        //newImageView.setImage("/images/video-selected.png");
                        
                         newImageView.image = '/images/video_selected.png';
                         newImageView.height = 100;
@@ -513,10 +508,7 @@ VideoWidget.prototype.openVideoChooser = function(imageView){"use strict";
             allowEditing: false,
             animated: true,
             autohide: true,
-            cancel: function(e){
-                //alert("cancel");
-                //Ti.API.debug(JSON.stringify(e));
-            },
+            cancel: function(e){},
             error: function (e){
                 alert("There was a problem inserting the video.");
                 Utils.sendErrorReport("Video insert: " + JSON.stringify(e));
@@ -665,7 +657,6 @@ exports.openVideoPlayer = function(OmadiObj, instance, imageView){"use strict";
     formObj.node = {};
     Omadi = OmadiObj;
     
-    //widget = new VideoWidget(null, null, null);
     Widget[instance.field_name] = new VideoWidget(formObj, instance, null);
     
     Widget[instance.field_name].openVideoPlayer(imageView);

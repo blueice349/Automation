@@ -371,87 +371,28 @@ function deleteAndroidFile(filePath){"use strict";
     }
     else if(viewType === 'image' || viewType === 'iOSWebview' || viewType === 'html'){
         // Open a web browser view
+        webview = Titanium.UI.createWebView({
+            height: Ti.UI.FILL,
+            width: '100%',
+            url: url
+        });
         
-        //if(Ti.App.isAndroid){
-            webview = Titanium.UI.createWebView({
-                height: Ti.UI.FILL,
-                width: '100%',
-                url: url
-            });
-            
-            webview.addEventListener("load", function(e){
-                Omadi.display.doneLoading();
-            });
-            
-            webview.addEventListener("beforeload", function(e){
-                var cookie = Omadi.utils.getCookie(false);
-                Ti.API.debug(cookie);
-                webview.evalJS("document.cookie='" + cookie + "';"); 
-            });
-            
-            webview.addEventListener('error', function(e){
-                alert("There was a problem loading the file.");
-                Omadi.display.doneLoading();
-            });
-            
-            wrapper.add(webview);
-        // }
-        // else{
-            // // Can't use a regular webview with a url like in android because the cookie is not set correctly
-            // // The above works if logging in and a Set-Cookie header comes through, but the stored cookie
-            // // from the database will not work when trying to set the cookie in document.cookie
-            // // Also, the below does not work for Android...
-//             
-            // http = Ti.Network.createHTTPClient();
-            // http.setTimeout(30000);
-            // http.open('GET', url);
-//    
-            // Omadi.utils.setCookieHeader(http);
-//     
-            // http.onload = function(e) {
-                // var webview;
-//                 
-                // Omadi.display.doneLoading();
-//                 
-//                 
-//                 
-                // if(viewType === 'html'){
-                    // webview = Titanium.UI.createWebView({
-                        // height: Ti.UI.FILL,
-                        // width: '100%',
-                        // html: this.responseData.getText()
-                    // });
-                // }
-                // // else if(viewType === 'iOSWebview'){
-                    // // webview = Titanium.UI.createWebView({
-                        // // height: Ti.UI.FILL,
-                        // // width: '100%'
-                    // // });
-// //                     
-                    // // contentType = this.getResponseHeader('Content-Type');
-                    // // webview.setHtml(this.responseData.getText(), url, contentType);
-                // // }
-                // else{
-                    // webview = Titanium.UI.createWebView({
-                        // height: Ti.UI.FILL,
-                        // width: '100%',
-                        // data: this.responseData
-                    // });
-                // }
-//                 
-                // wrapper.add(webview);
-//                 
-                // //Ti.API.debug("response: " + this.responseData.getText());
-            // };
-//     
-            // http.onerror = function(e) {
-                // Ti.API.error("Error in download File");
-                // Omadi.display.doneLoading();
-                // alert("There was an error retrieving the file.");
-            // };
-//             
-            // http.send();
-        // }
+        webview.addEventListener("load", function(e){
+            Omadi.display.doneLoading();
+        });
+        
+        webview.addEventListener("beforeload", function(e){
+            var cookie = Omadi.utils.getCookie(false);
+            Ti.API.debug(cookie);
+            webview.evalJS("document.cookie='" + cookie + "';"); 
+        });
+        
+        webview.addEventListener('error', function(e){
+            alert("There was a problem loading the file.");
+            Omadi.display.doneLoading();
+        });
+        
+        wrapper.add(webview);
     }
     else{
         Omadi.display.doneLoading(); 

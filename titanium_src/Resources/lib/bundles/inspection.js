@@ -195,35 +195,32 @@ Omadi.bundles.inspection.userShouldDoInspection = function(){"use strict";
 Omadi.bundles.inspection.askToCreateInspection = function(showLogout){"use strict";
     var dialog, bundle;
     /*global roles, ROLE_ID_FIELD, alertQueue*/
-    
-    //if(Omadi.bundles.inspection.userShouldDoInspection()){
 
-        dialog = Ti.UI.createAlertDialog({
-           title: 'Do Post-Shift Inspection?',
-           buttonNames: ['Do Inspection', 'No'] 
-        });
-        
-        dialog.addEventListener('click', function(e){
-           try{
-               if(e.index == 0){
-                   Ti.App.fireEvent('openFormWindow', {
-                        node_type: 'inspection',
-                        nid: 'new',
-                        form_part: 0 
-                   });
-               }
-               else if(showLogout){
-                   Omadi.display.showLogoutDialog();
-               }
-            }
-            catch(ex){
-                Utils.sendErrorReport("exception ask to create inspection: " + ex);
-                // Make sure the user can always log out
-                Omadi.display.showLogoutDialog();
-            }
-        });
-        
-        dialog.show();
-    //}
+    dialog = Ti.UI.createAlertDialog({
+       title: 'Do Post-Shift Inspection?',
+       buttonNames: ['Do Inspection', 'No'] 
+    });
+    
+    dialog.addEventListener('click', function(e){
+       try{
+           if(e.index == 0){
+               Ti.App.fireEvent('openFormWindow', {
+                    node_type: 'inspection',
+                    nid: 'new',
+                    form_part: 0 
+               });
+           }
+           else if(showLogout){
+               Omadi.display.showLogoutDialog();
+           }
+        }
+        catch(ex){
+            Utils.sendErrorReport("exception ask to create inspection: " + ex);
+            // Make sure the user can always log out
+            Omadi.display.showLogoutDialog();
+        }
+    });
+    
+    dialog.show();
 };
 

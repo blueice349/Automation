@@ -199,7 +199,6 @@ VehicleFieldsWidget.prototype.getNewElement = function(index){"use strict";
             }
     
             // Pretend like this is just loaded - mainly a fix for android, but makes sense for both
-            //e.source.textField.touched = false;
             widget.element.clickedAutocomplete = true;
     
             widget.autocomplete_table.setHeight(0);
@@ -240,9 +239,11 @@ VehicleFieldsWidget.prototype.getNewElement = function(index){"use strict";
         var widget;
         try{
             widget = Widget[e.source.instance.field_name];
-            widget.autocomplete_table.setBorderWidth(0);
-            widget.autocomplete_table.setHeight(0);
-            widget.autocomplete_table.setVisible(false);
+            if (widget) {
+            	widget.autocomplete_table.setBorderWidth(0);
+            	widget.autocomplete_table.setHeight(0);
+            	widget.autocomplete_table.setVisible(false);
+            }
             e.source.blurred = true;
         }
         catch(ex){

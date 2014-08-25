@@ -14,12 +14,6 @@
       title: 'Omadi Login'
    });
    
-   if(Ti.Platform.name === 'android'){
-       loginWindow.addEventListener('open', function(){
-          //loginWindow.activity.actionBar.hide(); 
-       });
-   }
-   
    loginWindow.open();
    
 }());

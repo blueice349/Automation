@@ -16,10 +16,8 @@ if (Ti.App.isIOS) {
     ImageFactory = require('ti.imagefactory');
 }
 
-//var GarbageCollector = null;
 var AndroidSysUtil = null;
 if(Ti.App.isAndroid){
-    //GarbageCollector = require("prakash.garbagecollector");
     AndroidSysUtil = require("uk.me.thepotters.atf.sys");
 }
 
@@ -339,7 +337,6 @@ function displayBundleList() {"use strict";
                         if (item.can_create === 1) {
                             plusButton = Titanium.UI.createButton({
                                 backgroundImage : '/images/plus_btn_light_gray.png',
-                                //backgroundImage : '/images/plus_btn_' + colors[i] + '.png',
                                 backgroundSelectedImage : '/images/plus_btn_dark_gray.png',
                                 width : 63,
                                 height : 42,
@@ -361,7 +358,6 @@ function displayBundleList() {"use strict";
             }
         }
         
-        //dataRows.sort(Omadi.utils.sortByName);
         listView.setData(dataRows);
         listView.setHeight(null);
         listView.setVisible(true);
@@ -378,12 +374,6 @@ function setupAndroidMenu() {"use strict";
         var menu, menuItem, menu_draft, menu_about, menu_settings;
 
         menu = e.menu;
-
-        // menuItem = menu.add({
-            // title : 'Sync Data',
-            // order : 0
-        // });
-        // menuItem.setIcon('/images/item1.png');
         
         menu_draft = menu.add({
             title : 'Display drafts',
@@ -406,10 +396,6 @@ function setupAndroidMenu() {"use strict";
         menu_about.addEventListener("click", function(e) {
             Omadi.display.openAboutWindow();
         });
-
-        // menuItem.addEventListener("click", function(e) {
-            // Omadi.service.checkUpdate('from_menu');
-        // });
 
         menu_draft.addEventListener('click', function() {
             Omadi.display.openDraftsWindow();
@@ -492,13 +478,6 @@ function setupBottomButtons() {"use strict";
                 });
         
                 Omadi.display.loading();
-                
-                if(Ti.App.isAndroid){
-                    // Hide the Android action bar
-                    alertsWindow.addEventListener('open', function(){
-                        //alertsWindow.activity.actionBar.hide();
-                    });
-                }
                 
                 alertsWindow.addEventListener('open', Omadi.display.doneLoading);
                 alertsWindow.open();
@@ -592,13 +571,6 @@ function setupBottomButtons() {"use strict";
             });
     
             Omadi.display.loading();
-            
-            if(Ti.App.isAndroid){
-                // Hide the Android action bar
-                recentWindow.addEventListener('open', function(){
-                    //recentWindow.activity.actionBar.hide();
-                });
-            }
             
             recentWindow.addEventListener('open', Omadi.display.doneLoading);
             recentWindow.open();
@@ -814,9 +786,6 @@ function checkAndroidMemoryAfterGC(){"use strict";
     try{
         availableBytes = Ti.Platform.getAvailableMemory();
         
-        //Ti.API.debug("Ti Available Memory after GC + 1 sec: " + lastAvailableBytes + " -> " + availableBytes + " bytes");
-        //Utils.sendErrorReport("Just forced a GC: " + lastAvailableBytes + " -> " + availableBytes);
-        
         if(availableBytes < 800000){
             Utils.sendErrorReport("Showing Android memory alert: " + availableBytes);
             showAndroidMemoryAlert();
@@ -1014,12 +983,6 @@ function mainMenuFirstSyncInstallComplete(){"use strict";
     Ti.App.fireEvent('showNextAlertInQueue');
 }
 
-// function sendDelayedUpdates(){"use strict";
-    // // Wait one second before actually sending the update
-    // //setTimeout(Omadi.service.sendUpdates, 500);
-    // Omadi.service.sendUpdates();
-// }
-
 function userInitiatedUpdateCheck(){"use strict";
     Omadi.service.checkUpdate(true, true);
 }
@@ -1063,7 +1026,6 @@ function openFormWindow(e){"use strict";
     
     Ti.UI.currentWindow.appStartMillis = (new Date()).getTime();
     Ti.App.Properties.setDouble("omadi:appStartMillis", Ti.UI.currentWindow.appStartMillis);
-    //Utils.sendErrorReport("Main Menu was opened with millis: " + Ti.UI.currentWindow.appStartMillis);
    
     listView = Titanium.UI.createTableView({
         data : [],
@@ -1086,8 +1048,6 @@ function openFormWindow(e){"use strict";
     nowTimestamp = Omadi.utils.getUTCTimestamp();
     Ti.App.Properties.setString("last_alert_popup", nowTimestamp);
 
-    //curWin.add(listView);
-
     networkStatusView.add(networkStatusLabel);
     networkStatusView.add(uploadingProgressBar);
 
@@ -1104,8 +1064,6 @@ function openFormWindow(e){"use strict";
     actionsButton.addEventListener('click', function(){
        Omadi.display.openActionsWindow();
     });
-
-    //curWin.add(loggedView);
     
     headerListView.add(networkStatusView);
     
@@ -1224,11 +1182,7 @@ function openFormWindow(e){"use strict";
         
         Omadi.bundles.timecard.askClockIn();
         Omadi.bundles.companyVehicle.askAboutVehicle();
-        
-        //Omadi.bundles.inspection.askToReviewLastInspection();
     }
-    
-    //Omadi.utils.checkVolumeLevel();
     
     Omadi.location.isLocationEnabled();
     

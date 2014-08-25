@@ -21,10 +21,6 @@ if (Ti.App.isIOS) {
     movement = require('com.omadi.ios_gps');
 }
 
-//Ti.API.info('Accuracy three: ' + movement.LOCATION_ACCURACY_THREE_KILOMETERS);
-//Ti.API.info('Accuracy best: ' + movement.LOCATION_ACCURACY_BEST);
-//Ti.API.info('Accuracy navig: ' + movement.LOCATION_ACCURACY_BEST_FOR_NAVIGATION);
-
 function updateCurrentLocationiOS(e) {"use strict";
     /*global notifyIOS*/
     var timestamp, longitude, latitude, accuracy, speed, altitude, timePassed, db;
@@ -34,9 +30,6 @@ function updateCurrentLocationiOS(e) {"use strict";
     accuracy = e.location.accuracy;
     speed = e.location.speed;
     altitude = e.location.altitude;
-
-    //Ti.API.info('=====>>> Speed ' + speed*2.23693629+' Miles/H');
-    //Ti.API.info('LOCATION: ' + latitude + ', ' + longitude + ': ' + accuracy);
 
     if (latitude !== 0 && longitude !== 0) {
         timestamp = Omadi.utils.getUTCTimestamp();
@@ -63,23 +56,11 @@ function updateCurrentLocationiOS(e) {"use strict";
             
             Omadi.location.uploadGPSCoordinates();
         }
-
-        //Ti.API.info("LOCATION SERVICE SAVE: location_obj.length before: " + location_obj.length);
-        //var leng_before = location_obj.length;
-        //var aux_location = location_obj.slice(0);
-        //Ti.API.info("LOCATION SERVICE SAVE: aux_location.length = " + aux_location.length + " location_obj.length after = " + location_obj.length);
     }
 }
 
 function getGPSCoordinateiOS() {"use strict";
-    //var stop = Ti.App.Properties.getBool('stopGPS', false);
-    //if (stop){
-    // Ti.API.info("STOPPING MOVEMENT UPDATES");
-    //movement.stopMovementUpdates();
-    //}
-    //else{
     updateCurrentLocationiOS(movement.currentMovement);
-    // }
 }
 
 function iOSStartGPS() {"use strict";
@@ -91,10 +72,6 @@ function iOSStartGPS() {"use strict";
         });
 
         gpsInterval = setInterval(getGPSCoordinateiOS, 25000);
-
-        //uploadInterval = setInterval(function() {
-        //    Ti.App.fireEvent('upload_gps_locations');
-        //}, 25000);
 
         Ti.App.addEventListener('stop_gps', function(e) {
             Ti.API.info("STOPPING IOS GPS INTERVALS");

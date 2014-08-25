@@ -608,7 +608,6 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
                         widget.timeViews[e.source.delta].origDBValue = dbValue;
                         widget.timeViews[e.source.delta].jsDate = newDate;
                     }
-                    //Ti.API.debug(newDate.toString());
             
                     if ( typeof widget.onChangeCallbacks !== 'undefined') {
                         if (widget.onChangeCallbacks.length > 0) {

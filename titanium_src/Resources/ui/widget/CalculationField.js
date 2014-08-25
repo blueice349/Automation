@@ -537,8 +537,6 @@ CalculationFieldWidget.prototype.getRowValues = function(instance){"use strict";
         
         this.node = this.formObj.node;
         
-        //Ti.API.debug(JSON.stringify(CalculatedFieldCache));
-        
         instances = Omadi.data.getFields(this.formObj.type);
         final_value = 0;
         

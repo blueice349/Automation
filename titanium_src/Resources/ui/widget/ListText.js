@@ -192,10 +192,6 @@ ListTextWidget.prototype.getNewElementWrapper = function(index){"use strict";
     element.textValue = textValue;
     element.dbValue = dbValue;
     
-    // TODO: allow conditional fields for this widget
-    //element.check_conditional_fields = this.formObj.affectsAnotherConditionalField(this.instance);
-    //this.formObj.addCheckConditionalFields(element.check_conditional_fields);
-    
     if (this.instance.can_edit) {
         element.addEventListener('click', function(e) {
             var i, postDialog, textOptions;
@@ -273,8 +269,6 @@ ListTextWidget.prototype.getOptions = function() {"use strict";
             dbValue : null
         });
     }
-
-    //Ti.API.debug(instance);
     
     if(typeof this.instance.settings.allowed_values !== 'undefined'){
         for(key in this.instance.settings.allowed_values){

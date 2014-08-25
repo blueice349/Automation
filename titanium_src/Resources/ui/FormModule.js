@@ -181,7 +181,6 @@ function getRegionHeaderView(regionView, region, expanded){"use strict";
                 e.source.collapsedView.setBorderWidth(0);
     
                 regionView.show();
-                //regionView.setHeight(Ti.UI.SIZE);
                 
                 e.source.arrow.setImage("/images/light_arrow_down.png");
                 
@@ -223,40 +222,6 @@ function getRegionHeaderView(regionView, region, expanded){"use strict";
     
     return regionHeaderWrapper;
 }
-
-
-// function formWindowOnClose(){"use strict";
-    // var i, j;
-//     
-    // Ti.API.debug("Window closing");
-//     
-    // clearInterval(ActiveFormObj.saveInterval); 
-    // ActiveFormObj.saveInterval = null; 
-//     
-    // try{
-        // for(i in FormObj){
-            // if(FormObj.hasOwnProperty(i)){
-                // for(j in FormObj[i].fieldObjects){
-                    // if(FormObj[i].fieldObjects.hasOwnProperty(j)){
-                        // try{
-                            // FormObj[i].fieldObjects[j].cleanUp();
-                        // }
-                        // catch(ex1){
-                            // Utils.sendErrorReport("Failed to cleanup object: " + ex1);
-                        // }
-                    // }
-                // }
-            // }
-        // }
-    // }
-    // catch(ex){
-        // Utils.sendErrorReport("Failed to cleanup: " + ex);
-    // }
-    // // Clear out everything in FormObj
-     // FormObj = null;
-     // ActiveFormObj = null;
-     // Omadi = null;
-// }
 
 function sort_by_weight(a, b) {"use strict";
     if (a.weight != null && a.weight != "" && b.weight != null && b.weight != "") {
@@ -433,8 +398,6 @@ FormModule.prototype.initNewWindowFromCurrentData = function(form_part){"use str
         // This is a save + new
         if(form_part == this.node.type){
             
-            //this.node = this.initNewNode();
-            
             this.node = this.loadCustomCopyNode(this.node, this.type, this.type);
             
             this.node.continuous_nid = this.continuous_nid = Omadi.data.getNewNodeNid();
@@ -445,9 +408,6 @@ FormModule.prototype.initNewWindowFromCurrentData = function(form_part){"use str
             this.origNid = this.node.origNid = 0;
             this.flag_is_updated = this.node.flag_is_updated = 0;
             
-            // // Reset everything          
-            // FormObj = {};
-            // FormObj[this.type] = this;
             ActiveFormObj = this;
             
             this.win.remove(this.wrapperView);
@@ -466,7 +426,6 @@ FormModule.prototype.initNewWindowFromCurrentData = function(form_part){"use str
         
         try{
             
-            //Ti.API.debug("about to go to next part: " + JSON.stringify(this.node));
             // Permenantely fix this later - this is to get it out
             // This simply adds in the correct images that were just taken
             imageNids = [0, this.node.continuous_nid];
@@ -484,7 +443,6 @@ FormModule.prototype.initNewWindowFromCurrentData = function(form_part){"use str
                     if(this.instances[field_name].type == 'image'){
                         result = listDB.execute('SELECT * FROM _files WHERE nid IN(' + imageNids.join(',') + ') AND field_name ="' + field_name + '" ORDER BY delta ASC');
                         
-                       // Ti.API.debug("Checking for field: " + field_name);
                         if (result.rowCount > 0) {
                             
                             this.node[field_name].imageData = [];
@@ -535,8 +493,6 @@ FormModule.prototype.initNewWindowFromCurrentData = function(form_part){"use str
                 }
             }
             listDB.close();
-            
-            //Ti.API.debug("about to go to next part 2: " + JSON.stringify(this.node));
         }
         catch(ex){
             Utils.sendErrorReport("Exception setting up the imagedata for a form + next part: " + ex);
@@ -545,13 +501,6 @@ FormModule.prototype.initNewWindowFromCurrentData = function(form_part){"use str
             }
             catch(ex1){}
         }
-        
-        //Ti.API.info(JSON.stringify(this.node));
-            
-        // // Reset everything          
-        // FormObj = {};
-//         
-        // FormObj[this.type] = this;
         ActiveFormObj = this;
         
         this.win.remove(this.wrapperView);
@@ -653,35 +602,7 @@ FormModule.prototype.closeWindow = function(){"use strict";
      }
      
      try{
-     //ActiveFormObj = null;
-         //Omadi = null;
-         
          Ti.API.debug("in closewindow");
-        
-         // try{
-            // for(i in FormObj){
-                // if(FormObj.hasOwnProperty(i)){
-                    // for(j in FormObj[i].fieldObjects){
-                        // if(FormObj[i].fieldObjects.hasOwnProperty(j)){
-                            // try{
-                                // FormObj[i].fieldObjects[j].cleanUp();
-                            // }
-                            // catch(ex1){
-                                // Utils.sendErrorReport("Failed to cleanup object: " + ex1);
-                            // }
-                        // }
-                    // }
-                // }
-            // }
-         // }
-         // catch(ex){
-            // Utils.sendErrorReport("Failed to cleanup: " + ex);
-         // }
-        
-         // Clear out everything in FormObj
-         // FormObj = {};
-         // ActiveFormObj = null;
-         // Omadi = null;
          
          try{
              for(j in this.regionViews){
@@ -805,14 +726,16 @@ FormModule.prototype.saveNode = function(saveType) {
 	        this.nodeSaved = true;
         }
     	
+    	var eventData = {
+	        nodeNid: this.node._saveNid,
+	        nodeType: this.node.type,
+	        saveType: saveType
+	    };
+    	
     	// Notify the user if there is no network
     	if (Ti.Network.online || this.node._isContinuous || this.node._isDraft) {
-	    	this.win.dispatchTabGroup.fireEvent("omadi:dispatch:savedDispatchNode",{
-		        nodeNid: this.node._saveNid,
-		        nodeType: this.node.type,
-		        saveType: saveType
-		    });
-		    Ti.App.fireEvent("savedNode");
+	    	this.win.dispatchTabGroup.fireEvent('omadi:dispatch:savedDispatchNode', eventData);
+		    Ti.App.fireEvent('savedNode', eventData);
 		} else {
 			var self = this;
 			var dialog = Titanium.UI.createAlertDialog({
@@ -821,12 +744,8 @@ FormModule.prototype.saveNode = function(saveType) {
 				message: 'Alert management of this ' + this.node.type.toUpperCase() + ' immediately. You do not have an Internet connection right now.  Your data was saved and will be synched when you connect to the Internet.'
 			});
 			dialog.addEventListener('click', function(e) {
-            	self.win.dispatchTabGroup.fireEvent("omadi:dispatch:savedDispatchNode",{
-			        nodeNid: self.node._saveNid,
-			        nodeType: self.node.type,
-			        saveType: saveType
-			    });
-			    Ti.App.fireEvent("savedNode");
+            	self.win.dispatchTabGroup.fireEvent('omadi:dispatch:savedDispatchNode', eventData);
+			    Ti.App.fireEvent('savedNode', eventData);
             });
 			dialog.show();
 		}
@@ -903,8 +822,6 @@ FormModule.prototype.formToNode = function(addDispatch){"use strict";
     /*global fieldViews*/
    
    var field_name, fieldWrapper, instance, origNode;
-   
-   //origNode = this.node;
    
    if(typeof addDispatch === 'undefined'){
        addDispatch = false;
@@ -1137,7 +1054,6 @@ FormModule.prototype.getRegionWrappers = function(){"use strict";
                  
                 Ti.API.debug("Added region " + regionName);
                 
-                //this.regionWrappers[regionName] = regionWrapperView;
                 this.regionViews[regionName] = regionView;
             }
         }
@@ -1197,8 +1113,6 @@ FormModule.prototype.validateRestrictions = function(){"use strict";
                 query += ' AND ((restriction_start_date < ' + timestamp + ' OR restriction_start_date IS NULL) ';
                 query += ' AND (restriction_end_date > ' + timestamp + ' OR restriction_end_date IS NULL))';
                 
-                //Ti.API.error(query);
-                
                 db = Omadi.utils.openMainDatabase();
                 result = db.execute(query);
             
@@ -1216,7 +1130,6 @@ FormModule.prototype.validateRestrictions = function(){"use strict";
                 result.close();
                     
                 for(i = 0; i < restrictions.length; i ++){
-                  // Ti.API.info(JSON.stringify(restrictions[i]));
                     if(restrictions[i].restrict_entire_account == 1){
                         this.form_errors.push("No parking enforcement is allowed for \"" + account + "\" right now due to a restriction.");
                     }
@@ -1647,15 +1560,6 @@ FormModule.prototype.saveForm = function(saveType){"use strict";
         else{
             
             try{
-                //TODO: fix the below
-                /*else if (pass_it === false && Ti.App.Properties.getString("timestamp_offset") > OFF_BY) {
-            
-                    var actual_time = Math.round(new Date().getTime() / 1000);
-                    actual_time = parseInt(actual_time) + parseInt(Ti.App.Properties.getString("timestamp_offset"));
-            
-                    var server_time = new Date(actual_time);
-            
-                }*/
                 showingDuplicates = false;
                 
                 if(this.node._isContinuous === false){
@@ -1770,8 +1674,6 @@ FormModule.prototype.showDuplicateWarnings = function(saveType){"use strict";
                                     if(typeof fieldObject.duplicateWarnings[nodeValue].matches !== 'undefined'){
                                        if(fieldObject.duplicateWarnings[nodeValue].matches.length > 0){
                                            showingDuplicates = true;
-                                           
-                                           //Ti.API.error("Display the duplicate warnings now: " + JSON.stringify(fieldObject.duplicateWarnings[nodeValue]));
                                            
                                            this.displayDuplicateWarnings(fieldObject.duplicateWarnings[nodeValue], nodeValue, saveType);
                                        } 
@@ -2293,7 +2195,6 @@ FormModule.prototype.setValueWidgetProperty = function(field_name, property, val
                     subChildren = children[i].getChildren();
                     for(j = 0; j < subChildren.length; j ++){
                         if(typeof subChildren[j].dbValue !== 'undefined'){
-                            //Ti.API.debug(field_name + " " + property[0] + " sub children");
                             if(property.length == 1){
                                 this.fieldWrappers[field_name].children[i].children[j][property[0]] = value;
                             }
@@ -2306,9 +2207,7 @@ FormModule.prototype.setValueWidgetProperty = function(field_name, property, val
                             subSubChildren = subChildren[j].getChildren();
                             for(k = 0; k < subSubChildren.length; k ++){
                                 if(typeof subSubChildren[k].dbValue !== 'undefined'){
-                                    //Ti.API.debug(field_name + " " + property[0] + " sub sub children");
                                     if(property.length == 1){
-                                        //Ti.API.debug('value: ' + value);
                                         this.fieldWrappers[field_name].children[i].children[j].children[k][property[0]] = value;
                                     }
                                     else if(property.length == 2){
@@ -2323,11 +2222,8 @@ FormModule.prototype.setValueWidgetProperty = function(field_name, property, val
         }
         else{
             for(i = 0; i < children.length; i ++){
-               // Ti.API.debug("in i " + i + " " + property[0] + " " + value);
                 if(typeof children[i].dbValue !== 'undefined'){
-                    //Ti.API.debug("further in i " + i + " " + property[0] + " " + value);
                     if(i == setIndex){
-                       // Ti.API.debug("Setting i " + i + " " + property[0] + " " + value);
                         if(property.length == 1){
                             this.fieldWrappers[field_name].children[i][property[0]] = value;
                         }
@@ -2340,11 +2236,8 @@ FormModule.prototype.setValueWidgetProperty = function(field_name, property, val
                 if(children[i].getChildren().length > 0){
                     subChildren = children[i].getChildren();
                     for(j = 0; j < subChildren.length; j ++){
-                        //Ti.API.debug("in j " + j + " " + property[0] + " " + value);
                         if(typeof subChildren[j].dbValue !== 'undefined'){
-                           // Ti.API.debug("further in j " + j + " " + property[0] + " " + value);
                             if(j == setIndex){
-                               // Ti.API.debug("Setting j " + j + " " + property[0] + " " + value);
                                 if(property.length == 1){
                                     this.fieldWrappers[field_name].children[i].children[j][property[0]] = value;
                                 }
@@ -2357,11 +2250,8 @@ FormModule.prototype.setValueWidgetProperty = function(field_name, property, val
                         if(subChildren[j].getChildren().length > 0){
                             subSubChildren = subChildren[j].getChildren();
                             for(k = 0; k < subSubChildren.length; k ++){
-                               // Ti.API.debug("in k " + k + " " + property[0] + " " + value);
                                 if(typeof subSubChildren[k].dbValue !== 'undefined'){
-                                    //Ti.API.debug("further in k " + k + " " + property[0] + " " + value);
                                     if(k == setIndex){
-                                       // Ti.API.debug("Setting k " + k + " " + property[0] + " " + value);
                                         if(property.length == 1){
                                             this.fieldWrappers[field_name].children[i].children[j].children[k][property[0]] = value;
                                         }
@@ -3050,13 +2940,6 @@ FormModule.prototype.getWindow = function(){"use strict";
                 ActiveFormObj.scrollPositionY = e.y;
             });
             
-            // this.wrapperView.add(this.scrollView);
-//             
-            // this.win.add(this.wrapperView);
-            
-            // TODO: get this working with the omadi reference widget module
-            //Ti.UI.currentWindow.fireEvent("customCopy");
-            
     
             // Setup only one interval where all forms will be saved together
             // This is best done by only continuously saving when creating the work node form
@@ -3150,8 +3033,6 @@ FormModule.prototype.getWindow = function(){"use strict";
             if(this.hasExtraPriceField.length > 0){
                 this.setupExtraPriceFields(this.hasExtraPriceField);
             }
-            
-            //this.win.add(this.wrapperView);
             
             // Give the window a second to popup before recalculating
             this.recalculateCalculationFields();
@@ -3252,9 +3133,7 @@ FormModule.prototype.setupExtraPriceFields = function(fieldNames){"use strict";
             instance = this.instances[field_name];
             
             if(typeof this.fieldWrappers[field_name] !== 'undefined'){
-                // This field is actually showing on the form..
-                
-                //this.addChangeCallback(widget.rules_field_name, 'changeViolationFieldOptions', [field_name]);
+                // This field is actually showing on the form.
                 Ti.API.debug("Setting up extra price fields post render...");
                 if(typeof this.instances[field_name].settings.category_field_name !== 'undefined'){
                     if(this.instances[field_name].settings.category_field_name > ''){
@@ -3568,8 +3447,7 @@ FormModule.prototype.showActionsOptions = function(e){"use strict";
     
         btn_tt.push('Save');
         btn_id.push('normal');
-    
-        //Ti.API.info('BUNDLE: ' + JSON.stringify(bundle));
+    	
         if(bundle.can_create == 1){
             btn_tt.push("Save + New");
             btn_id.push("new");
@@ -3696,7 +3574,6 @@ FormModule.prototype.getFieldView = function(instance, fieldViewWrapper){"use st
         
         if(Module){
            this.fieldObjects[instance.field_name] = Module.getFieldObject(Omadi, this, instance, fieldViewWrapper);
-           //fieldObject = Module.getFieldObject(Omadi, this, instance, fieldViewWrapper); 
            fieldView = this.fieldObjects[instance.field_name].getFieldView(); 
         }
     }
@@ -3860,7 +3737,6 @@ FormModule.prototype.getTextField = function(instance){"use strict";
         focusable: true,
         
         // iOS options
-        //borderStyle: Ti.UI.INPUT_BORDERSTYLE_ROUNDED,
         leftButtonPadding: 8,
         suppressReturn: true,
         
@@ -4034,14 +3910,12 @@ FormModule.prototype.setConditionallyRequiredLabelForInstance = function(instanc
                     search_value = criteria_row.value;
                     values = [];
                     
-                    //Ti.API.debug(field_name);
                     if(typeof this.node[field_name] !== 'undefined'){
                        values = this.node[field_name].dbValues;
                     }
                     
                     if(typeof this.instances[field_name] !== 'undefined' && typeof this.instances[field_name].type !== 'undefined'){
                     
-                        //Ti.API.debug(JSON.stringify(values));
                         switch(this.instances[field_name].type) {
                             case 'text':
                             case 'text_long':
@@ -4079,32 +3953,6 @@ FormModule.prototype.setConditionallyRequiredLabelForInstance = function(instanc
                                     }
                                 }
                                 break;
-                                
-                            //case 'location':
-                                
-                                // Ti.API.debug(instances[field_name]);
-                                
-                                // if (search_operator == '__filled') {
-                                    // for (i = 0; i < values.length; i++) {
-                                        // if (values[i] != null && values[i] != "") {
-                                            // row_matches[row_idx] = true;
-                                        // }
-                                    // }
-                                // }
-                                // else {
-                                    // if (values.length == 0) {
-                                        // row_matches[row_idx] = true;
-                                    // }
-                                    // else {
-                                        // for (i = 0; i < values.length; i ++){
-                                            // if (values[i] == null || values[i] == "") {
-                                                // row_matches[row_idx] = true;
-                                            // }
-                                        // }
-                                    // }
-                                // }
-                                //break;
-                                
                             case 'taxonomy_term_reference':
                             case 'user_reference':
         
@@ -4206,8 +4054,6 @@ FormModule.prototype.setConditionallyRequiredLabelForInstance = function(instanc
     
             makeRequired = true;
             
-            //Ti.API.error(JSON.stringify(row_matches));
-            
             if (row_matches.length == 1) {
                 makeRequired = row_matches[0];
             }
@@ -4216,7 +4062,6 @@ FormModule.prototype.setConditionallyRequiredLabelForInstance = function(instanc
                 and_groups = [];
                 and_group_index = 0;
                 and_groups[and_group_index] = [];
-                //print_r($criteria['search_criteria']);
                 for (i in search_criteria) {
                     if(search_criteria.hasOwnProperty(i)){
                         criteria_row = search_criteria[i];
@@ -4311,13 +4156,16 @@ exports.resetAllButDispatch = function(){"use strict";
     }
 };
 
-exports.getDispatchObject = function(OmadiObj, type, nid, form_part, parentTabObj, usingDispatch){"use strict";
-    var tempFormPart;
-    
+exports.getDispatchObject = function(OmadiObj, type, nid, form_part, usingDispatch){"use strict";
     Omadi = OmadiObj;
     
     FormObj[type] = new FormModule(type, nid, form_part, usingDispatch);
-    ActiveFormObj = FormObj[type];
+    
+    return FormObj[type];
+};
+
+exports.setActiveFormObject = function(formObject, parentTabObj) {
+	ActiveFormObj = formObject;
     ActiveFormObj.parentTabObj = parentTabObj;
     ActiveFormObj.getWindow();
     

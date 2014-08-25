@@ -89,14 +89,11 @@ function loadAccAlertData() {"use strict";
                 height : Ti.UI.SIZE,
                 width: '100%',
                 hasChild : false,
-                //color : ch_color,
                 layout : 'vertical',
                 backgroundColor : ch_color,
                 className : "sorted",
                 nid : result.fieldByName('ref_nid')
-                //title : result.fieldByName('subject')
             });
-            //Ti.API.info("NID: " + result.fieldByName('ref_nid'));
             rowWrapper.add(Ti.UI.createView({
                 height: 10,
                 width: '100%'
@@ -198,11 +195,6 @@ function alertNavButtons(currentWin, currentWinWrapper, type) {"use strict";
 
 function alertNavButtons_android(lv_listTableView, currentWindow, currentWindowWrapper, type) {"use strict";
     var headerView, label;
-    
-    // if (lv_listTableView) {
-        // lv_listTableView.top = 40;
-        // lv_listTableView.bottom = 0;
-    // }
     
     headerView = Ti.UI.createView({
         top : 0,
@@ -335,15 +327,6 @@ function loadData() {"use strict";
             //Populates the array
             data.push(row);
         }
-        //listTableView.show();
-
-        //Adds contact list container to the UI
-        //search.blur();
-        // curWin.addEventListener('focus', function(){
-        // setTimeout(function(){
-        // search.blur();
-        // }, 110 );
-        // });
     }
     
     if (data.length > 0) {
@@ -553,26 +536,12 @@ function deleteOldAlerts(){"use strict";
     curWin.addEventListener('android:back', function() {
         //Enable background updates
         curWin.is_opened = false;
-        //Omadi.data.setUpdating(false);
         curWin.close();
     });
     
     curWin.addEventListener('close', function() {
         curWin.is_opened = false;
     });
-   
-    
-    // listTableView.addEventListener('focus', function(e) {
-    // search.blur();
-    // });
-    
-    // search.addEventListener('return', function(e) {
-    // search.blur();
-    // });
-    
-    // search.addEventListener('cancel', function(e) {
-    // search.blur();
-    // });
     
     //When the user clicks on a certain contact, it opens individual_contact.js
     listTableView.addEventListener('click', function(e) {

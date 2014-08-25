@@ -105,8 +105,6 @@ Omadi.bundles.tag.getExpiredTags = function(){"use strict";
                account_name: result.fieldByName('account_name')
             };
             
-            //nids.push(result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT));
-            
             result.next();
         }
         

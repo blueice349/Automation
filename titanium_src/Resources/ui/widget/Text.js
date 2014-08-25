@@ -124,9 +124,6 @@ TextWidget.prototype.redraw = function(){"use strict";
     this.getFieldView();
     
     origFieldView.hide();
-    
-    //this.fieldViewWrapper.add(this.fieldView);
-    //this.fieldViewWrapper.remove(origFieldView);
 };
 
 TextWidget.prototype.getNewElementWrapper = function(index){"use strict";
@@ -277,8 +274,7 @@ TextWidget.prototype.onChangeListener = function(e) {"use strict";
         }
         
         if(e.source.fieldIndex == 0 && typeof e.source.instance.settings.duplicate_warning !== 'undefined' && e.source.instance.settings.duplicate_warning == 1){
-                    
-            //Ti.API.debug("Form part == " + Widget[e.source.instance.field_name].formObj.form_part);
+            
             // Only check for duplicate warnings if set in the field settings
             setTimeout(function(){
                 var fieldName, value, origLastChange, actualLastChange, widget, formPart;

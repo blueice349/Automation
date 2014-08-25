@@ -256,8 +256,6 @@ CommentList.prototype.initComments = function(){"use strict";
                                         }
                                     }
                                 }
-                                
-                               // Ti.API.error(JSON.stringify(comment[fieldName]));
 
                                 break;
                                 
@@ -280,8 +278,6 @@ CommentList.prototype.initComments = function(){"use strict";
                                         comment[fieldName].degrees.push(subResult.fieldByName('degrees', Ti.Database.FIELD_TYPE_INT));
                                         comment[fieldName].thumbData.push(subResult.fieldByName('thumb_path'));
                                         
-                                        //Ti.API.debug(JSON.stringify(comment[fieldName]));
-                                        
                                         subResult.next();
                                     }
                                 }
@@ -296,14 +292,12 @@ CommentList.prototype.initComments = function(){"use strict";
                                         textValue = [];
                                         origDBValue = subResult.fieldByName("filename");
                                         tempDBValues = Omadi.utils.getParsedJSON(origDBValue);
-                                        //Ti.API.debug(tempDBValues);
                                         if(Omadi.utils.isArray(tempDBValues)){
                                             textValue = tempDBValues;
                                         }
                                         else{
                                             textValue.push(origDBValue);
                                         }
-                                        //Ti.API.debug(textValue);
                                         
                                         for ( i = 0; i < comment[fieldName].dbValues.length; i++) {
                                             if (!Omadi.utils.isEmpty(comment[fieldName].dbValues[i])) {
@@ -525,8 +519,6 @@ CommentList.prototype.setScrollView = function(){"use strict";
         for(i = 0; i < this.comments.length; i ++){
             
             comment = this.comments[i];
-            
-            //Ti.API.debug("comment: " + JSON.stringify(comment));
             
             commentView = Ti.UI.createView({
                 layout: 'vertical',

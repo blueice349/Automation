@@ -94,9 +94,6 @@ LinkFieldWidget.prototype.getFieldView = function(){"use strict";
         this.fieldView.add(this.formObj.getSpacerView());
     }
     
-    
-    //this.formObj.setConditionallyRequiredLabelForInstance(this.instance);
-    
     return this.fieldView;
 };
 
@@ -155,9 +152,6 @@ LinkFieldWidget.prototype.getNewElement = function(index){"use strict";
     element.fieldName = this.instance.field_name;
     element.maxLength = 1024;
     
-    // got to be at least a.co, not much validation for now
-    // minLength has no effect right now
-    //element.minLength = 4;
     element.setAutocapitalization(Ti.UI.TEXT_AUTOCAPITALIZATION_NONE);
     
     element.check_conditional_fields = this.formObj.affectsAnotherConditionalField(this.instance);

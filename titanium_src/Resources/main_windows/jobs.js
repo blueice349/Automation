@@ -184,7 +184,6 @@ function refreshJobsTable(firstTimeThrough){"use strict";
             row.add(rowImg);
             textView.add(titleLabel);
             
-            //textView.add(timeLabel);
             row.add(textView);
             
             if(newJobs[i].isDiscontinued){

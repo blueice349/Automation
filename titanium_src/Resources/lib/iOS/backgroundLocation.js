@@ -18,7 +18,6 @@ var saveCoordinate = function(e){"use strict";
         speed = e.coords.speed;
         altitude = e.coords.altitude;
         
-        //Ti.API.info('=====>>> Speed ' + speed*2.23693629+' Miles/H');
         Ti.API.info('BACKGROUND LOCATION: ' + latitude + ', ' + longitude + ': ' + accuracy);
     
         if(latitude !== 0 && longitude !== 0) {

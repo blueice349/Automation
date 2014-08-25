@@ -115,14 +115,12 @@ Comment.prototype.load = function(cid) {"use strict";
                                         textValue : dbValue
                                     };
                                     
-                                    //Ti.API.info('HERE HERE: ' + field_name + " " + real_field_name + " " + dbValue);
                                     this.comment[real_field_name].dbValues.push(dbValue);
                                     this.comment[field_name].dbValues.push(dbValue);
                                 }
                                 else {
         
                                     jsonValue = Utils.getParsedJSON(origDBValue);
-                                    //Ti.API.info(origDBValue);
                                     tempDBValues = [];
         
                                     if (Utils.isArray(jsonValue)) {
@@ -433,8 +431,6 @@ Comment.prototype.load = function(cid) {"use strict";
                                                 this.comment[field_name].degrees.push(subResult.fieldByName('degrees', Ti.Database.FIELD_TYPE_INT));
                                                 this.comment[field_name].thumbData.push(subResult.fieldByName('thumb_path'));
                                                 
-                                                //Ti.API.debug(JSON.stringify(node[field_name]));
-                                                
                                                 subResult.next();
                                             }
                                         }
@@ -448,14 +444,12 @@ Comment.prototype.load = function(cid) {"use strict";
                                                 textValue = [];
                                                 origDBValue = subResult.fieldByName("filename");
                                                 tempDBValues = Utils.getParsedJSON(origDBValue);
-                                                //Ti.API.debug(tempDBValues);
                                                 if(Utils.isArray(tempDBValues)){
                                                     textValue = tempDBValues;
                                                 }
                                                 else{
                                                     textValue.push(origDBValue);
                                                 }
-                                                //Ti.API.debug(textValue);
                                                 
                                                 for ( i = 0; i < this.comment[field_name].dbValues.length; i++) {
                                                     if (!Utils.isEmpty(this.comment[field_name].dbValues[i])) {

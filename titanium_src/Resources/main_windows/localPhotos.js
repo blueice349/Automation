@@ -87,8 +87,6 @@ Gallery.deleteOptionSelected = function(e){"use strict";
             Omadi.data.deletePhotoUpload(e.source.imageView.photoId, true);
             
             Gallery.remove(e.source.imageView);
-            // galleryWrapper.remove(gallery);
-            // Gallery.update();
             Omadi.display.doneLoading();
         }
     }
@@ -132,9 +130,6 @@ Gallery.confirmDeleteOptionSelected = function(e){"use strict";
             Omadi.display.loading();
             
             Omadi.data.deletePhotoUpload(e.source.imageView.photoId, true);
-            
-            //galleryWrapper.remove(gallery);
-            //Gallery.update();
             
             Gallery.remove(e.source.imageView);
             
@@ -253,27 +248,6 @@ Gallery.imageClicked = function(e){"use strict";
     }
 };
 
-// function showButtons(){"use strict";
-    // var buttons, viewButton;
-//     
-    // buttons = Ti.UI.createView({
-        // width: '100%',
-        // bottom: 0,
-        // height: 50,
-        // visible: false
-    // });
-//     
-    // viewButton = Ti.UI.createButton({
-        // title: 'View Photo', 
-        // width: '50%',
-        // left: 0 
-    // });
-//     
-    // buttons.add(viewButton);
-//     
-    // currentWinWrapper.add(buttons);
-// }
-
 Gallery.remove = function(imageView){"use strict";
 
     gallery.remove(imageView.parentItem); 
@@ -305,8 +279,6 @@ Gallery.update = function(){"use strict";
     galleryWrapper.add(gallery);
     
     for(i = 0; i < images.length; i ++){
-        
-        //Ti.API.debug(imageStrings[i]);
         tempFile = Ti.Filesystem.getFile(images[i].filePath);
         thumbFile = Ti.Filesystem.getFile(images[i].thumbPath);
         

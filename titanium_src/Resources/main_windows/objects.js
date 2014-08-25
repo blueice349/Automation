@@ -41,18 +41,6 @@ function closeWindowObjects(){"use strict";
 Ti.App.removeEventListener('loggingOut', closeWindowObjects);
 Ti.App.addEventListener('loggingOut', closeWindowObjects);
 
-// Do not close this window when a node is saved as it could close a next form part unexpectedly
-// Ti.App.addEventListener("savedNode", function() {"use strict";
-    // //if (Ti.App.isAndroid) {
-        // Ti.UI.currentWindow.close();
-    // //}
-    // //else {
-    // //    Ti.UI.currentWindow.hide();
-        // // Close the window after the maximum timeout for a node save
-    // //    Ti.UI.currentWindow.close
-    // //}
-// });
-
 function sortByTitle(a, b) {"use strict";
     if (a.title < b.title) {
         return -1;
@@ -64,7 +52,6 @@ function sortByTitle(a, b) {"use strict";
 }
 
 function backButtonPressed(e) {"use strict";
-    //Ti.API.info("Went to final results: " + e.source.showFinalResults);
     if (Ti.App.isAndroid) {
         if (!e.source.showFinalResults && filterValues.length) {
             filterValues.pop();
@@ -96,8 +83,6 @@ function getDataSQL(getCount) {"use strict";
     if (filterValues.length < filterFields.length && !showFinalResults) {
         lastFilterField = filterFields[filterValues.length];
 
-        //Ti.API.debug("Filtering by " + lastFilterField.field_name);
-
         if ( typeof lastFilterField.field_name !== 'undefined') {
             field_name = lastFilterField.field_name;
             sql = "SELECT DISTINCT " + field_name + " AS value FROM " + curWin.type + " type  INNER JOIN node n ON n.nid = type.nid";
@@ -112,7 +97,7 @@ function getDataSQL(getCount) {"use strict";
             showFinalResults = true;
         }
     }
-    else {//(filterValues.length == filterFields.length){
+    else {
         if (getCount) {
             sql = "SELECT COUNT(*) FROM node n INNER JOIN " + curWin.type + " type ON type.nid = n.nid ";
         }
@@ -127,9 +112,7 @@ function getDataSQL(getCount) {"use strict";
 
     if (filterFields.length > 0) {
         for ( i = 0; i < filterFields.length; i++) {
-            //Ti.API.info(i);
             field_name = filterFields[i].field_name;
-            //Ti.API.info("FILTER FIELD NAME: " + field_name);
 
             if ( typeof filterValues[i] != 'undefined' && filterValues[i].value !== false) {
                 Ti.API.info("FILTER VALUE BELOW: " + i + ": " + filterValues[i].value);
@@ -223,9 +206,6 @@ function setTableData() {"use strict";
         resultCount = 0;
         while (db_result.isValidRow()) {
             resultCount++;
-
-            //Ti.API.info("FILTER FINAL RESULT: " + db_result.fieldByName('nid'));
-            //Ti.API.info("FILTER FINAL RESULT: " + db_result.fieldByName('title'));
 
             title = db_result.fieldByName('title');
             title = Omadi.utils.trimWhiteSpace(title);
@@ -321,8 +301,6 @@ function setTableData() {"use strict";
         db_result = db.execute(sql);
         
         while (db_result.isValidRow()) {
-            
-            //Ti.API.debug(lastFilterField);
             dbValue = db_result.fieldByName('value');
             if(lastFilterField.type == 'list_boolean'){
                 // Do not add the null
@@ -362,7 +340,6 @@ function setTableData() {"use strict";
             subResult = db.execute("SELECT tid AS value, name AS text_value FROM term_data WHERE tid IN (" + safeValues.join(",") + ")");
             while (subResult.isValidRow()) {
                 text_values[subResult.fieldByName('value')] = subResult.fieldByName('text_value');
-                //Ti.API.info("FILTER: " + subResult.fieldByName('text_value'));
                 subResult.next();
             }
 
@@ -372,7 +349,6 @@ function setTableData() {"use strict";
             subResult = db.execute("SELECT nid AS value, title AS text_value FROM node WHERE nid IN (" + safeValues.join(",") + ")");
             while (subResult.isValidRow()) {
                 text_values[subResult.fieldByName('value')] = subResult.fieldByName('text_value');
-                //Ti.API.info("FILTER: " + subResult.fieldByName('text_value'));
                 subResult.next();
             }
 
@@ -382,7 +358,6 @@ function setTableData() {"use strict";
             subResult = db.execute("SELECT uid AS value, realname AS text_value FROM user WHERE uid IN (" + safeValues.join(",") + ")");
             while (subResult.isValidRow()) {
                 text_values[subResult.fieldByName('value')] = subResult.fieldByName('text_value');
-                //Ti.API.info("FILTER: " + subResult.fieldByName('text_value'));
                 subResult.next();
             }
 
@@ -424,13 +399,11 @@ function setTableData() {"use strict";
         else if (lastFilterField.field_name == 'form_part') {
 
             if (bundle.data.form_parts != null && bundle.data.form_parts != "") {
-                //Ti.API.info('Form table part = ' + bundle.data.form_parts.parts.length);
                 if (bundle.data.form_parts.parts.length > 0) {
                     for (i in bundle.data.form_parts.parts) {
                         if (bundle.data.form_parts.parts.hasOwnProperty(i)) {
                             text_values[i] = bundle.data.form_parts.parts[i].label;
                         }
-                        //Ti.API.info("FILTER: " + bundle.data.form_parts.parts[i].label);
                     }
                 }
             }
@@ -439,11 +412,7 @@ function setTableData() {"use strict";
 
         tableIndex = 0;
         for ( i = 0; i < values.length; i++) {
-
-            //var text_value = '- Empty - ';
-            //if(value > 0){
             text_value = text_values[values[i]];
-            //}
 
             appendData[tableIndex] = Ti.UI.createTableViewRow({
                 height : 50,
@@ -648,7 +617,6 @@ function setTableData() {"use strict";
             var filterLabelParts = [];
             for ( i = 0; i < filterValues.length; i++) {
                 if ( typeof filterValues[i] != 'undefined' && filterValues[i].value !== false) {
-                    //Ti.API.info(filterValues[i].text);
 
                     var filterLabelText = filterFields[i].label + ": ";
                     if (filterValues[i].text == "") {
@@ -781,7 +749,7 @@ function setTableData() {"use strict";
             });
             wrapperView.add(toolbar);
         }
-        else {// Ti.App.isAndroid
+        else {
             wrapperView.add(topBar);
             if (!showFinalResults) {
                 topBar.add(showAllButton);
@@ -942,7 +910,7 @@ function setTableData() {"use strict";
         }
 
         if (showFinalResults) {
-            // //When the user clicks on a certain contact, it opens individual_contact.js
+            // When the user clicks on a certain contact, it opens individual_contact.js
             filterTableView.addEventListener('click', function(e) {
                 var now;
                 if(e.row.nid > 0){
@@ -1004,11 +972,7 @@ function setTableData() {"use strict";
         Ti.UI.currentWindow.addEventListener('close', function(){
            
            // Clean up memory references
-           
-           //wrapperView.remove(filterTableView);
            filterTableView = null;
-           
-           //curWin.remove(wrapperView);
            wrapperView = null; 
            curWin = null;
            

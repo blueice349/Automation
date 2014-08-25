@@ -225,9 +225,6 @@ LicensePlateWidget.prototype.getNewElementWrapper = function(index){"use strict"
                 
                 if(typeof e.source.instance.settings.duplicate_warning !== 'undefined' && e.source.instance.settings.duplicate_warning == 1){
                     
-                    //Ti.API.debug("Form part == " + Widget[e.source.instance.field_name].formObj.form_part);
-                    
-                    
                     // Only check for duplicate warnings if set in the field settings
                     setTimeout(function(){
                         var fieldName, value, origLastChange, actualLastChange, widget, formPart;

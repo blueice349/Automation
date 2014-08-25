@@ -260,9 +260,7 @@ Omadi.print.printReceipt = function(nid){"use strict";
                                 if(commands.length > 0){
                                     
                                     Omadi.print.StarMicronics.print({
-                                        success: function(e){
-                                            //alert("Printing Successful.");
-                                        },
+                                        success: function(e){},
                                         error: function(e){
                                             alert("Error Printing: " + e.error);
                                         },
@@ -296,9 +294,7 @@ Omadi.print.printReceipt = function(nid){"use strict";
             if(commands.length > 0){
                 
                 Omadi.print.StarMicronics.print({
-                    success: function(e){
-                        //alert("Printing Successful.");
-                    },
+                    success: function(e){},
                     error: function(e){
                         alert("Error Printing: " + e.error + ".");
                     },
@@ -328,7 +324,6 @@ Omadi.print.openConnection = function(portName){"use strict";
            
            
            Omadi.print.sendPrintCommands();
-           //Omadi.print.closeConnection();
        },
        error: function(e){
            alert("Could not connect to printer: " + e.error);

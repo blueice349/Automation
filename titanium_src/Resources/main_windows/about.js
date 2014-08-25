@@ -133,8 +133,7 @@ Ti.include('/lib/functions.js');
 	
 	scrollView.add(versionLbl);
 	
-	lastSyncTimestamp = Omadi.data.getLastUpdateTimestamp(); 
-	//Ti.API.error(lastSyncTimestamp);
+	lastSyncTimestamp = Omadi.data.getLastUpdateTimestamp();
 	lastSyncText = "Synced ";
 	
 	if(lastSyncTimestamp !== 0){

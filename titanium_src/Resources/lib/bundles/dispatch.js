@@ -166,56 +166,6 @@ Omadi.bundles.dispatch.openDispatchDirections = function(node){"use strict";
     }  
 };
 
-// Omadi.bundles.dispatch.openDirectionsToFirstAddress = function(node){"use strict";
-    // var firstLocationFieldName, index, fieldName, street, city, state, zip, address, instances;
-//     
-    // instances = Omadi.data.getFields(node.type);
-//     
-    // firstLocationFieldName = "";
-//                 
-    // for(index in instances){
-        // if(instances.hasOwnProperty(index)){
-            // if(instances[index].type == 'location'){
-                // Ti.API.debug(instances[index]);
-                // firstLocationFieldName = instances[index].field_name.split('___');
-                // firstLocationFieldName = firstLocationFieldName[0];
-                // break;
-            // }
-        // }
-    // }
-//     
-    // if(firstLocationFieldName.length){
-//         
-        // for(index in instances){
-            // if(instances.hasOwnProperty(index)){
-                // if(instances[index].type == 'location'){
-                    // switch(instances[index].part){
-                        // case 'street':
-                            // fieldName = firstLocationFieldName + "___street";
-                            // street = node[fieldName].dbValues[0]; break;
-                        // case 'city':
-                            // fieldName = firstLocationFieldName + "___city";
-                            // city = node[fieldName].dbValues[0]; break;
-                        // case 'province':
-                            // fieldName = firstLocationFieldName + "___province";
-                            // state = node[fieldName].dbValues[0]; break;
-                        // case 'postal_code':
-                            // fieldName = firstLocationFieldName + "___postal_code";
-                            // zip = node[fieldName].dbValues[0]; break;
-                    // }
-                // }
-            // }
-        // }
-//         
-        // address = street + " " + city + ", " + state + " " + zip;
-//         
-        // Omadi.display.getDrivingDirectionsTo(address);
-    // }
-    // else{
-        // alert("An unknown error occurred. Please contact support.");
-    // }  
-// };
-
 Omadi.bundles.dispatch.acceptJob = function(args){"use strict";
     
     var http, dialog, nid = 0;
@@ -394,12 +344,6 @@ Omadi.bundles.dispatch.checkInsertNode = function(insert){"use strict";
              // the job has been re-dispatched
              showNewDispatch = true;
          }
-         // else if(insert.viewed > 0){
-             // // This is not checked when calling this function like it is for notifications
-             // // Make sure the dispatch isn't shows when changed and not required to see the popup
-             // // as defined just above
-             // showNewDispatch = false;
-         // }
      }
      
      if(showNewDispatch){
@@ -701,8 +645,6 @@ Omadi.bundles.dispatch.updateStatus = function(nid, status, background){"use str
             var json;
             
             Omadi.display.doneLoading();
-            //Ti.API.debug(JSON.stringify(e));
-            //Ti.API.debug(this.responseText);
             
             if (this.responseText !== null && isJsonString(this.responseText) === true) {
         

@@ -2,8 +2,6 @@
 
 Ti.include("/lib/functions.js");
 
-//movement = require('com.omadi.gps');
-
 Ti.API.info("STARTING android GPS Service");
 
 Ti.Geolocation.Android.manualMode = true;
@@ -55,29 +53,6 @@ function stopGPS(){"use strict";
     }
 }
 
-// function saveGPS() {"use strict";
-// 
-    // var stopGPS = Ti.App.Properties.getBool('stopGPS', false);
-// 
-    // /*global updateCurrentLocation, Omadi*/
-// 
-    // //Ti.API.info("stopGPS: " + stopGPS);
-// 
-    // if (stopGPS) {
-//         
-    // }
-    // else {
-// 
-        // // movement.startGPSTracking();
-// // 
-        // // movement.currentMovement({
-            // // "updateLatLng" : function(e) {
-                // // updateCurrentLocation(e);
-            // // }
-        // // });
-    // }
-// }
-
 function updateCurrentLocation(e) {"use strict";
 
     var timestamp, time_passed, db;
@@ -89,10 +64,6 @@ function updateCurrentLocation(e) {"use strict";
     timestamp = Omadi.utils.getUTCTimestamp();
 
     if (typeof e.coords !== 'undefined' && e.coords.latitude != 0 && e.coords.longitude != 0) {
-        
-        //Ti.API.debug(e.coords.latitude);
-        
-        //Ti.API.debug(e.latitude + " " + e.longitude);
         if (e.coords.accuracy > 200) {
             time_passed = timestamp - Ti.App.Properties.getString("last_alert_popup");
             if (time_passed > 300) {
@@ -112,10 +83,4 @@ function updateCurrentLocation(e) {"use strict";
             Omadi.location.uploadGPSCoordinates();
         }
     }
-    
-    //setTimeout(function(){
-           // Ti.Geolocation.removeEventListener('location', updateCurrentLocation);
-    //}, 24000);
 }
-
-//saveGPS();

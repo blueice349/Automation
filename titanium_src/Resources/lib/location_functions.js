@@ -116,8 +116,6 @@ Omadi.location.uploadGPSCoordinates = function() {"use strict";
 
     /*global createNotification*/
 
-    //Ti.API.debug("GPS Uploading: " + Omadi.location.is_GPS_uploading());
-
     if (!Omadi.location.is_GPS_uploading() && Omadi.utils.isLoggedIn()) {
 
         if (!Ti.Network.getOnline()) {
@@ -128,23 +126,7 @@ Omadi.location.uploadGPSCoordinates = function() {"use strict";
         }
         else {
             Omadi.location.set_GPS_uploading();
-            //Ti.API.info('LOCATION SERVICE: UPLOAD GPS');
             db = Omadi.utils.openGPSDatabase();
-
-            //Ti.API.info("LOCATION SERVICE SAVE: location_obj.length before: " + location_obj.length);
-            //var leng_before = location_obj.length;
-            //var aux_location = location_obj.slice(0);
-            //Ti.API.info("LOCATION SERVICE SAVE: aux_location.length = " + aux_location.length + " location_obj.length after = " + location_obj.length);
-            //location_obj = new Array();
-
-            //for (var ind_local in aux_location) {
-            //Ti.API.info("LOCATION SAVE: " + aux_location[ind_local].accurated_location);
-            //	db.execute(aux_location[ind_local].accurated_location);
-            //}
-            //if (aux_location.length > 0) {
-            //	last_db_timestamp = aux_location.pop().timestamp;
-            //	Ti.API.info("Last timestamp = " + last_db_timestamp);
-            //}
             result = db.execute("SELECT * FROM user_location WHERE status = 'notUploaded' ORDER BY timestamp DESC LIMIT 50");
 
             locationItems = [];
@@ -159,7 +141,6 @@ Omadi.location.uploadGPSCoordinates = function() {"use strict";
                         lng : result.fieldByName('longitude'),
                         timestamp : result.fieldByName('timestamp')
                     });
-                    // (i == result.rowCount - 1) ? json += " {\"lat\" : \"" + result.fieldByName('latitude') + "\", \"lng\" : \"" + result.fieldByName('longitude') + "\" , \"time\" : \"" + result.fieldByName('timestamp') + "\"}" : json += " {\"lat\" : \"" + result.fieldByName('latitude') + "\", \"lng\" : \"" + result.fieldByName('longitude') + "\" , \"time\" : \"" + result.fieldByName('timestamp') + "\"}, ";
                     result.next();
                 }
             }
@@ -254,12 +235,9 @@ Omadi.location.uploadSuccess = function(e) {"use strict";
         sqlArray = [];
         nids = [];
 
-        //Ti.API.debug(responseObj);
-
         if (responseObj.alert) {
             for (i in responseObj.alert) {
                 if (responseObj.alert.hasOwnProperty(i)) {
-                    //Ti.API.info("====>>>>>>>>>>>> " + responseObj.alert[_i].location_nid);
                     if (nids.indexOf(responseObj.alert[i].location_nid) === -1) {
                         nids.push(responseObj.alert[i].location_nid);
                     }
@@ -268,7 +246,6 @@ Omadi.location.uploadSuccess = function(e) {"use strict";
                     for (j in responseObj.alert[i].alerts) {
                         if (responseObj.alert[i].alerts.hasOwnProperty(j)) {
                             if (responseObj.alert[i].alerts[j]) {
-                                //Ti.API.info("Alert Message: " + responseObj.alert[_i].alerts[_y].message);
                                 sqlArray.push("INSERT OR REPLACE INTO alerts (subject, ref_nid, alert_id, location_nid, location_label, message, timestamp) VALUES ( '" + responseObj.alert[i].alerts[j].subject.replace(/[']/g, "''") + "', " + responseObj.alert[i].alerts[j].reference_id + ', ' + responseObj.alert[i].alerts[j].alert_id + ', ' + responseObj.alert[i].alerts[j].location_nid + ", '" + responseObj.alert[i].alerts[j].location_label.replace(/[']/g, "''") + "', '" + responseObj.alert[i].alerts[j].message.replace(/[']/g, "''") + "' , " + now_timestamp + ")");
                             }
                         }
@@ -281,20 +258,15 @@ Omadi.location.uploadSuccess = function(e) {"use strict";
         for ( i = 0; i < nids.length; i += 1) {
             db.execute('DELETE FROM alerts WHERE location_nid=' + nids[i]);
             db.execute('DELETE FROM alert_names WHERE location_nid=' + nids[i]);
-            //Ti.API.info('Deleted location nids: ' + nids[_e]);
         }
 
         for ( i = 0; i < sqlArray.length; i += 1) {
-            //Ti.API.info(sqlArray[_k]);
             db.execute(sqlArray[i]);
         }
         db.execute("COMMIT TRANSACTION");
-        //Ti.API.info('Finished inserting');
         db.close();
 
-        //if(!Ti.App.Properties.getBool('stopGPS', false) && Omadi.utils.isLoggedIn()){
         createNotification("Uploaded GPS at " + Omadi.utils.PHPFormatDate('g:i a', Number(Omadi.utils.getUTCTimestamp())));
-        //}
 
     }
 
@@ -303,9 +275,6 @@ Omadi.location.uploadSuccess = function(e) {"use strict";
     Ti.App.fireEvent('refresh_UI_Alerts', {
         status : 'success'
     });
-    // if(Ti.App.Properties.getBool('stopGPS', false) || !Omadi.utils.isLoggedIn()){
-    // setTimeout(Omadi.display.removeNotifications, 1000);
-    // }
 };
 
 Omadi.location.uploadError = function(e) {"use strict";

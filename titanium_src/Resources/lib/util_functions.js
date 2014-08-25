@@ -13,40 +13,6 @@ Ti.App.DOMAIN_NAME = domainName;
 Omadi.DB_VERSION = "DB1724";
 // IMPORTANT, IMPORTANT, IMPORTANT, IMPORTANT!!!!!
 
-Omadi.utils.checkVolumeLevel = function(){"use strict";
-    /*global alertQueue*/
-    // var dialog;
-//     
-    // try{
-        // if(Ti.App.isAndroid){
-//            
-        // }
-        // else{
-//            
-            // // Ti.API.debug("volume: " + Ti.Media.getVolume());
-            // // if(Ti.Media.getVolume() < 0.5){
-// //                 
-                // // dialog = Ti.UI.createAlertDialog({
-                   // // message: "The volume is less than 50%, so you may miss some notifications. Please turn up the volume on your device.",
-                   // // title: 'Low Volume Alert' 
-                // // });
-// //                 
-                // // if(typeof alertQueue !== 'undefined'){
-                    // // alertQueue.push(dialog);
-                // // }
-                // // else{
-                    // // dialog.show();
-                // // }
-            // // }
-        // }
-    // }
-    // catch(ex){
-        // Ti.API.debug("Volume exception: " + ex);
-        // // Do nothing right now
-    // }
-};
-
-
 Omadi.utils.closeAppWaitingDialogShown = false;
 
 Omadi.utils.closeApp = function(){"use strict";
@@ -371,7 +337,6 @@ Omadi.utils.isLoggedIn = function() {"use strict";
     result = mainDB.execute('SELECT * FROM login WHERE "id_log"=1');
     is_logged_in = result.fieldByName('is_logged', Ti.Database.FIELD_TYPE_STRING);
     timestamp = result.fieldByName('logged_time');
-    //Ti.API.info("TIME FROM DB = " + _l_timestamp);
 
     now = Omadi.utils.getUTCTimestamp();
     if (timestamp == "null" || timestamp == null || timestamp == "0") {
@@ -383,14 +348,11 @@ Omadi.utils.isLoggedIn = function() {"use strict";
     result.close();
     mainDB.close();
     
-    //Ti.API.info("********************   IS LOGGED: " + logged);
     if (is_logged_in === "false") {
         return false;
     }
     
     if (lastLoggedTimestamp >= (60 * 60 * 24 * 7)) {//Seven days
-        //else if ( last_logged_timestamp >= (60*5) ){ //Five minutes ----> testing
-        //Ti.API.info("SESSION IS NO LONGER VALID! " + last_logged_timestamp);
         Ti.App.Properties.setString('logStatus', "Please login");
         return false;
     }

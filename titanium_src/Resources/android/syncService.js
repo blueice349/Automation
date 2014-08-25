@@ -20,7 +20,6 @@ function stopUpdates(){"use strict";
 
 (function(){"use strict";
     interval = setInterval(Omadi.service.checkUpdate, 30000);
-    //Omadi.service.checkUpdate();
     
     Ti.App.addEventListener("stopUpdates", stopUpdates);
 }());

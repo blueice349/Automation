@@ -353,11 +353,13 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
                 var widget, autocompleteTable;
                 try{
                     widget = Widget[e.source.instance.field_name];
-                    autocompleteTable = widget.autocompleteTables[e.source.delta];
-                    
-                    autocompleteTable.setBorderWidth(0);
-                    autocompleteTable.setHeight(0);
-                    autocompleteTable.setVisible(false);
+                    if (widget) {
+	                    autocompleteTable = widget.autocompleteTables[e.source.delta];
+	                    
+	                    autocompleteTable.setBorderWidth(0);
+	                    autocompleteTable.setHeight(0);
+	                    autocompleteTable.setVisible(false);
+                    }
                     e.source.blurred = true;
                 }
                 catch(ex){
@@ -839,7 +841,6 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
                         
                         if(typeof this.quantityFields[index] !== 'undefined'){
                             jsonValue = this.changeQuantityField(jsonValue, index, index, true);
-                            //this.quantityFields[index].setValue("1");
                             
                             this.setTotalDelta(index);
                         }
@@ -926,27 +927,6 @@ ExtraPriceWidget.prototype.setTotalDelta = function(delta){"use strict";
             jsonValue = this.descFields[delta].jsonValue;
             
             Ti.API.debug("Current value before total is " + JSON.stringify(jsonValue));
-            // try{
-                // jsonValue = JSON.parse(jsonValue);
-            // }
-            // catch(ex){
-                // if(typeof this.instance.settings.description_type !== 'undefined' && this.instance.settings.description_type == 'autocomplete'){
-                    // jsonValue = {
-                        // desc: this.descFields[delta].value,
-                        // price: 0,
-                        // quantity: 1,
-                        // total: 0
-                    // };
-                // }
-                // else{
-                    // jsonValue = {
-                        // desc: this.descFields[delta].text,
-                        // price: 0,
-                        // quantity: 1,
-                        // total: 0
-                    // };
-                // }
-            // }
             if(typeof jsonValue.price !== 'undefined'){
                 price = parseFloat(jsonValue.price);
                 if(isNaN(price)){
@@ -1214,29 +1194,6 @@ ExtraPriceWidget.prototype.itemChangeDelta = function(delta){"use strict";
                 this.descFields[delta].textValue = JSON.stringify(jsonValue);
                 
                 this.priceFields[delta].setValue(price);
-                
-                // Set the quantity if not already set
-                //quantityItem = $(this).parents('div.item').find("div.form-item-quantity input");
-                //quantity = parseFloat(quantityItem.val());
-                //if(isNaN(quantity)){
-                //    quantity = 1;
-                //}
-                
-                // if(noQuantity){
-                    // // If not using quantity, make sure it is set to 1
-                    // quantity = 1;
-                    // quantityItem.attr('readonly', 'readonly');
-                    // quantityItem.addClass('readonly');
-                // }
-                // else{
-                    // quantityItem.removeAttr('readonly');
-                    // quantityItem.removeClass('readonly');
-                // }
-                
-                //quantityItem.val(quantity).addClass('nobg');
-                
-                // make sure the total is set
-                //inputItem.each(ExtraPrice.setTotal);
             }
             
         }
@@ -1273,12 +1230,6 @@ ExtraPriceWidget.prototype.getOptions = function() {"use strict";
     var db, result, vid, options, description;
     
     db = Omadi.utils.openMainDatabase();
-    
-    //options = [{
-    //    title: '- None -',
-    //    dbValue: null,
-    //    description: null
-    //}];
     
     options = [];
 

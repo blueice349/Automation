@@ -94,7 +94,6 @@ Drafts.refreshDrafts = function(){"use strict";
     result = db.execute('SELECT * FROM node WHERE flag_is_updated IN (3,4) ORDER BY changed DESC');
     if (result.rowCount == 0) {
         result = null;
-        //Ti.API.info('0 drafts');
     }
     else {
 
@@ -293,36 +292,6 @@ Drafts.refreshDrafts = function(){"use strict";
             }
         });
 
-        // tableView.addEventListener('longclick', function(e) {
-// 
-            // if (e.row.nid != null) {
-//                 
-                // Titanium.Media.vibrate();
-// 
-                // dialog = Titanium.UI.createAlertDialog({
-                    // title : 'Omadi',
-                    // buttonNames : ['Yes', 'No'],
-                    // cancel : 1,
-                    // click_index : e.index,
-                    // sec_obj : e.section,
-                    // row_obj : e.row
-                // });
-// 
-                // dialog.message = 'Are you sure you want to delete the draft "' + e.row.searchValue + '" ?';
-                // dialog.show();
-// 
-                // dialog.addEventListener('click', function(e) {
-                    // if (e.cancel === false) {
-//                        
-                        // tableView.deleteRow(tableView.data[0][e.source.click_index]);
-                        // var db = Omadi.utils.openMainDatabase();
-                        // db.execute('UPDATE node SET flag_is_updated = 4 WHERE nid=' + e.source.row_obj.nid);
-                        // db.close();
-                    // }
-                // });
-            // }
-        // });
-
         //Adds contact list container to the UI
         wrapperView.add(tableView);
         search.blur();
@@ -364,7 +333,6 @@ function closeDraftsWindow(){"use strict";
     //When back button on the phone is pressed, it opens mainMenu.js and close the current window
     curWin.addEventListener('android:back', function() {
         //Enable background updates
-        //Omadi.data.setUpdating(false);
         curWin.close();
     });
     

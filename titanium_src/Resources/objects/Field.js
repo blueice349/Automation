@@ -11,11 +11,6 @@ function Field(){"use strict";
 
 exports.getFields = function(type) {"use strict";
     var db, result, instances, field_name, nameParts;
-    
-    // if (typeof Omadi.data.cache.fields[type] !== 'undefined') {
-        // instances = Omadi.data.cache.fields[type];
-    // }
-    // else {
     try{
         instances = {};
         
@@ -63,9 +58,6 @@ exports.getFields = function(type) {"use strict";
     }
         
     Database.close();
-
-       // Omadi.data.cache.fields[type] = instances;
-    //}
 
     return instances;
 };

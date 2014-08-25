@@ -68,7 +68,6 @@ Omadi.push_notifications.registerAndroid = function() {"use strict";
             else {
                 dialog.show();
             }
-            //alert("There was a problem enabling push notifications.");
             Utils.sendErrorReport('onAndroidRegister' + JSON.stringify(e));
         }
     });
@@ -129,7 +128,6 @@ Omadi.push_notifications.registeriOS = function() {"use strict";
             else {
                 dialog.show();
             }
-            //alert("There was a problem enabling push notifications.");
             Utils.sendErrorReport('onIOSRegister' + JSON.stringify(e));
         },
         callback : function(e) {
@@ -378,13 +376,6 @@ Omadi.push_notifications.createUser = function() {"use strict";
 };
 
 Omadi.push_notifications.init = function() {"use strict";
-    
-    // First logout any current users
-    //Omadi.push_notifications.logoutUser(Omadi.push_notifications.initAfterLogout);
-    
-    //Omadi.push_notifications.unsubscribeACSPush(Omadi.push_notifications.initAfterUnsubscribe);
-    
-    
     if(Ti.App.isAndroid){
         Omadi.push_notifications.registerAndroid();
     }
@@ -425,8 +416,6 @@ Omadi.push_notifications.needToLinkUser = function() {"use strict";
 Omadi.push_notifications.linkACSUserId = function() {"use strict";
 
     Cloud.Users.showMe(function(e) {
-
-        //alert(JSON.stringify(e));
         if (e.success) {
             if ( typeof e.users !== 'undefined' && typeof e.users[0] !== 'undefined' && typeof e.users[0].id !== 'undefined') {
                 Omadi.push_notifications.sendACSUserId(e.users[0].id);
