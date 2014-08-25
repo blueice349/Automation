@@ -225,15 +225,54 @@ Omadi.display.iOSBackToolbar = function(actualWindow, label){"use strict";
     return null;
 };
 
-Omadi.display.showLogoutDialog = function(){"use strict";
+function hasNeverUploadImages() {
+	var db = Omadi.utils.openListDatabase();
+    var result = db.execute('SELECT * FROM _files WHERE nid=-1000000');
+    
+    var retval = result.isValidRow();
+    
+	result.close();
+	db.close();
+	
+    return retval;
+}
+
+function showNeverUploadImagesDialog() {
+	var dialog = Ti.UI.createAlertDialog({
+		title: 'Unuploaded Photos',
+		message: 'You have photos that were never uploaded to the server. You should manully email them to the office.',
+		buttonNames: ['View Photos', 'View Later']
+	});
+	
+	dialog.addEventListener('click', function(event) {
+		try {
+			if (event.index == 0) {
+				// open window
+				Omadi.display.openLocalPhotosWindow();
+			} else {
+				// continue with logout
+				Omadi.display.showLogoutDialog(true);
+			}
+		} catch (error) {
+			Utils.sendErrorReport('Error in showNeverUploadImagesDialog click handler: ' + error);
+		}
+	});
+	
+	dialog.show();
+}
+
+Omadi.display.showLogoutDialog = function(skipToLogout){"use strict";
     var verifyLogout;
-
-    if (Omadi.bundles.timecard.userShouldClockInOut()) {
-
-        Omadi.bundles.timecard.askClockOutLogout();
+    
+    if (typeof skipToLogout == 'undefined') {
+    	skipToLogout = false;
     }
-    else {
-
+    
+    if (!skipToLogout && hasNeverUploadImages()) {
+    	showNeverUploadImagesDialog();
+    } else if (!skipToLogout && Omadi.bundles.timecard.userShouldClockInOut()) {
+        Omadi.bundles.timecard.askClockOutLogout();
+    } else {
         verifyLogout = Ti.UI.createAlertDialog({
             title : 'Really Logout?',
             buttonNames : ['Logout', 'Cancel']

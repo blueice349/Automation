@@ -1899,19 +1899,19 @@ Omadi.data.keepFailedUploads = function(files){"use strict";
 				// Files with negative nids have not been uploaded. An nid of -1000000 should never be uploaded.
 				if (node.flag_is_updated != 3 && node.flag_is_updated != 4) { // 3 = Draft, 4 = Continuous save
 				    // If this is not a draft or continuous save, send up the debug
-				    message = "Non draft or continuos node not uploaded after 30 minutes: " + JSON.stringify(node);
+				    var message = "Non draft or continuos node not uploaded after 30 minutes: " + JSON.stringify(node);
 				    // Limit node message to 2000 characters
-				        message = message.substring(0, 2000);
-				        message += JSON.stringify(file);
-				        Utils.sendErrorReport(message);
-				        
-				        idsToKeep.push(file.id);
+			        message = message.substring(0, 2000);
+			        message += JSON.stringify(file);
+			        Utils.sendErrorReport(message);
+			        
+			        idsToKeep.push(file.id);
 				}
 			}
             
         // Check for files that have failed to upload after 10 attempts
         } else if (file.tries > 10) {
-			message = "Over 10 tries: " + JSON.stringify(node);
+			var message = "Over 10 tries: " + JSON.stringify(node);
 	        // Limit node message to 2000 characters
 	        message = message.substring(0, 2000);
 			message += JSON.stringify(file);
@@ -1951,6 +1951,7 @@ Omadi.data.keepFailedUploads = function(files){"use strict";
 	db.close();
 };
 
+
 /*
 Omadi.data.getFileArray = function(){"use strict";
 	var files = Omadi.data.getAllFiles();
@@ -1963,7 +1964,6 @@ Omadi.data.getFileArray = function(){"use strict";
 	return files;
 };
 */
-
 
 Omadi.data.getFileArray = function(){"use strict";
     var files, sql, listDB, result, nextFile, now, node, message, 
@@ -2140,6 +2140,7 @@ Omadi.data.getFileArray = function(){"use strict";
     if(neverUploadIds.length > 0){
         // Set files to never be attempted again
         listDB.execute("UPDATE _files SET nid = -1000000 WHERE id IN(" + neverUploadIds.join(',') + ")");
+        Utils.sendErrorReport(neverUploadIds.length + " file" + (neverUploadIds.length > 1 ? 's' : '') + " could not be uploaded. You can see non-uploaded files under 'Actions' -> 'Photos Not Uploaded'");
         dialog = Ti.UI.createAlertDialog({
            title: 'Upload Problem',
            message: neverUploadIds.length + " file" + (neverUploadIds.length > 1 ? 's' : '') + " could not be uploaded. You can see non-uploaded files under 'Actions' -> 'Photos Not Uploaded'",  
