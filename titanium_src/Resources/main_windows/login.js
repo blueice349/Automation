@@ -877,6 +877,7 @@ function openMainScreen(loggedIn){"use strict";
                             setClientAccount(domainName, db_list);
                             
                             cookie = this.getResponseHeader('Set-Cookie');
+                            Utils.setCookie(cookie);
         
                             list_result = db_list.execute('SELECT COUNT(*) AS count FROM login WHERE id_log=1');
                             if (list_result.fieldByName('count') > 0) {

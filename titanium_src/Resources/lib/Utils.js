@@ -285,3 +285,31 @@ exports.trimWhiteSpace = function(string) {"use strict";
     
     return string.replace(/^\s+|\s+$/g, "");
 };
+
+exports.setCookie = function(cookie) {
+	try{
+        if(cookie != null && cookie > "" && cookie != "null"){
+            var matches = cookie.match(/^(.+?)=(.+?);/);
+            
+            var name = matches[1] || '';
+            var value = matches[2] || '';
+            
+            var setCookie = Ti.Network.createCookie({
+                domain: Omadi.DOMAIN_NAME.replace('https://', '.'),
+                path: '/',
+                secure: true,
+                httponly: true,
+                name: name,
+                value: value
+            });
+            
+            Ti.Network.addSystemCookie(setCookie);
+            
+            return true;
+        }
+    }
+    catch(ex){
+        getInstance().sendErrorReport("Exception setting cookies for web view: " + ex);
+    }
+    return false;
+};

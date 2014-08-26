@@ -513,6 +513,8 @@ Omadi.display.openJobsWindow = function() {"use strict";
     return null;
 };
 
+
+
 Omadi.display.openWebView = function(nid){"use strict";
     var url, webView, webWin, cookies, i, cookie, setCookie, name, value, matches, toolbar, backButton;
     
@@ -520,28 +522,7 @@ Omadi.display.openWebView = function(nid){"use strict";
     
     try{
         cookie = Omadi.utils.getCookie();
-        
-        if(cookie != null && cookie > "" && cookie != "null"){
-            
-            value = '';
-            name = '';
-            
-            matches = cookie.match(/^(.+?)=(.+?);/);
-            
-            name = matches[1];
-            value = matches[2];
-                        
-            setCookie = Ti.Network.createCookie({
-                domain: Omadi.DOMAIN_NAME.replace('https://', '.'),
-                path: '/',
-                secure: true,
-                httponly: true,
-                name: name,
-                value: value
-            });
-            
-            Ti.Network.addSystemCookie(setCookie);
-        }
+        Utils.setCookie(cookie);
     }
     catch(ex){
         Utils.sendErrorReport("Exception setting cookies for web view: " + ex);
