@@ -126,9 +126,8 @@ function deleteAndroidFile(filePath){"use strict";
             Omadi.utils.setCookieHeader(http);
     
             http.onload = function(e) {
-                var labelView, scrollView;
                 
-                scrollView = Ti.UI.createScrollView({
+                var scrollView = Ti.UI.createScrollView({
                    top: 0,
                    bottom: 0,
                    left: 0,
@@ -136,7 +135,7 @@ function deleteAndroidFile(filePath){"use strict";
                    layout: 'vertical'
                 });
                 
-                labelView = Ti.UI.createLabel({
+                var labelView = Ti.UI.createLabel({
                     text: this.responseData,
                     width: '96%',
                     wordWrap: true,

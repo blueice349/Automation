@@ -1573,6 +1573,11 @@ Omadi.service.photoUploadStream = function(e){"use strict";
     /*global uploadingProgressBar*/
     var filesize, uploadingBytes, bytesUploaded, currentBytesUploaded;
     
+    if (!Omadi.service.currentFileUpload) {
+    	// The file has already finished uploading or has ended in an error.
+    	return;
+    }
+    
     filesize = Omadi.service.currentFileUpload.filesize;
     uploadingBytes = Omadi.service.currentFileUpload.uploading_bytes;
     bytesUploaded = Omadi.service.currentFileUpload.bytes_uploaded;
