@@ -53,10 +53,6 @@ Gallery.addIOSToolbar = function() {"use strict";
         borderBottom : false,
         height : Ti.UI.SIZE
     });
-    
-    if(Ti.App.isIOS7){
-        toolbar.top = 20;
-    }
 
     currentWinWrapper.add(toolbar);
 };
@@ -487,7 +483,7 @@ Gallery.update = function(){"use strict";
     Ti.UI.currentWindow.setBackgroundColor('#eee');
         
     currentWinWrapper = Ti.UI.createView({
-        top : 0,
+        top : Ti.App.isIOS7 ? 20 : 0,
         left : 0,
         bottom : 0,
         right : 0

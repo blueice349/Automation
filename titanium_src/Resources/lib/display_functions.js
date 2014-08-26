@@ -62,7 +62,7 @@ Omadi.display.showBigImage = function(imageView) {"use strict";
         
         try{
             Omadi.display.largePhotoWindow = Ti.UI.createWindow({
-                backgroundColor : 'black',
+                backgroundColor : Ti.App.isIOS7 ? '#fff' : '#000',
                 top : 0,
                 bottom : 0,
                 right : 0,
@@ -163,6 +163,7 @@ Omadi.display.showBigImage = function(imageView) {"use strict";
 	                });
                 } else {
 	                webView = Ti.UI.createWebView({
+	                	top: Ti.App.isIOS7 ? 60 : 0,
 	                    data: imageData
 	                });
                 }
