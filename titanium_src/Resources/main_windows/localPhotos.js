@@ -278,9 +278,9 @@ Gallery.update = function(){"use strict";
     
     galleryWrapper.add(gallery);
     
-    for(i = 0; i < images.length; i ++){
+    for(var i = 0; i < images.length; i++){
         tempFile = Ti.Filesystem.getFile(images[i].filePath);
-        thumbFile = Ti.Filesystem.getFile(images[i].thumbPath);
+        thumbFile = Ti.Filesystem.getFile(images[i].thumbPath || images[i].filePath);
         
         if(tempFile.exists()){
             modified = tempFile.modificationTimestamp();
@@ -297,11 +297,11 @@ Gallery.update = function(){"use strict";
             });
         }
     }
-    
     if(recentFiles.length > 0){
         recentFiles = recentFiles.sort(Omadi.utils.fileSortByModified);
         
-        for(i = 0; i < recentFiles.length; i ++){
+        for(i = 0; i < recentFiles.length; i++){
+
             
             file = recentFiles[i];
             
@@ -345,7 +345,6 @@ Gallery.update = function(){"use strict";
                 }
             }
             else if(file.nid == -1000000){
-                
                 if(!printedNeverBar){
                     gallery.add(Ti.UI.createLabel({
                         text: 'Photos Never Going to Upload',
