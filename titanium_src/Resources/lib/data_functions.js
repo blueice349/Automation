@@ -1535,6 +1535,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                                     break;
     
                                 case 'datestamp':
+                                	// TODO Add datestamp___end data to node[field_name]
                                     for ( i = 0; i < node[field_name].dbValues.length; i++) {
                                         if (!Omadi.utils.isEmpty(node[field_name].dbValues[i])) {
                                             node[field_name].dbValues[i] = parseInt(node[field_name].dbValues[i], 10);
@@ -2888,6 +2889,9 @@ Omadi.data.processFieldsJson = function(mainDB) {"use strict";
                                 else if (Omadi.service.fetchedJSON.fields.insert[i].type == 'extra_price') {
                                     queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "___data' " + db_type);
                                 }
+                                else if (Omadi.service.fetchedJSON.fields.insert[i].type == 'datestamp') {
+                                    queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "___end' " + db_type);
+                                }
                             }
                         }
                         else{
@@ -2997,6 +3001,9 @@ Omadi.data.processCommentJson = function(mainDB) {"use strict";
                             else if(instances[field_name].type == 'extra_price'){
                                 fieldNames.push(field_name + "___data");
                             }
+                            else if(instances[field_name].type == 'datestamp'){
+                                fieldNames.push(field_name + "___end");
+                            }
                         }
                     }
                     
@@ -3055,6 +3062,16 @@ Omadi.data.processCommentJson = function(mainDB) {"use strict";
                                 else{
                                     value = Omadi.service.fetchedJSON.comment.insert[i][field_name + "___data"];
                                     values.push("'" + dbEsc(JSON.stringify(value)) + "'");
+                                }
+                            }
+                            else if(instances[field_name].type == 'datestamp'){
+                                
+                                if (typeof Omadi.service.fetchedJSON.comment.insert[i][field_name + "___end"] === "undefined" || Omadi.service.fetchedJSON.comment.insert[i][field_name + "___end"] === null) {
+                                    values.push("null");
+                                }
+                                else{
+                                    value = Omadi.service.fetchedJSON.comment.insert[i][field_name + "___end"];
+                                    values.push("'" + dbEsc(value) + "'");
                                 }
                             }
                             else if (typeof Omadi.service.fetchedJSON.comment.insert[i][field_name] === "undefined" || Omadi.service.fetchedJSON.comment.insert[i][field_name] === null) {
@@ -3352,6 +3369,9 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                                     else if(instances[field_name].type == 'extra_price'){
                                         fieldNames.push(field_name + "___data");
                                     }
+                                    else if(instances[field_name].type == 'datestamp'){
+                                        fieldNames.push(field_name + "___end");
+                                    }
                                 }
                             }
                             
@@ -3416,6 +3436,16 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                                         else{
                                             value = Omadi.service.fetchedJSON.node[type].insert[i][field_name + "___data"];
                                             values.push("'" + dbEsc(JSON.stringify(value)) + "'");
+                                        }
+                                    }
+                                    else if(instances[field_name].type == 'datestamp'){
+                                        
+                                        if (typeof Omadi.service.fetchedJSON.node[type].insert[i][field_name + "___end"] === "undefined" || Omadi.service.fetchedJSON.node[type].insert[i][field_name + "___end"] === null) {
+                                            values.push("null");
+                                        }
+                                        else{
+                                            value = Omadi.service.fetchedJSON.node[type].insert[i][field_name + "___end"];
+                                            values.push("'" + dbEsc(value) + "'");
                                         }
                                     }
                                     else if (typeof Omadi.service.fetchedJSON.node[type].insert[i][field_name] === "undefined" || Omadi.service.fetchedJSON.node[type].insert[i][field_name] === null) {
