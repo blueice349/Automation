@@ -1190,6 +1190,14 @@ Omadi.service.logout = function() {"use strict";
         Omadi.background.android.stopGPSService();
     }
     
+    try {
+		Ti.Network.removeAllSystemCookies();
+    } catch(error) {
+    	if (Ti.App.isAndroid) {
+			Utils.sendErrorReport('Error trying to clear cookies on logout. ' + error);
+		}
+    }
+    
     Omadi.service.sendLogoutRequest();
 };
 

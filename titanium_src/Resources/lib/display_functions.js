@@ -516,26 +516,26 @@ Omadi.display.openJobsWindow = function() {"use strict";
 
 
 Omadi.display.openWebView = function(nid){"use strict";
-    var url, webView, webWin, cookies, i, cookie, setCookie, name, value, matches, toolbar, backButton;
-    
-    url = Omadi.DOMAIN_NAME + '/node/' + nid;
-    
-    try{
-        cookie = Omadi.utils.getCookie();
-        Utils.setCookie(cookie);
+    if (Ti.App.isIOS) {
+    	Omadi.display.openWebViewInBrowser(nid);
+    } else {
+    	Omadi.display.openWebViewInApp(nid);
     }
-    catch(ex){
-        Utils.sendErrorReport("Exception setting cookies for web view: " + ex);
-    }
+};
+
+Omadi.display.openWebViewInApp = function(nid) {
+	var url = Omadi.DOMAIN_NAME + '/node/' + nid;
+	var cookie = Omadi.utils.getCookie();
+    Utils.setCookie(cookie);
     
-    webView = Ti.UI.createWebView({
+    var webView = Ti.UI.createWebView({
         url: url 
     });
     
-    webWin = Ti.UI.createWindow();
+    var webWin = Ti.UI.createWindow();
     
     if(Ti.App.isIOS){
-        backButton = Ti.UI.createButton({
+        var backButton = Ti.UI.createButton({
             title : 'Back',
             style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
         });
@@ -545,7 +545,7 @@ Omadi.display.openWebView = function(nid){"use strict";
         });
         
         // create and add toolbar
-        toolbar = Ti.UI.iOS.createToolbar({
+        var toolbar = Ti.UI.iOS.createToolbar({
             items : [backButton],
             top : 20,
             borderTop : false,
@@ -561,6 +561,10 @@ Omadi.display.openWebView = function(nid){"use strict";
     webWin.open({
         modal: true
     });
+};
+
+Omadi.display.openWebViewInBrowser = function(nid) {
+	Ti.Platform.openURL(Omadi.DOMAIN_NAME + '/node/' + nid);
 };
 
 Omadi.display.openViewWindow = function(type, nid, allowActions) {"use strict";
@@ -1186,22 +1190,26 @@ Omadi.display.displayFile = function(nid, fid, title) {"use strict";
     try{
         if(Ti.Network.online){
             if (nid > 0 && fid > 0) {
-                Omadi.display.loading();
-        
-                newWin = Titanium.UI.createWindow({
-                    navBarHidden: true,
-                    nid: nid,
-                    fid: fid,
-                    title: title,
-                    url: '/main_windows/fileViewer.js',
-                    orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
-                });
-                
-                newWin.addEventListener('open', function(){
-                   Omadi.display.doneLoading(); 
-                });
-                
-                newWin.open();
+            	if (Ti.App.isIOS) {
+            		Omadi.display.openWebViewInBrowser(nid);
+            	} else {
+	                Omadi.display.loading();
+	        
+	                newWin = Titanium.UI.createWindow({
+	                    navBarHidden: true,
+	                    nid: nid,
+	                    fid: fid,
+	                    title: title,
+	                    url: '/main_windows/fileViewer.js',
+	                    orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
+	                });
+	                
+	                newWin.addEventListener('open', function(){
+	                   Omadi.display.doneLoading(); 
+	                });
+	                
+	                newWin.open();
+               }
             }
         }
         else{

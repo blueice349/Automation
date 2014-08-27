@@ -223,10 +223,7 @@ TextLongWidget.prototype.getNewElement = function(index){"use strict";
             Widget[e.source.instance.field_name].formObj.currentlyFocusedField = e.source;
         }
         catch(ex){
-            try{
-                Utils.sendErrorReport("Exception in text long focus listener: " + ex);
-            }
-            catch(ex1){}
+            Utils.sendErrorReport("Exception in text long focus listener: " + ex);
         }
     });
     
@@ -235,9 +232,7 @@ TextLongWidget.prototype.getNewElement = function(index){"use strict";
             e.source.setBackgroundColor('#fff');
         }
         catch(ex){
-            try{
-                Utils.sendErrorReport("exception in text long blur: " + ex);
-            }catch(ex1){}
+            Utils.sendErrorReport("exception in text long blur: " + ex);
         }
     });
     
