@@ -155,8 +155,10 @@ FileWidget.prototype.cleanUp = function(){"use strict";
         Widget[this.instance.field_name] = null;
         
         for(j = 0; j < this.elements.length; j ++){
-            this.fieldView.remove(this.elements[j]);
-            this.elements[j] = null;
+        	if (this.elements[j]) {
+	            this.fieldView.remove(this.elements[j]);
+	            this.elements[j] = null;
+           }
         }
         
         this.fieldView = null;

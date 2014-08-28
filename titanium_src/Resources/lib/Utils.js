@@ -295,7 +295,7 @@ exports.setCookie = function(cookie) {
             var value = matches[2] || '';
             
             var setCookie = Ti.Network.createCookie({
-                domain: Omadi.DOMAIN_NAME.replace('https://', '.'),
+                domain: Ti.App.DOMAIN_NAME.replace('https://', '.'),
                 path: '/',
                 secure: true,
                 httponly: true,
@@ -309,7 +309,9 @@ exports.setCookie = function(cookie) {
         }
     }
     catch(ex){
-        getInstance().sendErrorReport("Exception setting cookies for web view: " + ex);
+		if (Ti.App.isAndroid) {
+			getInstance().sendErrorReport("Exception setting cookies for web view: " + ex);
+		}
     }
     return false;
 };
