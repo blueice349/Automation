@@ -368,7 +368,7 @@ function loggingOutJobs(){"use strict";
     });
     
     if(Ti.App.isAndroid){
-        Ti.API.error("Add android menu");
+        Ti.API.info("Add android menu");
     }
     else{
         addiOSToolbar();

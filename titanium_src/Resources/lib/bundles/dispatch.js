@@ -579,7 +579,6 @@ Omadi.bundles.dispatch.isDispatch = function(type, nid){"use strict";
             result = db.execute("SELECT dispatch_nid FROM node where nid = " + intNid);
             if(result.isValidRow()){
                 dispatchNid = result.field(0, Ti.Database.FIELD_TYPE_INT);
-                Ti.API.error("Dispatch nid: " + dispatchNid);
                 if(dispatchNid != 0){
                     isDispatch = true;
                 }

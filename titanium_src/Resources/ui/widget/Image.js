@@ -395,7 +395,6 @@ ImageWidget.prototype.getImageView = function(widgetView, index, nid, fid, fileP
         }
     }
     else{
-        Ti.API.error("Error in creating imageview, fid = " + fid);
         Utils.sendErrorReport("Error in creating imageview, fid = " + fid);
     }
 
@@ -1246,12 +1245,10 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
                 }
             }
             catch(ex) {
-                Ti.API.error("Flash: " + ex);
                 Utils.sendErrorReport("iOS flash error: " + ex);
             }
         }
         catch(wrapperEx) {
-            Ti.API.error("Wrapper: " + wrapperEx);
             Utils.sendErrorReport("iOS camera error: " + wrapperEx);
         }
     }

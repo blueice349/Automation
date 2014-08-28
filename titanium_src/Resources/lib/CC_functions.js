@@ -72,8 +72,6 @@ CreditCardTrackData.prototype = {
   parse : function() {"use strict";
     var track1_raw, track2_raw, track1_match_data, track2_match_data;
     
-    Ti.API.error("track data: " + this.track_data);
-    
     this.tracks_match_data = this.track_data.match(/^.*B(\d+)\^(.+)\/(.+)\^(.{4})(.{3})(.*)$/);
     if (this.tracks_match_data == null) {
       throw("Not a Valid Card");

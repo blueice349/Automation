@@ -39,7 +39,6 @@ Omadi.push_notifications.registerAndroid = function() {"use strict";
         //CloudPush.clearStatus();
     }
     catch(ex){
-        Ti.API.error("Could not clear cloudpush status: " + ex);
         Utils.sendErrorReport("Could not clear cloudpush status: " + ex);
     }
     

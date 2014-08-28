@@ -254,14 +254,14 @@ Comments.prototype.processJson = function(){"use strict";
 Comments.prototype.sendComment = function(cid) {"use strict";
     var http, timestamp, commentOutput;
     
-    Ti.API.error("Sending Comment " + cid + " Now");
+    Ti.API.info("Sending Comment " + cid + " Now");
     
     try{
         timestamp = Utils.getUTCTimestamp();
         
         if((timestamp - this.lastSendTimestamp) < 2 && this.lastSentCid == cid){
             // Do not send updates within 2 seconds of each other
-            Ti.API.error("Not allowing comment send - too soon after previous send.");
+            Ti.API.info("Not allowing comment send - too soon after previous send.");
             return;
         }
         

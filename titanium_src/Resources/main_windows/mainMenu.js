@@ -1004,7 +1004,7 @@ function addNewFilesMainMenu(e) {"use strict";
 }
 
 function photoUploadedMainMenu(e){"use strict";
-    Ti.API.error("Photo Uploaded main menu: " + JSON.stringify(e));
+    Ti.API.info("Photo Uploaded main menu: " + JSON.stringify(e));
     
     if(Omadi.display.FormTabs !== null){
         Omadi.display.FormTabs.photoUploaded(e);

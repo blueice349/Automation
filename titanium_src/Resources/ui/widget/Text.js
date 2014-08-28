@@ -225,11 +225,7 @@ TextWidget.prototype.getNewElementWrapper = function(index){"use strict";
                 }
             }
             catch(ex){
-                Ti.API.error("Exception in duplicate warning timeout: " + ex);
-                try{
-                    Utils.sendErrorReport("Exception in duplicate warning timeout: " + ex);
-                }
-                catch(ex2){}
+                Utils.sendErrorReport("Exception in duplicate warning timeout: " + ex);
             }
         });
         
@@ -321,11 +317,7 @@ TextWidget.prototype.onChangeListener = function(e) {"use strict";
                     }
                 }
                 catch(ex){
-                    Ti.API.error("Exception in duplicate warning timeout: " + ex);
-                    try{
-                        Utils.sendErrorReport("Exception in duplicate warning timeout: " + ex);
-                    }
-                    catch(ex2){}
+                    Utils.sendErrorReport("Exception in duplicate warning timeout: " + ex);
                 }
                 
             }, 4000);
@@ -378,13 +370,7 @@ TextWidget.prototype.setDuplicateWarnings = function(fieldName, value, saveType)
         };
     
         http.onerror = function(e) {
-            try{
-                Ti.API.error(JSON.stringify(e));
-                Utils.sendErrorReport("Error on setduplicatewarnings: " + JSON.stringify(e));
-            }
-            catch(ex){
-                
-            }
+            Utils.sendErrorReport("Error on setduplicatewarnings: " + JSON.stringify(e));
         };
         
         http.send(JSON.stringify({

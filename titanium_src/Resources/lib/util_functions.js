@@ -279,8 +279,6 @@ Omadi.utils.setCookieHeader = function(http) {"use strict";
             http.setRequestHeader("Cookie", cookie);
         }
         catch(ex){
-            Ti.API.error("Could not set http cookie header");
-            Ti.API.error(cookie);
             Utils.sendErrorReport("Could not set cookie for " + http.location);
         }
     }
@@ -386,7 +384,7 @@ Omadi.utils.secondsToString = function(seconds) {"use strict";
     var format, am_pm, hours, hours_str, minutes, time_string, new_hours;
     
     format = Omadi.utils.getTimeFormat();
-    Ti.API.error(format);
+    Ti.API.info(format);
 
     am_pm = (format.indexOf('H') === -1);
 
@@ -895,34 +893,6 @@ Omadi.utils.list_search_node_matches_search_criteria = function(node, criteria) 
                                 }
                             }
                         }
-
-                        /* TODO ---- In Future
-
-
-                        else
-
-
-                         if(search_field['settings']['parts'] != null) {
-
-                         if(search_field['type'] == 'location') {
-                         for(part in search_field['settings']['parts']) {
-                         search_value = isset($form_state['values']['search'][$search_field['field_name']][$part]) ? $form_state['values']['search'][$search_field['field_name']][$part] : $form_state['values']['search']['more_fields'][$search_field['field_name']][$part];
-                         $query->condition('l_' . $search_field['field_name'] . '.' . $part, '%' . $search_value . '%', 'LIKE');
-                         $search_fields[$search_key][$part]['default_value'] = $search_value;
-                         }
-                         object_lists_add_location_column($query, FALSE, $search_field, $id, $node_table);
-                         } else {
-                         for(part in search_field['settings']['parts']) {
-                         $search_value = isset($form_state['values']['search'][$search_field['field_name']][$part]) ? $form_state['values']['search'][$search_field['field_name']][$part] : $form_state['values']['search']['more_fields'][$search_field['field_name']][$part];
-                         $query->condition($search_field['field_name'] . '.' . $search_field['field_name'] . '_' . $part, '%' . $search_value . '%', 'LIKE');
-                         $search_fields[$search_key][$part]['default_value'] = $search_value;
-                         }
-                         object_lists_add_parts_column($query, FALSE, $search_field, $id, $node_table);
-                         }
-
-                         }
-                         */
-
                         else {
 
                             search_value = criteria_row.value != null && criteria_row.value != "" ? criteria_row.value : null;
@@ -1146,7 +1116,7 @@ Omadi.utils.list_search_node_matches_search_criteria = function(node, criteria) 
                                         row_matches[criteria_index] = false;
                                         jsonValues = [];
                                         
-                                        Ti.API.error("search values: " + JSON.stringify(search_value));
+                                        Ti.API.info("search values: " + JSON.stringify(search_value));
                                         
                                         if(search_value){
                                             if(typeof node[field_name] !== 'undefined'){
@@ -1157,7 +1127,7 @@ Omadi.utils.list_search_node_matches_search_criteria = function(node, criteria) 
                                                 }
                                             }
                                             
-                                            Ti.API.error("json values: " + JSON.stringify(jsonValues));
+                                            Ti.API.info("json values: " + JSON.stringify(jsonValues));
                                             
                                             tids = [];
                                             nodeDescNames = {};
@@ -1168,7 +1138,7 @@ Omadi.utils.list_search_node_matches_search_criteria = function(node, criteria) 
                                                 }
                                             }
                                             
-                                            Ti.API.error("desc: " + JSON.stringify(nodeDescNames));
+                                            Ti.API.info("desc: " + JSON.stringify(nodeDescNames));
                                             
                                             db = Omadi.utils.openMainDatabase();
                                             
@@ -1188,7 +1158,7 @@ Omadi.utils.list_search_node_matches_search_criteria = function(node, criteria) 
                                             result.close();
                                             db.close();
                                             
-                                            Ti.API.error("tids: " + JSON.stringify(tids));
+                                            Ti.API.info("tids: " + JSON.stringify(tids));
                                             
                                             if(tids.length > 0){
                                                 // Make sure the search value is an array
@@ -1215,7 +1185,7 @@ Omadi.utils.list_search_node_matches_search_criteria = function(node, criteria) 
                                                 }
                                             }
                                             
-                                            Ti.API.error("matches: " + row_matches[criteria_index]);
+                                            Ti.API.info("matches: " + row_matches[criteria_index]);
                                         }
                                     }
                                     else{

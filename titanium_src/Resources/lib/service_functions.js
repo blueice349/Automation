@@ -171,8 +171,6 @@ Omadi.service.syncInitialFormItems = function(nodeCount, commentCount, numPages)
     var http, syncURL, i, max, count;
     
     try{
-        Ti.API.error("in initial form items");
-        
         count = nodeCount + commentCount;
         
         max = count + (numPages * 100);
@@ -223,9 +221,9 @@ Omadi.service.syncInitialInstallDownloadNextPage = function(){"use strict";
             Omadi.service.initialSyncProgressBar.close();
         }
         
-        Ti.API.error("NOW DO AN INCREMENTAL SYNC");
+        Ti.API.info("NOW DO AN INCREMENTAL SYNC");
         
-        Ti.API.error("last sync: " + Omadi.data.getLastUpdateTimestamp());
+        Ti.API.info("last sync: " + Omadi.data.getLastUpdateTimestamp());
         
         Omadi.service.fetchUpdates(true, true);
     }
@@ -310,7 +308,7 @@ Omadi.service.syncInitialLastProgress = 0;
 Omadi.service.syncInitialFormPage = function(page){"use strict";
     var http, syncURL;
     
-    Ti.API.error("syncing for page " + page);
+    Ti.API.info("syncing for page " + page);
     
     try{
         http = Ti.Network.createHTTPClient({
@@ -880,6 +878,8 @@ Omadi.service.sendDataOnLoad = function(e){"use strict";
                 
     Omadi.display.doneLoading();
     
+    Ti.API.info('------ sendDataOnLoad: ' + JSON.stringify(e));
+    
     try{
         if (this.responseText !== null && this.responseText !== "null" && this.responseText !== "" && this.responseText !== "" && isJsonString(this.responseText) === true) {
     
@@ -1079,12 +1079,10 @@ Omadi.service.sendUpdates = function() {"use strict";
         currentWinStartMillis = parseInt(Ti.UI.currentWindow.appStartMillis, 10);
         
         if(isNaN(origAppStartMillis) || isNaN(currentWinStartMillis)){
-            Ti.API.error("start millis is NaN: " + currentWinStartMillis + " - " + origAppStartMillis);
             Utils.sendErrorReport("start millis is NaN: " + currentWinStartMillis + " - " + origAppStartMillis);
         }
         else{
             if(origAppStartMillis == 0 || currentWinStartMillis == 0){
-                Ti.API.error("AppStartMillis upload was zero: " + origAppStartMillis + " - " + currentWinStartMillis);
                 Utils.sendErrorReport("AppStartMillis upload was zero: " + origAppStartMillis + " - " + currentWinStartMillis);
             }
             else{
@@ -1107,12 +1105,12 @@ Omadi.service.sendUpdates = function() {"use strict";
         Utils.sendErrorReport("AppStartMillis upload was undefined, url: " + windowURL);
     }
     
-    Ti.API.error("Sending Data Now");
+    Ti.API.info("Sending Data Now");
     timestamp = Omadi.utils.getUTCTimestamp();
     
     if((timestamp - Omadi.service.lastSendUpdates) < 2){
         // Do not send updates within 2 seconds of each other
-        Ti.API.error("Not allowing data send - too soon after previous send.");
+        Ti.API.info("Not allowing data send - too soon after previous send.");
         return;
     }
     
@@ -1362,7 +1360,7 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
                 
                 // Check if the file is ready for deletion
                 if(bytesUploaded == 0 || bytesUploaded >= filesize || uploadFinished){
-                    Ti.API.error("Upload is finished for nid " + nid + " and delta " + delta);
+                    Ti.API.info("Upload is finished for nid " + nid + " and delta " + delta);
                     try{
                     	//Finishing the file after upload so it's available on the device for printing
                         listDB.execute("UPDATE _files SET uploading=0, fid=" + json.file_id + ", finished=" + Omadi.utils.getUTCTimestamp() + " WHERE id=" + photoId);
@@ -1705,7 +1703,7 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
     
     Omadi.service.currentFileUpload = Omadi.data.getNextPhotoData();
     if (!Omadi.service.currentFileUpload) {
-		Ti.API.error('Next photo data is null');
+		Ti.API.info('Next photo data is null');
 		return;
     }
     
@@ -1961,7 +1959,6 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
             db.close();
         }
         catch(nothing1){
-            Ti.API.error("db would not close");
             Utils.sendErrorReport("DB WOULD NOT CLOSE");
         }
         
@@ -1998,7 +1995,7 @@ Omadi.service.checkUpdate = function(useProgressBar, userInitiated){"use strict"
     
     if((timestamp - Omadi.service.lastCheckUpdate) < 2){
         // Only allow updates within 2 seconds of each other
-        Ti.API.error("Not allowing update - too soon after previous update.");
+        Ti.API.info("Not allowing update - too soon after previous update.");
         return;
     }
     

@@ -159,12 +159,8 @@ Omadi.bundles.tag.getExpiredTags = function(){"use strict";
         }
             
         try{
-            Ti.API.error("comm");
             if(typeof tagBundle.data.node_type_specific.community_violation_type !== 'undefined' && tagBundle.data.node_type_specific.community_violation_type == 'select_community'){
-                Ti.API.error("comm 2");
                 if(typeof tagBundle.data.node_type_specific.select_community_violations !== 'undefined'){
-                    Ti.API.error("comm 3");
-                    
                     communityViolations = tagBundle.data.node_type_specific.select_community_violations;
                     userUid = Omadi.utils.getUid();
                     
