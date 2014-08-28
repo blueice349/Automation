@@ -1811,6 +1811,10 @@ Omadi.data.processAttachmentsForChunkUploading = function(files) {
 	for (var i = 0; i < files.length; i++) {
 		var file = files[i];
 		
+		if(file.bytes_uploaded == -1){
+		    file.bytes_uploaded = 0;
+		}
+		
 		if(file.type == 'video' || file.type == 'file'){
 			file.numUploadParts = Math.ceil(file.filesize / Omadi.data.MAX_BYTES_PER_UPLOAD);
 			file.upload_part = (file.bytes_uploaded / Omadi.data.MAX_BYTES_PER_UPLOAD) + 1;
@@ -2018,6 +2022,11 @@ Omadi.data.getFileArray = function(){"use strict";
                 
                 // Upload videos and files in chunks
                 if(nextFile.type == 'video' || nextFile.type == 'file'){
+                    // A -1 means that the video upload needs to be restarted 
+                    if(nextFile.bytes_uploaded == -1){
+                        nextFile.bytes_uploaded = 0;
+                    }
+                    
                     nextFile.numUploadParts = Math.ceil(nextFile.filesize / Omadi.data.MAX_BYTES_PER_UPLOAD);
                     nextFile.upload_part = (nextFile.bytes_uploaded / Omadi.data.MAX_BYTES_PER_UPLOAD) + 1;
                     nextFile.uploading_bytes = Omadi.data.MAX_BYTES_PER_UPLOAD;
