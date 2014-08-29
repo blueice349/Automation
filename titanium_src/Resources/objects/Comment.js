@@ -611,8 +611,8 @@ Comment.prototype.save = function(comment){"use strict";
                                     }
                                 }
                                 
-                                Ti.API.error("In comment save...");
-                                Ti.API.error(JSON.stringify(priceData));
+                                Ti.API.info("In comment save...");
+                                Ti.API.info(JSON.stringify(priceData));
                                 
                                 insertValues.push(priceTotal);
                                 value_to_insert = JSON.stringify(priceData);

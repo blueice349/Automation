@@ -271,11 +271,7 @@ LicensePlateWidget.prototype.getNewElementWrapper = function(index){"use strict"
                             }
                         }
                         catch(ex){
-                            Ti.API.error("Exception in duplicate warning timeout: " + ex);
-                            try{
-                                Utils.sendErrorReport("Exception in duplicate warning timeout: " + ex);
-                            }
-                            catch(ex2){}
+                            Utils.sendErrorReport("Exception in duplicate warning timeout: " + ex);
                         }
                         
                     }, 4000);
@@ -318,11 +314,7 @@ LicensePlateWidget.prototype.getNewElementWrapper = function(index){"use strict"
                     }
                 }
                 catch(ex){
-                    Ti.API.error("Exception in duplicate warning timeout: " + ex);
-                    try{
-                        Utils.sendErrorReport("Exception in duplicate warning timeout: " + ex);
-                    }
-                    catch(ex2){}
+                    Utils.sendErrorReport("Exception in duplicate warning timeout: " + ex);
                 }
             });
             
@@ -434,13 +426,7 @@ LicensePlateWidget.prototype.setDuplicateWarnings = function(fieldName, value, s
         };
     
         http.onerror = function(e) {
-            try{
-                Ti.API.error(JSON.stringify(e));
-                Utils.sendErrorReport("Error on setduplicatewarnings: " + JSON.stringify(e));
-            }
-            catch(ex){
-                
-            }
+            Utils.sendErrorReport("Error on setduplicatewarnings: " + JSON.stringify(e));
         };
         
         actualFieldName = fieldName.replace(/___plate/g, '');

@@ -44,7 +44,15 @@ function DatestampWidget(formObj, instance, fieldViewWrapper){"use strict";
     else{
         this.numVisibleFields = this.instance.settings.cardinality;
     }
+    
+    if (this.isEndDate()) {
+    	this.instance.isRequired = this.instance.isRequired && this.instance.settings.enddate_require;
+    }
 }
+
+DatestampWidget.prototype.isEndDate = function(){
+	return this.instance.field_name.indexOf('___end') != -1;
+};
 
 DatestampWidget.prototype.getFieldView = function(){"use strict";
     var i, element, addButton;
@@ -133,18 +141,8 @@ DatestampWidget.prototype.redraw = function(){"use strict";
 DatestampWidget.prototype.getNewElement = function(index){"use strict";
     var dbValue, textValue, element, i, showTime, jsDate, dateText, timeText, timeView, dateView;
     
-    dbValue = null;
-    textValue = "";
-    
-    if(this.nodeElement){
-        if(typeof this.dbValues[index] !== 'undefined'){
-            dbValue = this.dbValues[index];
-        }
-        
-        if(typeof this.textValues[index] !== 'undefined'){
-            textValue = this.textValues[index];
-        }
-    }
+    dbValue = this.dbValues[index] || null;
+    textValue = this.textValues[index] || "";
     
     Ti.API.debug("Creating datestamp field: " + this.instance.label);
     

@@ -699,7 +699,6 @@ CommentForm.prototype.getNewCommentCid = function() {"use strict";
         db.close();
     }
     catch(ex){
-        Ti.API.error("Exception in getNewCommentCid: " + ex);
         Utils.sendErrorReport("Exception in getNewCommentCid: " + ex);   
         try{
             db.close();
@@ -1454,7 +1453,7 @@ CommentForm.prototype.showFormWindow = function(parent){"use strict";
         if(typeof this.fieldObjects.comment_body !== 'undefined'){
             if(typeof this.fieldObjects.comment_body.elements !== 'undefined'){
                 if(typeof this.fieldObjects.comment_body.elements[0] !== 'undefined'){
-                    Ti.API.error("found comment body element");
+                    Ti.API.info("found comment body element");
                     if(Ti.App.isAndroid){
                         this.fieldObjects.comment_body.elements[0].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_SHOW_ON_FOCUS;
                     }

@@ -136,7 +136,7 @@ function getDataSQL(getCount) {"use strict";
                         conditions.push(field_name + " = ''");
                     }
                     else {
-                        conditions.push(field_name + ' = ' + filterValue);
+                        conditions.push(field_name + ' = "' + filterValue + '"');
                     }
                 }
             }

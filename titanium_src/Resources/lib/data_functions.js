@@ -1,5 +1,5 @@
 
-/*jslint plusplus:true,eqeq:true,nomen:true*/
+/*jslint plusplus:true,eqeq:true,nomen:true,vars:true*/
 
 Omadi.data = Omadi.data || {};
 
@@ -169,7 +169,13 @@ Omadi.data.getFields = function(type) {"use strict";
                 instances[field_name].widget = JSON.parse(instances[field_name].widget);
             }
 
-            if (field_name.indexOf("___") !== -1) {
+			if (field_name.indexOf("___end") !== -1) {
+				instances[field_name.split('___')[0]].label += ' Start';
+				instances[field_name].label += ' End';
+				instances[field_name].part = null;
+                instances[field_name].partLabel = null;
+			}
+            else if (field_name.indexOf("___") !== -1) {
                 nameParts = field_name.split("___");
                 instances[field_name].part = nameParts[1];
                 instances[field_name].partLabel = instances[field_name].settings.parts[nameParts[1]];
@@ -281,7 +287,6 @@ Omadi.data.getNewNodeNid = function() {"use strict";
         db.close();
     }
     catch(ex){
-        Ti.API.error("Exception in getNewNodeNid: " + ex);
         Utils.sendErrorReport("Exception in getNewNodeNid: " + ex);   
         try{
             db.close();
@@ -597,9 +602,6 @@ Omadi.data.nodeSave = function(node) {"use strict";
                                     }
                                 }
                             }
-                            
-                            Ti.API.error("In save...");
-                            Ti.API.error(JSON.stringify(priceData));
                             
                             insertValues.push(priceTotal);
                             value_to_insert = JSON.stringify(priceData);
@@ -1102,8 +1104,6 @@ Omadi.data.deletePhotoUpload = function(id, deleteFile) {"use strict";
     db.execute("DELETE FROM _files WHERE id = " + id);
     db.close();
     
-    Ti.API.error("DELETING a file: " + filePath);
-    
     if(filePath !== null){
         file = Ti.Filesystem.getFile(filePath);
         if(file.exists() && file.isFile()){
@@ -1252,8 +1252,9 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                              * location
                              * license_plate
                              * vehicle_fields
+                             * But excludes datestamp___end
                              */
-                            if (field_name.indexOf("___") !== -1) {
+                            if (field_name.indexOf("___") !== -1 && field_name.indexOf("___end") == -1) {
                                 dbValue = origDBValue;
                                 
                                 field_parts = field_name.split("___");
@@ -1283,7 +1284,6 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                                 node[field_name].dbValues.push(dbValue);
                             }
                             else {
-    
                                 jsonValue = Omadi.utils.getParsedJSON(origDBValue);
                                 tempDBValues = [];
     
@@ -1574,8 +1574,6 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                                             }
                                         }
                                     }
-                                    
-                                   // Ti.API.error(JSON.stringify(node[field_name]));
 
                                     break;
                                     
@@ -1752,7 +1750,6 @@ Omadi.data.getAllFiles = function(){"use strict";
             result.next();
 		}
 	} catch (e) {
-        Ti.API.error("Error in get file query load: " + e);
         Utils.sendErrorReport("Error in get file query load: " + e);
 	}
 	db.close();
@@ -1871,7 +1868,6 @@ Omadi.data.deleteFinishedUploads = function(files){"use strict";
 			}
 		}
 	} catch (e) {
-		Ti.API.error("Error in delete file or thumbnail from device: " + e);
     	Utils.sendErrorReport("Error in delete file or thumbnail from device: " + e);
 	}
 	db.close();
@@ -1949,7 +1945,6 @@ Omadi.data.keepFailedUploads = function(files){"use strict";
 	        dialog.show();
 	    }
 	} catch (e) {
-		Ti.API.error("Error in keep failed uploads: " + e);
     	Utils.sendErrorReport("Error in keep failed uploads: " + e);
 	}
 	db.close();
@@ -2079,8 +2074,6 @@ Omadi.data.getFileArray = function(){"use strict";
                             deleteFile = false;
                         }
                         
-                        Ti.API.error("ABOUT TO DELETE A FINISHED FILE!: " + nextFile.file_path);
-                        
                         if(deleteFile){
                             imageFile = Ti.Filesystem.getFile(nextFile.file_path);
                             if(imageFile.exists()){
@@ -2128,7 +2121,6 @@ Omadi.data.getFileArray = function(){"use strict";
             }
             catch(innerEx){
                 // Catch the inner exception so it doesn't throw away all uploads
-                Ti.API.error("Error in inner file query load: " + innerEx);
                 Utils.sendErrorReport("Error in get file query load: " + innerEx);
             }
             
@@ -2137,7 +2129,6 @@ Omadi.data.getFileArray = function(){"use strict";
         result.close();
     }
     catch(exDB){
-        Ti.API.error("Error in get file query load: " + exDB);
         Utils.sendErrorReport("Error in get file query load: " + exDB);
     }
     
@@ -2199,11 +2190,6 @@ Omadi.data.getNextPhotoData = function(){"use strict";
             imageFile = Ti.Filesystem.getFile(nextFile.file_path);
             
             if(!imageFile.exists()){
-               
-                Ti.API.error("File does not exist: " + nextFile.file_path);
-                
-                //Omadi.data.deletePhotoUpload(nextFile.id, false);
-                
                 Utils.sendErrorReport("The file at " + nextFile.file_path + " for node #" + nextFile.nid + " cannot be found for upload.");
                 
                 alert("The file at " + nextFile.file_path + " for node #" + nextFile.nid + " cannot be found for upload.");
@@ -2384,7 +2370,6 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                         buffer.release();
                     }
                     catch(exVideo){
-                        Ti.API.error("Exception with video upload: " + exVideo);
                         Utils.sendErrorReport("Exception with video upload: " + exVideo);
                         errorOccurred = true;
                     }
@@ -2425,7 +2410,6 @@ Omadi.data.getNextPhotoData = function(){"use strict";
         }
         catch(exAll){
             errorOccurred = true;
-            Ti.API.error("File error: " + exAll);
             Utils.sendErrorReport("File error: " + exAll);
         }
         
@@ -2897,6 +2881,9 @@ Omadi.data.processFieldsJson = function(mainDB) {"use strict";
                                 else if (Omadi.service.fetchedJSON.fields.insert[i].type == 'extra_price') {
                                     queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "___data' " + db_type);
                                 }
+                                else if (Omadi.service.fetchedJSON.fields.insert[i].type == 'datestamp') {
+                                    queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "___end' " + db_type);
+                                }
                             }
                         }
                         else{
@@ -2932,6 +2919,13 @@ Omadi.data.processFieldsJson = function(mainDB) {"use strict";
                                 }
                             }
                         }
+                        // Datestamp with end time
+                        else if (Omadi.service.fetchedJSON.fields.insert[i].type == 'datestamp' && Omadi.service.fetchedJSON.fields.insert[i].settings.enddate_get) {
+                        	// push start date
+                        	queries.push("INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings, can_view, can_edit) VALUES (" + fid + ",'" + dbEsc(field_type) + "','" + dbEsc(field_name) + "','" + dbEsc(label) + " Start','" + dbEsc(description) + "','" + dbEsc(bundle) + "','" + dbEsc(region) + "'," + weight + ",'" + dbEsc(required) + "','" + dbEsc(disabled) + "','" + dbEsc(widgetString) + "','" + dbEsc(settingsString) + "'," + can_view + ", " + can_edit + ")");
+                        	// push end date
+                        	queries.push("INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings, can_view, can_edit) VALUES (" + fid + ",'" + dbEsc(field_type) + "','" + dbEsc(field_name + "___end") + "','" + dbEsc(label) + "','" + dbEsc(description) + "','" + dbEsc(bundle) + "','" + dbEsc(region) + "'," + weight + ", '" + dbEsc(required) + "' ,  '" + dbEsc(disabled) + "' , '" + dbEsc(widgetString) + "','" + dbEsc(settingsString) + "'," + can_view + ", " + can_edit + ")");
+                        }
                         //Normal field
                         else {
                             queries.push("INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings, can_view, can_edit) VALUES (" + fid + ",'" + dbEsc(field_type) + "','" + dbEsc(field_name) + "','" + dbEsc(label) + "','" + dbEsc(description) + "','" + dbEsc(bundle) + "','" + dbEsc(region) + "'," + weight + ",'" + dbEsc(required) + "','" + dbEsc(disabled) + "','" + dbEsc(widgetString) + "','" + dbEsc(settingsString) + "'," + can_view + ", " + can_edit + ")");
@@ -2940,7 +2934,15 @@ Omadi.data.processFieldsJson = function(mainDB) {"use strict";
                     else {
                         // The structure exists.... just update the fields table values
                         // This will work for fields with parts, as they are indexed by the same fid
-                        queries.push("UPDATE fields SET type='" + dbEsc(field_type) + "', label='" + dbEsc(label) + "', description='" + dbEsc(description) + "', bundle='" + dbEsc(bundle) + "', region='" + dbEsc(region) + "', weight=" + weight + ", required='" + dbEsc(required) + "', disabled='" + dbEsc(disabled) + "', widget='" + dbEsc(widgetString) + "', settings='" + dbEsc(settingsString) + "', can_view=" + can_view + ", can_edit=" + can_edit + "  WHERE fid=" + fid);
+                        if (Omadi.service.fetchedJSON.fields.insert[i].type == 'datestamp') {
+                        	if (Omadi.service.fetchedJSON.fields.insert[i].settings.enddate_get) {
+                        		queries.push("INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings, can_view, can_edit) VALUES (" + fid + ",'" + dbEsc(field_type) + "','" + dbEsc(field_name + "___end") + "','" + dbEsc(label) + "','" + dbEsc(description) + "','" + dbEsc(bundle) + "','" + dbEsc(region) + "'," + weight + ", '" + dbEsc(required) + "' ,  '" + dbEsc(disabled) + "' , '" + dbEsc(widgetString) + "','" + dbEsc(settingsString) + "'," + can_view + ", " + can_edit + ")");
+                        	} else {
+                        		queries.push("DELETE FROM fields WHERE field_name='" + field_name + "___end'");
+                        	}
+                        } else {
+                        	queries.push("UPDATE fields SET type='" + dbEsc(field_type) + "', label='" + dbEsc(label) + "', description='" + dbEsc(description) + "', bundle='" + dbEsc(bundle) + "', region='" + dbEsc(region) + "', weight=" + weight + ", required='" + dbEsc(required) + "', disabled='" + dbEsc(disabled) + "', widget='" + dbEsc(widgetString) + "', settings='" + dbEsc(settingsString) + "', can_view=" + can_view + ", can_edit=" + can_edit + "  WHERE fid=" + fid);
+                        }
                     }
                 }
             }
@@ -2997,15 +2999,13 @@ Omadi.data.processCommentJson = function(mainDB) {"use strict";
                     instances = Omadi.data.getFields(tableName);
                     
                     for (field_name in instances) {
-                        if (instances.hasOwnProperty(field_name)) {
-                            fieldNames.push("`" + field_name + "`");
-                            
-                            if(instances[field_name].type == 'file'){
-                                fieldNames.push(field_name + "___filename");
-                            }
-                            else if(instances[field_name].type == 'extra_price'){
-                                fieldNames.push(field_name + "___data");
-                            }
+                        fieldNames.push("`" + field_name + "`");
+                        
+                        if(instances[field_name].type == 'file'){
+                            fieldNames.push(field_name + "___filename");
+                        }
+                        else if(instances[field_name].type == 'extra_price'){
+                            fieldNames.push(field_name + "___data");
                         }
                     }
                     
@@ -3077,8 +3077,8 @@ Omadi.data.processCommentJson = function(mainDB) {"use strict";
                                     case 'taxonomy_term_reference':
                                     case 'user_reference':
                                     case 'list_boolean':
-                                    case 'datestamp':
                                     case 'omadi_time':
+                                    case 'datestamp':
                                     case 'image':
                                     
                                         value = Omadi.service.fetchedJSON.comment.insert[i][field_name];
@@ -3352,22 +3352,18 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                             fieldNames.push('nid');
                             
                             for (field_name in instances) {
-                                if (instances.hasOwnProperty(field_name)) {
-                                    fieldNames.push("`" + field_name + "`");
-                                    
-                                    if(instances[field_name].type == 'file'){
-                                        fieldNames.push(field_name + "___filename");
-                                    }
-                                    else if(instances[field_name].type == 'extra_price'){
-                                        fieldNames.push(field_name + "___data");
-                                    }
+                                fieldNames.push("`" + field_name + "`");
+                                
+                                if(instances[field_name].type == 'file'){
+                                    fieldNames.push(field_name + "___filename");
+                                }
+                                else if(instances[field_name].type == 'extra_price'){
+                                    fieldNames.push(field_name + "___data");
                                 }
                             }
                             
-                            for(field_name in fakeFields){
-                                if(fakeFields.hasOwnProperty(field_name)){
-                                    fieldNames.push("`" + field_name + "`");
-                                }
+                            for(var field_name in fakeFields){
+                                fieldNames.push("`" + field_name + "`");
                             }
                             
                             query += fieldNames.join(',');
@@ -3438,8 +3434,8 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                                             case 'taxonomy_term_reference':
                                             case 'user_reference':
                                             case 'list_boolean':
-                                            case 'datestamp':
                                             case 'omadi_time':
+                                            case 'datestamp':
                                             case 'image':
                                             
                                                 value = Omadi.service.fetchedJSON.node[type].insert[i][field_name];
@@ -3635,7 +3631,6 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                         }   
                     }
                     catch(ex1) {
-                        Ti.API.error("Saving single Node Data from JSON: " + ex1);
                         alert("Error saving node Data for " + type + ": " + ex1 + ". Details: " + queries[i]);
                     }
                 }
@@ -3648,7 +3643,6 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                         mainDB.execute(queries[i]); 
                     }
                     catch(ex2) {
-                        Ti.API.error("Saving single Node Data from JSON: " + ex2);
                         alert("Error saving node Data for " + type + ": " + ex2 + ". Details: " + queries[i]);
                     }
                 }
@@ -3664,7 +3658,6 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
         }
     }
     catch(ex) {
-        Ti.API.error("Saving Node Data from JSON: " + ex);
         Utils.sendErrorReport("Exception saving from sync: " + ex);
         alert("Saving Form Data for " + type + ": " + ex);
         
@@ -3838,8 +3831,6 @@ Omadi.data.processTermsJson = function(mainDB) {"use strict";
 
     try {
         queries = [];
-       
-        Ti.API.error(JSON.stringify(Omadi.service.fetchedJSON.terms));
        
         if (Omadi.service.fetchedJSON.terms.insert) {
             if (Omadi.service.fetchedJSON.terms.insert.length) {

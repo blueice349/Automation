@@ -73,8 +73,6 @@ Utils.prototype.setCookieHeader = function(http) {"use strict";
             Ti.API.debug("After setting header");
         }
         catch(ex){
-            Ti.API.error("Could not set http cookie header");
-            Ti.API.error(cookie);
             this.sendErrorReport("Could not set cookie for " + http.location);
         }
     }

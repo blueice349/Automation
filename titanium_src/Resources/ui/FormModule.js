@@ -25,7 +25,7 @@ function rules_field_passed_time_check(time_rule, timestamp) {"use strict";
 
         values = day_rule.split('|');
         
-        Ti.API.error(JSON.stringify(values));
+        Ti.API.info(JSON.stringify(values));
 
         if (values[0] == '1' || values[0] == 1) {
             if (values[1] == '1' || values[1] == 1) {
@@ -674,7 +674,7 @@ FormModule.prototype.trySaveNode = function(saveType){"use strict";
     try {
 		// If an updating is happening try again later.
 		if(Omadi.data.isUpdating() && saveType != 'continuous' && saveType != 'draft'){
-			Ti.API.error("Trying to save node while updating");
+			Ti.API.info("Trying to save node while updating");
 			
 			if (this.trySaveNodeTries == 0) {
 				Omadi.display.loading('Waiting...');
@@ -811,7 +811,6 @@ FormModule.prototype.loadCustomCopyNode = function(originalNode, from_type, to_t
         }
     }
     else{
-        Ti.API.error("No bundle found for " + from_type);
         Utils.sendErrorReport("No bundle found for " + from_type);
     }
     
@@ -1689,7 +1688,7 @@ FormModule.prototype.showDuplicateWarnings = function(saveType){"use strict";
                                     showingDuplicates = true;
                                     
                                     if(Ti.Network.online){
-                                        Ti.API.error("We must fetch the duplicate warnings...");
+                                        Ti.API.info("We must fetch the duplicate warnings...");
                                     
                                         this.win.addEventListener('duplicateWarningComplete', duplicateWarningCompleteCallback);
                                         
@@ -1987,12 +1986,12 @@ FormModule.prototype.displayDuplicateWarnings = function(warningJSON, value, sav
                     
                     // Actually finish the saving process
                     if(ActiveFormObj.usingDispatch){
-                        Ti.API.error("about to save node from continue saving button with type: " + saveType);
+                        Ti.API.info("about to save node from continue saving button with type: " + saveType);
                         // For dispatch, there are no other options for save type besides normal
                         ActiveFormObj.trySaveNode(saveType);
-                        Ti.API.error("about to save dispatch node");
+                        Ti.API.info("about to save dispatch node");
                         FormObj.dispatch.trySaveNode(saveType);
-                        Ti.API.error("done saving dispatch node");
+                        Ti.API.info("done saving dispatch node");
                     }
                     else{
                         ActiveFormObj.trySaveNode(saveType);
@@ -2118,7 +2117,6 @@ FormModule.prototype.initNewNode = function(){"use strict";
         }
     }
     catch(ex){
-        Ti.API.error("Exception initializing a new node: " + ex);
         Utils.sendErrorReport("Exception initializing a new node: " + ex);
     }
 };
@@ -2803,16 +2801,14 @@ FormModule.prototype.getWindow = function(){"use strict";
         this.regions = Omadi.data.getRegions(this.type);
         
         // Reset the conditionally required selection that might have been set previously as this.instances could be cached
-        for(i in this.instances){
-            if(this.instances.hasOwnProperty(i)){
-                this.instances[i].isConditionallyRequired = false;
-            }
+        for(var fieldName in this.instances){
+            this.instances[fieldName].isConditionallyRequired = false;
         }
         
         try{
             regionWrappers = this.getRegionWrappers();
             
-            for(i = 0; i < regionWrappers.length; i ++){
+            for(var i = 0; i < regionWrappers.length; i ++){
                 this.scrollView.add(regionWrappers[i]);
                       
                 this.scrollView.add(Ti.UI.createView({

@@ -7,8 +7,6 @@ var Utils = require('lib/Utils');
 Widget = {};
 
 function LocationWidget(formObj, instance, fieldViewWrapper){"use strict";
-    var nameParts, part;
-    
     this.formObj = formObj;
     this.instance = instance;
     this.fieldView = null;
@@ -32,17 +30,10 @@ function LocationWidget(formObj, instance, fieldViewWrapper){"use strict";
         }
     }
     
-    nameParts = instance.field_name.split('___');
-
-    if (nameParts[1]) {
-        part = nameParts[1];
-        if(part == 'postal_code'){
-            if(this.instance.isRequired && typeof this.instance.settings.require_zip !== 'undefined' && this.instance.settings.require_zip == 1){
-                this.instance.isRequired = true;
-            }
-            else{
-                this.instance.isRequired = false;
-            }
+    var locationPart = instance.field_name.split('___')[1];
+    if (locationPart) {
+        if(locationPart == 'postal_code'){
+            this.instance.isRequired = this.instance.isRequired && this.instance.settings.require_zip;
         }
     }
     else {
@@ -129,8 +120,8 @@ LocationWidget.prototype.setupNewElement = function(index){"use strict";
             }
         }
         
-        Ti.API.error("Location: " + JSON.stringify(this.instance.settings));
-        Ti.API.error("dbValue: *" + dbValue + "*");
+        Ti.API.info("Location: " + JSON.stringify(this.instance.settings));
+        Ti.API.info("dbValue: *" + dbValue + "*");
         
         if ((dbValue == "" || dbValue == null) && typeof this.instance.settings.state_default_value !== 'undefined') {
             dbValue = this.instance.settings.state_default_value;
