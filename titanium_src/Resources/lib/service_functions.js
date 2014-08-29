@@ -1361,7 +1361,7 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
                 Ti.API.debug("Upload finished: " + uploadFinished);
                 
                 // Check if the file is ready for deletion
-                if(bytesUploaded == 0 || bytesUploaded >= filesize || uploadFinished){
+                if(uploadFinished){
                     Ti.API.error("Upload is finished for nid " + nid + " and delta " + delta);
                     try{
                     	//Finishing the file after upload so it's available on the device for printing

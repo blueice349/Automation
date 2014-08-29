@@ -1257,6 +1257,7 @@ exports.addNewFiles = function(e) {"use strict";
         var files = processNewFilesForObjectInsertion(e.newFiles);
         for (var fieldName in files) {
         	var widget = Dispatch.workObj.fieldObjects[fieldName];
+        	
         	if (widget) {
         		widget.updateFidsOfNewFiles(files[fieldName]);
         	}

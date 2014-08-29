@@ -1,4 +1,4 @@
-/*jslint eqeq:true,plusplus:true,regexp:true*/
+/*jslint eqeq:true,plusplus:true,regexp:true,vars:true*/
 
 var Widget, Omadi;
 
@@ -107,8 +107,7 @@ ImageWidget.prototype.getImageNid = function() {
 };
 
 ImageWidget.prototype.getNewElement = function(index){"use strict";
-    var widgetView, dbValues, imageData, degreeData, i, j, localDelta, 
-            numImagesShowing = 0, contentWidth, imageNid, deltaData, imageDataAdded, thumbData;
+    var widgetView, dbValues, imageData, degreeData, i, j, localDelta, contentWidth, imageNid, deltaData, imageDataAdded, thumbData;
 
     dbValues = [];
     imageData = [];
@@ -137,15 +136,12 @@ ImageWidget.prototype.getNewElement = function(index){"use strict";
         instance : this.instance
     });
     
-    imageNid = this.getImageNid();
-    
     imageDataAdded = [];
-    numImagesShowing = 0;
 
 	this.addImageViewsToWidgetView(dbValues, widgetView);
 
 	var contentWidth = 110 * dbValues.length;
-	if (this.instance.can_edit && (this.instance.settings.cardinality == -1 || (numImagesShowing < this.instance.settings.cardinality))) {
+	if (this.instance.can_edit && (this.instance.settings.cardinality == -1 || (dbValues.length < this.instance.settings.cardinality))) {
 		widgetView.add(this.getTakePhotoButtonView());
 		contentWidth += 110;
 	}
@@ -172,10 +168,11 @@ ImageWidget.prototype.getNewElement = function(index){"use strict";
     return widgetView;
 };
 
-function processAllFilesDebug(allFiles) {
-	var files = [];
-	for (var i = 0; i < allFiles.length; i++) {
-		var file = {
+function processAllFilesDebug(allFiles) {"use strict";
+	var files = [], i, file;
+	
+	for (i = 0; i < allFiles.length; i++) {
+		file = {
 			field_name: allFiles[i].field_name,
 			nid: allFiles[i].nid,
 			fid: allFiles[i].fid,
@@ -186,9 +183,10 @@ function processAllFilesDebug(allFiles) {
 	return files;
 }
 
-ImageWidget.prototype.addImageViewsToWidgetView = function(fids, widgetView) {
+ImageWidget.prototype.addImageViewsToWidgetView = function(fids, widgetView) {"use strict";
 	try {
 		var localImages = this.getLocalImages();
+		
 		for (var i = 0, j = 0; i < fids.length; i++) {
 			var imageView = null; 
 			if (fids[i] === -1) {
@@ -315,7 +313,7 @@ ImageWidget.prototype.getTakePhotoButtonView = function() {
         bigImg : null,
         touchEnabled: true,
         imageIndex : 0,
-        instance : this.instance,
+        instance : this.instance
     });
     
 	var self = this;

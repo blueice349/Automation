@@ -1811,13 +1811,15 @@ Omadi.data.processAttachmentsForChunkUploading = function(files) {
 	for (var i = 0; i < files.length; i++) {
 		var file = files[i];
 		
-		if(file.bytes_uploaded == -1){
-		    file.bytes_uploaded = 0;
+		// A -1 means the file needs to be fully uploaded from scratch because of some network error, but do not update the bytes_uploaded or it may abort the upload
+		var tempBytesUploaded = file.bytes_uploaded;
+		if(tempBytesUploaded == -1){
+		    tempBytesUploaded = 0;
 		}
 		
 		if(file.type == 'video' || file.type == 'file'){
 			file.numUploadParts = Math.ceil(file.filesize / Omadi.data.MAX_BYTES_PER_UPLOAD);
-			file.upload_part = (file.bytes_uploaded / Omadi.data.MAX_BYTES_PER_UPLOAD) + 1;
+			file.upload_part = (tempBytesUploaded / Omadi.data.MAX_BYTES_PER_UPLOAD) + 1;
 			file.uploading_bytes = Omadi.data.MAX_BYTES_PER_UPLOAD;
         } else {
 			file.numUploadParts = 1;
