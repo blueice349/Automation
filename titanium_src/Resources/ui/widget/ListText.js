@@ -330,7 +330,7 @@ exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper)
     return Widget[instance.field_name];
 };
 
-exports.getOptions = function(instance) {
+exports.getOptions = function(instance) {"use strict";
 	var listText = new ListTextWidget(null, instance, null);
 	return listText.getOptions();
 };

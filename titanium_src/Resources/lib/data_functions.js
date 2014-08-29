@@ -544,7 +544,7 @@ Omadi.data.nodeSave = function(node) {"use strict";
         if(fieldNames.length > 0){
             query = "INSERT OR REPLACE INTO " + node.type + " (nid, `";
             query += fieldNames.join('`,`');
-            query += '`) VALUES (' + saveNid + ',';
+            query += "`) VALUES (" + saveNid + ',';
     
             insertValues = [];
             
@@ -1767,8 +1767,9 @@ Omadi.data.getUploadableFiles = function(files){"use strict";
 	var uploadableFiles = [];
 	
 	var allowVideoMobileNetwork = Ti.App.Properties.getBool('allowVideoMobileNetwork', false);
+	var i;
 	
-	for (var i = 0; i < files.length; i++) {
+	for (i = 0; i < files.length; i++) {
 		var file = files[i];
 		
 		// Filter out videos on mobile unless the user allows it
@@ -1804,17 +1805,20 @@ Omadi.data.getUploadableFiles = function(files){"use strict";
  * Adds chunk loading data to an array of files.
  * @param {Array.<Object>} files The files to process.
  */
-Omadi.data.processAttachmentsForChunkUploading = function(files) {
-	for (var i = 0; i < files.length; i++) {
+Omadi.data.processAttachmentsForChunkUploading = function(files) {"use strict";
+    var i;
+	for (i = 0; i < files.length; i++) {
 		var file = files[i];
 		
-		if(file.bytes_uploaded == -1){
-		    file.bytes_uploaded = 0;
+		// A -1 means the file needs to be fully uploaded from scratch because of some network error, but do not update the bytes_uploaded or it may abort the upload
+		var tempBytesUploaded = file.bytes_uploaded;
+		if(tempBytesUploaded == -1){
+		    tempBytesUploaded = 0;
 		}
 		
 		if(file.type == 'video' || file.type == 'file'){
 			file.numUploadParts = Math.ceil(file.filesize / Omadi.data.MAX_BYTES_PER_UPLOAD);
-			file.upload_part = (file.bytes_uploaded / Omadi.data.MAX_BYTES_PER_UPLOAD) + 1;
+			file.upload_part = (tempBytesUploaded / Omadi.data.MAX_BYTES_PER_UPLOAD) + 1;
 			file.uploading_bytes = Omadi.data.MAX_BYTES_PER_UPLOAD;
         } else {
 			file.numUploadParts = 1;
@@ -1841,7 +1845,8 @@ Omadi.data.deleteFinishedUploads = function(files){"use strict";
 	var now = Omadi.utils.getUTCTimestamp();
 	var db = Omadi.utils.openListDatabase();
 	try {
-		for (var i = 0; i < files.length; i++) {
+	    var i;
+		for (i = 0; i < files.length; i++) {
 			var file = files[i];
 			
 			// Delete files that finshed over 16 hours ago.
@@ -1868,7 +1873,7 @@ Omadi.data.deleteFinishedUploads = function(files){"use strict";
 			}
 		}
 	} catch (e) {
-    	Utils.sendErrorReport("Error in delete file or thumbnail from device: " + e);
+        Utils.sendErrorReport("Error in delete file or thumbnail from device: " + e);
 	}
 	db.close();
 	
@@ -1884,8 +1889,10 @@ Omadi.data.keepFailedUploads = function(files){"use strict";
 	
 	var now = Omadi.utils.getUTCTimestamp();
 	var idsToKeep = [];
+	var i;
+	var message;
 	
-	for (var i = 0; i < files.length; i++) {
+	for (i = 0; i < files.length; i++) {
 		var file = files[i];
 		var node = Omadi.data.nodeLoad(file.nid);
 		
@@ -1899,7 +1906,7 @@ Omadi.data.keepFailedUploads = function(files){"use strict";
 				// Files with negative nids have not been uploaded. An nid of -1000000 should never be uploaded.
 				if (node.flag_is_updated != 3 && node.flag_is_updated != 4) { // 3 = Draft, 4 = Continuous save
 				    // If this is not a draft or continuous save, send up the debug
-				    var message = "Non draft or continuos node not uploaded after 30 minutes: " + JSON.stringify(node);
+				    message = "Non draft or continuos node not uploaded after 30 minutes: " + JSON.stringify(node);
 				    // Limit node message to 2000 characters
 			        message = message.substring(0, 2000);
 			        message += JSON.stringify(file);
@@ -1911,13 +1918,13 @@ Omadi.data.keepFailedUploads = function(files){"use strict";
             
         // Check for files that have failed to upload after 10 attempts
         } else if (file.tries > 10) {
-			var message = "Over 10 tries: " + JSON.stringify(node);
+			message = "Over 10 tries: " + JSON.stringify(node);
 	        // Limit node message to 2000 characters
 	        message = message.substring(0, 2000);
 			message += JSON.stringify(file);
 			Utils.sendErrorReport(message);
 			
-        	idsToKeep.push(file.id);
+            idsToKeep.push(file.id);
         }
 	}
 	
@@ -1933,11 +1940,11 @@ Omadi.data.keepFailedUploads = function(files){"use strict";
 	        });
 	        
 	        dialog.addEventListener('click', function(e){
-	        	if (e.index === 1) {
+                if (e.index === 1) {
 		            try {
-		            	Omadi.display.openLocalPhotosWindow();
-		            } catch(e) {
-		                Utils.sendErrorReport("exception upload problem dialog: " + e);
+                        Omadi.display.openLocalPhotosWindow();
+		            } catch(ex) {
+		                Utils.sendErrorReport("exception upload problem dialog: " + ex);
 		            }
 				}
 	        });
@@ -1945,7 +1952,7 @@ Omadi.data.keepFailedUploads = function(files){"use strict";
 	        dialog.show();
 	    }
 	} catch (e) {
-    	Utils.sendErrorReport("Error in keep failed uploads: " + e);
+        Utils.sendErrorReport("Error in keep failed uploads: " + e);
 	}
 	db.close();
 };
@@ -1976,7 +1983,7 @@ Omadi.data.getFileArray = function(){"use strict";
     
     sql = "SELECT * FROM _files ";
     if(Ti.Network.networkType === Ti.Network.NETWORK_MOBILE && !Ti.App.Properties.getBool('allowVideoMobileNetwork', false)){
-    	sql += " WHERE type != 'video' "; 
+        sql += " WHERE type != 'video' "; 
     }
     sql += " ORDER BY tries ASC, filesize ASC, delta ASC";
     
@@ -2018,15 +2025,16 @@ Omadi.data.getFileArray = function(){"use strict";
                 // Upload videos and files in chunks
                 if(nextFile.type == 'video' || nextFile.type == 'file'){
                     // A -1 means that the video upload needs to be restarted 
-                    if(nextFile.bytes_uploaded == -1){
-                        nextFile.bytes_uploaded = 0;
+                    var tempBytesUploaded = nextFile.bytes_uploaded;
+                    if(tempBytesUploaded == -1){
+                        tempBytesUploaded = 0;
                     }
                     
                     nextFile.numUploadParts = Math.ceil(nextFile.filesize / Omadi.data.MAX_BYTES_PER_UPLOAD);
-                    nextFile.upload_part = (nextFile.bytes_uploaded / Omadi.data.MAX_BYTES_PER_UPLOAD) + 1;
+                    nextFile.upload_part = (tempBytesUploaded / Omadi.data.MAX_BYTES_PER_UPLOAD) + 1;
                     nextFile.uploading_bytes = Omadi.data.MAX_BYTES_PER_UPLOAD;
                 } else {
-                	nextFile.numUploadParts = 1;
+                    nextFile.numUploadParts = 1;
                     nextFile.upload_part = 1;
                     nextFile.uploading_bytes = nextFile.filesize;
                 }
@@ -2034,7 +2042,7 @@ Omadi.data.getFileArray = function(){"use strict";
                 // Negative nids mean they haven't been uploaded yet, -1000000 means never upload.
                 // Send error reports for files that should have been uploaded but are over 30 minutes old.
                 if (nextFile.nid <= 0) { 
-                	if (nextFile.nid != -1000000 && nextFile.timestamp < now - 1800) {
+                    if (nextFile.nid != -1000000 && nextFile.timestamp < now - 1800) {
 	                    node = Omadi.data.nodeLoad(nextFile.nid);
 	                    if (node !== null) {
 	                        if (node.flag_is_updated != 3 && node.flag_is_updated != 4) { // 3 = Draft, 4 = Continuous save
@@ -3238,7 +3246,8 @@ Omadi.data.processUsersJson = function(mainDB) {"use strict";
 Omadi.data.updateFidsOnNewFiles = function(nid, newFiles) {"use strict";
 	var db = Omadi.utils.openListDatabase();
 	try {
-		for (var i = 0; i < newFiles.length; i++) {
+	    var i;
+		for (i = 0; i < newFiles.length; i++) {
 			var result = db.execute('SELECT id FROM _files WHERE nid=' + nid + ' AND field_name="' + newFiles[i].fieldName + '" AND fid=0 ORDER BY timestamp ASC LIMIT 1');
 			if (result.isValidRow()) {
 				db.execute('UPDATE _files SET fid=' + newFiles[i].fid + ' WHERE id=' + result.fieldByName('id'));
@@ -3554,9 +3563,9 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
 
 							var newFiles = Omadi.service.fetchedJSON.node[type].insert[i].__newFiles;
                             if (newFiles && newFiles.length > 0) {
-                            	try{
+                                try{
 	                                Ti.App.fireEvent('newFilesAdded', {
-	                                    newFiles : newFiles,
+	                                    newFiles : newFiles
 	                                });
 	                            }
 	                            catch(e){
@@ -3587,10 +3596,10 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                                 }
                             }
                         
-                        	if (Omadi.service.fetchedJSON.node[type].insert[i].__newFiles) {
-                        		var queriesToUpdateFids = Omadi.data.updateFidsOnNewFiles(Omadi.service.fetchedJSON.node[type].insert[i].nid, Omadi.service.fetchedJSON.node[type].insert[i].__newFiles);
-                        		queries.concat(queriesToUpdateFids);
-                        	}
+                            if (Omadi.service.fetchedJSON.node[type].insert[i].__newFiles) {
+                                var queriesToUpdateFids = Omadi.data.updateFidsOnNewFiles(Omadi.service.fetchedJSON.node[type].insert[i].nid, Omadi.service.fetchedJSON.node[type].insert[i].__newFiles);
+                                queries.concat(queriesToUpdateFids);
+                            }
                         }
                     }
                 }
@@ -3675,16 +3684,16 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
 
 };
 
-Omadi.data.updateSignatureFids = function(node) {
-	var db = listDB = Omadi.utils.openListDatabase();
+Omadi.data.updateSignatureFids = function(node) {"use strict";
+	var db = Omadi.utils.openListDatabase();
     var result = db.execute('SELECT field_name FROM _files WHERE nid=' + node.nid + ' AND type="signature"');
     
     while(result.isValidRow()) {
-    	var fieldName = result.fieldByName('field_name');
-    	var fid = node[fieldName];
-    	
-    	db.execute('UPDATE _files SET fid=' + fid + ' WHERE nid=' + node.nid + ' AND field_name="' + fieldName + '"');
-    	result.next(); 
+        var fieldName = result.fieldByName('field_name');
+        var fid = node[fieldName];
+        
+        db.execute('UPDATE _files SET fid=' + fid + ' WHERE nid=' + node.nid + ' AND field_name="' + fieldName + '"');
+        result.next(); 
     }
     
     result.close();

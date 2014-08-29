@@ -197,8 +197,8 @@ Omadi.bundles.timecard.getLastClockInNid = function(){"use strict";
         }
         result.close();
     }
-    catch(ex){
-        Utils.sendErrorReport("Exception getting lastclockinnid: " + ex);
+    catch(e){
+        Utils.sendErrorReport("Exception getting lastclockinnid: " + e);
     }
     
     db.close();

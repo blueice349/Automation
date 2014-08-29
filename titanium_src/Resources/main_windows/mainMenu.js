@@ -949,7 +949,7 @@ function showContinuousSavedNode(){"use strict";
             listDB = Omadi.utils.openListDatabase();
             result = listDB.execute("SELECT COUNT(*) FROM _files WHERE nid = 0");
             if(result.isValidRow()){
-            	var count = result.field(0);
+                var count = result.field(0);
                 if (count > 0){
                      // Let omadi know about the problem
                     Utils.sendErrorReport(count + " photo" + (count > 1 ? "s" : "") + " with a 0 nid was found without a node to load.");
@@ -960,9 +960,9 @@ function showContinuousSavedNode(){"use strict";
                     
                     // Let the user know about the problem
                     if (count > 1) {
-                    	alert(count + " recent photos were not attached to a form properly, but they were saved. To see them, go to Actions -> Photos Not Uploaded");
+                        alert(count + " recent photos were not attached to a form properly, but they were saved. To see them, go to Actions -> Photos Not Uploaded");
                     } else {
-                    	alert("A recent photo was not attached to a form properly, but it was saved. To see it, go to Actions -> Photos Not Uploaded");
+                        alert("A recent photo was not attached to a form properly, but it was saved. To see it, go to Actions -> Photos Not Uploaded");
                     }
                 }
             }

@@ -1,3 +1,4 @@
+/*global strpos,dbEsc*/
 /*jslint eqeq:true,plusplus:true*/
 
 var Omadi = Omadi || {};
@@ -602,12 +603,14 @@ Omadi.utils.count = function(obj){"use strict";
 Omadi.utils.joinAsSentence = function(arr){"use strict";
 	if (arr.length === 0) {
 		return '';
-	} else if (arr.length <= 2) {
-		return arr.join(' and ');
-	} else {
-		arr[arr.length - 1] = 'and ' + arr[arr.length - 1];
-		return arr.join(', ');
 	}
+	
+	if (arr.length <= 2) {
+		return arr.join(' and ');
+	} 
+	
+	arr[arr.length - 1] = 'and ' + arr[arr.length - 1];
+	return arr.join(', ');
 };
 
 Omadi.utils.isNumber = function(n) {"use strict";
@@ -1903,7 +1906,7 @@ Omadi.utils.getPhotoWidget = function(){"use strict";
     return Ti.App.Properties.getString("photoWidget", 'take');
 };
 
-Omadi.utils.sqlEscape = function(str) {
+Omadi.utils.sqlEscape = function(str) {"use strict";
 	str = str || '';
 	var result = str.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, function (char) {
 		switch (char) {
@@ -1930,21 +1933,23 @@ Omadi.utils.sqlEscape = function(str) {
 	return result;
 };
 
-Omadi.utils.sqlEscapeAll = function(arr) {
+Omadi.utils.sqlEscapeAll = function(arr) {"use strict";
 	var result = [];
-	for (var i = 0; i < arr.length; i++) {
+	var i;
+	for (i = 0; i < arr.length; i++) {
 		result[i] = Omadi.utils.sqlEscape(arr[i]);
 	}
 	return result;
 };
 
-Omadi.utils.regExpEscape = function(str) {
+Omadi.utils.regExpEscape = function(str) {"use strict";
   return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
 };
 
-Omadi.utils.regExpEscapeAll = function(arr) {
+Omadi.utils.regExpEscapeAll = function(arr) {"use strict";
 	var result = [];
-	for (var i = 0; i < arr.length; i++) {
+	var i;
+	for (i = 0; i < arr.length; i++) {
 		result[i] = Omadi.utils.regExpEscape(arr[i]);
 	}
 	return result;

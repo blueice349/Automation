@@ -85,7 +85,7 @@ function deleteAndroidFile(filePath){"use strict";
     }
 }
 
-function cookieIsSet(webview) {
+function cookieIsSet(webview) {"use strict";
 	var cookies = webview.evalJS('document.cookie;');
 	return cookies.indexOf('SSESS') != -1 || cookies.indexOf('NREUM') != -1;
 }
@@ -387,8 +387,8 @@ function cookieIsSet(webview) {
         webview.addEventListener("load", function(e){
             Omadi.display.doneLoading();
             if (!cookieIsSet(webview)) {
-            	alert('Login credentials not found. Please login to view this file.');
-            	Omadi.display.openWebView(curWin.nid);
+                alert('Login credentials not found. Please login to view this file.');
+                Omadi.display.openWebView(curWin.nid);
             }
         });
         

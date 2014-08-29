@@ -252,7 +252,7 @@ Gallery.remove = function(imageView){"use strict";
 
 Gallery.update = function(){"use strict";
     
-    var i, recentFiles, images, item, imageView, modified, items, tempFile, thumbFile, 
+    var recentFiles, images, item, imageView, modified, items, tempFile, thumbFile, 
         imageFile, printedCurrentBar, printedDraftBar, printedNeverBar, file;
     
     items = [];
@@ -274,7 +274,8 @@ Gallery.update = function(){"use strict";
     
     galleryWrapper.add(gallery);
     
-    for(var i = 0; i < images.length; i++){
+    var i;
+    for(i = 0; i < images.length; i++){
         tempFile = Ti.Filesystem.getFile(images[i].filePath);
         thumbFile = Ti.Filesystem.getFile(images[i].thumbPath || images[i].filePath);
         

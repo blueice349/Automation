@@ -1,4 +1,4 @@
-/*jslint eqeq:true, plusplus: true*/
+/*jslint eqeq:true, plusplus: true, vars:true,nomen:true*/
 
 var Widget, Omadi;
 Widget = {};
@@ -983,7 +983,7 @@ ExtraPriceWidget.prototype.itemChange = function(){"use strict";
 
 ExtraPriceWidget.prototype.itemChangeDelta = function(delta){"use strict";
     var jsonValue, prices, foundPrice, price, priceFloat, inputItem, quantityItem, 
-        quantity, categoryFieldName, categoryVal, index, floatVal;
+        quantity, categoryFieldName, categoryVal, floatVal, index;
     
     try{
         Ti.API.debug("Changing price for delta " + delta);
@@ -1070,10 +1070,10 @@ ExtraPriceWidget.prototype.itemChangeDelta = function(delta){"use strict";
                                                                 }
                                                                 
                                                                 if(categoryVal && categoryVal !== ''){
-                                                                    var index = 't' + categoryVal;
+                                                                    index = 't' + categoryVal;
                                                                     
                                                                     if(typeof prices.references[referenceVal]._modifiers[modifierVal][index] !== 'undefined'){
-                                                                        var floatVal = parseFloat(prices.references[referenceVal]._modifiers[modifierVal][index]);
+                                                                        floatVal = parseFloat(prices.references[referenceVal]._modifiers[modifierVal][index]);
                                                                         if(!isNaN(floatVal) || prices.references[referenceVal]._modifiers[modifierVal][index] === ''){
                                                                             price = prices.references[referenceVal]._modifiers[modifierVal][index];
                                                                             foundPrice = true;
@@ -1085,7 +1085,7 @@ ExtraPriceWidget.prototype.itemChangeDelta = function(delta){"use strict";
                                                         
                                                         // Get the default reference modifier price
                                                         if(!foundPrice && typeof prices.references[referenceVal]._modifiers[modifierVal]['default'] !== 'undefined'){
-                                                            var floatVal = parseFloat(prices.references[referenceVal]._modifiers[modifierVal]['default']);
+                                                            floatVal = parseFloat(prices.references[referenceVal]._modifiers[modifierVal]['default']);
                                                             if(!isNaN(floatVal) || prices.references[referenceVal]._modifiers[modifierVal]['default'] === ''){
                                                                 price = prices.references[referenceVal]._modifiers[modifierVal]['default'];
                                                                 foundPrice = true;
@@ -1112,10 +1112,10 @@ ExtraPriceWidget.prototype.itemChangeDelta = function(delta){"use strict";
                                             }
                                             
                                             if(categoryVal && categoryVal !== ''){
-                                                var index = 't' + categoryVal;
+                                                index = 't' + categoryVal;
                                                 
                                                 if(typeof prices.references[referenceVal][index] !== 'undefined'){
-                                                    var floatVal = parseFloat(prices.references[referenceVal][index]);
+                                                    floatVal = parseFloat(prices.references[referenceVal][index]);
                                                     if(!isNaN(floatVal) || prices.references[referenceVal][index] === ''){
                                                         price = prices.references[referenceVal][index];
                                                         foundPrice = true;
@@ -1127,7 +1127,7 @@ ExtraPriceWidget.prototype.itemChangeDelta = function(delta){"use strict";
                                     
                                     // Get the default reference price
                                     if(!foundPrice && typeof prices.references[referenceVal]['default'] !== 'undefined'){
-                                        var floatVal = parseFloat(prices.references[referenceVal]['default']);
+                                        floatVal = parseFloat(prices.references[referenceVal]['default']);
                                         if(!isNaN(floatVal) || prices.references[referenceVal]['default'] === ''){
                                             price = prices.references[referenceVal]['default'];
                                             foundPrice = true;

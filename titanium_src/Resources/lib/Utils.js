@@ -284,7 +284,8 @@ exports.trimWhiteSpace = function(string) {"use strict";
     return string.replace(/^\s+|\s+$/g, "");
 };
 
-exports.setCookie = function(cookie) {
+exports.setCookie = function(cookie) {"use strict";
+    /*jslint regexp:true*/
 	try{
         if(cookie != null && cookie > "" && cookie != "null"){
             var matches = cookie.match(/^(.+?)=(.+?);/);

@@ -1,5 +1,6 @@
-/*global Omadi,dbEsc*/
+/*global Omadi,dbEsc,isJsonString*/
 /*jslint eqeq:true,plusplus:true*/
+
 
 var Comments = require('services/Comments');
 var Utils = require('lib/Utils');
@@ -9,6 +10,7 @@ Omadi.service = Omadi.service || {};
 Omadi.service.fetchedJSON = null;
 Omadi.service.initialSyncProgressBar = null;
 Omadi.service.fetchUpdatesProgressBar = null;
+
 
 Omadi.service.refreshSession = function() {"use strict";
     var http;
@@ -195,7 +197,7 @@ Omadi.service.syncInitialFormItems = function(nodeCount, commentCount, numPages)
         Omadi.service.syncInitialInstallDownloadNextPage();
     }
     catch(ex1){
-    	Omadi.data.setUpdating(false);
+        Omadi.data.setUpdating(false);
         Utils.sendErrorReport("Exception in paging retrieval setup: " + ex1);    
     }
 };
@@ -208,7 +210,6 @@ Omadi.service.syncInitialInstallDownloadNextPage = function(){"use strict";
     Omadi.data.setUpdating(true);
     
     if(Omadi.service.initialInstallPage < Omadi.service.initialInstallTotalPages){
-    	
         // Make sure the update timestamp is 0 because the sync is not complete    
         Ti.API.debug("About to sync page " + Omadi.service.initialInstallPage);
         Omadi.data.setLastUpdateTimestamp(0);
@@ -427,7 +428,7 @@ Omadi.service.syncInitialFormPage = function(page){"use strict";
                 else{
                     Ti.API.debug("No data was found.");        
                     Utils.sendErrorReport("Bad response text and data for download: " + this.responseText + ", stautus: " + this.status + ", statusText: " + this.statusText);
-                }  
+                }
                 
                 setTimeout(function(){
                     Ti.App.fireEvent('omadi:initialInstallDownloadComplete');      
@@ -1088,9 +1089,12 @@ Omadi.service.sendUpdates = function() {"use strict";
             else{
                 if(origAppStartMillis != Ti.UI.currentWindow.appStartMillis){
                     if(Ti.App.isAndroid){
-                    	return;
+                        Utils.sendErrorReport("An extra Android send update event is being REJECTED: " + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
                     }
-                    Utils.sendErrorReport("An extra iOS send update event is being REJECTED: " + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
+                    else{
+                        Utils.sendErrorReport("An extra iOS send update event is being REJECTED: " + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);    
+                    }
+                    
                     return;
                 }
             }
@@ -1191,7 +1195,7 @@ Omadi.service.logout = function() {"use strict";
     try {
 		Ti.Network.removeAllSystemCookies();
     } catch(error) {
-    	if (Ti.App.isAndroid) {
+        if (Ti.App.isAndroid) {
 			Utils.sendErrorReport('Error trying to clear cookies on logout. ' + error);
 		}
     }
@@ -1359,10 +1363,11 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
                 Ti.API.debug("Upload finished: " + uploadFinished);
                 
                 // Check if the file is ready for deletion
-                if(bytesUploaded == 0 || bytesUploaded >= filesize || uploadFinished){
-                    Ti.API.info("Upload is finished for nid " + nid + " and delta " + delta);
+                if(uploadFinished){
+                    Ti.API.error("Upload is finished for nid " + nid + " and delta " + delta);
+
                     try{
-                    	//Finishing the file after upload so it's available on the device for printing
+                        //Finishing the file after upload so it's available on the device for printing
                         listDB.execute("UPDATE _files SET uploading=0, fid=" + json.file_id + ", finished=" + Omadi.utils.getUTCTimestamp() + " WHERE id=" + photoId);
                     }
                     catch(sqlEx2){
@@ -1581,8 +1586,8 @@ Omadi.service.photoUploadStream = function(e){"use strict";
     var filesize, uploadingBytes, bytesUploaded, currentBytesUploaded;
     
     if (!Omadi.service.currentFileUpload) {
-    	// The file has already finished uploading or has ended in an error.
-    	return;
+        // The file has already finished uploading or has ended in an error.
+        return;
     }
     
     filesize = Omadi.service.currentFileUpload.filesize;
@@ -1668,7 +1673,7 @@ Omadi.service.verifyStartMillis = function(isBackground){"use strict";
         if(Ti.App.isAndroid){
             Utils.sendErrorReport("An extra android upload activity is being REJECTED, background: " + isBackground + " : "  + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
         } else {
-        	Utils.sendErrorReport("An extra iOS upload event is being REJECTED, background: " + isBackground + " : " + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
+            Utils.sendErrorReport("An extra iOS upload event is being REJECTED, background: " + isBackground + " : " + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
         }
         return false;
     }
@@ -1678,6 +1683,7 @@ Omadi.service.verifyStartMillis = function(isBackground){"use strict";
 
 Omadi.service.uploadFile = function(isBackground) {"use strict";
 	isBackground =  isBackground || false;
+	var db;
 	
     // Don't upload the file if the appStartMillis don't match the current runtime
     // This may come up when the app crashes, and this function is called multiple times
@@ -1693,11 +1699,12 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
     // Don't try to upload a file while form data is being saved. This causes photos to get messed up.
     // Don't upload a file if another file upload has started in the last 90 seconds.
     if (!Ti.Network.online || Ti.App.closingApp || Omadi.service.isSendingData() || (isUploadingFile && now - lastUploadStartTimestamp <= 90)) {
-    	return;
+        return;
     }
     
     var numFilesReadyToUpload = Omadi.data.getNumFilesReadyToUpload();
     if (numFilesReadyToUpload == 0) {
+        Ti.App.fireEvent('doneSendingPhotos');
 		return;
     }
     
@@ -1712,7 +1719,7 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
 	}
     
     try {
-	    var db = Omadi.utils.openListDatabase();
+	    db = Omadi.utils.openListDatabase();
 	    // Reset all photos to not uploading in case there was an error previously
 	    db.execute('UPDATE _files SET uploading = 0 WHERE uploading != 0');
 	    
@@ -1754,7 +1761,7 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
             db = Omadi.utils.openListDatabase();
             var result = db.execute('SELECT token FROM background_files WHERE uid = ' + Omadi.service.currentFileUpload.uid + ' AND client_account = "' + dbEsc(Omadi.service.currentFileUpload.client_account) + '"');
             if (result.isValidRow()) {
-                cookie = result.fieldByName('token');
+                var cookie = result.fieldByName('token');
                 if (cookie > '') {
                     Omadi.service.uploadFileHTTP.setRequestHeader('Cookie', cookie);
                 }
@@ -1797,8 +1804,8 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
         // Upload file
         Omadi.service.uploadFileHTTP.setValidatesSecureCertificate(false);
         Omadi.service.uploadFileHTTP.send(payload);
-    } catch(e) {
-        Utils.sendErrorReport("Exception sending upload data: " + e);
+    } catch(ex) {
+        Utils.sendErrorReport("Exception sending upload data: " + ex);
     }
 };
 
