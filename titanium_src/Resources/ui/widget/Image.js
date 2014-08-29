@@ -1,9 +1,6 @@
-/*jslint eqeq:true,plusplus:true,regexp:true,vars:true*/
+/*jslint eqeq:true, plusplus:true, regexp:true, vars:true*/
 
-var Widget, Omadi;
-
-Widget = {};
-
+var Widget = {}, Omadi;
 var ImageFactory = null;
 var Utils = require('lib/Utils');
 
@@ -98,7 +95,7 @@ ImageWidget.prototype.redraw = function(){"use strict";
     this.fieldViewWrapper.remove(origFieldView);
 };
 
-ImageWidget.prototype.getImageNid = function() {
+ImageWidget.prototype.getImageNid = function() {"use strict";
 	var imageNid = this.formObj.nid;
     if(typeof this.formObj.origNid !== 'undefined'){
         imageNid = this.formObj.origNid;
@@ -107,7 +104,7 @@ ImageWidget.prototype.getImageNid = function() {
 };
 
 ImageWidget.prototype.getNewElement = function(index){"use strict";
-    var widgetView, dbValues, imageData, degreeData, i, j, localDelta, contentWidth, imageNid, deltaData, imageDataAdded, thumbData;
+    var widgetView, dbValues, imageData, degreeData, i, j, localDelta, imageNid, deltaData, imageDataAdded, thumbData;
 
     dbValues = [];
     imageData = [];
@@ -186,8 +183,13 @@ function processAllFilesDebug(allFiles) {"use strict";
 ImageWidget.prototype.addImageViewsToWidgetView = function(fids, widgetView) {"use strict";
 	try {
 		var localImages = this.getLocalImages();
+		var i,j;
+		var self = this;
+		var showPhotoOptions = function(e){
+		    self.showPhotoOptions(e.source);
+		};
 		
-		for (var i = 0, j = 0; i < fids.length; i++) {
+		for (i = 0, j = 0; i < fids.length; i++) {
 			var imageView = null; 
 			if (fids[i] === -1) {
 				imageView = this.getLocalImageView(fids[i], localImages[0][j++], i);
@@ -197,10 +199,7 @@ ImageWidget.prototype.addImageViewsToWidgetView = function(fids, widgetView) {"u
 				imageView = this.getRemoteImageView(fids[i], i);
 			}
 			
-			var self = this;
-			imageView.addEventListener('click', function(e) {
-				self.showPhotoOptions(e.source);
-			});
+			imageView.addEventListener('click', showPhotoOptions);
 			
 			widgetView.add(imageView);
 		}
@@ -209,7 +208,7 @@ ImageWidget.prototype.addImageViewsToWidgetView = function(fids, widgetView) {"u
 	}
 };
 
-ImageWidget.prototype.getLocalImages = function() {
+ImageWidget.prototype.getLocalImages = function() {"use strict";
 	var localImages = {0: []};
 	try {
 		var db = Omadi.utils.openListDatabase();
@@ -240,12 +239,12 @@ ImageWidget.prototype.getLocalImages = function() {
 	return localImages;
 };
 
-ImageWidget.prototype.getLocalImageView = function(fid, imageData, index) {
+ImageWidget.prototype.getLocalImageView = function(fid, imageData, index) {"use strict";
 	var image = '';
 	if (Ti.App.Properties.getBool('omadi:image:skipThumbnail', false)) {
         image = '/images/video_selected.png';
     } else {
-    	image = imageData.thumbPath ? imageData.thumbPath : imageData.filePath;
+        image = imageData.thumbPath || imageData.filePath;
     }
 	var imageView = Ti.UI.createImageView({
         left : 5,
@@ -270,7 +269,7 @@ ImageWidget.prototype.getLocalImageView = function(fid, imageData, index) {
     return imageView;
 };
 
-ImageWidget.prototype.getRemoteImageView = function(fid, index) {
+ImageWidget.prototype.getRemoteImageView = function(fid, index) {"use strict";
 	var imageView = Ti.UI.createImageView({
         left : 5,
         height : 100,
@@ -294,7 +293,7 @@ ImageWidget.prototype.getRemoteImageView = function(fid, index) {
     return imageView;
 };
 
-ImageWidget.prototype.getTakePhotoButtonView = function() {
+ImageWidget.prototype.getTakePhotoButtonView = function() {"use strict";
 	
 	var widgetType = Ti.App.Properties.getString("photoWidget", 'take');
     if(widgetType == 'choose' && this.getPhotoChooserDir() === null){
@@ -336,7 +335,7 @@ ImageWidget.prototype.getTakePhotoButtonView = function() {
     return takePhotoView;
 };
 
-ImageWidget.prototype.setFid = function(i, fid) {
+ImageWidget.prototype.setFid = function(i, fid) {"use strict";
 	if (typeof this.dbValues[i] === 'undefined') {
 		return;
 	}
@@ -348,8 +347,9 @@ ImageWidget.prototype.setFid = function(i, fid) {
 	imageView.dbValue = fid;
 };
 
-ImageWidget.prototype.updateFidsOfNewFiles = function(newFids) {
-	for (var i = 0, j = 0; i < this.dbValues.length && j < newFids.length; i++) {
+ImageWidget.prototype.updateFidsOfNewFiles = function(newFids) {"use strict";
+    var i,j;
+	for (i = 0, j = 0; i < this.dbValues.length && j < newFids.length; i++) {
 		if (this.dbValues[i] == -1) {
 			this.setFid(i, newFids[j++]);
 		}
@@ -483,8 +483,8 @@ ImageWidget.prototype.showPhotoOptions = function(imageView){"use strict";
     var dialog, isDeletePhoto, options;
     
     if (!this.instance.can_edit) {
-    	Omadi.display.displayFullImage(imageView);
-    	return;
+        Omadi.display.displayFullImage(imageView);
+        return;
     }
     
     options = ['View Photo'];
@@ -566,7 +566,7 @@ ImageWidget.prototype.clickedPhotoOption = function(e){"use strict";
 	                        }
 	                        else{
 	                            Utils.sendErrorReport("Trying to delete image, filepath is null");
-                        	}
+                            }
                         }
                     }
                 }
@@ -653,6 +653,7 @@ ImageWidget.prototype.openPictureChooser = function(imageView){"use strict";
                    },
                    textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
                 });
+                
                 
                 buttons = Ti.UI.createView({
                     width: '100%',
@@ -915,7 +916,7 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
             }
             
             var close = function() {
-            	var startIndex, newImageView, i, addedPhoto, takeNextPhotoView, lastIndex, cardinality, parentView;
+                var startIndex, newImageView, i, addedPhoto, takeNextPhotoView, lastIndex, cardinality, parentView;
                  try{
                      if(typeof imageView.addedPhotos !== 'undefined'){
                         
@@ -931,10 +932,10 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
                         for(i = 0; i < imageView.addedPhotos.length; i ++){
                             addedPhoto = imageView.addedPhotos[i];
                             
-                            var file = file = Ti.Filesystem.getFile(addedPhoto.filePath);
+                            var file = Ti.Filesystem.getFile(addedPhoto.filePath);
                             if (!file.exists()) {
-                            	missingFiles.push = [addedPhoto];
-                            	continue;
+                                missingFiles.push = [addedPhoto];
+                                continue;
                             }
                             
                             newImageView = Widget[imageView.instance.field_name].getImageView(parentView, addedPhoto.imageIndex, null, null, addedPhoto.filePath, "", addedPhoto.degrees);
@@ -943,15 +944,15 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
                         }
                         
                         if (missingFiles.length > 0) {
-                        	Utils.sendErrorReport(missingFiles.length + ' of ' + addedPhotos.length + ' images missing on camera callback: ' + JSON.stringify({
-                        		missing: missingFiles,
-                        		added: addedPhotos
-                        	}));
-                        	if (addedPhotos.length > 1) {
-                				alert(missingFiles.length + ' of the photos you just took ' + (missingFiles.length > 1 ? 'were' : 'was') + ' not saved properly. Please try again.');
-                        	} else {
-                        		alert('The photo you just took was not saved properly. Please try again.');
-                        	}
+                            Utils.sendErrorReport(missingFiles.length + ' of ' + imageView.addedPhotos.length + ' images missing on camera callback: ' + JSON.stringify({
+                                missing: missingFiles,
+                                added: imageView.addedPhotos
+                            }));
+                            if (imageView.addedPhotos.length > 1) {
+                                alert(missingFiles.length + ' of the photos you just took ' + (missingFiles.length > 1 ? 'were' : 'was') + ' not saved properly. Please try again.');
+                            } else {
+                                alert('The photo you just took was not saved properly. Please try again.');
+                            }
                         }
                         
                         cardinality = -1;
@@ -994,9 +995,9 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
             this.cameraAndroid.showCamera({
                 maxPhotos : maxPhotos,
                 sendError : function(event){
-                	if(typeof event.message !== 'undefined'){
-                		Utils.sendErrorReport(event.message);
-                	}
+                    if(typeof event.message !== 'undefined'){
+                        Utils.sendErrorReport(event.message);
+                    }
                 },
                 addedPhoto : function(event){
                     
@@ -1019,9 +1020,9 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
                     imageView.setTouchEnabled(true);
                     
                     if (!file.exists()) {
-                    	Utils.sendErrorReport('Image didn\'t save properly after capture');
-                    	alert('There was an error saving the image. Please try again.');
-                    	return;
+                        Utils.sendErrorReport('Image didn\'t save properly after capture');
+                        alert('There was an error saving the image. Please try again.');
+                        return;
                     }
                     
                     if(typeof imageView.addedPhotos === 'undefined'){
@@ -1041,8 +1042,8 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
                     
                 },
                 success : function(event) {
-                	Ti.API.info('Photo complete success in JS');
-                	close();
+                    Ti.API.info('Photo complete success in JS');
+                    close();
                 },
                 error : function(error) {
                     Utils.sendErrorReport("Error capturing a photo" + JSON.stringify(error));
@@ -1286,7 +1287,7 @@ ImageWidget.prototype.saveFileInfo = function(imageView, filePath, thumbPath, de
         db.close();
     }
     catch(ex) {
-    	Utils.sendErrorReport("Problem saving the photo to the database in saveFileInfo: " + ex);
+        Utils.sendErrorReport("Problem saving the photo to the database in saveFileInfo: " + ex);
         alert("Problem saving the photo to the database: " + ex);
     }
 };
@@ -1315,7 +1316,7 @@ ImageWidget.prototype.saveAndroidFileInfo = function(fieldName, imageIndex, file
         db.close();
     }
     catch(ex) {
-    	Utils.sendErrorReport("Problem saving the photo to the database in saveAndroidFileInfo: " + ex);
+        Utils.sendErrorReport("Problem saving the photo to the database in saveAndroidFileInfo: " + ex);
         alert("Problem saving the photo to the database: " + ex);
     }
 };

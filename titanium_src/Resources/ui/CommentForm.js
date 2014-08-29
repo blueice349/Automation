@@ -33,6 +33,13 @@ function CommentForm(nid){"use strict";
     }
 }
 
+function sort_by_weight(a, b) {"use strict";
+    if (a.weight != null && a.weight != "" && b.weight != null && b.weight != "") {
+        return a.weight > b.weight;
+    }
+    return 0;
+}
+
 CommentForm.prototype.cleanup = function(){"use strict";
     
 };

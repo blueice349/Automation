@@ -1,4 +1,4 @@
-/*jslint eqeq:true,plusplus:true*/
+/*jslint eqeq:true, plusplus:true, vars:true, nomen:true*/
 
 var FormObj, Omadi, ActiveFormObj, popupWin, popupWinListView, popupWinFieldObject, popupWinDescriptionLabel;
 FormObj = {};
@@ -32,7 +32,6 @@ function rules_field_passed_time_check(time_rule, timestamp) {"use strict";
                 retval = true;
             }
             else {
-                
                 for(i = 2; i < values.length; i += 2){
                     start_time = Number(timestamp_midnight) + Number(values[i]);
                     
@@ -351,6 +350,7 @@ function FormModule(type, nid, form_part, usingDispatch) {"use strict";
             Ti.API.debug("window nid: " + this.nid);
             Ti.API.debug("window dispatch_nid: " + this.dispatch_nid);
         }
+        
         
         tempFormPart = parseInt(this.form_part, 10);
         if(this.form_part == tempFormPart){
@@ -680,8 +680,10 @@ FormModule.prototype.trySaveNode = function(saveType){"use strict";
 				Omadi.display.loading('Waiting...');
 			}
 			
+			var self = this;
+			
 			setTimeout(function() {
-				FormObj[nodeType].trySaveNode(saveType);
+				self.trySaveNode(saveType);
 			}, 1000);
 			
 			// After 10 tries ignore the update and save anyway.
@@ -693,6 +695,7 @@ FormModule.prototype.trySaveNode = function(saveType){"use strict";
 		}
 		
 		this.saveNode(saveType);
+		
 	} catch (e) {
 		Utils.sendErrorReport("Exception in trysavenode: " + e);
 	} finally {
@@ -701,7 +704,7 @@ FormModule.prototype.trySaveNode = function(saveType){"use strict";
 	}
 };
 
-FormModule.prototype.saveNode = function(saveType) {
+FormModule.prototype.saveNode = function(saveType) {"use strict";
 	this.node._isContinuous = saveType == 'continuous';
 	this.node._isDraft = saveType == 'draft';
     
@@ -717,7 +720,7 @@ FormModule.prototype.saveNode = function(saveType) {
         this.nid = this.node.nid;
         
         if (!this.node._isContinuous) {
-        	if (!this.node._saved) {
+            if (!this.node._saved) {
 	            Utils.sendErrorReport("Node failed to save on the phone: " + JSON.stringify(this.node));
 	            alert("There is a problem with the form data, and it cannot not be saved. Please fix the data or close the form.");
 	            return;
@@ -725,16 +728,16 @@ FormModule.prototype.saveNode = function(saveType) {
 	        
 	        this.nodeSaved = true;
         }
-    	
-    	var eventData = {
+
+        var eventData = {
 	        nodeNid: this.node._saveNid,
 	        nodeType: this.node.type,
 	        saveType: saveType
 	    };
-    	
-    	// Notify the user if there is no network
-    	if (Ti.Network.online || this.node._isContinuous || this.node._isDraft) {
-	    	this.win.dispatchTabGroup.fireEvent('omadi:dispatch:savedDispatchNode', eventData);
+        
+        // Notify the user if there is no network
+        if (Ti.Network.online || this.node._isContinuous || this.node._isDraft) {
+            this.win.dispatchTabGroup.fireEvent('omadi:dispatch:savedDispatchNode', eventData);
 		    Ti.App.fireEvent('savedNode', eventData);
 		} else {
 			var self = this;
@@ -744,7 +747,7 @@ FormModule.prototype.saveNode = function(saveType) {
 				message: 'Alert management of this ' + this.node.type.toUpperCase() + ' immediately. You do not have an Internet connection right now.  Your data was saved and will be synched when you connect to the Internet.'
 			});
 			dialog.addEventListener('click', function(e) {
-            	self.win.dispatchTabGroup.fireEvent('omadi:dispatch:savedDispatchNode', eventData);
+                self.win.dispatchTabGroup.fireEvent('omadi:dispatch:savedDispatchNode', eventData);
 			    Ti.App.fireEvent('savedNode', eventData);
             });
 			dialog.show();
@@ -2741,7 +2744,7 @@ FormModule.prototype.setupIOSToolbar = function(){"use strict";
     if(ActiveFormObj.parentTabObj.dispatchTab !== null || this.type == 'dispatch'){
         actions.title = 'Save';
         actions.addEventListener('click', function() {
-        	ActiveFormObj.parentTabObj.doDispatchSave('normal');
+            ActiveFormObj.parentTabObj.doDispatchSave('normal');
         });
     }
     else{
@@ -3005,7 +3008,7 @@ FormModule.prototype.getWindow = function(){"use strict";
                 });
                 
                 doneButton.addEventListener('click', function() {
-		        	ActiveFormObj.parentTabObj.doDispatchSave('normal');
+                    ActiveFormObj.parentTabObj.doDispatchSave('normal');
 		        });
                 
             }
@@ -3447,7 +3450,7 @@ FormModule.prototype.showActionsOptions = function(e){"use strict";
     
         btn_tt.push('Save');
         btn_id.push('normal');
-    	
+
         if(bundle.can_create == 1){
             btn_tt.push("Save + New");
             btn_id.push("new");
@@ -4164,7 +4167,7 @@ exports.getDispatchObject = function(OmadiObj, type, nid, form_part, usingDispat
     return FormObj[type];
 };
 
-exports.setActiveFormObject = function(formObject, parentTabObj) {
+exports.setActiveFormObject = function(formObject, parentTabObj) {"use strict";
 	ActiveFormObj = formObject;
     ActiveFormObj.parentTabObj = parentTabObj;
     ActiveFormObj.getWindow();

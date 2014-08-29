@@ -173,7 +173,7 @@ VideoWidget.prototype.redraw = function(){"use strict";
 // };
 
 VideoWidget.prototype.getNewElement = function(index){"use strict";
-    var widgetView, dbValues, imageData, degreeData, i, j, localDelta, contentWidth, imageNid, deltaData, thumbData;
+    var widgetView, dbValues, imageData, degreeData, i, j, localDelta, imageNid, deltaData, thumbData;
 
     dbValues = [];
     imageData = [];
@@ -231,7 +231,7 @@ VideoWidget.prototype.getNewElement = function(index){"use strict";
     return widgetView;
 };
 
-VideoWidget.prototype.getChooseVideoButtonView = function(widgetView) {
+VideoWidget.prototype.getChooseVideoButtonView = function(widgetView) {"use strict";
     
     var chooseVideoView = Ti.UI.createImageView({
         left : 5,
@@ -277,7 +277,9 @@ VideoWidget.prototype.getImageNid = function() {"use strict";
 VideoWidget.prototype.addImageViewsToWidgetView = function(fids, widgetView) {"use strict";
     try {
         var localImages = this.getNonUploadedVideos();
-        for (var i = 0, j = 0; i < fids.length; i++) {
+        var i,j;
+        
+        for (i = 0, j = 0; i < fids.length; i++) {
             var imageView = null;
             if (fids[i] === -1) {
                 imageView = this.getLocalImageView(fids[i], localImages[0][j++], i);
@@ -298,7 +300,7 @@ VideoWidget.prototype.getLocalImageView = function(fid, imageData, index) {"use 
     var image = '/images/video_selected.png';
     
     if(Ti.App.isIOS){
-        videoFile = Ti.Filesystem.getFile(imageData.filePath);
+        var videoFile = Ti.Filesystem.getFile(imageData.filePath);
         
         if(videoFile.exists()){
             Ti.API.debug("Video file exists...");
@@ -340,7 +342,7 @@ VideoWidget.prototype.getLocalImageView = function(fid, imageData, index) {"use 
     return imageView;
 };
 
-VideoWidget.prototype.getRemoteImageView = function(fid, index) {
+VideoWidget.prototype.getRemoteImageView = function(fid, index) {"use strict";
     var imageView = Ti.UI.createImageView({
         left : 5,
         height : 100,
@@ -369,11 +371,11 @@ VideoWidget.prototype.getRemoteImageView = function(fid, index) {
     return imageView;
 };
 
-VideoWidget.prototype.getNonUploadedVideos = function() {
+VideoWidget.prototype.getNonUploadedVideos = function() {"use strict";
     var localImages = {0: []};
     try {
         var db = Omadi.utils.openListDatabase();
-        var result = db.execute('SELECT file_path, fid, degrees, thumb_path FROM _files WHERE nid IN (' + this.getImageNid() + ', ' + (this.node.continuous_nid || 0) + ', 0) AND uploaded = 0 AND field_name="' + this.instance.field_name + '" ORDER BY timestamp ASC');
+        var result = db.execute('SELECT file_path, fid, degrees, thumb_path FROM _files WHERE nid IN (' + this.getImageNid() + ', ' + (this.node.continuous_nid || 0) + ', 0) AND finished = 0 AND field_name="' + this.instance.field_name + '" ORDER BY timestamp ASC');
         
         while(result.isValidRow()) {
             
@@ -837,7 +839,7 @@ VideoWidget.prototype.saveFileInfo = function(imageView, filePath, thumbPath, de
         db.close();
     }
     catch(ex) {
-    	Utils.sendErrorReport("Problem saving the video to the database: " + ex);
+        Utils.sendErrorReport("Problem saving the video to the database: " + ex);
         alert("Problem saving the video to the database: " + ex);
     }
 };
@@ -854,9 +856,8 @@ VideoWidget.prototype.setFid = function(i, fid) {"use strict";
     imageView.dbValue = fid;
 };
 
-VideoWidget.prototype.updateFidsOfNewFiles = function(newFids) {"use strict";
-    var i, j;
-    
+VideoWidget.prototype.updateFidsOfNewFiles = function(newFids) {"use strict"; 
+    var i, j;   
     for (i = 0, j = 0; i < this.dbValues.length && j < newFids.length; i++) {
         if (this.dbValues[i] == -1) {
             this.setFid(i, newFids[j++]);

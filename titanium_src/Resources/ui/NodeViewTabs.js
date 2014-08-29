@@ -170,7 +170,7 @@ NodeViewTabs.prototype.getTabs = function(allowActions){"use strict";
         tempDispatchNid, iconFile, tempFormPart, origNid, copyToBundle, commentsCount;
     
     if (typeof allowActions == 'undefined') {
-    	allowActions = true;
+        allowActions = true;
     }
     
     try{
@@ -362,7 +362,7 @@ NodeViewTabs.prototype.getTabs = function(allowActions){"use strict";
 
 NodeViewTabs.prototype.savedNode = function(e){"use strict";
 	if (e.saveType != 'continuous') {
-    	_instance.close();
+        _instance.close();
     }
 };
 
@@ -398,7 +398,7 @@ exports.getTabs = function(OmadiObj, type, nid, allowActions){"use strict";
     Omadi = OmadiObj;
     
     if (typeof allowActions == 'undefined') {
-    	allowActions = true;
+        allowActions = true;
     }
         
     _instance = new NodeViewTabs(type, nid);
