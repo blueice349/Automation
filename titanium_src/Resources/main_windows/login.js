@@ -1,7 +1,7 @@
-var Omadi;
+/* jslint eqeq: true, plusplus: true */
+/* global Omadi, dbEsc */
 
-/*jslint eqeq: true, plusplus: true*/
-/*global Omadi, dbEsc*/
+var Omadi;
 
 // this sets the background color of every
 Ti.UI.currentWindow.setBackgroundColor('#eee');

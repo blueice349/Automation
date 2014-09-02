@@ -1,5 +1,3 @@
-
-/*jslint eqeq:true,plusplus:true*/
 /*global Omadi*/
 
 Ti.include('/lib/functions.js');
@@ -717,7 +715,7 @@ function setTableData() {"use strict";
             listLabel.textAlign = Ti.UI.TEXT_ALIGNMENT_CENTER;
             items.push(space);
 
-            if (Ti.Platform.osname == 'ipad') {
+            if (Ti.App.isIPad) {
 
                 items.push(listLabel);
                 items.push(space);
@@ -754,6 +752,8 @@ function setTableData() {"use strict";
             if (!showFinalResults) {
                 topBar.add(showAllButton);
             }
+            
+            topBar.add(nearMeButton);
 
             Ti.Android.currentActivity.onCreateOptionsMenu = function(e) {
 

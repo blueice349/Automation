@@ -1,3 +1,4 @@
+
 /*jslint eqeq:true,plusplus:true*/
 
 Omadi.display = Omadi.display || {};
@@ -392,7 +393,25 @@ Omadi.display.newAppAvailable = function(message) {"use strict";
     }
 };
 
+Omadi.display.openNearMeWindow = function(formType) {
+	var win = Titanium.UI.createWindow({
+        navBarHidden : true,
+        formType: formType,
+        url : '/main_windows/nearMe.js',
+        orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
+    });
+    
+    Omadi.display.loading();
+    win.addEventListener('open', Omadi.display.doneLoading);
+    win.open();
+    
+    return win;
+};
+
 Omadi.display.openListWindow = function(type, show_plus, filterValues, nestedWindows, showFinalResults) {"use strict";
+
+	return Omadi.display.openNearMeWindow(type);
+	/*
     var listWindow = Titanium.UI.createWindow({
         navBarHidden : true,
         url : '/main_windows/objects.js',
@@ -405,18 +424,11 @@ Omadi.display.openListWindow = function(type, show_plus, filterValues, nestedWin
     });
 
     Omadi.display.loading();
-    
-    if(Ti.App.isAndroid){
-        // Hide the Android action bar
-        listWindow.addEventListener('open', function(){
-        });
-    }
-    
     listWindow.addEventListener('open', Omadi.display.doneLoading);
-
     listWindow.open();
 
     return listWindow;
+    */
 };
 
 Omadi.display.openActionsWindow = function() {"use strict";

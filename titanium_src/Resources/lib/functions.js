@@ -13,6 +13,7 @@ if(Ti.App.isIOS){
         Ti.App.isIOS7 = true;
     }
 }
+Ti.App.isIPad = Ti.Platform.osname == 'ipad';
 Ti.App.isAndroid3OrBelow = false;
 if (Ti.App.isAndroid) {
 	var version = Ti.Platform.version.split(".");

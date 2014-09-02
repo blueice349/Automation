@@ -2804,14 +2804,14 @@ FormModule.prototype.getWindow = function(){"use strict";
         this.regions = Omadi.data.getRegions(this.type);
         
         // Reset the conditionally required selection that might have been set previously as this.instances could be cached
-        for(var fieldName in this.instances){
+        for(field_name in this.instances){
             this.instances[fieldName].isConditionallyRequired = false;
         }
         
         try{
             regionWrappers = this.getRegionWrappers();
             
-            for(var i = 0; i < regionWrappers.length; i ++){
+            for(i = 0; i < regionWrappers.length; i ++){
                 this.scrollView.add(regionWrappers[i]);
                       
                 this.scrollView.add(Ti.UI.createView({
