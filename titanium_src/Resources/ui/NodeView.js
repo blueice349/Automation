@@ -275,7 +275,7 @@ NodeView.prototype.init = function(){"use strict";
         while (result.isValidRow()) {
             reg_settings = result.fieldByName('settings');
             
-            reg_settings = JSON.parse(reg_settings);
+            reg_settings = Utils.getParsedJSON(reg_settings);
             
         
             if (reg_settings != null && parseInt(reg_settings.form_part, 10) > this.node.form_part && this.node.form_part != -1) {
@@ -298,7 +298,7 @@ NodeView.prototype.init = function(){"use strict";
         result = db.execute('SELECT label, weight, type, field_name, widget, settings, required FROM fields WHERE bundle = "' + this.node.type + '" AND disabled = 0 ORDER BY weight ASC, id ASC');
         savedValues = [];
         
-        omadi_session_details = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
+        omadi_session_details = Utils.getParsedJSON(Ti.App.Properties.getString('Omadi_session_details'));
         roles = omadi_session_details.user.roles;
         
         while (result.isValidRow()) {

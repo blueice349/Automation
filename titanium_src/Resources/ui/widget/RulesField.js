@@ -204,7 +204,7 @@ RulesFieldWidget.prototype.getNewElement = function(index){"use strict";
         widget = this.instance.widget;
     }
     else {
-        widget = JSON.parse(this.instance.widget);
+        widget = Utils.getParsedJSON(this.instance.widget);
     }
     
     if(this.nodeElement){
@@ -226,7 +226,7 @@ RulesFieldWidget.prototype.getNewElement = function(index){"use strict";
             case 'rules_field_violations':
                 if(typeof nodeValue === 'string'){
                     Ti.API.debug("is string");
-                    nodeValue = JSON.parse(nodeValue);
+                    nodeValue = Utils.getParsedJSON(nodeValue);
                 }
                 
                 if(typeof nodeValue === 'string'){
