@@ -212,7 +212,7 @@ ImageWidget.prototype.getLocalImages = function() {"use strict";
 	var localImages = {0: []};
 	try {
 		var db = Omadi.utils.openListDatabase();
-		var result = db.execute('SELECT file_path, fid, degrees, thumb_path FROM _files WHERE nid IN (' + this.getImageNid() + ', ' + (this.node.continuous_nid || 0) + ', 0) AND field_name="' + this.instance.field_name + '" ORDER BY timestamp ASC');
+		var result = db.execute('SELECT file_path, fid, degrees, thumb_path, nid FROM _files WHERE nid IN (' + this.getImageNid() + ', ' + (this.node.continuous_nid || 0) + ', 0) AND field_name="' + this.instance.field_name + '" ORDER BY timestamp ASC');
 		
 		while(result.isValidRow()) {
 			

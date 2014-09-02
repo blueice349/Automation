@@ -304,14 +304,20 @@ VideoWidget.prototype.getLocalImageView = function(fid, imageData, index) {"use 
         
         if(videoFile.exists()){
             Ti.API.debug("Video file exists...");
-            // thumbVideo = Ti.Media.createVideoPlayer({
-                // width: 100,
-                // height: 100,
-                // autoplay: false,
-                // media: videoFile
-            // });
-//         
-            // image = thumbVideo.thumbnailImageAtTime(0, Ti.Media.VIDEO_TIME_OPTION_NEAREST_KEYFRAME);
+            try{
+                var thumbVideo = Ti.Media.createVideoPlayer({
+                    width: 100,
+                    height: 100,
+                    autoplay: false,
+                    media: videoFile
+                });
+                
+                image = thumbVideo.thumbnailImageAtTime(0, Ti.Media.VIDEO_TIME_OPTION_NEAREST_KEYFRAME);
+            }
+            catch(ex){
+                Ti.API.error("Could not show the local video thumbnail.");
+                image = '/images/video_selected.png';
+            }
         }
     }
     

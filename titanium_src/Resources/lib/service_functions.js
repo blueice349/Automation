@@ -1,3 +1,4 @@
+
 /*global Omadi,dbEsc,isJsonString*/
 /*jslint eqeq:true,plusplus:true*/
 
@@ -1365,7 +1366,6 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
                 // Check if the file is ready for deletion
                 if(uploadFinished){
                     Ti.API.error("Upload is finished for nid " + nid + " and delta " + delta);
-
                     try{
                         //Finishing the file after upload so it's available on the device for printing
                         listDB.execute("UPDATE _files SET uploading=0, fid=" + json.file_id + ", finished=" + Omadi.utils.getUTCTimestamp() + " WHERE id=" + photoId);
