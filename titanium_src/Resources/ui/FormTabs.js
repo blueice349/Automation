@@ -1,8 +1,41 @@
-/*jslint eqeq:true,plusplus:true*/
+
+/*jslint eqeq:true, plusplus:true, vars:true*/
+
 var Dispatch, Omadi;
 var CommentList = null;
-
 var Utils = require('lib/Utils');
+
+function switchNidForObject(obj, e) {"use strict";
+    Ti.API.info("In switched nid: " + JSON.stringify(e));
+    
+    try{
+        if(e.negativeNid == obj.nid){
+            obj.nid = e.positiveNid;
+            obj.node.nid = e.positiveNid;
+            obj.origNid = e.positiveNid;
+            obj.node.origNid = e.positiveNid;
+            Ti.API.info("Switched the negative nid to the positive nid correctly");
+        }
+    }
+    catch(ex){
+        Utils.sendErrorReport("Exception switching the nid in a form: " + ex);
+    }   
+}
+
+function processNewFilesForObjectInsertion(files) {"use strict";
+    var result = {};
+    var i;
+    
+    for (i = 0; i < files.length; i++) {
+        var file = files[i];
+        if (!result[file.fieldName]) {
+            result[file.fieldName] = [];
+        }
+        result[file.fieldName].push(file.fid);
+    }
+    
+    return result;
+}
 
 function FormTabs(type, nid, form_part){"use strict";
     var tempFormPart, origNid;
@@ -148,11 +181,11 @@ FormTabs.prototype.doDispatchSave = function(saveType){"use strict";
                     dialog.show();
                 }
                 else{
-                	var missingFiles = Dispatch.getIdsOfMissingFiles(Dispatch.workObj);
-                	
-                	if (missingFiles.length > 0) {
+                    var missingFiles = Dispatch.getIdsOfMissingFiles(Dispatch.workObj);
+                    
+                    if (missingFiles.length > 0) {
 						var db = Omadi.utils.openListDatabase();
-						db.execute('DELETE FROM _files WHERE id IN (' + ids.join(',') + ')');
+						db.execute('DELETE FROM _files WHERE id IN (' + missingFiles.join(',') + ')');
 						db.close();
 						
 						alert(missingFiles.length + ' of the files you just added ' + (missingFiles.length > 1 ? 'were' : 'was') + ' lost. Please add ' + (missingFiles.length > 1 ? 'them' : 'it') + ' again and resave.');
@@ -183,7 +216,7 @@ FormTabs.prototype.doDispatchSave = function(saveType){"use strict";
     }
 };
 
-FormTabs.prototype.getIdsOfMissingFiles = function(node) {
+FormTabs.prototype.getIdsOfMissingFiles = function(node) {"use strict";
 	var missingFiles = [];
 	var db = Omadi.utils.openListDatabase();
 	
@@ -679,7 +712,7 @@ FormTabs.prototype.getWindow = function(initNewDispatch){"use strict";
 };
 
 FormTabs.prototype.setupMenu = function(){"use strict";
-    
+    /*jslint bitwise:true*/
     Ti.API.debug("In Setup menu");
     
     try {
@@ -770,9 +803,6 @@ FormTabs.prototype.setupMenu = function(){"use strict";
                 };
             });
         }
-        else{
-            // iOS adds the toolbar within each window
-        }
     }
     catch(evt) {
         Utils.sendErrorReport("Exception setting up form menu: " + evt);
@@ -793,7 +823,7 @@ FormTabs.prototype.close = function(callback){"use strict";
         try{
             if (e.index == 0) {
                 self.handleUnsavedAttachments(function(){
-                	if(Dispatch.dispatchObj !== null){
+                    if(Dispatch.dispatchObj !== null){
 	                    Dispatch.dispatchObj.closeWindow();
 	                }
 	                
@@ -802,7 +832,7 @@ FormTabs.prototype.close = function(callback){"use strict";
 	                }
 	                
 	                if(Dispatch.commentsTab) {
-	                	Dispatch.commentsTab.window.close();
+                        Dispatch.commentsTab.window.close();
 	                }
 	                
 	                // Remove any fully-saved nodes that may not have been linked
@@ -820,7 +850,7 @@ FormTabs.prototype.close = function(callback){"use strict";
 	                
 	                Omadi.data.deleteContinuousNodes();
 	                
-	               	Dispatch.tabGroup.close();
+                    Dispatch.tabGroup.close();
                 });
             }
         }
@@ -834,42 +864,35 @@ FormTabs.prototype.close = function(callback){"use strict";
 
 FormTabs.prototype.handleUnsavedAttachments = function(callback){"use strict";
     Ti.API.debug("In handle unsaved attachments");
+    var db;
     
     try {
-    	var attachmentNids = [0, parseInt(this.workObj.continuous_nid, 10) || 0];
+        var attachmentNids = [0, parseInt(this.workObj.continuous_nid, 10) || 0];
         
-        if (this.workObj.node.flag_is_updated == 3) { // 3 = Draft
-            if(this.workObj.node.nid != 0) {
-                // Add any newly created/removed attachments to the draft so they aren't lost
-                var db = Omadi.utils.openListDatabase();
-				db.execute("UPDATE _files SET nid = " + this.workObj.node.nid + " WHERE nid IN (" + attachmentNids.join(",") + ")");
-				db.close();
-            }
-            callback();
-        } else if (Omadi.utils.getPhotoWidget() == 'choose') {
+        if (Omadi.utils.getPhotoWidget() == 'choose') {
             // This is not a draft, and we don't care about the taken photos
             // Nothing to delete with the choose widget
             // Photos should be managed externally except when uploaded successfully
 			callback();
         } else {
-            var db = Omadi.utils.openListDatabase();
-            var result = db.execute("SELECT COUNT(*) FROM _files WHERE nid IN (" + attachmentNids.join(',') + ")");
+            db = Omadi.utils.openListDatabase();
+            var result = db.execute("SELECT COUNT(*) FROM _files WHERE nid=0");
             var numAttachments = result.isValidRow() ? result.field(0, Ti.Database.FIELD_TYPE_INT) : 0;
             result.close();
             
             if (numAttachments == 0) {
-            	db.close();
-            	callback();
+                db.close();
+                callback();
             } else {
-            	var attachmentTypes = {};
-            	
-                result = db.execute("SELECT type FROM _files WHERE nid IN (" + attachmentNids.join(',') + ")");
+                var attachmentTypes = {};
+
+                result = db.execute("SELECT type FROM _files WHERE nid=0");
                 while (result.isValidRow()) {
-                	var type = result.fieldByName('type');
-                	if (!attachmentTypes[type]) {
-                		attachmentTypes[type] = 0;
-                	}
-                	attachmentTypes[type]++;
+                    var type = result.fieldByName('type');
+                    if (!attachmentTypes[type]) {
+                        attachmentTypes[type] = 0;
+                    }
+                    attachmentTypes[type]++;
                     result.next();
                 }
                 result.close();
@@ -880,13 +903,13 @@ FormTabs.prototype.handleUnsavedAttachments = function(callback){"use strict";
                 if (Omadi.utils.count(attachmentTypes) > 1) {
                     attachmentType = ' Attachments';
                 } else if (attachmentTypes.image){
-                	attachmentType = attachmentTypes.image == 1 ? ' Photo' : ' Photos'; 
+                    attachmentType = attachmentTypes.image == 1 ? ' Photo' : ' Photos'; 
                 } else if (attachmentTypes.video){
-                	attachmentType = attachmentTypes.video == 1 ? ' Video' : ' Videos'; 
+                    attachmentType = attachmentTypes.video == 1 ? ' Video' : ' Videos'; 
                 } else if (attachmentTypes.signature){
-                	attachmentType = attachmentTypes.signature == 1 ? ' Signature' : ' Signatures'; 
+                    attachmentType = attachmentTypes.signature == 1 ? ' Signature' : ' Signatures'; 
                 } else if (attachmentTypes.file){
-                	attachmentType = attachmentTypes.file == 1 ? ' File' : ' Files'; 
+                    attachmentType = attachmentTypes.file == 1 ? ' File' : ' Files'; 
                 }
                 var dialogTitle = 'Delete ' + numAttachments + attachmentType;
                 
@@ -894,16 +917,16 @@ FormTabs.prototype.handleUnsavedAttachments = function(callback){"use strict";
                 var dialogMessage = 'You have ';
                 var attachmentsList = [];
                 if (attachmentTypes.image) {
-                	attachmentsList.push(attachmentTypes.image + (attachmentTypes.image === 1 ? ' photo' : ' photos'));
+                    attachmentsList.push(attachmentTypes.image + (attachmentTypes.image === 1 ? ' photo' : ' photos'));
                 }
                 if (attachmentTypes.video) {
-                	attachmentsList.push(attachmentTypes.video + (attachmentTypes.video === 1 ? ' video' : ' videos'));
+                    attachmentsList.push(attachmentTypes.video + (attachmentTypes.video === 1 ? ' video' : ' videos'));
                 }
                 if (attachmentTypes.signature) {
-                	attachmentsList.push(attachmentTypes.signature + (attachmentTypes.signature === 1 ? ' signature' : ' signatures'));
+                    attachmentsList.push(attachmentTypes.signature + (attachmentTypes.signature === 1 ? ' signature' : ' signatures'));
                 }
                 if (attachmentTypes.file) {
-                	attachmentsList.push(attachmentTypes.file + (attachmentTypes.file === 1 ? ' file' : ' files'));
+                    attachmentsList.push(attachmentTypes.file + (attachmentTypes.file === 1 ? ' file' : ' files'));
                 }
                 dialogMessage += Omadi.utils.joinAsSentence(attachmentsList);
                 dialogMessage += ' that';
@@ -919,13 +942,15 @@ FormTabs.prototype.handleUnsavedAttachments = function(callback){"use strict";
                 });
                 
                 dialog.addEventListener('click', function(e) {
+                    var db;
+                    
                     try{
-                    	if (e.index === 0) { // 0 = Delete
-                    		// Get the file paths to images that need to be deleted 
-                    		var db = Omadi.utils.openListDatabase();
-                    		var result = db.execute("SELECT file_path, thumb_path FROM _files WHERE nid IN (" + attachmentNids.join(',') + ")");
-                    		
-                    		while(result.isValidRow()){
+                        if (e.index === 0) { // 0 = Delete
+                            // Get the file paths to images that need to be deleted 
+                            db = Omadi.utils.openListDatabase();
+                            var result = db.execute("SELECT file_path, thumb_path FROM _files WHERE nid=0");
+                            
+                            while(result.isValidRow()){
                                 // Delete the regular photo file
                                 var file = Ti.Filesystem.getFile(result.fieldByName("file_path"));
                                 if(file.exists()){
@@ -947,20 +972,20 @@ FormTabs.prototype.handleUnsavedAttachments = function(callback){"use strict";
                             result.close();
                             
                             // Delete files from the database
-                            db.execute("DELETE FROM _files WHERE nid IN (" + attachmentNids.join(',') + ")");
+                            db.execute("DELETE FROM _files WHERE nid=0");
                             db.close();
                             callback();
-                    	} else if (e.index === 1) { // 1 = Keep
-                    		// Set the nid of the photos to save to -1000000, so they won't be deleted by deletion of other photos, 
+                        } else if (e.index === 1) { // 1 = Keep
+                            // Set the nid of the photos to save to -1000000, so they won't be deleted by deletion of other photos, 
                             // and so it isn't automatically used by other new nodes
-                    		var db = Omadi.utils.openListDatabase();
-                            db.execute("UPDATE _files SET nid = -1000000 WHERE nid IN (" + attachmentNids.join(",") + ")");
+                            db = Omadi.utils.openListDatabase();
+                            db.execute("UPDATE _files SET nid = -1000000 WHERE nid=0");
                             db.close();
                             callback();
-                    	}
+                        }
                     } catch(ex) {
                         Utils.sendErrorReport("Exception in form second dialog click: " + ex);
-                    	callback();
+                        callback();
                     }
                 });
                 
@@ -1129,7 +1154,7 @@ FormTabs.prototype.savedDispatchNode = function(e){"use strict";
         Dispatch.workSavedInfo = null;
         
         if (e.saveType == 'normal' || e.saveType == 'draft') {
-        	if(Ti.App.isAndroid){
+            if(Ti.App.isAndroid){
 	            // This cannot be done on iOS
 	            // Also, don't close the tabs because that will cause some flashing of screens on iOS... simply close the tabgroup
 	            if(Dispatch.dispatchObj !== null){
@@ -1141,14 +1166,14 @@ FormTabs.prototype.savedDispatchNode = function(e){"use strict";
 	            }
 	            
                 if(Dispatch.commentsTab) {
-                	Dispatch.commentsTab.window.close();
+                    Dispatch.commentsTab.window.close();
                 }
 	        }
-        	Dispatch.tabGroup.close();
+            Dispatch.tabGroup.close();
         } else if (e.saveType == 'next_part') {
-        	Dispatch.workObj.initNewWindowFromCurrentData(Dispatch.workObj.form_part + 1);
+            Dispatch.workObj.initNewWindowFromCurrentData(Dispatch.workObj.form_part + 1);
         } else if (e.saveType == 'new') {
-        	Dispatch.workObj.initNewWindowFromCurrentData(Dispatch.workObj.type);
+            Dispatch.workObj.initNewWindowFromCurrentData(Dispatch.workObj.type);
         }
     }
 };
@@ -1214,6 +1239,7 @@ exports.getWindow = function(OmadiObj, type, nid, form_part, initNewDispatch){"u
 };
 
 exports.loggingOut = function(){"use strict";
+    
     if(Dispatch.dispatchObj !== null){
         Dispatch.dispatchObj.closeWindow();
     }
@@ -1223,7 +1249,7 @@ exports.loggingOut = function(){"use strict";
     }
 	                
     if(Dispatch.commentsTab) {
-    	Dispatch.commentsTab.window.close();
+        Dispatch.commentsTab.window.close();
     }
     
     if(Dispatch.setSendingData){
@@ -1234,7 +1260,7 @@ exports.loggingOut = function(){"use strict";
     
     Omadi.data.deleteContinuousNodes();
     
-   	Dispatch.tabGroup.close();
+    Dispatch.tabGroup.close();
 };
 
 exports.switchedNid = function(e){"use strict";
@@ -1254,26 +1280,21 @@ exports.switchedNid = function(e){"use strict";
 exports.addNewFiles = function(e) {"use strict";
 	if(Dispatch.workObj !== null){
         var files = processNewFilesForObjectInsertion(e.newFiles);
-        for (var fieldName in files) {
-        	var widget = Dispatch.workObj.fieldObjects[fieldName];
-        	if (widget) {
-        		widget.updateFidsOfNewFiles(files[fieldName]);
-        	}
+        var fieldName;
+        
+        for (fieldName in files) {
+            if(files.hasOwnProperty(fieldName)){
+                var widget = Dispatch.workObj.fieldObjects[fieldName];
+                
+                if (widget) {
+                    widget.updateFidsOfNewFiles(files[fieldName]);
+                }
+            }
         }
     }
 };
 
-function processNewFilesForObjectInsertion(files) {
-	var result = {};
-	for (var i = 0, file; file = files[i]; i++) {
-		if (!result[file.fieldName]) {
-			result[file.fieldName] = [];
-		}
-		result[file.fieldName].push(file.fid);
-	}
-	
-	return result;
-}
+
 
 exports.photoUploaded = function(e){"use strict";
     var i, nid, delta, fid, field_name, dbValues;
@@ -1305,24 +1326,9 @@ exports.photoUploaded = function(e){"use strict";
 };
 
 
-function switchNidForObject(obj, e) {
-    Ti.API.info("In switched nid: " + JSON.stringify(e));
-    
-    try{
-        if(e.negativeNid == obj.nid){
-            obj.nid = e.positiveNid;
-            obj.node.nid = e.positiveNid;
-            obj.origNid = e.positiveNid;
-            obj.node.origNid = e.positiveNid;
-            Ti.API.info("Switched the negative nid to the positive nid correctly");
-        }
-    }
-    catch(ex){
-        Utils.sendErrorReport("Exception switching the nid in a form: " + ex);
-    }	
-};
 
-FormTabs.prototype.restFormObjects = function() {
+
+FormTabs.prototype.restFormObjects = function() {"use strict";
 	this.FormModule = require('ui/FormModule');
     this.FormModule.reset();
     Dispatch.workObj = null;

@@ -307,11 +307,6 @@ function updateUploadBytes(){"use strict";
     }
 }
 
-function loggingOutLoginScreen(){"use strict";
-    
-    startBackgroundUploads();
-}
-
 function startBackgroundUploads(){"use strict";
     updateUploadBytes();
     Omadi.service.doBackgroundUploads = true;
@@ -328,6 +323,12 @@ function startBackgroundUploads(){"use strict";
     
     // Immediately try to upload the next file
     Omadi.service.uploadBackgroundFile();
+}
+
+
+function loggingOutLoginScreen(){"use strict";
+    
+    startBackgroundUploads();
 }
 
 var savedUsername = null;

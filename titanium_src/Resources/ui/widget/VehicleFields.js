@@ -240,9 +240,9 @@ VehicleFieldsWidget.prototype.getNewElement = function(index){"use strict";
         try{
             widget = Widget[e.source.instance.field_name];
             if (widget) {
-            	widget.autocomplete_table.setBorderWidth(0);
-            	widget.autocomplete_table.setHeight(0);
-            	widget.autocomplete_table.setVisible(false);
+                widget.autocomplete_table.setBorderWidth(0);
+                widget.autocomplete_table.setHeight(0);
+                widget.autocomplete_table.setVisible(false);
             }
             e.source.blurred = true;
         }

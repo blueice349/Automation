@@ -1,4 +1,4 @@
-/*jslint eqeq:true, plusplus: true*/
+/*jslint eqeq:true, plusplus:true, vars:true*/
 
 var Widget, Omadi;
 var Utils = require('lib/Utils');
@@ -93,7 +93,7 @@ SignatureWidget.prototype.redraw = function(){"use strict";
     this.fieldViewWrapper.remove(origFieldView);
 };
 
-SignatureWidget.prototype.getImageNid = function() {
+SignatureWidget.prototype.getImageNid = function() {"use strict";
 	var imageNid = this.formObj.nid;
     if(typeof this.formObj.origNid !== 'undefined'){
         imageNid = this.formObj.origNid;
@@ -103,7 +103,7 @@ SignatureWidget.prototype.getImageNid = function() {
 
 SignatureWidget.prototype.getNewElement = function(index){"use strict";
     var widgetView, dbValue, imageData, i, numImagesShowing = 0, 
-        signNowButton, imageNid, buttonView, imageWrapper, sigLine, thex, isSigned;
+        signNowButton, imageNid, buttonView, imageWrapper, sigLine, thex;
 
     dbValue = null;
     imageData = [];
@@ -159,15 +159,15 @@ SignatureWidget.prototype.getNewElement = function(index){"use strict";
     var image = '/images/signature-loading.png';
     var isSigned = (typeof dbValue === 'number');
     if (isSigned) {
-    	if (dbValue == -1) {
-	    	var db = Omadi.utils.openListDatabase();
-	    	var result = db.execute('SELECT file_path FROM _files WHERE nid IN (' + this.getImageNid() + ', ' + (this.node.continuous_nid || 0) + ', 0) AND field_name="' + this.instance.field_name + '"');
-	    	if (result.isValidRow()) {
-	    		image = result.fieldByName('file_path');
-	    	}
+        if (dbValue == -1) {
+            var db = Omadi.utils.openListDatabase();
+            var result = db.execute('SELECT file_path FROM _files WHERE nid IN (' + this.getImageNid() + ', ' + (this.node.continuous_nid || 0) + ', 0) AND field_name="' + this.instance.field_name + '"');
+            if (result.isValidRow()) {
+                image = result.fieldByName('file_path');
+            }
 	    }
     } else {
-    	image = dbValue;
+        image = dbValue;
     }
     
     this.imageView = Ti.UI.createImageView({
@@ -626,7 +626,7 @@ SignatureWidget.prototype.saveFileInfo = function(imageView, filePath, thumbPath
         db.close();
     }
     catch(ex) {
-    	Utils.sendErrorReport("Problem saving the signature to the database: " + ex);
+        Utils.sendErrorReport("Problem saving the signature to the database: " + ex);
         alert("Problem saving the signature to the database: " + ex);
     }
 };

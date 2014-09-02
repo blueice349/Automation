@@ -1,5 +1,4 @@
 
-
 /*jslint eqeq:true,plusplus:true*/
 
 Omadi.display = Omadi.display || {};
@@ -157,13 +156,13 @@ Omadi.display.showBigImage = function(imageView) {"use strict";
             else{
                 
                 if (Ti.App.isAndroid3OrBelow) {
-                	// WebViews are scalable but they render as junk text on older android phones
-                	webView = Ti.UI.createImageView({
+                // WebViews are scalable but they render as junk text on older android phones
+                webView = Ti.UI.createImageView({
 	                    image: imageData
 	                });
                 } else {
 	                webView = Ti.UI.createWebView({
-	                	top: Ti.App.isIOS7 ? 60 : 0,
+                        top: Ti.App.isIOS7 ? 60 : 0,
 	                    data: imageData
 	                });
                 }
@@ -226,9 +225,9 @@ Omadi.display.iOSBackToolbar = function(actualWindow, label){"use strict";
     return null;
 };
 
-function hasNeverUploadImages() {
+function hasNeverUploadImages() {"use strict";
 	var db = Omadi.utils.openListDatabase();
-    var result = db.execute('SELECT * FROM _files WHERE nid=-1000000');
+    var result = db.execute("SELECT * FROM _files WHERE nid=-1000000 AND type != 'video'");
     
     var retval = result.isValidRow();
     
@@ -238,9 +237,9 @@ function hasNeverUploadImages() {
     return retval;
 }
 
-function showNeverUploadImagesDialog() {
+function showNeverUploadImagesDialog() {"use strict";
 	var dialog = Ti.UI.createAlertDialog({
-		title: 'Unuploaded Photos',
+		title: 'Non-Uploaded Photos',
 		message: 'You have photos that were never uploaded to the server. You should manully email them to the office.',
 		buttonNames: ['View Photos', 'View Later']
 	});
@@ -266,11 +265,11 @@ Omadi.display.showLogoutDialog = function(skipToLogout){"use strict";
     var verifyLogout;
     
     if (typeof skipToLogout == 'undefined') {
-    	skipToLogout = false;
+        skipToLogout = false;
     }
     
     if (!skipToLogout && hasNeverUploadImages()) {
-    	showNeverUploadImagesDialog();
+        showNeverUploadImagesDialog();
     } else if (!skipToLogout && Omadi.bundles.timecard.userShouldClockInOut()) {
         Omadi.bundles.timecard.askClockOutLogout();
     } else {
@@ -517,13 +516,13 @@ Omadi.display.openJobsWindow = function() {"use strict";
 
 Omadi.display.openWebView = function(nid){"use strict";
     if (Ti.App.isIOS) {
-    	Omadi.display.openWebViewInBrowser(nid);
+        Omadi.display.openWebViewInBrowser(nid);
     } else {
-    	Omadi.display.openWebViewInApp(nid);
+        Omadi.display.openWebViewInApp(nid);
     }
 };
 
-Omadi.display.openWebViewInApp = function(nid) {
+Omadi.display.openWebViewInApp = function(nid) {"use strict";
 	var url = Omadi.DOMAIN_NAME + '/node/' + nid;
 	var cookie = Omadi.utils.getCookie();
     Utils.setCookie(cookie);
@@ -563,7 +562,7 @@ Omadi.display.openWebViewInApp = function(nid) {
     });
 };
 
-Omadi.display.openWebViewInBrowser = function(nid) {
+Omadi.display.openWebViewInBrowser = function(nid) {"use strict";
 	Ti.Platform.openURL(Omadi.DOMAIN_NAME + '/node/' + nid);
 };
 
@@ -571,7 +570,7 @@ Omadi.display.openViewWindow = function(type, nid, allowActions) {"use strict";
     var isDispatch, viewWindow, NodeViewTabs;
     
     if (typeof allowActions == 'undefined') {
-    	allowActions = true;
+        allowActions = true;
     }
     
     Omadi.display.loading();
@@ -631,7 +630,6 @@ Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
                     }                    
                 }
 
-                
                 if(isDispatch){
                     
                     if(isChangeTo){
@@ -1190,9 +1188,9 @@ Omadi.display.displayFile = function(nid, fid, title) {"use strict";
     try{
         if(Ti.Network.online){
             if (nid > 0 && fid > 0) {
-            	if (Ti.App.isIOS) {
-            		Omadi.display.openWebViewInBrowser(nid);
-            	} else {
+                if (Ti.App.isIOS) {
+                    Omadi.display.openWebViewInBrowser(nid);
+                } else {
 	                Omadi.display.loading();
 	        
 	                newWin = Titanium.UI.createWindow({

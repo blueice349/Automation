@@ -2,12 +2,9 @@
 
 var Utils = require('lib/Utils');
 var ImageWidget = require('ui/widget/Image');
-
-
 var _instances = {};
 var Omadi;
 var ActiveObj = null;
-
 
 var ROLE_ID_ADMIN = 3;
 var ROLE_ID_MANAGER = 4;
@@ -71,13 +68,12 @@ function NodeView(type, nid){"use strict";
     this.nodeViewTabsObj = null; 
 }
 
-NodeView.prototype.getActionOptions = function() {
+NodeView.prototype.getActionOptions = function() {"use strict";
 	var node = ActiveObj.nodeViewTabsObj.workNode;
 	var bundle = Omadi.data.getBundle(node.type);
+	var options = [];
 	
 	try {
-		var options = [];
-		
 		if (node.perm_edit) {
 			// next part
 			if (bundle.data.form_parts > node.form_part + 1) {
@@ -94,11 +90,14 @@ NodeView.prototype.getActionOptions = function() {
 	    }
 		
 		// change / copy to
-		for (var toType in bundle.data.custom_copy) {
-			var toBundle = Omadi.data.getBundle(toType);
-			if (toBundle && toBundle.can_create == 1) {
-				options.push((bundle.data.custom_copy[toType].conversion_type == 'change' ? 'Change to ' : 'Copy to ') + toBundle.label);
-			}
+		var toType;
+		for (toType in bundle.data.custom_copy) {
+            if(bundle.data.custom_copy.hasOwnProperty(toType)){
+                var toBundle = Omadi.data.getBundle(toType);
+                if (toBundle && toBundle.can_create == 1) {
+                    options.push((bundle.data.custom_copy[toType].conversion_type == 'change' ? 'Change to ' : 'Copy to ') + toBundle.label);
+                }
+            }
 		}
 		
 		// cancel
@@ -276,7 +275,7 @@ NodeView.prototype.init = function(){"use strict";
         while (result.isValidRow()) {
             reg_settings = result.fieldByName('settings');
             
-            reg_settings = JSON.parse(reg_settings);
+            reg_settings = Utils.getParsedJSON(reg_settings);
             
         
             if (reg_settings != null && parseInt(reg_settings.form_part, 10) > this.node.form_part && this.node.form_part != -1) {
@@ -299,7 +298,7 @@ NodeView.prototype.init = function(){"use strict";
         result = db.execute('SELECT label, weight, type, field_name, widget, settings, required FROM fields WHERE bundle = "' + this.node.type + '" AND disabled = 0 ORDER BY weight ASC, id ASC');
         savedValues = [];
         
-        omadi_session_details = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
+        omadi_session_details = Utils.getParsedJSON(Ti.App.Properties.getString('Omadi_session_details'));
         roles = omadi_session_details.user.roles;
         
         while (result.isValidRow()) {
@@ -424,7 +423,8 @@ NodeView.prototype.addRegion = function(regionObj) {"use strict";
 
 	var partsFieldsDone = {};
     if (regionObj.fields) {
-        for (var i = 0; i < regionObj.fields.length; i++) {
+        var i;
+        for (i = 0; i < regionObj.fields.length; i++) {
             var fieldName = regionObj.fields[i].field_name;
             if (fieldName.indexOf("___") !== -1) {
                 var fieldParts = fieldName.split("___");
@@ -587,13 +587,11 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
     
 					try {
 						var formObj = {node: this.node, nid: this.node.nid};
-	    				var imageObject = ImageWidget.getFieldObject(Omadi, formObj, fieldObj, null);
-	    				imageObject.addImageViewsToWidgetView(this.node[fieldObj.field_name].dbValues, valueView);
+                        var imageObject = ImageWidget.getFieldObject(Omadi, formObj, fieldObj, null);
+                        imageObject.addImageViewsToWidgetView(this.node[fieldObj.field_name].dbValues, valueView);
 					} catch(e) {
 						Utils.sendErrorReport('Error adding image views to widget view (A): ' + e);
 					}
-                    
-                    
                     
                     valueView.setContentWidth(110 * this.node[fieldObj.field_name].dbValues.length);
     
@@ -611,11 +609,11 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
                     this.scrollView.add(labelView);
                 }
                 else if (fieldObj.type === 'file' && 
-                		fieldObj.settings &&
-                		fieldObj.settings._display &&
-                		fieldObj.settings._display['default'] &&
-                		fieldObj.settings._display['default'].type == 'omadi_file_video') {
-                			
+                    fieldObj.settings &&
+                    fieldObj.settings._display &&
+                    fieldObj.settings._display['default'] &&
+                    fieldObj.settings._display['default'].type == 'omadi_file_video') {
+	
                     valueView = Ti.UI.createScrollView({
                         contentHeight : 100,
                         arrImages : null,
@@ -627,7 +625,7 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
                     });
                     
                     contentWidth = 0;
-    				
+				
                     for ( i = 0; i < this.node[fieldObj.field_name].dbValues.length; i += 1) {
                         if (this.node[fieldObj.field_name].dbValues[i] > 0) {
                             
@@ -658,8 +656,8 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
                             contentWidth += 110;
                         }
                     }
-    				
-    				if (this.node[fieldObj.field_name].imageData) {
+
+                    if (this.node[fieldObj.field_name].imageData) {
 	                    for ( i = 0; i < this.node[fieldObj.field_name].imageData.length; i += 1) {
 	                        if (this.node[fieldObj.field_name].imageData[i] > "") {
 	                            fileId = this.node[fieldObj.field_name].dbValues[i];
@@ -853,7 +851,7 @@ NodeView.prototype.getWindow = function(allowActions){"use strict";
     var regionName, i, db, result, usernames, metaDataFields;
     
     if (typeof allowActions == 'undefined') {
-    	allowActions = true;
+        allowActions = true;
     }
     
     if(!this.initialized){
@@ -881,7 +879,7 @@ NodeView.prototype.getWindow = function(allowActions){"use strict";
         this.addIOSToolbar(allowActions);
         this.scrollView.top = 60;
     } else {
-    	var actionsButton = Ti.UI.createLabel({
+        var actionsButton = Ti.UI.createLabel({
 	        text : 'Actions',
             color : '#fff',
 	        width : Ti.UI.FILL,
@@ -900,7 +898,7 @@ NodeView.prototype.getWindow = function(allowActions){"use strict";
 	    });
 	    actionsButton.addEventListener('click', this.actionsEventHandler);
 	    if (this.getActionOptions().length > 1 && allowActions) {
-	    	this.scrollView.add(actionsButton);
+            this.scrollView.add(actionsButton);
 	    }
     }
     
@@ -1007,7 +1005,7 @@ exports.getWindow = function(OmadiObj, nodeViewTabsObj, type, nid, allowActions)
     Omadi = OmadiObj;
     
     if (typeof allowActions == 'undefined') {
-    	allowActions = true;
+        allowActions = true;
     }
     
     _instances[type] = new NodeView(type, nid);
