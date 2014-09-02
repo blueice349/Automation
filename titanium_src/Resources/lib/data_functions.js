@@ -1,4 +1,3 @@
-
 /*jslint plusplus:true,eqeq:true,nomen:true*/
 
 Omadi.data = Omadi.data || {};
@@ -502,13 +501,18 @@ Omadi.data.nodeSave = function(node) {"use strict";
                 saveNid = node.continuous_nid;
             }
         }
-        else if(typeof node.flag_is_updated !== 'undefined' && node.flag_is_updated == 3 && node.continuous_nid < 0){
+        else if(node.flag_is_updated == 3 && node.continuous_nid < 0){
             // This was saved as a draft, and we are doing a regular save
             // Delete the draft version after a successful node save
             // as a continuous save is saved over the original draft
             // The logic elsewhere will not delete the node unless the node is correctly saved
             Ti.API.debug("Saving draft to normal: " + JSON.stringify(node));
             if(node.nid > 0){
+                // Add any newly0 created/removed attachments to the draft so they aren't lost
+                db = Omadi.utils.openListDatabase();
+				db.execute("UPDATE _files SET nid = " + node.nid + " WHERE nid=" + node.continuous_nid);
+				db.close();
+				
                 // Only do the delete when the original nid is greater than 0
                 // ie. a draft should not be deleted if it's never been to the server, or the data moving to the server will be deleted
                 node._deleteNid = node.continuous_nid;
@@ -763,12 +767,16 @@ Omadi.data.nodeSave = function(node) {"use strict";
                     }
                 }
                 
+                if(node.origNid){
+                    photoNids.push(node.origNid);
+                }
+                
                 // Do not save the photos to the continuous
                 // Do not save photos to a dispatch node
                 if(!node._isContinuous && node.type != 'dispatch' && node.type != 'timecard'){
                     
                     listDB = Omadi.utils.openListDatabase();
-                    listDB.execute('UPDATE _files SET nid=' + saveNid + ' WHERE nid IN (' + photoNids.join(',') + ')');
+                    listDB.execute('UPDATE _files SET nid=' + saveNid + ' WHERE nid IN (' + photoNids.join(',') + ') AND finished=0');
                     listDB.close();
                 }
     

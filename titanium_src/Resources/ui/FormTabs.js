@@ -1,3 +1,4 @@
+
 /*jslint eqeq:true, plusplus:true, vars:true*/
 
 var Dispatch, Omadi;
@@ -869,22 +870,14 @@ FormTabs.prototype.handleUnsavedAttachments = function(callback){"use strict";
     try {
         var attachmentNids = [0, parseInt(this.workObj.continuous_nid, 10) || 0];
         
-        if (this.workObj.node.flag_is_updated == 3) { // 3 = Draft
-            if(this.workObj.node.nid != 0) {
-                // Add any newly created/removed attachments to the draft so they aren't lost
-                db = Omadi.utils.openListDatabase();
-				db.execute("UPDATE _files SET nid = " + this.workObj.node.nid + " WHERE nid IN (" + attachmentNids.join(",") + ")");
-				db.close();
-            }
-            callback();
-        } else if (Omadi.utils.getPhotoWidget() == 'choose') {
+        if (Omadi.utils.getPhotoWidget() == 'choose') {
             // This is not a draft, and we don't care about the taken photos
             // Nothing to delete with the choose widget
             // Photos should be managed externally except when uploaded successfully
 			callback();
         } else {
             db = Omadi.utils.openListDatabase();
-            var result = db.execute("SELECT COUNT(*) FROM _files WHERE nid IN (" + attachmentNids.join(',') + ")");
+            var result = db.execute("SELECT COUNT(*) FROM _files WHERE nid=0");
             var numAttachments = result.isValidRow() ? result.field(0, Ti.Database.FIELD_TYPE_INT) : 0;
             result.close();
             
@@ -894,7 +887,7 @@ FormTabs.prototype.handleUnsavedAttachments = function(callback){"use strict";
             } else {
                 var attachmentTypes = {};
 
-                result = db.execute("SELECT type FROM _files WHERE nid IN (" + attachmentNids.join(',') + ")");
+                result = db.execute("SELECT type FROM _files WHERE nid=0");
                 while (result.isValidRow()) {
                     var type = result.fieldByName('type');
                     if (!attachmentTypes[type]) {
@@ -956,7 +949,7 @@ FormTabs.prototype.handleUnsavedAttachments = function(callback){"use strict";
                         if (e.index === 0) { // 0 = Delete
                             // Get the file paths to images that need to be deleted 
                             db = Omadi.utils.openListDatabase();
-                            var result = db.execute("SELECT file_path, thumb_path FROM _files WHERE nid IN (" + attachmentNids.join(',') + ")");
+                            var result = db.execute("SELECT file_path, thumb_path FROM _files WHERE nid=0");
                             
                             while(result.isValidRow()){
                                 // Delete the regular photo file
@@ -980,14 +973,14 @@ FormTabs.prototype.handleUnsavedAttachments = function(callback){"use strict";
                             result.close();
                             
                             // Delete files from the database
-                            db.execute("DELETE FROM _files WHERE nid IN (" + attachmentNids.join(',') + ")");
+                            db.execute("DELETE FROM _files WHERE nid=0");
                             db.close();
                             callback();
                         } else if (e.index === 1) { // 1 = Keep
                             // Set the nid of the photos to save to -1000000, so they won't be deleted by deletion of other photos, 
                             // and so it isn't automatically used by other new nodes
                             db = Omadi.utils.openListDatabase();
-                            db.execute("UPDATE _files SET nid = -1000000 WHERE nid IN (" + attachmentNids.join(",") + ")");
+                            db.execute("UPDATE _files SET nid = -1000000 WHERE nid=0");
                             db.close();
                             callback();
                         }
