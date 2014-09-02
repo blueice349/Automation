@@ -1887,7 +1887,7 @@ Omadi.data.deleteFinishedUploads = function(files){"use strict";
 			}
 		}
 	} catch (e) {
-    	Utils.sendErrorReport("Error in delete file or thumbnail from device: " + e);
+        Utils.sendErrorReport("Error in delete file or thumbnail from device: " + e);
 	}
 	db.close();
 	
@@ -1966,7 +1966,7 @@ Omadi.data.keepFailedUploads = function(files){"use strict";
 	        dialog.show();
 	    }
 	} catch (e) {
-    	Utils.sendErrorReport("Error in keep failed uploads: " + e);
+        Utils.sendErrorReport("Error in keep failed uploads: " + e);
 	}
 	db.close();
 };
