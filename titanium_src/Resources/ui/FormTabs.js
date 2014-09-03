@@ -1,5 +1,4 @@
-
-/*jslint eqeq:true, plusplus:true, vars:true*/
+/*jslint eqeq:true, plusplus:true*/
 
 var Dispatch, Omadi;
 var CommentList = null;

@@ -880,8 +880,6 @@ Omadi.service.sendDataOnLoad = function(e){"use strict";
                 
     Omadi.display.doneLoading();
     
-    Ti.API.info('------ sendDataOnLoad: ' + JSON.stringify(e));
-    
     try{
         if (this.responseText !== null && this.responseText !== "null" && this.responseText !== "" && this.responseText !== "" && isJsonString(this.responseText) === true) {
     

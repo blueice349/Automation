@@ -3,15 +3,23 @@
 Ti.include('/lib/functions.js');
 
 
-var win, bundle, data;
+var win;
 
-var initGlobalVars = function() {'use strict';
+var initWin = function() {'use strict';
 	win = Ti.UI.currentWindow;
-	bundle = Omadi.data.getBundle(win.formType);
+	win.bundle = Omadi.data.getBundle(win.formType);
+	win.setBackgroundColor('#eee');
 };
 
-var initWindowStyle = function() {'use strict';
-	win.setBackgroundColor('#eee');
+var getWrapper = function() {'use strict';
+	return win.getChildren()[0];
+};
+
+var getTable = function() {'use strict';
+	var wrapper = getWrapper();
+	if (wrapper) {
+		return wrapper.getChildren()[1];
+	}
 };
 
 var close = function() {'use strict';
@@ -19,12 +27,12 @@ var close = function() {'use strict';
 };
 
 var getSortField = function() {'use strict';
-	return bundle.data.mobile.location_sort_field || 'location';
+	return win.bundle.data.mobile.location_sort_field || 'location';
 };
 
-var getData = function() {'use strict';
+var getDataFromDB = function() {'use strict';
 	var db = Omadi.utils.openMainDatabase();
-	var result = db.execute("SELECT n.title, n.nid, n.viewed type." + getSortField() + "___lat as lat, type." + getSortField() + "___lng as lng FROM node n INNER JOIN " + win.formType + " type ON type.nid = n.nid");
+	var result = db.execute("SELECT node.title, node.nid, node.viewed, type." + getSortField() + "___lat as lat, type." + getSortField() + "___lng as lng FROM node INNER JOIN " + win.formType + " type ON type.nid = node.nid");
 	
 	var data = [];
 	
@@ -33,8 +41,8 @@ var getData = function() {'use strict';
 			title: result.fieldByName('title'),
 			nid: result.fieldByName('nid'),
 			viewed: result.fieldByName('viewed'),
-			lat: parseInt(result.fieldByName('lat'), 10),
-			lng: parseInt(result.fieldByName('lng'), 10)
+			lat: parseFloat(result.fieldByName('lat')),
+			lng: parseFloat(result.fieldByName('lng'))
 		});
 		result.next();
 	}
@@ -45,35 +53,40 @@ var getData = function() {'use strict';
 	return data;
 };
 
-var calculateDistance = function(data, currentLocation) {'use strict';
-	var distance;
-	if (isNaN(data.lat) || isNaN(data.lng)) {
-		distance = Infinity;
-	} else {
+var calculateDistance = function(lat1, lng1, lat2, lng2, lat1Rad, lng1Rad, lat2Rad, lng2Rad) {'use strict';
+	var distance = Infinity;
+	
+	if (lat1 + lng1 && lat2 + lng2) {
 		var R = 3959; // radius of earth in miles
-		var lat1 = currentLocation.latRadians;
-		var lat2 = data.lat.toRadians();
-		var lng1 = currentLocation.lngRadians;
-		var lng2 = data.lng.toRadians();
-		
-		var deltaLat = (lat2 - lat1).toRadians();
-		var deltaLng = (lng2 - lng1).toRadians();
-		
-		var a = Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
-				Math.cos(lat1) * Math.cos(lat2) *
-				Math.sin(deltaLng / 2) * Math.sin(deltaLng / 2);
+		var latDelta = (lat2 - lat1) * Math.PI / 180;
+		var lngDelta = (lng2 - lng1) * Math.PI / 180;
+		var a = Math.sin(latDelta / 2) * Math.sin(latDelta / 2) +
+				Math.cos(lat1Rad) * Math.cos(lat2Rad) *
+				Math.sin(lngDelta / 2) * Math.sin(lngDelta / 2);
 		var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 		var d = R * c;
-		distance = d.toFixed(1);
+		distance = d;
 	}
 	
 	return distance;
 };
 
 var calculateDistances = function(data, currentLocation) {'use strict';
+
+	var lat1 = currentLocation.lat;
+	var lng1 = currentLocation.lng;
+	var lat1Rad = currentLocation.lat * Math.PI / 180;
+	var lng1Rad = currentLocation.lng * Math.PI / 180;
+	
 	var i;
 	for (i = 0; i < data.length; i++) {
-		data[i].distance = calculateDistance(data[i], currentLocation);
+		
+		var lat2 = data[i].lat;
+		var lng2 = data[i].lng;
+		var lat2Rad = lat2 * Math.PI / 180;
+		var lng2Rad = lng2 * Math.PI / 180;
+		
+		data[i].distance = calculateDistance(lat1, lng1, lat2, lng2, lat1Rad, lng1Rad, lat2Rad, lng2Rad);
 	}
 	
 	return data;
@@ -83,19 +96,140 @@ var getCurrentLocation = function(callback) {'use strict';
 	Ti.Geolocation.getCurrentPosition(function(e) {
 		callback({
 			lat: e.coords.latitude,
-			lng: e.coords.longitude,
-			latRadians: e.coords.latitude.toRadians(),
-			lngRadians: e.coords.longitude.toRadians()
+			lng: e.coords.longitude
 		});
 	});
 };
 
-var refresh = function(){'use strict';
-	var currentLocation = getCurrentLocation(function(currentLocation) {
-		var data = getData();
+var sortByDistance = function(a, b) {'use strict';
+	return a.distance - b.distance;
+};
+
+var getTitleSeparator = function() {'use strict';
+	var separator = ' - ';
+    if (win.bundle.data.title_fields &&
+		win.bundle.data.title_fields.separator &&
+		win.bundle.data.title_fields.separator.trim() != '') {
+		separator = win.bundle.data.title_fields.separator;
+    }
+    return separator;
+};
+
+var getRowTitleParts = function(title) {'use strict';
+	var parts = [title];
+	var separator = getTitleSeparator();
+	if (separator.trim() != '') {
+		parts = title.split(getTitleSeparator());
+	}
+	return parts.slice(0, 4);
+};
+
+var createRowTitleLabel = function(data) {'use strict';
+	
+	var parts = getRowTitleParts(data.title);
+
+	var title = Ti.UI.createView({
+		height: parts.length > 2 ? 50 : 30,
+		width: '75%',
+		left: '5%'
+	});
+	
+	var i;
+	for (i = 0; i < parts.length; i++) {
+		title.add(Ti.UI.createLabel({
+			text: parts[i],
+			height: 20,
+			width: parts.length > 1 ? '50%' : '100%',
+			wordWrap: false,
+			ellipsize: true,
+			font : { fontSize : 14 },
+			top: i < 2 ? 5 : 25,
+			left: i % 2 ? '50%' : 0,
+			color: i % 2 ? '#666' : '#000'
+		}));
+	}
+	
+	return title;
+};
+
+var createRowDistanceLabel = function(data) {'use strict';
+	return Ti.UI.createLabel({
+		text: data.distance == Infinity ? '???' : data.distance.toFixed(1) + ' mi',
+		width: '15%',
+		height: 50,
+		left: '85%',
+		font: { fontSize : 14 },
+		color: '#333',
+		textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+		verticalAlign: Ti.UI.TEXT_VERTICAL_ALIGNMENT_CENTER,
+		backgroundColor : '#ddd'
+	});
+};
+
+var createTableRow = function(data) {'use strict';
+	var row = Ti.UI.createTableViewRow({
+        hasChild : false,
+        searchValue : data.title,
+        color : '#000',
+        nid : data.nid,
+        backgroundColor : data.viewed ? '#fff' : '#eee',
+        height: 50
+    });
+	
+	row.add(createRowTitleLabel(data));
+	row.add(createRowDistanceLabel(data));
+	
+	return row;
+};
+
+var createTableRows = function(data) {'use strict';
+	var tableData = [];
+	var i;
+	for (i = 0; i < data.length; i++) {
+		tableData.push(createTableRow(data[i]));
+	}
+	return tableData;
+};
+
+var getData = function(callback) {'use strict';
+	getCurrentLocation(function(currentLocation) {
+		var data = getDataFromDB();
 		data = calculateDistances(data, currentLocation);
-		
-		// TODO sort and display data
+		data.sort(sortByDistance);
+		callback(data);
+	});
+};
+
+var handleTableClick = function(e) {'use strict';
+	var now = new Date();
+	var table = getTable();
+    if(e.row.nid > 0){
+        if(now - table.lastTouched > 500){
+			table.lastTouched = now;
+			Omadi.display.showDialogFormOptions(e);
+        }
+    }
+};
+
+var createTable = function() {'use strict';
+	var table = Titanium.UI.createTableView({
+        separatorColor : '#ccc',
+        data : [],
+        backgroundColor : '#eee',
+        scrollable: true,
+        lastTouched: new Date()
+    });
+    
+    table.addEventListener('click', handleTableClick);
+    
+    return table;
+};
+
+var refresh = function(){'use strict';
+	getData(function(data) {
+		var table = getTable();
+		table.data = [];
+		table.appendRow(createTableRows(data));
 	});
 };
 
@@ -121,20 +255,20 @@ var getLabelColor = function() {'use strict';
 	return color;
 };
 
-var getTitleLable = function() {'use strict';
+var createTitleLable = function() {'use strict';
 	return Ti.UI.createLabel({
         font : {
             fontWeight : 'bold',
             fontSize : 16
         },
-        text : bundle.label + ' Near Me',
+        text : win.bundle.label + ' Near Me',
         textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER,
         color : getLabelColor(),
         height: Ti.UI.SIZE
     });
 };
 
-var getRefreshButton = function() {'use strict';
+var createRefreshButton = function() {'use strict';
 	var refreshButton = Ti.UI.createImageView({
 	    image : '/images/refresh_light_blue.png',
 	    right : 9,
@@ -148,7 +282,7 @@ var getRefreshButton = function() {'use strict';
 	return refreshButton;
 };
 
-var getIOSToolbar = function() {'use strict';
+var createIOSToolbar = function() {'use strict';
 	var backButton = Ti.UI.createButton({
         title : 'Back',
         style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
@@ -160,7 +294,7 @@ var getIOSToolbar = function() {'use strict';
     });
     
     var toolbar = Ti.UI.iOS.createToolbar({
-        items : [backButton, space, getTitleLable(), space, getRefreshButton()],
+        items : [backButton, space, createTitleLable(), space, createRefreshButton()],
         top : 0,
         borderTop : false,
         borderBottom : false,
@@ -170,33 +304,33 @@ var getIOSToolbar = function() {'use strict';
     return toolbar;
 };
 
-var getAndroidToolbar = function() {'use strict';
+var createAndroidToolbar = function() {'use strict';
 	var toolbar = Titanium.UI.createView({
         backgroundColor : '#666',
         top : 0,
         height: Ti.UI.SIZE
     });
     
-    toolbar.add(getTitleLable());
-    toolbar.add(getRefreshButton());
+    toolbar.add(createTitleLable());
+    toolbar.add(createRefreshButton());
     
     return toolbar;
 };
 
-var getToolbar = function() {'use strict';
+var createToolbar = function() {'use strict';
 	var toolbar;
 	
 	if (Ti.App.isIOS) {
-		toolbar = getIOSToolbar();
+		toolbar = createIOSToolbar();
 	} else {
-		toolbar = getAndroidToolbar();
+		toolbar = createAndroidToolbar();
 	}
 	
 	return toolbar;
 };
 
-var getView = function() {'use strict';
-	var view = Ti.UI.createView({
+var createWrapperView = function() {'use strict';
+	var wrapper = Ti.UI.createView({
 	   layout: 'vertical',
 	   bottom: 0,
 	   top: Ti.App.isIOS7 ? 20 : 0,
@@ -204,15 +338,16 @@ var getView = function() {'use strict';
 	   left: 0 
 	});
 	
-	view.add(getToolbar());
+	wrapper.add(createToolbar());
+	wrapper.add(createTable());
 	
-	return view;
+	return wrapper;
 };
 
 (function() {'use strict';
-	initGlobalVars();
-	initWindowStyle();
+	initWin();
 	initEventHandlers();
 	
-	win.add(getView());
+	win.add(createWrapperView());
+	refresh();
 }());

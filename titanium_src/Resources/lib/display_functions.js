@@ -1,4 +1,3 @@
-
 /*jslint eqeq:true,plusplus:true*/
 
 Omadi.display = Omadi.display || {};
@@ -409,9 +408,6 @@ Omadi.display.openNearMeWindow = function(formType) {
 };
 
 Omadi.display.openListWindow = function(type, show_plus, filterValues, nestedWindows, showFinalResults) {"use strict";
-
-	return Omadi.display.openNearMeWindow(type);
-	/*
     var listWindow = Titanium.UI.createWindow({
         navBarHidden : true,
         url : '/main_windows/objects.js',
@@ -428,7 +424,6 @@ Omadi.display.openListWindow = function(type, show_plus, filterValues, nestedWin
     listWindow.open();
 
     return listWindow;
-    */
 };
 
 Omadi.display.openActionsWindow = function() {"use strict";

@@ -3,7 +3,7 @@
 Ti.include('/lib/functions.js');
 
 
-var bundle, curWin, search, instances, filterValues, filterFields, win_new;
+var bundle, curWin, searchWrapper, search, instances, filterValues, filterFields, win_new, nearMeButton;
 
 var filterTableView;
 var itemsPerPage = 40;
@@ -582,12 +582,43 @@ function setTableData() {"use strict";
         });
 
         if (showFinalResults) {
-
+			searchWrapper = Ti.UI.createView({
+				height: Ti.App.isAndroid? 45 : 35,
+			});
+			
             search = Ti.UI.createSearchBar({
                 hintText : 'Search...',
                 autocorrect : false,
-                focusable : false
+                focusable : false,
+                width : bundle.data.mobile.location_sort_field ? '75%' : '100%',
+                left: 0
             });
+            
+            searchWrapper.add(search);
+            
+            nearMeButton = Ti.UI.createLabel({
+	            text : 'Near Me',
+	            left : '75%',
+	            width : '24%',
+	            height : Ti.App.isAndroid? 40 : 30,
+	            top : 2.5,
+	            backgroundGradient : Omadi.display.backgroundGradientBlue,
+	            borderRadius : 5,
+	            color : '#eee',
+	            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+	            font: {
+	                fontSize: 16,
+	                fontWeight: 'bold'
+	            }
+	        });
+	        
+	        nearMeButton.addEventListener('click', function(e) {
+				Omadi.display.openNearMeWindow(curWin.type);
+	        });
+	        
+	        if (bundle.data.mobile.location_sort_field) {
+				searchWrapper.add(nearMeButton);
+	        }
             
             if(Ti.App.isAndroid){
                 search.height = 45;
@@ -752,8 +783,6 @@ function setTableData() {"use strict";
             if (!showFinalResults) {
                 topBar.add(showAllButton);
             }
-            
-            topBar.add(nearMeButton);
 
             Ti.Android.currentActivity.onCreateOptionsMenu = function(e) {
 
@@ -789,7 +818,7 @@ function setTableData() {"use strict";
         }
 
         if (showFinalResults) {
-            wrapperView.add(search);
+            wrapperView.add(searchWrapper);
         }
         else {
 

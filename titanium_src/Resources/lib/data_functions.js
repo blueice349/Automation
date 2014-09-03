@@ -2881,9 +2881,12 @@ Omadi.data.processFieldsJson = function(mainDB) {"use strict";
                                 for (part in Omadi.service.fetchedJSON.fields.insert[i].settings.parts) {
                                     queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "___" + part + "' " + db_type);
                                 }
+                                if (Omadi.service.fetchedJSON.fields.insert[i].type == 'location') {
+									queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "___lat' " + db_type);
+									queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "___lng' " + db_type);
+                                }
                             }
                             else {
-                               
                                 queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "' " + db_type);
                                 
                                 if (Omadi.service.fetchedJSON.fields.insert[i].type == 'file') {
@@ -2892,9 +2895,6 @@ Omadi.data.processFieldsJson = function(mainDB) {"use strict";
                                     queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "___data' " + db_type);
                                 } else if (Omadi.service.fetchedJSON.fields.insert[i].type == 'datestamp') {
                                     queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "___end' " + db_type);
-                                } else if (Omadi.service.fetchedJSON.fields.insert[i].type == 'location') {
-									queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "___lat' " + db_type);
-									queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "___lng' " + db_type);
                                 }
                             }
                         }
@@ -3271,7 +3271,7 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
     var closeDB, instances, fakeFields, queries, i, j, field_name, query, 
         fieldNames, no_data, values, value, notifications = {}, numSets, 
         result, reasonIndex, reason, alertReason, dialog, updateNid, 
-        listDB, fullResetLastSync, nodeChangedTimestamp;
+        listDB, fullResetLastSync, nodeChangedTimestamp, real_field_name;
     
     
     fullResetLastSync = Ti.App.Properties.getDouble('omadi:fullResetLastSync', 0);
@@ -3367,6 +3367,11 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                             else if(instances[field_name].type == 'extra_price'){
                                 fieldNames.push(field_name + "___data");
                             }
+                            else if(instances[field_name].type == 'location' && field_name.indexOf('___postal_code') != -1) {
+								real_field_name = field_name.split('___')[0];
+								fieldNames.push(real_field_name + '___lat');
+								fieldNames.push(real_field_name + '___lng');
+                            }
                         }
                         
                         for(field_name in fakeFields){
@@ -3428,6 +3433,21 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                                     values.push("'" + dbEsc(JSON.stringify(value)) + "'");
                                 }
                             }
+                            else if(instances[field_name].type == 'location' && field_name.indexOf('___postal_code') != -1){
+								real_field_name = field_name.split('___')[0];
+								
+								// push ___postal_code value
+								value = Omadi.service.fetchedJSON.node[type].insert[i][field_name];
+								values.push("'" + dbEsc(value instanceof Array ? JSON.stringify(value) : value) + "'");
+								
+								// push ___lat
+								value = Omadi.service.fetchedJSON.node[type].insert[i][real_field_name + '___lat'];
+								values.push("'" + dbEsc(value instanceof Array ? JSON.stringify(value) : value) + "'");
+								
+								// push ___lng
+								value = Omadi.service.fetchedJSON.node[type].insert[i][real_field_name + '___lng'];
+								values.push("'" + dbEsc(value instanceof Array ? JSON.stringify(value) : value) + "'");
+                            }
                             else if (typeof Omadi.service.fetchedJSON.node[type].insert[i][field_name] === "undefined" || Omadi.service.fetchedJSON.node[type].insert[i][field_name] === null) {
                                 values.push("null");
                             }
@@ -3464,7 +3484,7 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                                             values.push("null");
                                         }
                                         break;
-        
+										
                                     default:
                                         value = Omadi.service.fetchedJSON.node[type].insert[i][field_name];
 
