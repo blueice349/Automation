@@ -583,7 +583,7 @@ function setTableData() {"use strict";
 
         if (showFinalResults) {
 			searchWrapper = Ti.UI.createView({
-				height: Ti.App.isAndroid? 45 : 35,
+				height: Ti.App.isAndroid? 45 : 35
 			});
 			
             search = Ti.UI.createSearchBar({
