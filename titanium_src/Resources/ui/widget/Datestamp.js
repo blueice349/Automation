@@ -46,11 +46,11 @@ function DatestampWidget(formObj, instance, fieldViewWrapper){"use strict";
     }
     
     if (this.isEndDate()) {
-    	this.instance.isRequired = this.instance.isRequired && this.instance.settings.enddate_require;
+		this.instance.isRequired = this.instance.isRequired && this.instance.settings.enddate_require;
     }
 }
 
-DatestampWidget.prototype.isEndDate = function(){
+DatestampWidget.prototype.isEndDate = function(){'use strict';
 	return this.instance.field_name.indexOf('___end') != -1;
 };
 

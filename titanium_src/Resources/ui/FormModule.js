@@ -2805,7 +2805,7 @@ FormModule.prototype.getWindow = function(){"use strict";
         
         // Reset the conditionally required selection that might have been set previously as this.instances could be cached
         for(field_name in this.instances){
-            this.instances[fieldName].isConditionallyRequired = false;
+            this.instances[field_name].isConditionallyRequired = false;
         }
         
         try{

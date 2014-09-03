@@ -255,7 +255,7 @@ var getLabelColor = function() {'use strict';
 	return color;
 };
 
-var createTitleLable = function() {'use strict';
+var createTitleLabel = function() {'use strict';
 	return Ti.UI.createLabel({
         font : {
             fontWeight : 'bold',
@@ -294,7 +294,7 @@ var createIOSToolbar = function() {'use strict';
     });
     
     var toolbar = Ti.UI.iOS.createToolbar({
-        items : [backButton, space, createTitleLable(), space, createRefreshButton()],
+        items : [backButton, space, createTitleLabel(), space, createRefreshButton()],
         top : 0,
         borderTop : false,
         borderBottom : false,
@@ -311,7 +311,7 @@ var createAndroidToolbar = function() {'use strict';
         height: Ti.UI.SIZE
     });
     
-    toolbar.add(createTitleLable());
+    toolbar.add(createTitleLabel());
     toolbar.add(createRefreshButton());
     
     return toolbar;

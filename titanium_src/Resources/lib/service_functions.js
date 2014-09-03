@@ -1,5 +1,4 @@
-
-/*global Omadi,dbEsc,isJsonString*/
+/*global Omadi,dbEsc,isJsonString,AndroidSysUtil*/
 /*jslint eqeq:true,plusplus:true*/
 
 

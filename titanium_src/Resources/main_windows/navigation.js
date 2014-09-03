@@ -3,8 +3,7 @@ win_nav.backgroundColor = '#EEEEEE';
 win_nav.orientationModes = [Titanium.UI.PORTRAIT];
 Ti.include('/lib/functions.js');	
 
-function secondsToTime(secs)
-{
+function secondsToTime(secs) {'use strict';
     var hours = Math.floor(secs / (60 * 60));
    
     var divisor_for_minutes = secs % (60 * 60);
@@ -22,20 +21,19 @@ function secondsToTime(secs)
 }
 
 //degrees to radians
-function toRad(degree) 
-{
-    rad = degree* Math.PI/ 180;
+function toRad(degree) {'use strict';
+    var rad = degree* Math.PI/ 180;
     return rad;
 }
 
 //@Parameters: Origin / End
-function getDistance(lat1, lon1, lat2, lon2){
+function getDistance(lat1, lon1, lat2, lon2){'use strict';
 	Ti.API.info(lat1+' - '+lon1+' - '+lat2+' - '+lon2);
 	var R = 6371; // km
 	var dLat = toRad(lat2-lat1);
 	var dLon = toRad(lon2-lon1);
-	var lat1 = toRad(lat1);
-	var lat2 = toRad(lat2);
+	lat1 = toRad(lat1);
+	lat2 = toRad(lat2);
 	
 	var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
 	        Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2); 
@@ -71,12 +69,12 @@ if (num_nav > 0){
 		zIndex: 1
 	});
 	
-	var points = new Array();
+	var points = [];
 	var distance_total = 0;
 	var lat_o = nav_res.fieldByName('latitude');
 	var lon_o = nav_res.fieldByName('longitude');
 	var time_o = nav_res.fieldByName('timestamp');
-	points.push(new Array());
+	points.push([]);
 	
 	while (nav_res.isValidRow())
 	{
@@ -89,7 +87,7 @@ if (num_nav > 0){
 			distance_total += getDistance(parseFloat(lat_o) , parseFloat(lon_o), parseFloat(lat), parseFloat(lon));
 		}
 		else{
-			points.push(new Array());
+			points.push([]);
 		}
 		
 		var entry = {latitude:lat,longitude:lon};
@@ -102,14 +100,14 @@ if (num_nav > 0){
 		nav_res.next();
 	}
 	
-	var _w;
-	for (_w in points){
-		Ti.API.info(_w+" = "+points[_w]);
+	var w;
+	for (w in points){
+		Ti.API.info(w+" = "+points[w]);
 		
 		// route object
 		var route = {
 			name:"Route",
-			points:points[_w],
+			points:points[w],
 			color:"red",
 			width:4
 		};
@@ -125,7 +123,7 @@ if (num_nav > 0){
 	});
 	win_nav.leftNavButton = back_bt;
 	
-	back_bt.addEventListener('click', function(e){
+	back_bt.addEventListener('click', function(e){'use strict';
 		win_nav.close();
 	});
 	

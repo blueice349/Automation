@@ -1270,7 +1270,7 @@ Omadi.utils.list_search_node_matches_search_criteria = function(node, criteria) 
                                                 }
                                                 break;
                                             case '<':
-                                                if (node_value < search_value) {
+												if (node_value < search_value) {
                                                     row_matches[criteria_index] = true;
                                                 }
                                                 break;
@@ -1836,6 +1836,7 @@ Omadi.utils.list_search_get_search_sql = function(nodeType, criteria){"use stric
                          }
                          else{
                              // TODO: fill this in for autocomplete fields
+                             Ti.API.INFO('autocomplete');
                          }
                        break; 
                     }

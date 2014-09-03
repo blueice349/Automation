@@ -392,7 +392,7 @@ Omadi.display.newAppAvailable = function(message) {"use strict";
     }
 };
 
-Omadi.display.openNearMeWindow = function(formType) {
+Omadi.display.openNearMeWindow = function(formType) {'use strict';
 	var win = Titanium.UI.createWindow({
         navBarHidden : true,
         formType: formType,
@@ -643,6 +643,7 @@ Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
                         // isDispatch = true; // nothing changed
                         // Example: Dispatched PPI to drop fee
                         // Keep original dispatch node
+                        Ti.API.info('isChangeTo');
                     }
                     else{
                         if(!newIsDispatch){
@@ -971,7 +972,6 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
             postDialog.options = options;
             postDialog.eventRow = e.row;
             postDialog.cancel = options.length - 1;
-            postDialog.show();
     
             postDialog.addEventListener('click', function(ev) {
                 var buttonInfo, form_part;
@@ -1040,6 +1040,8 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
                     Utils.sendErrorReport("exception dialog form options: " + ex);
                 }
             });
+            
+            postDialog.show();
         }
     }
 };
