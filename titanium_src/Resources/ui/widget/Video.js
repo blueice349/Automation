@@ -803,6 +803,9 @@ VideoWidget.prototype.openVideoChooser = function(imageView){"use strict";
                 }
                 
                 Omadi.display.doneLoading();
+                
+                // Make sure we never lose a video reference due to a crash
+                Widget[imageView.instance.field_name].formObj.saveForm('continuous');
             }
         });
     }
