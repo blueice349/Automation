@@ -1,10 +1,11 @@
 /*jslint eqeq:true, plusplus: true*/
 
-var Widget, Omadi;
+var Widget;
 
 Widget = {};
 
 var Utils = require('lib/Utils');
+var Display = require('lib/Display');
 
 function FileWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.formObj = formObj;
@@ -31,7 +32,7 @@ function FileWidget(formObj, instance, fieldViewWrapper){"use strict";
     }
     
     if(this.instance.settings.cardinality == -1){
-        if(Omadi.utils.isArray(this.dbValues)){
+        if(Utils.isArray(this.dbValues)){
             this.numVisibleFields = this.dbValues.length;
         }
     }
@@ -129,9 +130,9 @@ FileWidget.prototype.getNewElement = function(index){"use strict";
         widgetView.check_conditional_fields = this.formObj.affectsAnotherConditionalField(this.instance);
         this.formObj.addCheckConditionalFields(widgetView.check_conditional_fields);
         
-        if(Omadi.display.getFileViewType(textValue) !== null){
+        if(Display.getFileViewType(textValue) !== null){
             widgetView.addEventListener('click', function(e){
-                Omadi.display.displayFile(e.source.nid, e.source.dbValue, e.source.textValue);
+                Display.displayFile(e.source.nid, e.source.dbValue, e.source.textValue);
             });
             widgetView.color = '#369';
         }
@@ -178,13 +179,9 @@ FileWidget.prototype.cleanUp = function(){"use strict";
         }
         catch(ex1){}
     }
-    
-    Omadi = null;
 };
 
-exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
-    
-    Omadi = OmadiObj;
+exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
     Widget[instance.field_name] = new FileWidget(FormObj, instance, fieldViewWrapper);
     
     return Widget[instance.field_name];

@@ -1,6 +1,6 @@
 /*jslint eqeq:true, plusplus: true*/
 
-var Widget, Omadi;
+var Widget;
 
 var Utils = require('lib/Utils');
 
@@ -223,13 +223,9 @@ ListBooleanWidget.prototype.cleanUp = function(){"use strict";
         }
         catch(ex1){}
     }
-    
-    Omadi = null;
 };
 
-exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
-    
-    Omadi = OmadiObj;
+exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
     Widget[instance.field_name] = new ListBooleanWidget(FormObj, instance, fieldViewWrapper);
     
     return Widget[instance.field_name];

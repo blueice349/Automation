@@ -1,10 +1,11 @@
 /*jslint eqeq:true, plusplus: true*/
 
-var Widget, Omadi, dateWindow, date_picker, time_picker, innerWrapperView, wrapperView;
+var Widget, dateWindow, date_picker, time_picker, innerWrapperView, wrapperView;
 Widget = {};
 dateWindow = null;
 
 var Utils = require('lib/Utils');
+var Display = require('lib/Display');
 
 function DatestampWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.formObj = formObj;
@@ -34,7 +35,7 @@ function DatestampWidget(formObj, instance, fieldViewWrapper){"use strict";
     }
     
     if(this.instance.settings.cardinality == -1){
-        if(Omadi.utils.isArray(this.dbValues)){
+        if(Utils.isArray(this.dbValues)){
             this.numVisibleFields = this.dbValues.length;
         }
         if(this.numVisibleFields < 1){
@@ -78,7 +79,7 @@ DatestampWidget.prototype.getFieldView = function(){"use strict";
             title: ' Add another item ',
             right: 15,
             style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
-            backgroundGradient: Omadi.display.backgroundGradientGray,
+            backgroundGradient: Display.backgroundGradientGray,
             borderColor: '#999',
             borderWidth: 1,
             width: Ti.UI.SIZE,
@@ -160,13 +161,13 @@ DatestampWidget.prototype.getNewElement = function(index){"use strict";
     }
     else if (this.instance.settings.default_value == 'now') {
         dbValue = Math.ceil(jsDate.getTime() / 1000);
-        textValue = Omadi.utils.formatDate(dbValue, showTime);
+        textValue = Utils.formatDate(dbValue, showTime);
     }
     
     dateText = timeText = "";
     if(dbValue !== null){
-        dateText = Omadi.utils.formatDate(dbValue, false);
-        timeText = Omadi.utils.formatTime(dbValue);
+        dateText = Utils.formatDate(dbValue, false);
+        timeText = Utils.formatTime(dbValue);
     }
 
     element = Ti.UI.createView({
@@ -291,7 +292,7 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
         });
      
         titleLabel = Ti.UI.createLabel({
-           backgroundGradient: Omadi.display.backgroundGradientGray,
+           backgroundGradient: Display.backgroundGradientGray,
            width: Ti.UI.FILL,
            height: 30,
            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
@@ -519,7 +520,7 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
                 height : Ti.UI.SIZE,
                 width : Ti.UI.FILL,
                 textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER,
-                format24 : (Omadi.utils.getTimeFormat().indexOf('H') !== -1 ? true : false) // Only available on Android
+                format24 : (Utils.getTimeFormat().indexOf('H') !== -1 ? true : false) // Only available on Android
             });
             
             if(Ti.App.isAndroid){
@@ -592,17 +593,17 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
                 if(newDate){
                     e.source.jsDate = newDate;
                     dbValue = Math.ceil(newDate.getTime() / 1000);
-                    textValue = Omadi.utils.formatDate(dbValue, e.source.showTime);
+                    textValue = Utils.formatDate(dbValue, e.source.showTime);
                     
                     widget.elements[e.source.delta].dbValue = dbValue;
                     widget.elements[e.source.delta].textValue = textValue;
                     
                     widget.dateViews[e.source.delta].jsDate = newDate;
-                    widget.dateViews[e.source.delta].setText(Omadi.utils.formatDate(dbValue, false));
+                    widget.dateViews[e.source.delta].setText(Utils.formatDate(dbValue, false));
                     widget.dateViews[e.source.delta].origDBValue = dbValue;
                     
                     if(e.source.showTime){
-                        widget.timeViews[e.source.delta].setText(Omadi.utils.formatTime(dbValue));
+                        widget.timeViews[e.source.delta].setText(Utils.formatTime(dbValue));
                         widget.timeViews[e.source.delta].origDBValue = dbValue;
                         widget.timeViews[e.source.delta].jsDate = newDate;
                     }
@@ -805,13 +806,9 @@ DatestampWidget.prototype.cleanUp = function(){"use strict";
         }
         catch(ex1){}
     }
-    
-    Omadi = null;
 };
 
-exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
-    
-    Omadi = OmadiObj;
+exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
     Widget[instance.field_name] = new DatestampWidget(FormObj, instance, fieldViewWrapper);
     
     return Widget[instance.field_name];

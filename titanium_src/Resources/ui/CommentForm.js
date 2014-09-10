@@ -1,7 +1,11 @@
 /*jslint eqeq:true,plusplus:true*/
-var Omadi, FormObj;
+var FormObj;
 
 var Utils = require('lib/Utils');
+var Display = require('lib/Display');
+var Comment = require('objects/Comment');
+var Node = require('objects/Node');
+var Database = require('lib/Database');
 
 function CommentForm(nid){"use strict";
     //create module instance
@@ -15,19 +19,15 @@ function CommentForm(nid){"use strict";
     this.fieldObjects = {};
     this.fieldWrappers = {};
     this.labelViews = {};
-    this.node = {};
     this.regions = {};
     this.regionViews = {};
-    this.fieldWrappers = {};
     this.fieldRegionWrappers = {};
-    this.labelViews = {};
-    this.fieldObjects = {};
     this.form_errors = [];
-    
-    this.node = Omadi.data.nodeLoad(nid);
+
+    this.node = Node.load(nid);
     
     if(this.node){
-        this.instances = Omadi.data.getFields('comment_node_' + this.node.type);
+        this.instances = Node.getFields('comment_node_' + this.node.type);
         
         Ti.API.debug("Instances:   " + JSON.stringify(this.instances));
     }
@@ -102,16 +102,14 @@ CommentForm.prototype.getTaxonomyOptions = function(instance, useNone) {"use str
         useNone = true;
     }
     
-    db = Omadi.utils.openMainDatabase();
-    
     options = [];
 
-    result = db.execute("SELECT vid FROM vocabulary WHERE machine_name = '" + instance.settings.vocabulary + "'");
+    result = Database.query("SELECT vid FROM vocabulary WHERE machine_name = '" + instance.settings.vocabulary + "'");
     if(result.isValidRow()){
         vid = result.fieldByName('vid');
         result.close();
 
-        result = db.execute("SELECT name, tid, description FROM term_data WHERE vid='" + vid + "' GROUP BY name ORDER BY CAST(`weight` AS INTEGER) ASC");
+        result = Database.query("SELECT name, tid, description FROM term_data WHERE vid='" + vid + "' GROUP BY name ORDER BY CAST(`weight` AS INTEGER) ASC");
 
         if (instance.settings.cardinality != -1 && instance.required == 0 && useNone) {
             options.push({
@@ -131,7 +129,7 @@ CommentForm.prototype.getTaxonomyOptions = function(instance, useNone) {"use str
         result.close();
     }
     
-    db.close();
+    Database.close();
 
     return options;
 };
@@ -441,7 +439,7 @@ CommentForm.prototype.getFieldView = function(instance, fieldViewWrapper){"use s
         
         if(Module){
            
-           this.fieldObjects[instance.field_name] = Module.getFieldObject(Omadi, this, instance, fieldViewWrapper);
+           this.fieldObjects[instance.field_name] = Module.getFieldObject(this, instance, fieldViewWrapper);
             
            fieldView = this.fieldObjects[instance.field_name].getFieldView(); 
         }
@@ -502,7 +500,7 @@ CommentForm.prototype.initNewNode = function(){"use strict";
     var uid, now;
     try{
         uid = Utils.getUid();
-        now = Omadi.utils.getUTCTimestampServerCorrected();
+        now = Utils.getUTCTimestampServerCorrected();
         
         this.node = {};
         this.node.created = now;
@@ -524,14 +522,11 @@ CommentForm.prototype.save = function(){"use strict";
     
     saved = false;
     
-    cid = CommentForm.prototype.getNewCommentCid();
-    
     this.formToNode();
-    this.node.cid = cid;
+    this.node.cid = this.getNewCommentCid();
     
     Ti.API.debug(JSON.stringify(this.node));
     
-    Comment = require('objects/Comment');
     saved = Comment.save(this.node);
     
     return saved;
@@ -681,39 +676,7 @@ CommentForm.prototype.getSpacerView = function(){"use strict";
 };
 
 CommentForm.prototype.getNewCommentCid = function() {"use strict";
-    var db, result, smallestCid;
-    //Get smallest nid
-    try{
-        db = Omadi.utils.openMainDatabase();
-        result = db.execute("SELECT MIN(cid) FROM comment");
-    
-        if (result.isValidRow()) {
-            smallestCid = result.field(0);
-            
-            smallestCid = parseInt(smallestCid, 10);
-            if (isNaN(smallestCid) || smallestCid > 0) {
-                smallestCid = -1;
-            }
-            else {
-                smallestCid--;
-            }
-        }
-        else {
-            smallestCid = -1;
-        }
-        
-        result.close();
-        db.close();
-    }
-    catch(ex){
-        Utils.sendErrorReport("Exception in getNewCommentCid: " + ex);   
-        try{
-            db.close();
-        }
-        catch(ex1){}
-    }
-
-    return smallestCid;
+	return Comment.getNewCommentCid();
 };
 
 CommentForm.prototype.getTextField = function(instance){"use strict";
@@ -1417,7 +1380,7 @@ CommentForm.prototype.showFormWindow = function(parent){"use strict";
         saveButton = Ti.UI.createLabel({
             text: 'Save',
             color: '#fff',
-            backgroundGradient: Omadi.display.backgroundGradientBlue,
+            backgroundGradient: Display.backgroundGradientBlue,
             width: '50%',
             font: {
                 fontSize: 18,
@@ -1434,7 +1397,7 @@ CommentForm.prototype.showFormWindow = function(parent){"use strict";
         cancelButton = Ti.UI.createLabel({
             text: 'Cancel',
             color: '#fff',
-            backgroundGradient: Omadi.display.backgroundGradientGray,
+            backgroundGradient: Display.backgroundGradientGray,
             width: '50%',
             font: {
                 fontSize: 18,
@@ -1471,13 +1434,13 @@ CommentForm.prototype.showFormWindow = function(parent){"use strict";
     }
 };
 
-
-exports.showFormWindow = function(OmadiObj, nid, parent){"use strict";
-    Omadi = OmadiObj;
+CommentForm.showFormWindow = function(OmadiObj, nid, parent){"use strict";
     // Currently only creating new comments
     // TODO: pass in a null or new cid to create or edit
     FormObj = new CommentForm(nid);
     
     FormObj.showFormWindow(parent);
 };
+
+module.exports = CommentForm;
 

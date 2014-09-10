@@ -1,8 +1,11 @@
 /*jslint eqeq:true, plusplus:true, regexp:true, vars:true*/
 
-var Widget = {}, Omadi;
+var Widget = {};
 var ImageFactory = null;
 var Utils = require('lib/Utils');
+var Database = require('lib/Database');
+var Display = require('lib/Display');
+var Location = require('lib/Location');
 
 if(Ti.App.isIOS){
     ImageFactory = require('ti.imagefactory');
@@ -39,7 +42,7 @@ function ImageWidget(formObj, instance, fieldViewWrapper){"use strict";
     }
     
     if(this.instance.settings.cardinality == -1){
-        if(Omadi.utils.isArray(this.dbValues)){
+        if(Utils.isArray(this.dbValues)){
             this.numVisibleFields = this.dbValues.length;
         }
     }
@@ -211,8 +214,7 @@ ImageWidget.prototype.addImageViewsToWidgetView = function(fids, widgetView) {"u
 ImageWidget.prototype.getLocalImages = function() {"use strict";
 	var localImages = {0: []};
 	try {
-		var db = Omadi.utils.openListDatabase();
-		var result = db.execute('SELECT file_path, fid, degrees, thumb_path, nid FROM _files WHERE nid IN (' + this.getImageNid() + ', ' + (this.node.continuous_nid || 0) + ', 0) AND field_name="' + this.instance.field_name + '" ORDER BY timestamp ASC');
+		var result = Database.queryList('SELECT file_path, fid, degrees, thumb_path, nid FROM _files WHERE nid IN (' + this.getImageNid() + ', ' + (this.node.continuous_nid || 0) + ', 0) AND field_name="' + this.instance.field_name + '" ORDER BY timestamp ASC');
 		
 		while(result.isValidRow()) {
 			
@@ -231,7 +233,7 @@ ImageWidget.prototype.getLocalImages = function() {"use strict";
 		}
 		
 		result.close();
-		db.close();
+		Database.close();
 	} catch (e) {
 		Utils.sendErrorReport('Error in getLocalImages: ' + e);
 	}
@@ -288,7 +290,7 @@ ImageWidget.prototype.getRemoteImageView = function(fid, index) {"use strict";
         instance : this.instance
     });
     
-    Omadi.display.setImageViewThumbnail(imageView, this.getImageNid(), fid);
+    Display.setImageViewThumbnail(imageView, this.getImageNid(), fid);
     
     return imageView;
 };
@@ -322,9 +324,9 @@ ImageWidget.prototype.getTakePhotoButtonView = function() {"use strict";
 		if (widgetType == 'choose') {
 			self.openPictureChooser(e.source);
 		} else {
-			Omadi.display.loading();
+			Display.loading();
 			self.openCamera(e.source);
-			Omadi.display.doneLoading();
+			Display.doneLoading();
 		}
 		
 		setTimeout(function(){
@@ -422,7 +424,7 @@ ImageWidget.prototype.getImageView = function(widgetView, index, nid, fid, fileP
         imageView.dbValue = -1;
     }
     else if ( typeof fid === 'number') {
-        Omadi.display.setImageViewThumbnail(imageView, nid, fid);
+        Display.setImageViewThumbnail(imageView, nid, fid);
     }
     
     if(widgetType == 'choose'){
@@ -455,9 +457,9 @@ ImageWidget.prototype.getImageView = function(widgetView, index, nid, fid, fileP
             try{
                 if (e.source.fid === null && e.source.filePath === null) {
                     e.source.setTouchEnabled(false);
-                    Omadi.display.loading();
+                    Display.loading();
                     Widget[e.source.instance.field_name].openCamera(e.source);
-                    Omadi.display.doneLoading();
+                    Display.doneLoading();
                     
                     // Allow the imageView to be touched again after waiting a little bit
                     setTimeout(function(){
@@ -482,13 +484,13 @@ ImageWidget.prototype.showPhotoOptions = function(imageView){"use strict";
     var dialog, isDeletePhoto, options;
     
     if (!this.instance.can_edit) {
-        Omadi.display.displayFullImage(imageView);
+        Display.displayFullImage(imageView);
         return;
     }
     
     options = ['View Photo'];
     
-    if(imageView.dbValue <= 0 && Omadi.utils.getPhotoWidget() == 'take'){
+    if(imageView.dbValue <= 0 && Utils.getPhotoWidget() == 'take'){
         isDeletePhoto = true;
         options.push('Delete Photo');
     }
@@ -512,7 +514,7 @@ ImageWidget.prototype.clickedPhotoOption = function(e){"use strict";
     var dialog, message, title;
     try{
         if(e.index === 0){
-            Omadi.display.displayFullImage(e.source.imageView);
+            Display.displayFullImage(e.source.imageView);
         }
         else if(e.index === 1){
             
@@ -561,7 +563,7 @@ ImageWidget.prototype.clickedPhotoOption = function(e){"use strict";
 	                        if(filePath !== null){
 	                            Ti.API.debug("Removing file reference in DB: " + filePath + " " + e2.source.isDeletePhoto);
 	                            // Do the removal for an image stored on the phone
-	                            Omadi.data.deletePhotoUploadByPath(filePath, e2.source.isDeletePhoto); 
+	                            ImageWidget.deletePhotoUploadByPath(filePath, e2.source.isDeletePhoto); 
 	                        }
 	                        else{
 	                            Utils.sendErrorReport("Trying to delete image, filepath is null");
@@ -631,7 +633,7 @@ ImageWidget.prototype.openPictureChooser = function(imageView){"use strict";
         
             recentFiles = [];
             
-            now = Omadi.utils.getUTCTimestampServerCorrected();
+            now = Utils.getUTCTimestampServerCorrected();
             // Last hour
             earliestTimestamp = (now - 3600) * 1000;
             
@@ -787,7 +789,7 @@ ImageWidget.prototype.openPictureChooser = function(imageView){"use strict";
                 }
                 
                 if(recentFiles.length > 0){
-                    recentFiles = recentFiles.sort(Omadi.utils.fileSortByModified);
+                    recentFiles = recentFiles.sort(Utils.fileSortByModified);
                     
                     for(i = 0; i < recentFiles.length; i ++){
                         row = Ti.UI.createView({
@@ -807,7 +809,7 @@ ImageWidget.prototype.openPictureChooser = function(imageView){"use strict";
                         }));
                         
                         row.add(Ti.UI.createLabel({
-                            text: Omadi.utils.getTimeAgoStr(recentFiles[i].modifiedTimestamp / 1000),
+                            text: Utils.getTimeAgoStr(recentFiles[i].modifiedTimestamp / 1000),
                             left: 60,
                             touchEnabled: false,
                             ellipsize: true
@@ -1148,20 +1150,20 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
                         imageFile, filePath, thumbPath, thumbFile, thumbBlob, takeNextPhotoView, parentView;
                     
                     try{
-                        Omadi.display.loading("Saving Photo...", Widget[imageView.instance.field_name].formObj.win);
+                        Display.loading("Saving Photo...", Widget[imageView.instance.field_name].formObj.win);
                         
                         imageView.mimeType = event.media.mimeType;
                         
-                        filePath = Ti.Filesystem.applicationDataDirectory + "p_" + Omadi.utils.getUTCTimestamp() + '.jpg';
+                        filePath = Ti.Filesystem.applicationDataDirectory + "p_" + Utils.getUTCTimestamp() + '.jpg';
                         imageFile = Ti.Filesystem.getFile(filePath);
                         
                         imageFile.write(event.media);
                         imageFile.setRemoteBackup(false);
                         
-                        Omadi.display.doneLoading();
-                        Omadi.display.loading("Creating Thumbnail...", Widget[imageView.instance.field_name].formObj.win);
+                        Display.doneLoading();
+                        Display.loading("Creating Thumbnail...", Widget[imageView.instance.field_name].formObj.win);
                         
-                        thumbPath = Ti.Filesystem.applicationDataDirectory + "p_" + Omadi.utils.getUTCTimestamp() + '_thumb.jpg';
+                        thumbPath = Ti.Filesystem.applicationDataDirectory + "p_" + Utils.getUTCTimestamp() + '_thumb.jpg';
                         thumbFile = Ti.Filesystem.getFile(thumbPath);
                         
                         thumbBlob = ImageFactory.imageAsThumbnail(event.media, {
@@ -1194,7 +1196,7 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
                                 // Allow the newImageView time to show up, and then click it
                                 setTimeout(function(){
                                      takeNextPhotoView.fireEvent('click');
-                                     Omadi.display.doneLoading();
+                                     Display.doneLoading();
                                 }, 100);
                             }
                             else{
@@ -1205,7 +1207,7 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
                                 parentView.remove(imageView);
                                 imageView = null;
                                 
-                                Omadi.display.doneLoading();
+                                Display.doneLoading();
                             }
                         }
                         catch(ex1){
@@ -1268,49 +1270,47 @@ ImageWidget.prototype.saveFileInfo = function(imageView, filePath, thumbPath, de
         imageView.filePath = filePath;   
         imageView.thumbPath = thumbPath;
         
-        timestamp = Omadi.utils.getUTCTimestampServerCorrected();
+        timestamp = Utils.getUTCTimestampServerCorrected();
         fieldName = imageView.instance.field_name;
         imageIndex = imageView.imageIndex;
         
         Ti.API.debug("Saved Path: " + filePath);
         
-        location = Omadi.location.getLastLocation();
+        location = Location.getLastLocation();
         
-        uid = Omadi.utils.getUid();
-        clientAccount = Omadi.utils.getClientAccount();
+        uid = Utils.getUid();
+        clientAccount = Utils.getClientAccount();
 
-        db = Omadi.utils.openListDatabase();
-        db.execute("INSERT INTO _files (nid, timestamp, file_path, field_name, file_name, delta, latitude, longitude, accuracy, degrees, thumb_path, filesize, bytes_uploaded, type, uid, client_account) VALUES ('0','" + timestamp + "','" + filePath + "','" + fieldName + "','" + imageName + "'," + imageIndex + ",'" + location.latitude + "','" + location.longitude + "'," + location.accuracy + "," + degrees + ",'" + thumbPath + "'," + filesize + ",0,'" + type + "'," + uid + ",'" + clientAccount + "')");
-        db.close();
+        Database.queryList("INSERT INTO _files (nid, timestamp, file_path, field_name, file_name, delta, latitude, longitude, accuracy, degrees, thumb_path, filesize, bytes_uploaded, type, uid, client_account) VALUES ('0','" + timestamp + "','" + filePath + "','" + fieldName + "','" + imageName + "'," + imageIndex + ",'" + location.latitude + "','" + location.longitude + "'," + location.accuracy + "," + degrees + ",'" + thumbPath + "'," + filesize + ",0,'" + type + "'," + uid + ",'" + clientAccount + "')");
+        Database.close();
     }
     catch(ex) {
-        Utils.sendErrorReport("Problem saving the photo to the database in saveFileInfo: " + ex);
+		Utils.sendErrorReport("Problem saving the photo to the database in saveFileInfo: " + ex);
         alert("Problem saving the photo to the database: " + ex);
     }
 };
 
 ImageWidget.prototype.saveAndroidFileInfo = function(fieldName, imageIndex, filePath, thumbPath, degrees, filesize) {"use strict";
-    var nid, db, imageName, timestamp, location, uid, clientAccount, sql;
+    var nid, imageName, timestamp, location, uid, clientAccount, sql;
 
     try {
         nid = 0;
         
         imageName = filePath.replace(/^.*[\\\/]/, '');
-        timestamp = Omadi.utils.getUTCTimestampServerCorrected();
+        timestamp = Utils.getUTCTimestampServerCorrected();
         
         Ti.API.debug("Saved Android Path: " + filePath);
         
-        location = Omadi.location.getLastLocation();
+        location = Location.getLastLocation();
         
         // TODO: check for a location that has a lat and lng of 0, and grab a new GPS coordinate now to save now or before the photo is uploaded
         
-        uid = Omadi.utils.getUid();
-        clientAccount = Omadi.utils.getClientAccount();
+        uid = Utils.getUid();
+        clientAccount = Utils.getClientAccount();
         sql = "INSERT INTO _files (nid, timestamp, file_path, field_name, file_name, delta, latitude, longitude, accuracy, degrees, thumb_path, filesize, bytes_uploaded, type, uid, client_account) VALUES ('0','" + timestamp + "','" + filePath + "','" + fieldName + "','" + imageName + "'," + imageIndex + ",'" + location.latitude + "','" + location.longitude + "'," + location.accuracy + "," + degrees + ",'" + thumbPath + "'," + filesize + ",0,'" + 'image' + "'," + uid + ",'" + clientAccount + "')";
         
-        db = Omadi.utils.openListDatabase();
-        db.execute(sql);
-        db.close();
+        Database.queryList(sql);
+        Database.close();
     }
     catch(ex) {
         Utils.sendErrorReport("Problem saving the photo to the database in saveAndroidFileInfo: " + ex);
@@ -1347,16 +1347,72 @@ ImageWidget.prototype.cleanUp = function(){"use strict";
         }
         catch(ex1){}
     }
-    
-    Omadi = null;
 };
 
-exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
+ImageWidget.deletePhotoUploadByPath = function(filePath, deleteFile){"use strict";
+    var result, id, nid, delta;
     
-    Omadi = OmadiObj;
+    id = null;
+    result = Database.queryList("SELECT id, nid, delta FROM _files WHERE file_path = '" + Utils.dbEsc(filePath) + "'");
+    if(result.isValidRow()){
+        id = result.fieldByName('id', Ti.Database.FIELD_TYPE_INT);
+        nid = result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT);
+        delta = result.fieldByName('delta', Ti.Database.FIELD_TYPE_INT);
+        
+        // Move over the other photos still in the queue for uploads
+        Database.queryList("UPDATE _files SET delta = (delta - 1) WHERE nid = " + nid + " AND delta > " + delta);
+    }
+    else{
+        Utils.sendErrorReport("Could not find filepath in database: " + filePath);
+    }
+    
+    result.close();
+    Database.close();
+    
+    if(id !== null){
+        Ti.API.debug("Photo ID to delete: " + id);
+        ImageWidget.deletePhotoUpload(id, deleteFile);
+    }
+};
+
+ImageWidget.deletePhotoUpload = function(id, deleteFile) {"use strict";
+    var file, result, filePath = null, thumbPath = null, thumbFile;
+    
+    if(typeof deleteFile !== 'undefined' && deleteFile == true){
+        result = Database.queryList("SELECT file_path, thumb_path FROM _files WHERE id = " + id);
+        if(result.isValidRow()){
+            filePath = result.fieldByName('file_path');
+            thumbPath = result.fieldByName('thumb_path');
+        }
+    }
+    else{
+        deleteFile = false;
+    }
+    
+    Database.queryList("DELETE FROM _files WHERE id = " + id);
+    Database.close();
+    
+    if(filePath !== null){
+        file = Ti.Filesystem.getFile(filePath);
+        if(file.exists() && file.isFile()){
+            file.deleteFile();
+        }
+        
+        if(thumbPath != null && thumbPath.length > 10){
+            thumbFile = Ti.Filesystem.getFile(thumbPath);
+            if(thumbFile.exists() && thumbFile.isFile()){
+                thumbFile.deleteFile();
+            }
+        }
+    }
+};
+
+
+ImageWidget.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
     Widget[instance.field_name] = new ImageWidget(FormObj, instance, fieldViewWrapper);
     
     return Widget[instance.field_name];
 };
 
+module.exports = ImageWidget;
 

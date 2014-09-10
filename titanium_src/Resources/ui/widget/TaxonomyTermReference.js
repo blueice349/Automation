@@ -1,7 +1,8 @@
 /*jslint eqeq:true, plusplus: true*/
 
-var Widget, Omadi;
+var Widget;
 var Utils = require('lib/Utils');
+var Database = require('lib/Database');
 Widget = {};
 
 function TaxonomyTermReferenceWidget(formObj, instance, fieldViewWrapper){"use strict";
@@ -127,7 +128,7 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
         if (dbValue.length == 0 && typeof this.instance.settings.default_value !== 'undefined') {
             if(parseInt(this.instance.settings.default_value, 10) > 0){
                 dbValue.push(parseInt(this.instance.settings.default_value, 10));
-                defaultTerm = Omadi.data.loadTerm(dbValue[0]);
+                defaultTerm = TaxonomyTermReferenceWidget.loadTerm(dbValue[0]);
                 textValue = defaultTerm.name;
             }
         }
@@ -148,7 +149,7 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
         if (dbValue === null && typeof this.instance.settings.default_value !== 'undefined') {
             if(parseInt(this.instance.settings.default_value, 10) > 0){
                 dbValue = parseInt(this.instance.settings.default_value, 10);
-                defaultTerm = Omadi.data.loadTerm(dbValue);
+                defaultTerm = TaxonomyTermReferenceWidget.loadTerm(dbValue);
                 textValue = defaultTerm.name;
             }
         }
@@ -459,22 +460,20 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
 };
 
 TaxonomyTermReferenceWidget.prototype.getOptions = function(useNone) {"use strict";
-    var db, result, vid, options;
+    var result, vid, options;
     
     if(typeof useNone === 'undefined'){
         useNone = true;
     }
     
-    db = Omadi.utils.openMainDatabase();
-    
     options = [];
 
-    result = db.execute("SELECT vid FROM vocabulary WHERE machine_name = '" + this.instance.settings.vocabulary + "'");
+    result = Database.query("SELECT vid FROM vocabulary WHERE machine_name = '" + this.instance.settings.vocabulary + "'");
     if(result.isValidRow()){
         vid = result.fieldByName('vid');
         result.close();
 
-        result = db.execute("SELECT name, tid, description FROM term_data WHERE vid='" + vid + "' GROUP BY name ORDER BY CAST(`weight` AS INTEGER) ASC");
+        result = Database.query("SELECT name, tid, description FROM term_data WHERE vid='" + vid + "' GROUP BY name ORDER BY CAST(`weight` AS INTEGER) ASC");
 
         if (this.instance.settings.cardinality != -1 && this.instance.required == 0 && useNone) {
             options.push({
@@ -494,7 +493,7 @@ TaxonomyTermReferenceWidget.prototype.getOptions = function(useNone) {"use stric
         result.close();
     }
     
-    db.close();
+    Database.close();
 
     return options;
 };
@@ -540,13 +539,26 @@ TaxonomyTermReferenceWidget.prototype.cleanUp = function(){"use strict";
         }
         catch(ex1){}
     }
-    
-    Omadi = null;
 };
 
-exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
-    
-    Omadi = OmadiObj;
+TaxonomyTermReferenceWidget.loadTerm = function(tid) {"use strict";
+    var db, result, term;
+    term = {};
+
+    result = Database.query("SELECT tid, vid, name, weight FROM term_data WHERE tid = " + tid);
+    if (result.isValidRow()) {
+        term.tid = result.fieldByName('tid', Ti.Database.FIELD_TYPE_INT);
+        term.vid = result.fieldByName('vid', Ti.Database.FIELD_TYPE_INT);
+        term.name = result.fieldByName('name', Ti.Database.FIELD_TYPE_STRING);
+        term.weight = result.fieldByName('weight', Ti.Database.FIELD_TYPE_INT);
+    }
+    result.close();
+    Database.close();
+
+    return term;
+};
+
+exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
     Widget[instance.field_name] = new TaxonomyTermReferenceWidget(FormObj, instance, fieldViewWrapper);
     
     return Widget[instance.field_name];

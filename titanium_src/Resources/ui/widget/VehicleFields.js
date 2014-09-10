@@ -1,8 +1,9 @@
 /*jslint eqeq:true, plusplus: true*/
 
-var Widget, Omadi;
+var Widget;
 
 var Utils = require('lib/Utils');
+var Database = require('lib/Database');
 
 Widget = {};
 
@@ -34,7 +35,7 @@ function VehicleFieldsWidget(formObj, instance, fieldViewWrapper){"use strict";
     }
     
     if(this.instance.settings.cardinality == -1){
-        if(Omadi.utils.isArray(this.dbValues)){
+        if(Utils.isArray(this.dbValues)){
             this.numVisibleFields = this.dbValues.length;
         }
     }
@@ -127,15 +128,14 @@ VehicleFieldsWidget.prototype.getNewElement = function(index){"use strict";
     possibleValues = [];
 
     if (part == "make") {
-        db = Omadi.utils.openMainDatabase();
-        result = db.execute("SELECT DISTINCT make FROM _vehicles");
+        result = Database.query("SELECT DISTINCT make FROM _vehicles");
 
         while (result.isValidRow()) {
             possibleValues.push(result.fieldByName("make"));
             result.next();
         }
         result.close();
-        db.close();
+        Database.close();
     }
 
     this.element = this.formObj.getTextField(this.instance);
@@ -284,8 +284,7 @@ VehicleFieldsWidget.prototype.getNewElement = function(index){"use strict";
                             if (makeValues.dbValues[0] != "") {
                                 makeValue = makeValues.dbValues[0];
     
-                                db = Omadi.utils.openMainDatabase();
-                                result = db.execute("SELECT DISTINCT model FROM _vehicles WHERE make LIKE '%" + makeValue + "%'");
+                                result = Database.query("SELECT DISTINCT model FROM _vehicles WHERE make LIKE '%" + makeValue + "%'");
     
                                 if (result.rowCount > 0) {
                                     while (result.isValidRow()) {
@@ -294,14 +293,14 @@ VehicleFieldsWidget.prototype.getNewElement = function(index){"use strict";
                                     }
                                 }
                                 else {
-                                    result = db.execute("SELECT DISTINCT model FROM _vehicles");
+                                    result = Database.query("SELECT DISTINCT model FROM _vehicles");
                                     while (result.isValidRow()) {
                                         possibleValues.push(result.fieldByName('model'));
                                         result.next();
                                     }
                                 }
                                 result.close();
-                                db.close();
+                                Database.close();
                             }
                         }
                     }
@@ -418,13 +417,9 @@ VehicleFieldsWidget.prototype.cleanUp = function(){"use strict";
         }
         catch(ex1){}
     }
-    
-    Omadi = null;
 };
 
-exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
-    
-    Omadi = OmadiObj;
+exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
     Widget[instance.field_name] = new VehicleFieldsWidget(FormObj, instance, fieldViewWrapper);
     
     return Widget[instance.field_name];

@@ -252,5 +252,11 @@ function strpos(haystack, needle, offset) {"use strict";
     return i === -1 ? false : i;
 }
 
-
+Function.prototype.inheritsFrom = function(parent) {'use strict';
+	var child = this;
+	child.prototype = Object.create(parent.prototype);
+	child.prototype.constructor = child;
+	child.prototype.parent = parent.prototype;
+	return child;
+};
 

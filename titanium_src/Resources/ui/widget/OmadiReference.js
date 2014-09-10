@@ -1,8 +1,10 @@
 /*jslint eqeq:true, plusplus: true*/
 
-var Widget, Omadi;
+var Widget;
 
 var Utils = require('lib/Utils');
+var Database = require('lib/Database');
+var Node = require('objects/Node');
 
 Widget = {};
 
@@ -115,9 +117,9 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
     
     // Special case to automatically select the truck the user is in 
     if(nodeTypes.length == 1 && dbValue == null && this.instance.isRequired && nodeTypes[0] == 'company_vehicle'){
-        vehicleNid = Omadi.bundles.companyVehicle.getCurrentVehicleNid();
+        vehicleNid = Utils.getCurrentVehicleNid();
         if(vehicleNid > 0){
-            textValue = Omadi.bundles.companyVehicle.getCurrentVehicleName();
+            textValue = Utils.getCurrentVehicleName();
             dbValue = vehicleNid;
         }
     }
@@ -130,8 +132,7 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
     if (nodeTypes.length > 0) {
         query = "SELECT title, nid FROM node WHERE table_name IN ('" + nodeTypes.join("','") + "')";
 
-        db = Omadi.utils.openMainDatabase();
-        result = db.execute(query);
+        result = Database.query(query);
 
         while (result.isValidRow()) {
             possibleValues.push({
@@ -141,7 +142,7 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
             result.next();
         }
         result.close();
-        db.close();
+        Database.close();
     }
     
     wrapper = Ti.UI.createView({
@@ -169,9 +170,13 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
             widget = Widget[e.source.instance.field_name];
             
             if(typeof widget.elements[0] !== 'undefined' && widget.elements[0].dbValue !== null && widget.elements[0].dbValue > 0){
-                node = Omadi.data.nodeLoad(widget.elements[0].dbValue);
+                node = Node.load(widget.elements[0].dbValue);
                 if(node){
-                    Omadi.display.openViewWindow(node.type, node.nid, false);
+					Ti.App.fireEvent('openViewWindow', {
+						type: node.type,
+						nid: node.nid,
+						allowActions: false
+					});
                 }
             }
         }
@@ -550,7 +555,7 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
 OmadiReferenceWidget.prototype.setupParentDefaultFields = function() {"use strict";
     var instances, field_name, instance, parentFieldName, childFieldNames = [];
 
-    instances = Omadi.data.getFields(this.formObj.type);
+    instances = Node.getFields(this.formObj.type);
 
     for (field_name in instances) {
         if (instances.hasOwnProperty(field_name)) {
@@ -584,7 +589,7 @@ OmadiReferenceWidget.prototype.setChildDefaultValues = function(widgetView) {"us
             
             Ti.API.debug("Setting default values");
             
-            parentNode = Omadi.data.nodeLoad(widgetView.dbValue);
+            parentNode = Node.load(widgetView.dbValue);
             
             for ( i = 0; i < widgetView.defaultValueChildFields.length; i++) {
                 childFieldName = widgetView.defaultValueChildFields[i].childFieldName;
@@ -610,10 +615,10 @@ OmadiReferenceWidget.prototype.getFirstStreetAddress = function(nid){"use strict
     var instances, node, street, field_name;
     
     street = '';
-    node = Omadi.data.nodeLoad(nid);
+    node = Node.load(nid);
     
     if(node){
-        instances = Omadi.data.getFields(node.type);
+        instances = Node.getFields(node.type);
         for(field_name in instances){
             if(instances.hasOwnProperty(field_name)){
                 if(instances[field_name].type == 'location'){
@@ -671,13 +676,9 @@ OmadiReferenceWidget.prototype.cleanUp = function(){"use strict";
         }
         catch(ex1){}
     }
-    
-    Omadi = null;
 };
 
-exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
-    
-    Omadi = OmadiObj;
+exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
     Widget[instance.field_name] = new OmadiReferenceWidget(FormObj, instance, fieldViewWrapper);
     
     return Widget[instance.field_name];

@@ -4,6 +4,7 @@
 
 var Comments = require('services/Comments');
 var Utils = require('lib/Utils');
+var GeofenceServices = require('services/GeofenceServices');
 
 Omadi.service = Omadi.service || {};
 
@@ -32,7 +33,7 @@ Omadi.service.refreshSession = function() {"use strict";
                     validatesSecureCertificate: false
                 });
                 http.setTimeout(10000);
-                http.open('POST', Omadi.DOMAIN_NAME + '/js-sync/sync/refreshSession.json');
+                http.open('POST', Ti.App.DOMAIN_NAME + '/js-sync/sync/refreshSession.json');
 
                 Omadi.utils.setCookieHeader(http);
                 http.setRequestHeader("Content-Type", "application/json");
@@ -157,7 +158,7 @@ Omadi.service.setNodeViewed = function(nid) {"use strict";
         validatesSecureCertificate: false
     });
     http.setTimeout(10000);
-    http.open('POST', Omadi.DOMAIN_NAME + '/js-forms/custom_forms/viewed.json?nid=' + nid);
+    http.open('POST', Ti.App.DOMAIN_NAME + '/js-forms/custom_forms/viewed.json?nid=' + nid);
 
     Omadi.utils.setCookieHeader(http);
     http.setRequestHeader("Content-Type", "application/json");
@@ -326,7 +327,7 @@ Omadi.service.syncInitialFormPage = function(page){"use strict";
             Omadi.service.syncInitialLastProgress = e.progress;
         };
         
-        syncURL = Omadi.DOMAIN_NAME + '/js-sync/download.json?sync_timestamp=0&page=' + page;
+        syncURL = Ti.App.DOMAIN_NAME + '/js-sync/download.json?sync_timestamp=0&page=' + page;
         
         http.open('GET', syncURL);
     
@@ -612,7 +613,7 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
                 
                 Ti.API.debug("lastSynctimestamp: " + lastSyncTimestamp);
                 
-                syncURL = Omadi.DOMAIN_NAME + '/js-sync/download.json?sync_timestamp=' + lastSyncTimestamp;
+                syncURL = Ti.App.DOMAIN_NAME + '/js-sync/download.json?sync_timestamp=' + lastSyncTimestamp;
                 if(lastSyncTimestamp <= 1){
                     syncURL += '&page=' + Omadi.service.initialInstallPage;    
                 }
@@ -1153,7 +1154,7 @@ Omadi.service.sendUpdates = function() {"use strict";
                 timeout: 15000
             });
             
-            http.open('POST', Omadi.DOMAIN_NAME + '/js-sync/sync.json');
+            http.open('POST', Ti.App.DOMAIN_NAME + '/js-sync/sync.json');
 
             http.setRequestHeader("Content-Type", "application/json");
             Omadi.utils.setCookieHeader(http);
@@ -1197,6 +1198,8 @@ Omadi.service.logout = function() {"use strict";
 			Utils.sendErrorReport('Error trying to clear cookies on logout. ' + error);
 		}
     }
+    
+    GeofenceServices.getInstance().unregisterAllGeofences();
     
     Omadi.service.sendLogoutRequest();
 };
@@ -1255,7 +1258,7 @@ Omadi.service.sendLogoutRequest = function(){"use strict";
             enableKeepAlive: false,
             validatesSecureCertificate: false
         });
-        http.open('POST', Omadi.DOMAIN_NAME + '/js-sync/sync/logout.json');
+        http.open('POST', Ti.App.DOMAIN_NAME + '/js-sync/sync/logout.json');
     
         //Timeout until error:
         http.setTimeout(15000);
@@ -1739,7 +1742,7 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
         Omadi.service.uploadFileHTTP.onsendstream = Omadi.service.photoUploadStream;
         Omadi.service.uploadFileHTTP.onload = Omadi.service.photoUploadSuccess;
         Omadi.service.uploadFileHTTP.onerror = Omadi.service.photoUploadError;
-        Omadi.service.uploadFileHTTP.open('POST', Omadi.DOMAIN_NAME + '/js-sync/upload.json');
+        Omadi.service.uploadFileHTTP.open('POST', Ti.App.DOMAIN_NAME + '/js-sync/upload.json');
         Omadi.service.uploadFileHTTP.timeout = 45000;
         
         Omadi.service.uploadFileHTTP.nid = Omadi.service.currentFileUpload.nid;

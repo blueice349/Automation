@@ -1,7 +1,10 @@
 /*jslint eqeq:true, plusplus:true, vars:true*/
 
-var Widget, Omadi;
+var Widget;
 var Utils = require('lib/Utils');
+var Database = require('lib/Database');
+var Display = require('lib/Display');
+var Location = require('lib/Location');
 Widget = {};
 
 var Utils = require('lib/Utils');
@@ -35,7 +38,7 @@ function SignatureWidget(formObj, instance, fieldViewWrapper){"use strict";
     }
     
     if(this.instance.settings.cardinality == -1){
-        if(Omadi.utils.isArray(this.dbValues)){
+        if(Utils.isArray(this.dbValues)){
             this.numVisibleFields = this.dbValues.length;
         }
     }
@@ -160,11 +163,12 @@ SignatureWidget.prototype.getNewElement = function(index){"use strict";
     var isSigned = (typeof dbValue === 'number');
     if (isSigned) {
         if (dbValue == -1) {
-            var db = Omadi.utils.openListDatabase();
-            var result = db.execute('SELECT file_path FROM _files WHERE nid IN (' + this.getImageNid() + ', ' + (this.node.continuous_nid || 0) + ', 0) AND field_name="' + this.instance.field_name + '"');
+            var result = Database.queryList('SELECT file_path FROM _files WHERE nid IN (' + this.getImageNid() + ', ' + (this.node.continuous_nid || 0) + ', 0) AND field_name="' + this.instance.field_name + '"');
             if (result.isValidRow()) {
                 image = result.fieldByName('file_path');
             }
+            result.close();
+            Database.close();
 	    }
     } else {
         image = dbValue;
@@ -187,7 +191,7 @@ SignatureWidget.prototype.getNewElement = function(index){"use strict";
         borderWidth: 2
     });
     
-    if (Omadi.utils.isArray(imageData)) {
+    if (Utils.isArray(imageData)) {
         if(typeof imageData[0] !== 'undefined'){
             this.imageView.image = imageData[0];
         }
@@ -196,7 +200,7 @@ SignatureWidget.prototype.getNewElement = function(index){"use strict";
     if(isSigned){
         this.imageWrapper.visible = true;
         this.imageWrapper.height = Ti.UI.SIZE;
-        Omadi.display.displayLargeImage(this.imageView, imageNid, dbValue, true);
+        Display.displayLargeImage(this.imageView, imageNid, dbValue, true);
     }
     else{
         this.imageWrapper.height = 0;
@@ -554,7 +558,7 @@ SignatureWidget.prototype.saveSignature = function(doneButton){"use strict";
 
     Ti.API.debug("SAVING SIGNATURE");
     try{
-        file = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory, "s_" + Omadi.utils.getUTCTimestamp() + '.bmp');
+        file = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory, "s_" + Utils.getUTCTimestamp() + '.bmp');
         
         filePath = file.getNativePath();
         
@@ -583,14 +587,13 @@ SignatureWidget.prototype.saveSignature = function(doneButton){"use strict";
 };
 
 SignatureWidget.prototype.removePreviousSignature = function(){"use strict";
-    var nid, db;
+    var nid;
     
     if(typeof this.formObj.nid !== 'undefined'){
         nid = this.formObj.nid;
         
-        db = Omadi.utils.openListDatabase();
-        db.execute("DELETE FROM _files WHERE nid = 0 AND field_name = '" + this.instance.field_name + "'");
-        db.close();
+        Database.queryList("DELETE FROM _files WHERE nid = 0 AND field_name = '" + this.instance.field_name + "'");
+        Database.close();
     }
 };
 
@@ -610,20 +613,19 @@ SignatureWidget.prototype.saveFileInfo = function(imageView, filePath, thumbPath
         imageView.filePath = filePath;   
         imageView.thumbPath = thumbPath;
         
-        timestamp = Omadi.utils.getUTCTimestampServerCorrected();
+        timestamp = Utils.getUTCTimestampServerCorrected();
         fieldName = imageView.instance.field_name;
         imageIndex = imageView.imageIndex;
         
         Ti.API.debug("Saved Path: " + filePath);
         
-        location = Omadi.location.getLastLocation();
+        location = Location.getLastLocation();
         
-        uid = Omadi.utils.getUid();
-        clientAccount = Omadi.utils.getClientAccount();
+        uid = Utils.getUid();
+        clientAccount = Utils.getClientAccount();
 
-        db = Omadi.utils.openListDatabase();
-        db.execute("INSERT INTO _files (nid, timestamp, file_path, field_name, file_name, delta, latitude, longitude, accuracy, degrees, thumb_path, filesize, bytes_uploaded, type, uid, client_account) VALUES ('0','" + timestamp + "','" + filePath + "','" + fieldName + "','" + imageName + "'," + imageIndex + ",'" + location.latitude + "','" + location.longitude + "'," + location.accuracy + "," + degrees + ",'" + thumbPath + "'," + filesize + ",0,'" + type + "'," + uid + ",'" + clientAccount + "')");
-        db.close();
+        Database.queryList("INSERT INTO _files (nid, timestamp, file_path, field_name, file_name, delta, latitude, longitude, accuracy, degrees, thumb_path, filesize, bytes_uploaded, type, uid, client_account) VALUES ('0','" + timestamp + "','" + filePath + "','" + fieldName + "','" + imageName + "'," + imageIndex + ",'" + location.latitude + "','" + location.longitude + "'," + location.accuracy + "," + degrees + ",'" + thumbPath + "'," + filesize + ",0,'" + type + "'," + uid + ",'" + clientAccount + "')");
+        Database.close();
     }
     catch(ex) {
         Utils.sendErrorReport("Problem saving the signature to the database: " + ex);
@@ -670,13 +672,9 @@ SignatureWidget.prototype.cleanUp = function(){"use strict";
         }
         catch(ex1){}
     }
-    
-    Omadi = null;
 };
 
-exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
-    
-    Omadi = OmadiObj;
+exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
     Widget[instance.field_name] = new SignatureWidget(FormObj, instance, fieldViewWrapper);
     
     return Widget[instance.field_name];

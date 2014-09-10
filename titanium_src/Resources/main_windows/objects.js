@@ -3,7 +3,7 @@
 Ti.include('/lib/functions.js');
 
 
-var bundle, curWin, searchWrapper, search, instances, filterValues, filterFields, win_new, nearMeButton;
+var bundle, curWin, searchWrapper, search, instances, filterValues, filterFields, win_new, nearMeButton, filterQuery;
 
 var filterTableView;
 var itemsPerPage = 40;
@@ -147,10 +147,11 @@ function getDataSQL(getCount) {"use strict";
 
     conditions.push("n.flag_is_updated IN (0,1)");
 
+	filterQuery = '';
     if (conditions.length > 0) {
-        sql += " WHERE ";
-        sql += conditions.join(" AND ");
+		filterQuery = ' WHERE ' + conditions.join(' AND ');
     }
+    sql += filterQuery;
 
     if (showFinalResults) {
         sql += " ORDER BY ";
@@ -583,7 +584,7 @@ function setTableData() {"use strict";
 
         if (showFinalResults) {
 			searchWrapper = Ti.UI.createView({
-				height: Ti.App.isAndroid? 45 : 35
+				height: Ti.App.isAndroid ? 45 : 35
 			});
 			
             search = Ti.UI.createSearchBar({
@@ -613,7 +614,7 @@ function setTableData() {"use strict";
 	        });
 	        
 	        nearMeButton.addEventListener('click', function(e) {
-				Omadi.display.openNearMeWindow(curWin.type);
+				Omadi.display.openNearMeWindow(curWin.type, filterQuery);
 	        });
 	        
 	        if (bundle.data.mobile.location_sort_field) {

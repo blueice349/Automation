@@ -97,7 +97,7 @@ function cookieIsSet(webview) {"use strict";
         curWin.close(); 
     });
     
-    url = Omadi.DOMAIN_NAME + '/sync/file/' + curWin.nid + '/' + curWin.fid;
+    url = Ti.App.DOMAIN_NAME + '/sync/file/' + curWin.nid + '/' + curWin.fid;
     
     wrapper = Ti.UI.createScrollView({
         top: 0,

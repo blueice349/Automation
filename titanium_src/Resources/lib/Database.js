@@ -43,6 +43,18 @@ Database.prototype.getMainDBConn = function(){"use strict";
     return this.mainDBConn;
 };
 
+Database.prototype.getGPSDBConn = function(){"use strict";
+    if(this.gpsDBConn === null){
+		this.gpsDBConn = Ti.Database.install('/database/gps_coordinates.sqlite', this.dbVersion + "_" + this.getMainDBName() + '_GPS');
+    
+        if (Ti.App.isIOS) {
+            this.gpsDBConn.file.setRemoteBackup(false);
+        }
+    }
+    
+    return this.gpsDBConn;
+};
+
 Database.prototype.getMainDBName = function(){"use strict";
     var listDB, result;
     
@@ -77,6 +89,16 @@ Database.prototype.closeDatabases = function(){"use strict";
         catch(ex1){}
         finally{
             this.listDBConn = null;
+        }
+    }
+    
+    if(this.gpsDBConn !== null){
+        try{
+            this.gpsDBConn.close();
+        }
+        catch(ex2){}
+        finally{
+            this.gpsDBConn = null;
         }
     }
 };
@@ -119,6 +141,16 @@ exports.query = function(sql){"use strict";
 exports.queryList = function(sql){"use strict"; 
     try{
         var db = getInstance().getListDBConn();
+        return db.execute(sql);
+    }
+    catch(ex){
+        Ti.API.error("Exception running List " + sql + ":" + ex);
+    }
+};
+
+exports.queryGPS = function(sql){"use strict"; 
+    try{
+        var db = getInstance().getGPSDBConn();
         return db.execute(sql);
     }
     catch(ex){

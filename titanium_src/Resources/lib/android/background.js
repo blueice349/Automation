@@ -15,7 +15,8 @@ Omadi.background.android.startGPSService = function(){"use strict";
 
     //Initialize the GPS background service
     intent = Titanium.Android.createServiceIntent({
-        url : 'android_gps_event.js'
+        url : 'android_gps_event.js',
+        startMode: Titanium.Android.START_REDELIVER_INTENT
     });
 
     Ti.App.service1 = Titanium.Android.createService(intent);

@@ -11,6 +11,10 @@ var initWin = function() {'use strict';
 	win.setBackgroundColor('#eee');
 };
 
+var getFilterQuery = function() {'use strict';
+	return win.filterQuery;
+};
+
 var getWrapper = function() {'use strict';
 	return win.getChildren()[0];
 };
@@ -32,7 +36,7 @@ var getSortField = function() {'use strict';
 
 var getDataFromDB = function() {'use strict';
 	var db = Omadi.utils.openMainDatabase();
-	var result = db.execute("SELECT node.title, node.nid, node.viewed, type." + getSortField() + "___lat as lat, type." + getSortField() + "___lng as lng FROM node INNER JOIN " + win.formType + " type ON type.nid = node.nid");
+	var result = db.execute("SELECT n.title, n.nid, n.viewed, type." + getSortField() + "___lat as lat, type." + getSortField() + "___lng as lng FROM node n INNER JOIN " + win.formType + " type ON type.nid = n.nid" + getFilterQuery());
 	
 	var data = [];
 	
@@ -142,7 +146,7 @@ var createRowTitleLabel = function(data) {'use strict';
 			width: parts.length > 1 ? '50%' : '100%',
 			wordWrap: false,
 			ellipsize: true,
-			font : { fontSize : 14 },
+			font: { fontSize: 14 },
 			top: i < 2 ? 5 : 25,
 			left: i % 2 ? '50%' : 0,
 			color: i % 2 ? '#666' : '#000'
@@ -158,21 +162,21 @@ var createRowDistanceLabel = function(data) {'use strict';
 		width: '15%',
 		height: 50,
 		left: '85%',
-		font: { fontSize : 14 },
+		font: { fontSize: 14 },
 		color: '#333',
 		textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
 		verticalAlign: Ti.UI.TEXT_VERTICAL_ALIGNMENT_CENTER,
-		backgroundColor : '#ddd'
+		backgroundColor: '#ddd'
 	});
 };
 
 var createTableRow = function(data) {'use strict';
 	var row = Ti.UI.createTableViewRow({
-        hasChild : false,
-        searchValue : data.title,
-        color : '#000',
-        nid : data.nid,
-        backgroundColor : data.viewed ? '#fff' : '#eee',
+        hasChild: false,
+        searchValue: data.title,
+        color: '#000',
+        nid: data.nid,
+        backgroundColor: data.viewed ? '#fff' : '#eee',
         height: 50
     });
 	
@@ -211,12 +215,36 @@ var handleTableClick = function(e) {'use strict';
     }
 };
 
+var createSearchBar = function() {'use strict';
+	var searchBar = Ti.UI.createSearchBar({
+        hintText: 'Search...',
+        autocorrect: false,
+        focusable: false,
+        showCancel: true,
+        font: {fontSize: 16},
+        height: Ti.App.isAndroid ? 45 : 35,
+        top: 0
+    });
+    
+    if (Ti.App.isAndroid) {
+		searchBar.hide();
+		
+		setTimeout(function(){
+			searchBar.show();
+		}, 500);
+    }
+    
+    return searchBar;
+};
+
 var createTable = function() {'use strict';
 	var table = Titanium.UI.createTableView({
-        separatorColor : '#ccc',
-        data : [],
-        backgroundColor : '#eee',
+        separatorColor: '#ccc',
+        data: [],
+        backgroundColor: '#eee',
         scrollable: true,
+        search: createSearchBar(),
+        filterAttribute: 'searchValue',
         lastTouched: new Date()
     });
     
@@ -257,25 +285,25 @@ var getLabelColor = function() {'use strict';
 
 var createTitleLabel = function() {'use strict';
 	return Ti.UI.createLabel({
-        font : {
-            fontWeight : 'bold',
-            fontSize : 16
+        font: {
+            fontWeight: 'bold',
+            fontSize: 16
         },
-        text : win.bundle.label + ' Near Me',
-        textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER,
-        color : getLabelColor(),
+        text: win.bundle.label + ' Near Me',
+        textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+        color: getLabelColor(),
         height: Ti.UI.SIZE
     });
 };
 
 var createRefreshButton = function() {'use strict';
 	var refreshButton = Ti.UI.createImageView({
-	    image : '/images/refresh_light_blue.png',
-	    right : 9,
+	    image: '/images/refresh_light_blue.png',
+	    right: 9,
 	    top: 4,
 	    bottom: 4,
-	    width : 32,
-	    height : 32
+	    width: 32,
+	    height: 32
 	});
 	
 	refreshButton.addEventListener('click', refresh);
@@ -284,21 +312,21 @@ var createRefreshButton = function() {'use strict';
 
 var createIOSToolbar = function() {'use strict';
 	var backButton = Ti.UI.createButton({
-        title : 'Back',
-        style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+        title: 'Back',
+        style: Titanium.UI.iPhone.SystemButtonStyle.BORDERED
     });
     backButton.addEventListener('click', close);
     
     var space = Titanium.UI.createButton({
-        systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
+        systemButton: Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
     });
     
     var toolbar = Ti.UI.iOS.createToolbar({
-        items : [backButton, space, createTitleLabel(), space, createRefreshButton()],
-        top : 0,
-        borderTop : false,
-        borderBottom : false,
-        height : Ti.UI.SIZE
+        items: [backButton, space, createTitleLabel(), space, createRefreshButton()],
+        top: 0,
+        borderTop: false,
+        borderBottom: false,
+        height: Ti.UI.SIZE
     });
     
     return toolbar;
@@ -306,8 +334,8 @@ var createIOSToolbar = function() {'use strict';
 
 var createAndroidToolbar = function() {'use strict';
 	var toolbar = Titanium.UI.createView({
-        backgroundColor : '#666',
-        top : 0,
+        backgroundColor: '#666',
+        top: 0,
         height: Ti.UI.SIZE
     });
     

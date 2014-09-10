@@ -1,8 +1,9 @@
 /*jslint eqeq:true, plusplus: true*/
 
-var Widget, Omadi;
+var Widget;
 
 var Utils = require('lib/Utils');
+var Display = require('lib/Display');
 
 Widget = {};
 
@@ -32,7 +33,7 @@ function EmailWidget(formObj, instance, fieldViewWrapper){"use strict";
     }
     
     if(this.instance.settings.cardinality == -1){
-        if(Omadi.utils.isArray(this.dbValues)){
+        if(Utils.isArray(this.dbValues)){
             this.numVisibleFields = this.dbValues.length;
         }
         if(this.numVisibleFields < 1){
@@ -69,7 +70,7 @@ EmailWidget.prototype.getFieldView = function(){"use strict";
             title: ' Add another item ',
             right: 15,
             style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
-            backgroundGradient: Omadi.display.backgroundGradientGray,
+            backgroundGradient: Display.backgroundGradientGray,
             borderColor: '#999',
             borderWidth: 1,
             width: Ti.UI.SIZE,
@@ -216,14 +217,10 @@ EmailWidget.prototype.cleanUp = function(){"use strict";
         }
         catch(ex1){}
     }
-    
-    Omadi = null;
 };
 
 
-exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
-    
-    Omadi = OmadiObj;
+exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
     Widget[instance.field_name] = new EmailWidget(FormObj, instance, fieldViewWrapper);
     
     return Widget[instance.field_name];

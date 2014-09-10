@@ -3572,7 +3572,7 @@ FormModule.prototype.getFieldView = function(instance, fieldViewWrapper){"use st
         }
         
         if(Module){
-           this.fieldObjects[instance.field_name] = Module.getFieldObject(Omadi, this, instance, fieldViewWrapper);
+           this.fieldObjects[instance.field_name] = Module.getFieldObject(this, instance, fieldViewWrapper);
            fieldView = this.fieldObjects[instance.field_name].getFieldView(); 
         }
     }

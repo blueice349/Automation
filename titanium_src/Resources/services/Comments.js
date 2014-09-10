@@ -5,7 +5,6 @@ var _instance = null;
 var Utils = require('lib/Utils');
 var Database = require('lib/Database');
 var Comment = require('objects/Comment');
-var Field = require('objects/Field');
 var Node = require('objects/Node');
 
 function Comments(){"use strict";
@@ -218,19 +217,17 @@ Comments.prototype.sendComments = function(){"use strict";
 };
 
 Comments.prototype.processJson = function(){"use strict";
-    var Comment, comment, instances, fieldName, origData;
+    var comment, instances, fieldName, origData;
     
     Ti.API.debug("Processing comment JSON");
     
     if(this.fetchedJSON !== null){
         if(typeof this.fetchedJSON.comment !== 'undefined'){
-            Comment = require('objects/Comment');
-            
             comment = this.fetchedJSON.comment;
             
             Ti.API.debug("Returned JSON: " + JSON.stringify(comment));
             
-            instances = Field.getFields(comment.node_type);
+            instances = Node.getFields(comment.node_type);
             for(fieldName in instances){
                 if(instances.hasOwnProperty(fieldName)){
                     if(typeof comment[fieldName] !== 'undefined'){
@@ -357,7 +354,7 @@ Comments.prototype.getUpdatedCommentJSON = function(cid) {"use strict";
             else{
                 Ti.API.debug("Node type: " + nodeType);
                 
-                instances = Field.getFields('comment_node_' + nodeType);
+                instances = Node.getFields('comment_node_' + nodeType);
     
                 obj.comment = comment;
     

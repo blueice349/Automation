@@ -93,6 +93,11 @@ Omadi.location.getLastLocation = function(expire){"use strict";
 
 Omadi.location.currentPositionCallback = function(e) {"use strict";
     var coords = e.coords, db;
+    
+    Ti.App.fireEvent('locationChanged', {
+		lat: e.coords.latitude,
+		lng: e.coords.longitude
+	});
 
     if ( typeof coords !== 'undefined' && typeof coords.longitude !== 'undefined' && coords.longitude !== 0 && coords.latitude !== 0) {
 
@@ -171,7 +176,7 @@ Omadi.location.uploadGPSCoordinates = function() {"use strict";
                 http.setTimeout(30000);
                 
                 //Opens address to retrieve contact list
-                http.open('POST', Omadi.DOMAIN_NAME + '/js-location/mobile_location.json');
+                http.open('POST', Ti.App.DOMAIN_NAME + '/js-location/mobile_location.json');
                 
                 //Header parameters
                 http.setRequestHeader("Content-Type", "application/json");
