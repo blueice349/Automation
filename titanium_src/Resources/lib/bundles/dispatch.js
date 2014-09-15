@@ -197,7 +197,7 @@ Omadi.bundles.dispatch.acceptJob = function(args){"use strict";
                 validatesSecureCertificate: false
             });
             http.setTimeout(15000);
-            http.open('POST', Omadi.DOMAIN_NAME + '/js-dispatch/dispatch/accept_job.json');
+            http.open('POST', Ti.App.DOMAIN_NAME + '/js-dispatch/dispatch/accept_job.json');
         
             http.setRequestHeader("Content-Type", "application/json");
             Omadi.utils.setCookieHeader(http);
@@ -579,7 +579,6 @@ Omadi.bundles.dispatch.isDispatch = function(type, nid){"use strict";
             result = db.execute("SELECT dispatch_nid FROM node where nid = " + intNid);
             if(result.isValidRow()){
                 dispatchNid = result.field(0, Ti.Database.FIELD_TYPE_INT);
-                Ti.API.error("Dispatch nid: " + dispatchNid);
                 if(dispatchNid != 0){
                     isDispatch = true;
                 }
@@ -636,7 +635,7 @@ Omadi.bundles.dispatch.updateStatus = function(nid, status, background){"use str
             validatesSecureCertificate: false
         });
         http.setTimeout(15000);
-        http.open('POST', Omadi.DOMAIN_NAME + '/js-dispatch/dispatch/update_status.json');
+        http.open('POST', Ti.App.DOMAIN_NAME + '/js-dispatch/dispatch/update_status.json');
     
         http.setRequestHeader("Content-Type", "application/json");
         Omadi.utils.setCookieHeader(http);
@@ -731,7 +730,7 @@ Omadi.bundles.dispatch.discontinueJob = function(nid, status, background){"use s
             validatesSecureCertificate: false
         });
         http.setTimeout(15000);
-        http.open('POST', Omadi.DOMAIN_NAME + '/js-dispatch/dispatch/discontinue_job.json');
+        http.open('POST', Ti.App.DOMAIN_NAME + '/js-dispatch/dispatch/discontinue_job.json');
     
         http.setRequestHeader("Content-Type", "application/json");
         Omadi.utils.setCookieHeader(http);

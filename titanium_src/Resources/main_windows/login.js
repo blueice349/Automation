@@ -1,7 +1,10 @@
-var Omadi;
+/* jslint eqeq: true, plusplus: true */
+/* global Omadi, dbEsc */
 
-/*jslint eqeq: true, plusplus: true*/
-/*global Omadi, dbEsc*/
+var Display = require('lib/Display');
+Display.setCurrentWindow(Ti.UI.currentWindow, 'login');
+
+var Omadi;
 
 // this sets the background color of every
 Ti.UI.currentWindow.setBackgroundColor('#eee');
@@ -12,6 +15,8 @@ Ti.include('/lib/functions.js');
 Ti.include('/main_windows/ios_geolocation.js');
 
 var Utils = require('lib/Utils');
+var RDNGeofenceListener = require('objects/RDNGeofenceListener');
+
 
 Ti.API.info("Starting App.");
 
@@ -275,7 +280,7 @@ function updateUploadBytes(){"use strict";
                 enableKeepAlive: false,
                 validatesSecureCertificate: false
             });
-            http.open('POST', Omadi.DOMAIN_NAME + '/js-sync/sync/logout.json');
+            http.open('POST', Ti.App.DOMAIN_NAME + '/js-sync/sync/logout.json');
             http.setTimeout(15000);
             http.setRequestHeader("Content-Type", "application/json");
             
@@ -362,6 +367,7 @@ function openMainScreen(loggedIn){"use strict";
         });
        
         startGPSService();
+        RDNGeofenceListener.getInstance().createInitialGeofences();
     }
     catch(ex){
         Utils.sendErrorReport("Exception opening main menu screen: " + ex);
@@ -870,7 +876,6 @@ function openMainScreen(loggedIn){"use strict";
         
                             //Passes parameter to the second window:
                             domainName = 'https://' + portal.value + '.omadi.com';
-                            Omadi.DOMAIN_NAME = domainName;
                             Ti.App.DOMAIN_NAME = domainName;
         
                             setProperties(domainName, this.responseText);

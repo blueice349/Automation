@@ -1,6 +1,6 @@
 /*jslint eqeq:true, plusplus: true*/
 
-var Widget, Omadi;
+var Widget;
 
 var Utils = require('lib/Utils');
 
@@ -271,11 +271,7 @@ LicensePlateWidget.prototype.getNewElementWrapper = function(index){"use strict"
                             }
                         }
                         catch(ex){
-                            Ti.API.error("Exception in duplicate warning timeout: " + ex);
-                            try{
-                                Utils.sendErrorReport("Exception in duplicate warning timeout: " + ex);
-                            }
-                            catch(ex2){}
+                            Utils.sendErrorReport("Exception in duplicate warning timeout: " + ex);
                         }
                         
                     }, 4000);
@@ -318,11 +314,7 @@ LicensePlateWidget.prototype.getNewElementWrapper = function(index){"use strict"
                     }
                 }
                 catch(ex){
-                    Ti.API.error("Exception in duplicate warning timeout: " + ex);
-                    try{
-                        Utils.sendErrorReport("Exception in duplicate warning timeout: " + ex);
-                    }
-                    catch(ex2){}
+                    Utils.sendErrorReport("Exception in duplicate warning timeout: " + ex);
                 }
             });
             
@@ -401,9 +393,9 @@ LicensePlateWidget.prototype.setDuplicateWarnings = function(fieldName, value, s
             validatesSecureCertificate: false
         });
         http.setTimeout(10000);
-        http.open('POST', Omadi.DOMAIN_NAME + '/js-fields/omadi_fields/duplicate_warnings.json');
+        http.open('POST', Ti.App.DOMAIN_NAME + '/js-fields/omadi_fields/duplicate_warnings.json');
     
-        Omadi.utils.setCookieHeader(http);
+        Utils.setCookieHeader(http);
         http.setRequestHeader("Content-Type", "application/json");
         
         http.onload = function(e) {
@@ -434,13 +426,7 @@ LicensePlateWidget.prototype.setDuplicateWarnings = function(fieldName, value, s
         };
     
         http.onerror = function(e) {
-            try{
-                Ti.API.error(JSON.stringify(e));
-                Utils.sendErrorReport("Error on setduplicatewarnings: " + JSON.stringify(e));
-            }
-            catch(ex){
-                
-            }
+            Utils.sendErrorReport("Error on setduplicatewarnings: " + JSON.stringify(e));
         };
         
         actualFieldName = fieldName.replace(/___plate/g, '');
@@ -703,13 +689,9 @@ LicensePlateWidget.prototype.cleanUp = function(){"use strict";
         }
         catch(ex1){}
     }
-    
-    Omadi = null;
 };
 
-exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
-    
-    Omadi = OmadiObj;
+exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
     Widget[instance.field_name] = new LicensePlateWidget(FormObj, instance, fieldViewWrapper);
     
     return Widget[instance.field_name];

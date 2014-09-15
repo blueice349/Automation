@@ -1,7 +1,7 @@
 /*jslint eqeq:true, plusplus: true*/
 /*global setConditionallyRequiredLabelForInstance,affectsAnotherConditionalField*/
 
-var Widget, Omadi;
+var Widget;
 
 var Utils = require('lib/Utils');
 
@@ -32,7 +32,7 @@ function AutoIncrementWidget(formObj, instance, fieldViewWrapper){"use strict";
     }
     
     if(this.instance.settings.cardinality == -1){
-        if(Omadi.utils.isArray(this.dbValues)){
+        if(Utils.isArray(this.dbValues)){
             this.numVisibleFields = this.dbValues.length;
         }
     }
@@ -159,13 +159,9 @@ AutoIncrementWidget.prototype.cleanUp = function(){"use strict";
         }
         catch(ex1){}
     }
-    
-    Omadi = null;
 };
 
-exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
-    
-    Omadi = OmadiObj;
+exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
     Widget[instance.field_name] = new AutoIncrementWidget(FormObj, instance, fieldViewWrapper);
     
     return Widget[instance.field_name];

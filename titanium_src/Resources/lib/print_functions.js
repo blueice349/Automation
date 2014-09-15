@@ -1,4 +1,5 @@
 /*jslint eqeq:true,plusplus:true*/
+/*global CreditCardTrackData*/
 
 Ti.include('/lib/CC_functions.js');
 

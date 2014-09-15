@@ -1,5 +1,8 @@
 Ti.include('/lib/functions.js');
 
+var Display = require('lib/Display');
+Display.setCurrentWindow(Ti.UI.currentWindow, 'settings');
+
 var Utils = require('lib/Utils');
 
 /*jslint eqeq:true, regexp: true*/

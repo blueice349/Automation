@@ -1,4 +1,5 @@
-/*jslint eqeq:true,nomen:true,plusplus:true*/
+/*jslint node:true */
+'use strict';
 
 var _instance = null;
 
@@ -6,14 +7,13 @@ var _instance = null;
 var Database = require('lib/Database');
 var Utils = require('lib/Utils');
 var Node = require('objects/Node');
-var Field = require('objects/Field');
 
 
-function Comment(){"use strict";
+function Comment(){
     this.comment = {};
 }
 
-function getInstance(){"use strict";
+function getInstance(){
     if(_instance === null){
         _instance = new Comment();
     }
@@ -21,12 +21,12 @@ function getInstance(){"use strict";
     return _instance;
 }
 
-Comment.prototype.load = function(cid) {"use strict";
+Comment.prototype.load = function(cid) {
 
     var db, comment, result, subResult, field_name, dbValue, tempDBValues, textValue, 
         subValue, decoded, i, real_field_name, part, field_parts, widget, instances, 
         tempValue, origDBValue, jsonValue, allowedValues, allowedKey, filePath, newCid,
-        listDB, intCid, instances;
+        listDB, intCid;
 
     this.comment = null;
     
@@ -65,7 +65,7 @@ Comment.prototype.load = function(cid) {"use strict";
                 
                 if (typeof this.comment.nid !== 'undefined') {
                     
-                    instances = Field.getFields(this.comment.node_type);
+                    instances = Node.getFields(this.comment.node_type);
         
                     result = Database.query("SELECT * FROM " + this.comment.node_type + " WHERE cid = " + this.comment.cid);
                     
@@ -495,7 +495,7 @@ Comment.prototype.load = function(cid) {"use strict";
     return this.comment;
 };
 
-Comment.prototype.save = function(comment){"use strict";
+Comment.prototype.save = function(comment){
     var query, saved = false, nodeType, tableName, instances, fieldNames, field_name, 
         insertValues, value_to_insert, j, instance, has_data, priceTotal, priceData,
         k, priceIdx, jsonValue, nodeHasData;
@@ -525,7 +525,7 @@ Comment.prototype.save = function(comment){"use strict";
             
             Database.query(query);
             
-            instances = Field.getFields(tableName);
+            instances = Node.getFields(tableName);
         
             fieldNames = [];
         
@@ -611,8 +611,8 @@ Comment.prototype.save = function(comment){"use strict";
                                     }
                                 }
                                 
-                                Ti.API.error("In comment save...");
-                                Ti.API.error(JSON.stringify(priceData));
+                                Ti.API.info("In comment save...");
+                                Ti.API.info(JSON.stringify(priceData));
                                 
                                 insertValues.push(priceTotal);
                                 value_to_insert = JSON.stringify(priceData);
@@ -705,7 +705,7 @@ Comment.prototype.save = function(comment){"use strict";
     return saved;
 };
 
-Comment.prototype.viewText = function(cid){"use strict";
+Comment.prototype.viewText = function(cid){
     var text = '';
     
     this.load(cid);
@@ -721,25 +721,56 @@ Comment.prototype.viewText = function(cid){"use strict";
     return text;
 };
 
-Comment.prototype.remove = function(cid){"use strict";
+exports.remove = function(cid){
     Database.query("DELETE FROM comment WHERE cid = " + cid);
     Database.close();
     
     Ti.API.debug("Deleted cid: " + cid);
 };
 
-exports.load = function(cid){"use strict";
+exports.getNewCommentCid = function() {
+    var db, result, smallestCid;
+    //Get smallest nid
+    try{
+        result = Database.query("SELECT MIN(cid) FROM comment");
+    
+        if (result.isValidRow()) {
+            smallestCid = result.field(0);
+            
+            smallestCid = parseInt(smallestCid, 10);
+            if (isNaN(smallestCid) || smallestCid > 0) {
+                smallestCid = -1;
+            }
+            else {
+                smallestCid--;
+            }
+        }
+        else {
+            smallestCid = -1;
+        }
+        
+        result.close();
+        Database.close();
+    }
+    catch(ex){
+        Utils.sendErrorReport("Exception in getNewCommentCid: " + ex);   
+        try{
+            Database.close();
+        }
+        catch(ex1){}
+    }
+
+    return smallestCid;
+};
+
+exports.load = function(cid){
     return getInstance().load(cid); 
 };
 
-exports.viewText = function(cid){"use strict";
+exports.viewText = function(cid){
     return getInstance().viewText(cid);
 };
 
-exports.save = function(comment){"use strict";
+exports.save = function(comment){
     return getInstance().save(comment);
-};
-
-exports.remove = function(cid){"use strict";
-    return getInstance().remove(cid);  
 };

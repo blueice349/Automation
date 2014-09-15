@@ -1,3 +1,7 @@
+/*global addPhotoThumbnailOptions,addPhotoWidgetOptions,addiOSToolbarSettings,addVideoSettings */
+
+var Display = require('lib/Display');
+Display.setCurrentWindow(Ti.UI.currentWindow, 'real_time_map');
 
 Ti.include('/lib/functions.js');
 
@@ -31,7 +35,7 @@ var mapView = null;
         Ti.UI.currentWindow.close();
     });
     
-    scrollView = Ti.UI.createScrollView({
+    var scrollView = Ti.UI.createScrollView({
         scrollType: 'vertical',
         height: Ti.UI.FILL,
         width: '100%',

@@ -1,5 +1,4 @@
-
-/*jslint eqeq:true, plusplus:true, vars:true*/
+/*jslint eqeq:true, plusplus:true*/
 
 var Dispatch, Omadi;
 var CommentList = null;
@@ -346,7 +345,6 @@ FormTabs.prototype.loadCustomCopyNode = function(originalNode, from_type, to_typ
         }
     }
     else{
-        Ti.API.error("No bundle found for " + from_type);
         Utils.sendErrorReport("No bundle found for " + from_type);
     }
     
@@ -731,7 +729,7 @@ FormTabs.prototype.setupMenu = function(){"use strict";
                     try{
                         
                         if(Dispatch.workNode === null){
-                            Ti.API.error("Need to add the menu when no work node exists!!!");
+                            Ti.API.info("Need to add the menu when no work node exists!!!");
                         }
                         else{
                         

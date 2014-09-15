@@ -1,6 +1,9 @@
 /*jslint eqeq:true, plusplus: true*/ 
 /*global Omadi */
 
+var Display = require('lib/Display');
+Display.setCurrentWindow(Ti.UI.currentWindow, 'jobs');
+
 Ti.include('/lib/functions.js');
 
 var Utils = require('lib/Utils');
@@ -368,7 +371,7 @@ function loggingOutJobs(){"use strict";
     });
     
     if(Ti.App.isAndroid){
-        Ti.API.error("Add android menu");
+        Ti.API.info("Add android menu");
     }
     else{
         addiOSToolbar();

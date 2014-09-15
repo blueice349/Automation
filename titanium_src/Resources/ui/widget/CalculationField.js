@@ -1,8 +1,10 @@
 /*jslint eqeq:true,plusplus:true*/
 
-var Widget, Omadi, CalculatedFieldCache;
+var Widget, CalculatedFieldCache;
 
+var Display = require('lib/Display');
 var Utils = require('lib/Utils');
+var Node = require('objects/Node');
 
 Widget = {};
 CalculatedFieldCache = {};
@@ -149,7 +151,7 @@ CalculationFieldWidget.prototype.getNewElement = function(index, showCalc){"use 
         recalculateButton = Ti.UI.createButton({
              title: ' Recalculate ',
              style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
-             backgroundGradient: Omadi.display.backgroundGradientGray,
+             backgroundGradient: Display.backgroundGradientGray,
              borderColor: '#999',
              borderWidth: 1,
              right: 15,
@@ -257,7 +259,7 @@ CalculationFieldWidget.prototype.getTableView = function() {"use strict";
                 
                 isNegative = (cal_value < 0) ? true : false;
                 // Is negative. And if it is -ve then write in this value in (brackets).
-                cal_value_str = Omadi.utils.applyNumberFormat(this.instance, cal_value);
+                cal_value_str = Utils.applyNumberFormat(this.instance, cal_value);
                 cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
     
                 row = Ti.UI.createView({
@@ -309,7 +311,7 @@ CalculationFieldWidget.prototype.getTableView = function() {"use strict";
             } 
             
             // Set the calculated dbValue for the view
-            if(!Omadi.utils.isNumber(cal_value)){
+            if(!Utils.isNumber(cal_value)){
                 cal_value = 0;
             }
             
@@ -317,7 +319,7 @@ CalculationFieldWidget.prototype.getTableView = function() {"use strict";
             
             isNegative = (cal_value < 0) ? true : false;
             // Is negative. And if it is -ve then write in this value in (brackets).
-            cal_value_str = Omadi.utils.applyNumberFormat(this.instance, cal_value);
+            cal_value_str = Utils.applyNumberFormat(this.instance, cal_value);
             cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
             // Adding brackets over -ve value.
     
@@ -372,7 +374,7 @@ CalculationFieldWidget.prototype.getTableView = function() {"use strict";
                 
                 isNegative = (cal_value < 0) ? true : false;
                 // Is negative. And if it is -ve then write in this value in (brackets).
-                cal_value_str = Omadi.utils.applyNumberFormat(this.instance, cal_value);
+                cal_value_str = Utils.applyNumberFormat(this.instance, cal_value);
                 cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
                 
                 row = Ti.UI.createView({
@@ -431,7 +433,7 @@ CalculationFieldWidget.prototype.getTableView = function() {"use strict";
                 cal_value = parseFloat(cal_value);
             }
             
-            if(!Omadi.utils.isNumber(cal_value)){
+            if(!Utils.isNumber(cal_value)){
                 cal_value = 0;
             }
             
@@ -440,7 +442,7 @@ CalculationFieldWidget.prototype.getTableView = function() {"use strict";
             
             isNegative = (cal_value < 0) ? true : false;
             // Is negative. And if it is -ve then write in this value in (brackets).
-            cal_value_str = Omadi.utils.applyNumberFormat(this.instance, cal_value);
+            cal_value_str = Utils.applyNumberFormat(this.instance, cal_value);
             cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
             // Adding brackets over -ve value.
             
@@ -471,7 +473,7 @@ CalculationFieldWidget.prototype.getTableView = function() {"use strict";
                 
                 isNegative = (cal_value < 0) ? true : false;
                 // Is negative. And if it is -ve then write in this value in (brackets).
-                cal_value_str = Omadi.utils.applyNumberFormat(this.instance, cal_value);
+                cal_value_str = Utils.applyNumberFormat(this.instance, cal_value);
                 cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
                 
                 value.add(Ti.UI.createLabel({
@@ -537,7 +539,7 @@ CalculationFieldWidget.prototype.getRowValues = function(instance){"use strict";
         
         this.node = this.formObj.node;
         
-        instances = Omadi.data.getFields(this.formObj.type);
+        instances = Node.getFields(this.formObj.type);
         final_value = 0;
         
         if (instance.settings.calculation.items != null && !instance.disabled) {
@@ -551,10 +553,10 @@ CalculationFieldWidget.prototype.getRowValues = function(instance){"use strict";
             
             if(typeof instance.settings.calculation.items !== 'undefined'){
                 
-                if(Omadi.utils.isArray(instance.settings.calculation.items)){
+                if(Utils.isArray(instance.settings.calculation.items)){
                     // Only sort if the items is an array
                     // We can still support a key/value object, but sort will not work
-                    instance.settings.calculation.items = instance.settings.calculation.items.sort(Omadi.utils.sortByWeight);
+                    instance.settings.calculation.items = instance.settings.calculation.items.sort(Utils.sortByWeight);
                 }
             
                 for (idx in instance.settings.calculation.items) {
@@ -605,7 +607,7 @@ CalculationFieldWidget.prototype.getRowValues = function(instance){"use strict";
                             else if (calculation_row.type == 'parent_field_value') {
                                 parent_field = calculation_row.parent_field;
                                 if (this.node[parent_field] != null && this.node[parent_field].dbValues[0] != null) {
-                                    parent_node = Omadi.data.nodeLoad(this.node[parent_field].dbValues[0]);
+                                    parent_node = Node.load(this.node[parent_field].dbValues[0]);
                                     if (parent_node && 
                                         typeof parent_node[calculation_row.field_name_1] !== 'undefined' && 
                                         typeof parent_node[calculation_row.field_name_1].dbValues !== 'undefined' && 
@@ -646,7 +648,7 @@ CalculationFieldWidget.prototype.getRowValues = function(instance){"use strict";
                                     end_timestamp = this.node[calculation_row.datestamp_end_field].dbValues[0];
                                 }
                                 else{
-                                    end_timestamp = Omadi.utils.getUTCTimestamp();   
+                                    end_timestamp = Utils.getUTCTimestamp();   
                                 }
                                 
                                
@@ -691,7 +693,7 @@ CalculationFieldWidget.prototype.getRowValues = function(instance){"use strict";
                                         
                                         at_time = calculation_row.increment_at_time;
                                         start_timestamp = Number(start_timestamp);
-                                        relative_increment_time = at_time = Omadi.utils.mktime(0,0,0, Omadi.utils.PHPFormatDate('n', start_timestamp), Omadi.utils.PHPFormatDate('j', start_timestamp), Omadi.utils.PHPFormatDate('Y', start_timestamp));
+                                        relative_increment_time = at_time = Utils.mktime(0,0,0, Utils.PHPFormatDate('n', start_timestamp), Utils.PHPFormatDate('j', start_timestamp), Utils.PHPFormatDate('Y', start_timestamp));
                                         
                                         day_count = 0;
                                         if (relative_increment_time < start_timestamp) {
@@ -719,7 +721,7 @@ CalculationFieldWidget.prototype.getRowValues = function(instance){"use strict";
                                 parent_field = calculation_row.parent_field;
                                 
                                 if (this.node[parent_field] != null && this.node[parent_field].dbValues[0] != null) {
-                                    parent_node = Omadi.data.nodeLoad(this.node[parent_field].dbValues[0]);
+                                    parent_node = Node.load(this.node[parent_field].dbValues[0]);
                                     
                                     if (parent_node && parent_node[calculation_row.field_name_2].dbValues[0] != null) {
                                         field_2_multiplier = parent_node[calculation_row.field_name_2].dbValues[0];
@@ -787,14 +789,14 @@ CalculationFieldWidget.prototype.getRowValues = function(instance){"use strict";
                                 }
                             }
                             
-                            if (!Omadi.utils.list_search_node_matches_search_criteria(this.node, calculation_row.criteria)) {
+                            if (!Utils.listSearchNodeMatchesSearchCriteria(this.node, calculation_row.criteria)) {
                                 zero = true;
                             }
                         }
             
                         value = 0;
                         
-                        if(typeof calculation_row.field_name_1 !== 'undefined' && !Omadi.utils.isEmpty(calculation_row.field_name_1)){
+                        if(typeof calculation_row.field_name_1 !== 'undefined' && !Utils.isEmpty(calculation_row.field_name_1)){
                             if (!field_1_multiplier) {
                                 zero = true;
                             }
@@ -803,7 +805,7 @@ CalculationFieldWidget.prototype.getRowValues = function(instance){"use strict";
                             }
                         }
                         
-                        if(typeof calculation_row.field_name_2 !== 'undefined' && !Omadi.utils.isEmpty(calculation_row.field_name_2)){
+                        if(typeof calculation_row.field_name_2 !== 'undefined' && !Utils.isEmpty(calculation_row.field_name_2)){
                             if (!field_2_multiplier) {
                                 zero = true;
                             }
@@ -891,22 +893,16 @@ CalculationFieldWidget.prototype.cleanUp = function(){"use strict";
         }
         catch(ex1){}
     }
-    
-    Omadi = null;
 };
 
-exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
-    
-    Omadi = OmadiObj;
+exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
     Widget[instance.field_name] = new CalculationFieldWidget(FormObj, instance, fieldViewWrapper);
     
     return Widget[instance.field_name];
 };
 
-exports.getView = function(OmadiObj, node, instance){"use strict";
+exports.getView = function(node, instance){"use strict";
     var formObj, widget;
-    
-    Omadi = OmadiObj;
     
     formObj = {};
     formObj.node = node;

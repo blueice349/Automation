@@ -3,6 +3,9 @@ Ti.include('/lib/util_functions.js');
 /*jslint eqeq:true, plusplus: true*/
 /*global Omadi*/
 
+var Display = require('lib/Display');
+Display.setCurrentWindow(Ti.UI.currentWindow, 'ios_geolocation');
+
 Ti.App.Properties.setString("last_alert_popup", 0);
 var time_interval_for_alerts = 120;
 

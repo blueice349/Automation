@@ -1,8 +1,9 @@
 /*jslint eqeq:true, plusplus: true*/
 
-var Widget, Omadi;
+var Widget;
 
 var Utils = require('lib/Utils');
+var Display = require('lib/Display');
 
 Widget = {};
 
@@ -32,7 +33,7 @@ function TextWidget(formObj, instance, fieldViewWrapper){"use strict";
     }
     
     if(this.instance.settings.cardinality == -1){
-        if(Omadi.utils.isArray(this.dbValues)){
+        if(Utils.isArray(this.dbValues)){
             this.numVisibleFields = this.dbValues.length;
         }
         if(this.numVisibleFields < 1){
@@ -69,7 +70,7 @@ TextWidget.prototype.getFieldView = function(){"use strict";
             title: ' Add another item ',
             right: 15,
             style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
-            backgroundGradient: Omadi.display.backgroundGradientGray,
+            backgroundGradient: Display.backgroundGradientGray,
             borderColor: '#999',
             borderWidth: 1,
             width: Ti.UI.SIZE,
@@ -225,11 +226,7 @@ TextWidget.prototype.getNewElementWrapper = function(index){"use strict";
                 }
             }
             catch(ex){
-                Ti.API.error("Exception in duplicate warning timeout: " + ex);
-                try{
-                    Utils.sendErrorReport("Exception in duplicate warning timeout: " + ex);
-                }
-                catch(ex2){}
+                Utils.sendErrorReport("Exception in duplicate warning timeout: " + ex);
             }
         });
         
@@ -321,11 +318,7 @@ TextWidget.prototype.onChangeListener = function(e) {"use strict";
                     }
                 }
                 catch(ex){
-                    Ti.API.error("Exception in duplicate warning timeout: " + ex);
-                    try{
-                        Utils.sendErrorReport("Exception in duplicate warning timeout: " + ex);
-                    }
-                    catch(ex2){}
+                    Utils.sendErrorReport("Exception in duplicate warning timeout: " + ex);
                 }
                 
             }, 4000);
@@ -345,9 +338,9 @@ TextWidget.prototype.setDuplicateWarnings = function(fieldName, value, saveType)
             validatesSecureCertificate: false
         });
         http.setTimeout(10000);
-        http.open('POST', Omadi.DOMAIN_NAME + '/js-fields/omadi_fields/duplicate_warnings.json');
+        http.open('POST', Ti.App.DOMAIN_NAME + '/js-fields/omadi_fields/duplicate_warnings.json');
     
-        Omadi.utils.setCookieHeader(http);
+        Utils.setCookieHeader(http);
         http.setRequestHeader("Content-Type", "application/json");
         
         http.onload = function(e) {
@@ -378,13 +371,7 @@ TextWidget.prototype.setDuplicateWarnings = function(fieldName, value, saveType)
         };
     
         http.onerror = function(e) {
-            try{
-                Ti.API.error(JSON.stringify(e));
-                Utils.sendErrorReport("Error on setduplicatewarnings: " + JSON.stringify(e));
-            }
-            catch(ex){
-                
-            }
+            Utils.sendErrorReport("Error on setduplicatewarnings: " + JSON.stringify(e));
         };
         
         http.send(JSON.stringify({
@@ -431,13 +418,9 @@ TextWidget.prototype.cleanUp = function(){"use strict";
         }
         catch(ex1){}
     }
-    
-    Omadi = null;
 };
 
-exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
-    
-    Omadi = OmadiObj;
+exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
     Widget[instance.field_name] = new TextWidget(FormObj, instance, fieldViewWrapper);
     
     return Widget[instance.field_name];

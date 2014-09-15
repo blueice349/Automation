@@ -2,6 +2,8 @@ Ti.include('/lib/functions.js');
 
 /*global  Omadi*/
 
+var Display = require('lib/Display');
+Display.setCurrentWindow(Ti.UI.currentWindow, 'about');
 
 (function(){
 	'use strict';

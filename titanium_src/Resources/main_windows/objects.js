@@ -1,11 +1,12 @@
-
-/*jslint eqeq:true,plusplus:true*/
 /*global Omadi*/
+
+var Display = require('lib/Display');
+Display.setCurrentWindow(Ti.UI.currentWindow, 'objects');
 
 Ti.include('/lib/functions.js');
 
 
-var bundle, curWin, search, instances, filterValues, filterFields, win_new;
+var bundle, curWin, searchWrapper, search, instances, filterValues, filterFields, win_new, nearMeButton, filterQuery;
 
 var filterTableView;
 var itemsPerPage = 40;
@@ -136,7 +137,7 @@ function getDataSQL(getCount) {"use strict";
                         conditions.push(field_name + " = ''");
                     }
                     else {
-                        conditions.push(field_name + ' = ' + filterValue);
+                        conditions.push(field_name + ' = "' + filterValue + '"');
                     }
                 }
             }
@@ -149,10 +150,11 @@ function getDataSQL(getCount) {"use strict";
 
     conditions.push("n.flag_is_updated IN (0,1)");
 
+	filterQuery = '';
     if (conditions.length > 0) {
-        sql += " WHERE ";
-        sql += conditions.join(" AND ");
+		filterQuery = ' WHERE ' + conditions.join(' AND ');
     }
+    sql += filterQuery;
 
     if (showFinalResults) {
         sql += " ORDER BY ";
@@ -584,12 +586,43 @@ function setTableData() {"use strict";
         });
 
         if (showFinalResults) {
-
+			searchWrapper = Ti.UI.createView({
+				height: Ti.App.isAndroid ? 45 : 35
+			});
+			
             search = Ti.UI.createSearchBar({
                 hintText : 'Search...',
                 autocorrect : false,
-                focusable : false
+                focusable : false,
+                width : bundle.data.mobile.location_sort_field ? '75%' : '100%',
+                left: 0
             });
+            
+            searchWrapper.add(search);
+            
+            nearMeButton = Ti.UI.createLabel({
+	            text : 'Near Me',
+	            left : '75%',
+	            width : '24%',
+	            height : Ti.App.isAndroid? 40 : 30,
+	            top : 2.5,
+	            backgroundGradient : Omadi.display.backgroundGradientBlue,
+	            borderRadius : 5,
+	            color : '#eee',
+	            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+	            font: {
+	                fontSize: 16,
+	                fontWeight: 'bold'
+	            }
+	        });
+	        
+	        nearMeButton.addEventListener('click', function(e) {
+				Omadi.display.openNearMeWindow(curWin.type, filterQuery);
+	        });
+	        
+	        if (bundle.data.mobile.location_sort_field) {
+				searchWrapper.add(nearMeButton);
+	        }
             
             if(Ti.App.isAndroid){
                 search.height = 45;
@@ -717,7 +750,7 @@ function setTableData() {"use strict";
             listLabel.textAlign = Ti.UI.TEXT_ALIGNMENT_CENTER;
             items.push(space);
 
-            if (Ti.Platform.osname == 'ipad') {
+            if (Ti.App.isIPad) {
 
                 items.push(listLabel);
                 items.push(space);
@@ -789,7 +822,7 @@ function setTableData() {"use strict";
         }
 
         if (showFinalResults) {
-            wrapperView.add(search);
+            wrapperView.add(searchWrapper);
         }
         else {
 

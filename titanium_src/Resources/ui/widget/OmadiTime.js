@@ -1,7 +1,8 @@
 /*jslint eqeq:true, plusplus: true*/
 
-var Widget, Omadi, dateWindow;
+var Widget, dateWindow;
 var Utils = require('lib/Utils');
+var Display = require('lib/Display');
 Widget = {};
 dateWindow = null;
 
@@ -30,7 +31,7 @@ function OmadiTimeWidget(formObj, instance, fieldViewWrapper){"use strict";
     }
     
     if(this.instance.settings.cardinality == -1){
-        if(Omadi.utils.isArray(this.dbValues)){
+        if(Utils.isArray(this.dbValues)){
             this.numVisibleFields = this.dbValues.length;
         }
         if(this.numVisibleFields < 1){
@@ -66,7 +67,7 @@ OmadiTimeWidget.prototype.getFieldView = function(){"use strict";
             title: ' Add another item ',
             right: 15,
             style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
-            backgroundGradient: Omadi.display.backgroundGradientGray,
+            backgroundGradient: Display.backgroundGradientGray,
             borderColor: '#999',
             borderWidth: 1,
             width: Ti.UI.SIZE,
@@ -147,14 +148,14 @@ OmadiTimeWidget.prototype.getNewElement = function(index){"use strict";
 
     if (dbValue !== null) {
         nowTimestamp = Math.round(jsDate.getTime() / 1000);
-        midnight = mktime(0, 0, 0, Omadi.utils.PHPFormatDate('n', nowTimestamp), Omadi.utils.PHPFormatDate('j', nowTimestamp), Omadi.utils.PHPFormatDate('Y', nowTimestamp));
+        midnight = mktime(0, 0, 0, Utils.PHPFormatDate('n', nowTimestamp), Utils.PHPFormatDate('j', nowTimestamp), Utils.PHPFormatDate('Y', nowTimestamp));
         jsDate.setTime((midnight + dbValue) * 1000);
     }
     
     dateText = timeText = "";
     if(dbValue !== null){
-        dateText = Omadi.utils.formatDate(dbValue, false);
-        timeText = Omadi.utils.formatTime(dbValue);
+        dateText = Utils.formatDate(dbValue, false);
+        timeText = Utils.formatTime(dbValue);
     }
 
     element = this.formObj.getLabelField(this.instance);
@@ -364,7 +365,7 @@ OmadiTimeWidget.prototype.displayPicker = function(element) {"use strict";
             element : element,
             height : Ti.UI.SIZE, 
             width : '100%',
-            format24 : (Omadi.utils.getTimeFormat().indexOf('H') !== -1 ? true : false)  // Only available on Android
+            format24 : (Utils.getTimeFormat().indexOf('H') !== -1 ? true : false)  // Only available on Android
         });
     
         // This sounds really stupid - and it is! If this onchange listener isn't in place, 
@@ -384,7 +385,7 @@ OmadiTimeWidget.prototype.displayPicker = function(element) {"use strict";
             try{
                 newDate = e.source.time_picker.getValue();
                 e.source.element.jsDate = newDate;
-                e.source.element.textValue = Omadi.utils.PHPFormatDate('g:i A', Math.ceil(newDate.getTime() / 1000));
+                e.source.element.textValue = Utils.PHPFormatDate('g:i A', Math.ceil(newDate.getTime() / 1000));
                 e.source.element.dbValue = Widget[e.source.instance.field_name].dateToSeconds(e.source.element.textValue);
         
                 e.source.element.setText(e.source.element.textValue);
@@ -447,7 +448,7 @@ OmadiTimeWidget.prototype.dateToSeconds = function(time_text) {"use strict";
     is_pm = (time_text.indexOf('PM') !== -1);
     is_am = (time_text.indexOf('AM') !== -1);
 
-    time_text = Omadi.utils.trimWhiteSpace(time_text.replace(/(AM|PM)/g, ''));
+    time_text = Utils.trimWhiteSpace(time_text.replace(/(AM|PM)/g, ''));
 
     time_split = time_text.split(':');
     // splite time string into hours & minutes
@@ -494,13 +495,9 @@ OmadiTimeWidget.prototype.cleanUp = function(){"use strict";
         }
         catch(ex1){}
     }
-    
-    Omadi = null;
 };
 
-exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
-    
-    Omadi = OmadiObj;
+exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
     Widget[instance.field_name] = new OmadiTimeWidget(FormObj, instance, fieldViewWrapper);
     
     return Widget[instance.field_name];

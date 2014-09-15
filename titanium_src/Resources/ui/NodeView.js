@@ -500,7 +500,7 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
                 if (fieldObj.settings.hidden == 0) {
                     
                     widget = require('ui/widget/CalculationField');
-                    tableView = widget.getView(Omadi, this.node, fieldObj);
+                    tableView = widget.getView(this.node, fieldObj);
     
                     if (tableView.singleValue) {
                         valueView.add(tableView);
@@ -520,7 +520,7 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
                 rowView.add(labelView);
                 
                 widget = require('ui/widget/RulesField');
-                valueView = widget.getView(Omadi, this.node, fieldObj);
+                valueView = widget.getView(this.node, fieldObj);
                 
                 valueView.setWidth("59%");
                 valueView.setRight(0);
@@ -536,7 +536,7 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
                 
                 this.scrollView.add(labelView);
                 widget = require('ui/widget/ExtraPrice');
-                tableView = widget.getView(Omadi, this.node, fieldObj);
+                tableView = widget.getView(this.node, fieldObj);
                 
                 this.scrollView.add(tableView);
                 this.scrollView.add(Ti.UI.createView({
@@ -587,7 +587,7 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
     
 					try {
 						var formObj = {node: this.node, nid: this.node.nid};
-                        var imageObject = ImageWidget.getFieldObject(Omadi, formObj, fieldObj, null);
+                        var imageObject = ImageWidget.getFieldObject(formObj, fieldObj, null);
                         imageObject.addImageViewsToWidgetView(this.node[fieldObj.field_name].dbValues, valueView);
 					} catch(e) {
 						Utils.sendErrorReport('Error adding image views to widget view (A): ' + e);
@@ -648,7 +648,7 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
     
                             contentImage.addEventListener('click', function(e){
                                 var widget = require('ui/widget/Video');
-                                widget.openVideoPlayer(Omadi, e.source.instance, e.source);
+                                widget.openVideoPlayer(e.source.instance, e.source);
                             });
                             
                             valueView.add(contentImage);

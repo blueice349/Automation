@@ -87,7 +87,7 @@ Omadi.bundles.companyVehicle.setUserVehicle = function(vehicle_nid) {"use strict
             validatesSecureCertificate: false
         });
         http.setTimeout(60000);
-        http.open('POST', Omadi.DOMAIN_NAME + '/js-company-vehicle/company_vehicle/enter_vehicle.json');
+        http.open('POST', Ti.App.DOMAIN_NAME + '/js-company-vehicle/company_vehicle/enter_vehicle.json');
     
         http.setRequestHeader("Content-Type", "application/json");
         Omadi.utils.setCookieHeader(http);
@@ -160,7 +160,7 @@ Omadi.bundles.companyVehicle.exitVehicle = function(){"use strict";
                 validatesSecureCertificate: false
             });
             http.setTimeout(30000);
-            http.open('POST', Omadi.DOMAIN_NAME + '/js-company-vehicle/company_vehicle/exit_vehicle.json');
+            http.open('POST', Ti.App.DOMAIN_NAME + '/js-company-vehicle/company_vehicle/exit_vehicle.json');
         
             http.setRequestHeader("Content-Type", "application/json");
             Omadi.utils.setCookieHeader(http);
@@ -212,39 +212,11 @@ Omadi.bundles.companyVehicle.exitVehicle = function(){"use strict";
 };
 
 Omadi.bundles.companyVehicle.getCurrentVehicleNid = function(){"use strict";
-    var db, result, nid;
-    
-    nid = 0;
-    
-    db = Omadi.utils.openListDatabase();
-    result = db.execute("SELECT in_vehicle_nid FROM history WHERE id_hist=1");
-    if(result.isValidRow()){
-        nid = result.field(0, Ti.Database.FIELD_TYPE_INT);
-    }
-    result.close();
-    db.close();
-    
-    return nid;
+    return Utils.getCurrentVehicleNid();
 };
 
 Omadi.bundles.companyVehicle.getCurrentVehicleName = function(){"use strict";
-    var db, result, nid, name;
-    
-    nid = Omadi.bundles.companyVehicle.getCurrentVehicleNid();
-    name = null;
-    
-    db = Omadi.utils.openMainDatabase();
-    if(nid > 0){
-        result = db.execute("SELECT title FROM node WHERE nid = " + nid);
-        if(result.isValidRow()){
-            name = result.field(0);
-        }
-        result.close();
-    }
-    
-    db.close();
-    
-    return name;
+    return Utils.getCurrentVehicleName();
 };
 
 Omadi.bundles.companyVehicle.getCompanyVehicles = function() {"use strict";

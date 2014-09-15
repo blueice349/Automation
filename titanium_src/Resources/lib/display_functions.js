@@ -1,183 +1,15 @@
-
 /*jslint eqeq:true,plusplus:true*/
 
 Omadi.display = Omadi.display || {};
 
 var Utils = require('lib/Utils');
+var Display = require('lib/Display');
 
-Omadi.display.backgroundGradientBlue = {
-    type : 'linear',
-    startPoint : {
-        x : '50%',
-        y : '0%'
-    },
-    endPoint : {
-        x : '50%',
-        y : '100%'
-    },
-    colors : [{
-        color : '#2BC4F3',
-        offset : 0.0
-    }, {
-        color : '#00AEEE',
-        offset : 0.25
-    }, {
-        color : '#00AEEE',
-        offset : 1.0
-    }]
-};
-
-Omadi.display.backgroundGradientGray = {
-    type : 'linear',
-    startPoint : {
-        x : '50%',
-        y : '0%'
-    },
-    endPoint : {
-        x : '50%',
-        y : '100%'
-    },
-    colors : [{
-        color : '#A7A9AC',
-        offset : 0.0
-    }, {
-        color : '#6D6E71',
-        offset : 0.25
-    }, {
-        color : '#58595B',
-        offset : 1.0
-    }]
-};
-
-Omadi.display.largePhotoWindow = null;
+Omadi.display.backgroundGradientBlue = Display.backgroundGradientBlue;
+Omadi.display.backgroundGradientGray = Display.backgroundGradientGray;
 
 Omadi.display.showBigImage = function(imageView) {"use strict";
-    var fullImage, background, transform, rotateDegrees, 
-        orientation, screenWidth, screenHeight, picWidth, picHeight, 
-        scrollView, picBlob, toolbar, isRotated, back, space, label, 
-        timestamp, webView, imageData, imageFile;
-    
-    if(Omadi.display.largePhotoWindow === null){
-        
-        try{
-            Omadi.display.largePhotoWindow = Ti.UI.createWindow({
-                backgroundColor : Ti.App.isIOS7 ? '#fff' : '#000',
-                top : 0,
-                bottom : 0,
-                right : 0,
-                left : 0,
-                modal: true,
-                width: Ti.UI.FILL,
-                height: Ti.UI.FILL,
-                orientationModes: [Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.PORTRAIT, Ti.UI.UPSIDE_PORTRAIT],
-                modalStyle: Ti.UI.iPhone.MODAL_PRESENTATION_FORMSHEET,
-                navBarHidden: true
-            });
-            
-            if(Ti.App.isAndroid){
-                Omadi.display.largePhotoWindow.addEventListener("android:back", function(e){
-                    Omadi.display.largePhotoWindow.close(); 
-                    Omadi.display.largePhotoWindow = null;
-                });
-            }
-            else{
-                
-                back = Ti.UI.createButton({
-                    title : 'Back',
-                    style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
-                });
-                
-                back.addEventListener('click', function() {
-                    try{
-                        Omadi.display.largePhotoWindow.close();
-                        Omadi.display.largePhotoWindow = null;
-                    }
-                    catch(ex){
-                        Utils.sendErrorReport("exception on back button with show big image: " + ex);
-                    }
-                });
-            
-                space = Titanium.UI.createButton({
-                    systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
-                });
-                
-                label = Titanium.UI.createButton({
-                    title : 'View Photo',
-                    color : '#fff',
-                    ellipsize : true,
-                    wordwrap : false,
-                    width : 200,
-                    style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
-                });
-            
-                // create and add toolbar
-                toolbar = Ti.UI.iOS.createToolbar({
-                    items : [back, space, label, space],
-                    top : 20,
-                    left: 0,
-                    borderTop : false,
-                    borderBottom : true,
-                    zIndex: 100
-                });
-                
-                Omadi.display.largePhotoWindow.add(toolbar);
-            }
-            
-            imageData = null;
-            
-            if(typeof imageView.filePath !== 'undefined' && imageView.filePath !== null){
-                Ti.API.debug("DISPLAYING FULL IMAGE FROM FILE PATH");
-                
-                try{
-                    imageFile = Ti.Filesystem.getFile(imageView.filePath);
-                    
-                    if(imageFile.exists()){
-                        imageData = imageFile.read();
-                    }
-                }
-                catch(ex){
-                    Utils.sendErrorReport("Exception setting bigImg: " + ex);
-                    alert("A Problem occurred opening the file.");
-                    return;
-                }
-            }
-            else if(imageView.bigImg !== null){
-                Ti.API.debug("DISPLAYING FULL IMAGE FROM BLOB");
-                imageData = imageView.bigImg;
-                
-                
-                Ti.API.debug("Image data size: " + imageData.length);
-            }
-            
-            if(imageData === null){
-            
-                alert("Could not display large photo.");
-            }
-            else{
-                
-                if (Ti.App.isAndroid3OrBelow) {
-                // WebViews are scalable but they render as junk text on older android phones
-                webView = Ti.UI.createImageView({
-	                    image: imageData
-	                });
-                } else {
-	                webView = Ti.UI.createWebView({
-                        top: Ti.App.isIOS7 ? 60 : 0,
-	                    data: imageData
-	                });
-                }
-                    
-                Omadi.display.largePhotoWindow.add(webView);
-                
-                Omadi.display.largePhotoWindow.open();
-                
-                Ti.API.debug("large photo window showing...");
-            }
-        }
-        catch(ex1){
-            Utils.sendErrorReport("Exception showing large photo: " + ex1);
-        }
-    }
+    Display.showBigImage(imageView);
 };
 
 Omadi.display.iOSBackToolbar = function(actualWindow, label){"use strict";
@@ -304,79 +136,7 @@ Omadi.display.logoutButtonPressed = function(){"use strict";
 };
 
 Omadi.display.getFileViewType = function(filename){"use strict";
-
-    var iOSWebviewExtensions = [], extension, htmlExtensions = [], dotIndex,
-        imageExtensions = [], androidDownloadExtensions = [], textExtensions = [], viewType = null;
-    
-    dotIndex = filename.lastIndexOf('.');
-    extension = "";
-    if(dotIndex !== -1 && dotIndex !== filename.length - 1){
-        extension = filename.substring(dotIndex + 1).toLowerCase();
-    }
-    
-    textExtensions.push("txt");
-    textExtensions.push("xml");
-    
-    htmlExtensions.push("html");
-    htmlExtensions.push("htm");
-    
-    imageExtensions.push("jpg");
-    imageExtensions.push("jpeg");
-    imageExtensions.push("gif");
-    imageExtensions.push("png");
-    imageExtensions.push("bmp");
-    
-    androidDownloadExtensions.push("tiff");
-    androidDownloadExtensions.push("doc");
-    androidDownloadExtensions.push("docx");
-    androidDownloadExtensions.push("xls");
-    androidDownloadExtensions.push("xlsx");
-    androidDownloadExtensions.push("csv");
-    androidDownloadExtensions.push("tsv");
-    androidDownloadExtensions.push("pdf");
-    androidDownloadExtensions.push("ppt");
-    androidDownloadExtensions.push("pptx");
-    androidDownloadExtensions.push("odt");
-    androidDownloadExtensions.push("ods");
-    androidDownloadExtensions.push("odp");
-    androidDownloadExtensions.push("eps");
-    androidDownloadExtensions.push("zip");
-    androidDownloadExtensions.push("tar");
-    androidDownloadExtensions.push("tgz");
-    androidDownloadExtensions.push("rtf");
-    
-    
-    iOSWebviewExtensions.push("html");
-    iOSWebviewExtensions.push("htm");
-    iOSWebviewExtensions.push("doc");
-    iOSWebviewExtensions.push("docx");
-    iOSWebviewExtensions.push("xls");
-    iOSWebviewExtensions.push("xlsx");
-    iOSWebviewExtensions.push("csv");
-    iOSWebviewExtensions.push("tsv");
-    iOSWebviewExtensions.push("ppt");
-    iOSWebviewExtensions.push("pptx");
-    iOSWebviewExtensions.push("rtf");
-    iOSWebviewExtensions.push("pdf");
-    iOSWebviewExtensions.push("tiff");
-    
-    if(imageExtensions.indexOf(extension) !== -1){
-        viewType = 'image';
-    }
-    else if(htmlExtensions.indexOf(extension) !== -1){
-        viewType = 'html';
-    }
-    else if(Ti.App.isIOS && iOSWebviewExtensions.indexOf(extension) !== -1){
-        viewType = 'iOSWebview';
-    }
-    else if(textExtensions.indexOf(extension) !== -1){
-        viewType = 'text';
-    }
-    else if(Ti.App.isAndroid && androidDownloadExtensions.indexOf(extension) !== -1){
-        viewType = 'download';
-    }
-    
-    return viewType;
+	return Display.getFileViewType();
 };
 
 Omadi.display.newAppAvailable = function(message) {"use strict";
@@ -393,6 +153,22 @@ Omadi.display.newAppAvailable = function(message) {"use strict";
     }
 };
 
+Omadi.display.openNearMeWindow = function(formType, filterQuery) {'use strict';
+	var win = Titanium.UI.createWindow({
+        navBarHidden : true,
+        formType: formType,
+        filterQuery: filterQuery,
+        url : '/main_windows/nearMe.js',
+        orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
+    });
+    
+    Omadi.display.loading();
+    win.addEventListener('open', Omadi.display.doneLoading);
+    win.open();
+    
+    return win;
+};
+
 Omadi.display.openListWindow = function(type, show_plus, filterValues, nestedWindows, showFinalResults) {"use strict";
     var listWindow = Titanium.UI.createWindow({
         navBarHidden : true,
@@ -406,15 +182,7 @@ Omadi.display.openListWindow = function(type, show_plus, filterValues, nestedWin
     });
 
     Omadi.display.loading();
-    
-    if(Ti.App.isAndroid){
-        // Hide the Android action bar
-        listWindow.addEventListener('open', function(){
-        });
-    }
-    
     listWindow.addEventListener('open', Omadi.display.doneLoading);
-
     listWindow.open();
 
     return listWindow;
@@ -523,7 +291,7 @@ Omadi.display.openWebView = function(nid){"use strict";
 };
 
 Omadi.display.openWebViewInApp = function(nid) {"use strict";
-	var url = Omadi.DOMAIN_NAME + '/node/' + nid;
+	var url = Ti.App.DOMAIN_NAME + '/node/' + nid;
 	var cookie = Omadi.utils.getCookie();
     Utils.setCookie(cookie);
     
@@ -563,7 +331,7 @@ Omadi.display.openWebViewInApp = function(nid) {"use strict";
 };
 
 Omadi.display.openWebViewInBrowser = function(nid) {"use strict";
-	Ti.Platform.openURL(Omadi.DOMAIN_NAME + '/node/' + nid);
+	Display.openWebViewInBrowser(nid);
 };
 
 Omadi.display.openViewWindow = function(type, nid, allowActions) {"use strict";
@@ -637,6 +405,7 @@ Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
                         // isDispatch = true; // nothing changed
                         // Example: Dispatched PPI to drop fee
                         // Keep original dispatch node
+                        Ti.API.info('isChangeTo');
                     }
                     else{
                         if(!newIsDispatch){
@@ -965,7 +734,6 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
             postDialog.options = options;
             postDialog.eventRow = e.row;
             postDialog.cancel = options.length - 1;
-            postDialog.show();
     
             postDialog.addEventListener('click', function(ev) {
                 var buttonInfo, form_part;
@@ -1034,6 +802,8 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
                     Utils.sendErrorReport("exception dialog form options: " + ex);
                 }
             });
+            
+            postDialog.show();
         }
     }
 };
@@ -1052,7 +822,7 @@ Omadi.display.insertBundleIcon = function(type, imageView){"use strict";
     http.setTimeout(45000);
     http.cache = false;
     http.enableKeepAlive = false;
-    http.open('GET', Omadi.DOMAIN_NAME + '/custom_forms/icon/' + type);
+    http.open('GET', Ti.App.DOMAIN_NAME + '/custom_forms/icon/' + type);
 
     Ti.API.debug("Getting icon for " + type);
 
@@ -1220,141 +990,11 @@ Omadi.display.displayFile = function(nid, fid, title) {"use strict";
 };
 
 Omadi.display.displayFullImage = function(imageView) {"use strict";
-    try{
-        var http, db, result;
-        
-        if (imageView.bigImg !== null || (typeof imageView.filePath !== 'undefined' && imageView.filePath !== null)) {
-            Ti.API.debug("Displaying big image");
-            
-            Omadi.display.loading();
-            Omadi.display.showBigImage(imageView);
-            Omadi.display.doneLoading();
-        }
-        else if (imageView.nid > 0 && imageView.fid > 0) {
-            Omadi.display.loading();
-            
-            try {
-                http = Ti.Network.createHTTPClient({
-                    enableKeepAlive: false,
-                    validatesSecureCertificate: false
-                });
-                http.setTimeout(30000);
-                http.open('GET', Omadi.DOMAIN_NAME + '/sync/file/' + imageView.nid + '/' + imageView.fid);
-    
-                Omadi.utils.setCookieHeader(http);
-    
-                http.onload = function(e) {
-                    if(this.responseData !== null){
-                        
-                        imageView.bigImg = this.responseData;
-                       
-                        Omadi.display.showBigImage(imageView);
-                    }
-                    else{
-                        alert("There was a problem downloading the photo.");
-                    }
-                    
-                    Omadi.display.doneLoading();
-                };
-    
-                http.onerror = function(e) {
-                    Ti.API.error("Error in download Image 2");
-                    Omadi.display.doneLoading();
-                    alert("There was an error retrieving the file.");
-                };
-    
-                http.send();
-            }
-            catch(e) {
-                Omadi.display.doneLoading();
-                alert("There was an error retrieving the file.");
-                Utils.sendErrorReport("Exception showing full photo file: " + e);
-            }
-        }
-        else{
-            alert("The photo could not be displayed.");
-            Utils.sendErrorReport("Could not show full photo file. nid: " + imageView.nid + ', imageView.fid: ' + imageView.fid);
-        }
-    }
-    catch(ex){
-        Utils.sendErrorReport("Exception showing full photo: " + ex);
-    }
+	Display.displayFullImage(imageView);
 };
 
 Omadi.display.displayLargeImage = function(imageView, nid, file_id, showInImageView) {"use strict";
-    try{
-        var http, url;
-        
-        if(typeof showInImageView === 'undefined'){
-            showInImageView = false;
-        }
-    
-        if (imageView.bigImg !== null) {
-            Ti.API.debug("Displaying big image - already loaded.");
-            Omadi.display.showBigImage(imageView);
-            return;
-        }
-    
-        if (nid > 0 && file_id > 0) {
-            
-            if(!showInImageView){
-                Omadi.display.loading();
-            }
-            
-            try {
-                http = Ti.Network.createHTTPClient({
-                    enableKeepAlive: false,
-                    validatesSecureCertificate: false
-                });
-                http.setTimeout(30000);
-                url = Omadi.DOMAIN_NAME + '/sync/file/' + nid + '/' + file_id;
-                Ti.API.debug("Requesting " + url);
-                
-                http.open('GET', url);
-    
-                Omadi.utils.setCookieHeader(http);
-    
-                http.onload = function(e) {
-                    try{
-                        Ti.API.info('Download Success');
-                        
-                        imageView.bigImg = this.responseData;
-                        
-                        Ti.API.info("image size: " + this.responseData.length);
-                        
-                        if(showInImageView){
-                            imageView.image = this.responseData;
-                        }
-                        else{
-                            Omadi.display.showBigImage(imageView);
-                            Omadi.display.doneLoading();
-                        }
-                        
-                        imageView.fullImageLoaded = true;
-                    }
-                    catch(ex){
-                        Utils.sendErrorReport("Exception downloading image: " + ex);
-                    }
-                };
-    
-                http.onerror = function(e) {
-                    Ti.API.error("Error in download Image 2");
-                    Omadi.display.doneLoading();
-                    alert("There was an error retrieving the file.");
-                };
-    
-                http.send();
-            }
-            catch(e) {
-                Omadi.display.doneLoading();
-                alert("There was an error retrieving the file.");
-                Utils.sendErrorReport("exception in retrieving large image file: " + e);
-            }
-        }
-    }
-    catch(ex){
-        Utils.sendErrorReport("exception in retrieving large image: " + ex);
-    }
+	Display.displayLargeImage(imageView, nid, file_id, showInImageView);
 };
 
 Omadi.display.getImageViewFromData = function(blobImage, maxWidth, maxHeight) {"use strict";
@@ -1465,96 +1105,12 @@ Omadi.display.openTermsOfService = function(){"use strict";
 
 // Download Image from the server
 Omadi.display.setImageViewThumbnail = function(imageView, nid, file_id) {"use strict";
-
-    var http, tempImg;
-
-    if (nid > 0 && file_id > 0) {
-        try {
-            http = Ti.Network.createHTTPClient({
-                enableKeepAlive: false,
-                validatesSecureCertificate: false
-            });
-            http.setTimeout(30000);
-            Ti.API.info(Omadi.DOMAIN_NAME + '/sync/image/thumbnail/' + nid + '/' + file_id);
-            http.open('GET', Omadi.DOMAIN_NAME + '/sync/image/thumbnail/' + nid + '/' + file_id);
-
-            Omadi.utils.setCookieHeader(http);
-
-            http.onload = function(e) {
-
-                try{
-                    imageView.setImage(this.responseData);
-                }
-                catch(ex){
-                    Utils.sendErrorReport("Exception displaying image thumbnail in Omadi.display.setImageViewThumbnail: " + ex);
-                }
-                
-                imageView.height = null;
-                imageView.width = null;
-                imageView.isImage = true;
-                imageView.thumbnailLoaded = true;
-                imageView.bigImg = null;
-            };
-
-            http.onerror = function(e) {
-                Ti.API.error("Error in download image: " + e.status + " " + e.error + " " + nid + " " + file_id);
-                imageView.image = '/images/default.png';
-            };
-
-            http.send();
-        }
-        catch(e) {
-            Ti.API.info("==== ERROR ===" + e);
-        }
-    }
+	Display.setImageViewThumbnail(imageView, nid, file_id);
 };
 
 // Download Image from the server
 Omadi.display.setImageViewVideoThumbnail = function(imageView, nid, file_id, field_name) {"use strict";
-
-    var http, tempImg, url;
-
-    if (nid > 0 && file_id > 0) {
-        try {
-            http = Ti.Network.createHTTPClient({
-                enableKeepAlive: false,
-                validatesSecureCertificate: false
-            });
-            http.setTimeout(30000);
-            
-            url = Omadi.DOMAIN_NAME + '/sync/video_file/video_thumbnail/' + nid + '/' + file_id + '/' + field_name;
-            
-            Ti.API.info(url);
-            http.open('GET', url);
-
-            Omadi.utils.setCookieHeader(http);
-
-            http.onload = function(e) {
-                
-                try{
-                    imageView.setImage(this.responseData);
-                }
-                catch(ex){
-                    imageView.setImage('/images/video_loading.png');
-                }
-                
-                imageView.height = null;
-                imageView.width = null;
-                imageView.isImage = true;
-                imageView.thumbnailLoaded = true;
-            };
-
-            http.onerror = function(e) {
-                Ti.API.error("Error in download video thumbnail: " + e.status + " " + e.error + " " + nid + " " + file_id + " " + field_name);
-                imageView.image = '/images/default.png';
-            };
-
-            http.send();
-        }
-        catch(e) {
-            Ti.API.info("==== ERROR ===" + e);
-        }
-    }
+	Display.setImageViewVideoThumbnail(imageView, nid, file_id, field_name);
 };
 
 Omadi.display.removeNotifications = function() {"use strict";
@@ -1569,7 +1125,7 @@ Omadi.display.removeNotifications = function() {"use strict";
     }
 };
 
-var loadingIndicatorWindow, loadingActivityIndicator, indicator = null;
+var loadingIndicatorWindow, loadingActivityIndicator;
 
 Omadi.display.hideLoadingIndicator = function() {"use strict";
     Ti.API.info("hiding indicator");
@@ -1603,71 +1159,11 @@ Omadi.display.showActivityIndicator = function(){"use strict";
 };
 
 Omadi.display.loading = function(message, win) {"use strict";
-    var height, width;
-    try{
-        if ( typeof message === 'undefined') {
-            message = 'Loading...';
-        }
-        
-        if(typeof win === 'undefined'){
-            win = Ti.UI.currentWindow;
-        }
-    
-        indicator = Ti.UI.createLabel({
-            top : 0,
-            bottom : 0,
-            left : 0,
-            right : 0,
-            opacity : 0.85,
-            backgroundColor : '#fff',
-            zIndex : 1000,
-            color : '#666',
-            text : message,
-            font : {
-                fontWeight : 'bold',
-                fontSize : 35
-            },
-            textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
-        });
-        
-        indicator.addEventListener('click', function(e) {
-            try{
-                e.source.hide();
-            }
-            catch(ex){
-                Utils.sendErrorReport("exception hiding the indicator: " + ex);
-            }
-        });
-        
-        Ti.UI.currentWindow.addEventListener('close', function(){
-            try{
-                if(indicator){
-                    indicator.hide();
-                    win.remove(indicator);
-                    indicator = null; 
-                }
-            }
-            catch(nothing){}
-        });
-        
-        if(indicator !== null){
-            win.add(indicator);
-        }
-    }
-    catch(nothing2){}
+    Display.loading(message, win);
 };
 
 Omadi.display.doneLoading = function() {"use strict";
-    try{
-        if (indicator !== null) {
-            indicator.hide();
-            Ti.UI.currentWindow.remove(indicator);
-            indicator = null;
-        }
-    }
-    catch(ex){
-        Utils.sendErrorReport("doneLoading: " + ex);
-    }
+    Display.doneLoading();
 };
 
 Omadi.display.showLoadingIndicator = function(show, timeout) {"use strict";

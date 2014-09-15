@@ -1,9 +1,11 @@
 /*jslint eqeq:true, plusplus: true, vars:true,nomen:true*/
 
-var Widget, Omadi;
+var Widget;
 Widget = {};
 
 var Utils = require('lib/Utils');
+var Display = require('lib/Display');
+var Database = require('lib/Database');
 
 function ExtraPriceWidget(formObj, instance, fieldViewWrapper){"use strict";
 
@@ -44,7 +46,7 @@ function ExtraPriceWidget(formObj, instance, fieldViewWrapper){"use strict";
     if ( typeof this.node[this.instance.field_name] !== 'undefined' &&
         typeof this.node[this.instance.field_name].dbValues !== 'undefined') {
             
-        if(Omadi.utils.isArray(this.node[this.instance.field_name].dbValues)){
+        if(Utils.isArray(this.node[this.instance.field_name].dbValues)){
             this.numVisibleFields = this.node[this.instance.field_name].dbValues.length;
             
             if(this.numVisibleFields == 0){
@@ -91,7 +93,7 @@ ExtraPriceWidget.prototype.getFieldView = function(){"use strict";
             title: ' Add another item ',
             right: 15,
             style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
-            backgroundGradient: Omadi.display.backgroundGradientGray,
+            backgroundGradient: Display.backgroundGradientGray,
             borderColor: '#999',
             borderWidth: 1,
             width: Ti.UI.SIZE,
@@ -1229,16 +1231,14 @@ ExtraPriceWidget.prototype.getPrices = function(descValue){"use strict";
 ExtraPriceWidget.prototype.getOptions = function() {"use strict";
     var db, result, vid, options, description;
     
-    db = Omadi.utils.openMainDatabase();
-    
     options = [];
 
-    result = db.execute("SELECT vid FROM vocabulary WHERE machine_name = '" + this.instance.settings.vocabulary + "'");
+    result = Database.query("SELECT vid FROM vocabulary WHERE machine_name = '" + this.instance.settings.vocabulary + "'");
     if(result.isValidRow()){
         vid = result.fieldByName('vid');
         result.close();
 
-        result = db.execute("SELECT name, tid, description FROM term_data WHERE vid='" + vid + "' GROUP BY name ORDER BY CAST(`weight` AS INTEGER) ASC");
+        result = Database.query("SELECT name, tid, description FROM term_data WHERE vid='" + vid + "' GROUP BY name ORDER BY CAST(`weight` AS INTEGER) ASC");
 
         while (result.isValidRow()) {
             description = result.fieldByName('description');
@@ -1260,7 +1260,7 @@ ExtraPriceWidget.prototype.getOptions = function() {"use strict";
         result.close();
     }
     
-    db.close();
+    Database.close();
 
     return options;
 };
@@ -1318,21 +1318,17 @@ ExtraPriceWidget.prototype.cleanUp = function(){"use strict";
         }
         catch(ex1){}
     }
-    
-    Omadi = null;
 };
 
 
 
-exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
-    
-    Omadi = OmadiObj;
+exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
     Widget[instance.field_name] = new ExtraPriceWidget(FormObj, instance, fieldViewWrapper);
     
     return Widget[instance.field_name];
 };
 
-exports.getView = function(Omadi, node, instance){"use strict";
+exports.getView = function(node, instance){"use strict";
     var wrapper, row, i, numRows, desc, price, dataRow, descView, priceView, descLabel, 
         priceLabel, totalPrice, details, jsonValue;
     
@@ -1349,7 +1345,7 @@ exports.getView = function(Omadi, node, instance){"use strict";
         
         if (typeof node[instance.field_name].dbValues !== 'undefined') {
                     
-            if(Omadi.utils.isArray(node[instance.field_name].dbValues)){
+            if(Utils.isArray(node[instance.field_name].dbValues)){
                 numRows = node[instance.field_name].dbValues.length;
             }
         
@@ -1378,7 +1374,7 @@ exports.getView = function(Omadi, node, instance){"use strict";
                     }
                 }
                 
-                price = Omadi.utils.formatCurrency(price);
+                price = Utils.formatCurrency(price);
                 
                 row = Ti.UI.createView({
                     width: '100%',

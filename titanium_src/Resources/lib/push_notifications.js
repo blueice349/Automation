@@ -39,7 +39,6 @@ Omadi.push_notifications.registerAndroid = function() {"use strict";
         //CloudPush.clearStatus();
     }
     catch(ex){
-        Ti.API.error("Could not clear cloudpush status: " + ex);
         Utils.sendErrorReport("Could not clear cloudpush status: " + ex);
     }
     
@@ -443,7 +442,7 @@ Omadi.push_notifications.sendACSUserId = function(acsUserID) {"use strict";
         validatesSecureCertificate: false
     });
     http.setTimeout(15000);
-    http.open('POST', Omadi.DOMAIN_NAME + '/js-notifications/push_notifications.json');
+    http.open('POST', Ti.App.DOMAIN_NAME + '/js-notifications/push_notifications.json');
 
     http.setRequestHeader("Content-Type", "application/json");
     Omadi.utils.setCookieHeader(http);

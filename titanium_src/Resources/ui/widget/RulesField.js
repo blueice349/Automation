@@ -1,7 +1,9 @@
 /*jslint eqeq:true, plusplus: true*/
 
-var Widget, Omadi;
+var Widget;
 var Utils = require('lib/Utils');
+var Database = require('lib/Database');
+var Display = require('lib/Display');
 
 Widget = {};
 
@@ -35,17 +37,17 @@ function getTimeRulesText(timeValue) {"use strict";
                             times['All Day'].push(i);
                         }
                         else {
-                            if (times[Omadi.utils.secondsToString(values[2]) + '-' + Omadi.utils.secondsToString(values[3])] == null) {
-                                times[Omadi.utils.secondsToString(values[2]) + '-' + Omadi.utils.secondsToString(values[3])] = [];
+                            if (times[Utils.secondsToString(values[2]) + '-' + Utils.secondsToString(values[3])] == null) {
+                                times[Utils.secondsToString(values[2]) + '-' + Utils.secondsToString(values[3])] = [];
                             }
     
-                            times[Omadi.utils.secondsToString(values[2]) + '-' + Omadi.utils.secondsToString(values[3])].push(i);
+                            times[Utils.secondsToString(values[2]) + '-' + Utils.secondsToString(values[3])].push(i);
                         }
                     }
                 }
             }
     
-            if (times['All Day'] != null && Omadi.utils.count(times['All Day']) == 7) {
+            if (times['All Day'] != null && Utils.count(times['All Day']) == 7) {
                 // This is equivalent to no rules, so fall through
                 Ti.API.info("NO RULES");
             }
@@ -135,7 +137,7 @@ function RulesFieldWidget(formObj, instance, fieldViewWrapper){"use strict";
     }
     
     if(this.instance.settings.cardinality == -1){
-        if(Omadi.utils.isArray(this.dbValues)){
+        if(Utils.isArray(this.dbValues)){
             this.numVisibleFields = this.dbValues.length;
         }
     }
@@ -236,29 +238,27 @@ RulesFieldWidget.prototype.getNewElement = function(index){"use strict";
                     Ti.API.debug("is not string again");
                 }
                 
-                if (Omadi.utils.isArray(nodeValue)) {
+                if (Utils.isArray(nodeValue)) {
 
                     if (nodeValue.length > 0) {
                 
                         Ti.API.debug("in with the array");
 
-                        db = Omadi.utils.openMainDatabase();
-
                         for ( i = 0; i < nodeValue.length; i++) {
                             try{
                                 violation_name = '- ALL OTHER VIOLATIONS -';
                                 if (!isNaN(nodeValue[i].tid)) {
-                                    result = db.execute('SELECT name FROM term_data WHERE tid=' + nodeValue[i].tid);
+                                    result = Database.query('SELECT name FROM term_data WHERE tid=' + nodeValue[i].tid);
                                     violation_name = result.fieldByName('name');
                                     result.close();
                                 }
     
                                 formTypes = [];
-                                if (!Omadi.utils.isArray(nodeValue[i].node_types)) {
+                                if (!Utils.isArray(nodeValue[i].node_types)) {
     
                                     for (key in nodeValue[i].node_types) {
                                         if (nodeValue[i].node_types.hasOwnProperty(key)) {
-                                            result = db.execute('SELECT display_name FROM bundles WHERE bundle_name="' + key + '"');
+                                            result = Database.query('SELECT display_name FROM bundles WHERE bundle_name="' + key + '"');
                                             if(result.isValidRow()){
                                                 formTypes.push(result.fieldByName('display_name'));
                                             }
@@ -312,7 +312,7 @@ RulesFieldWidget.prototype.getNewElement = function(index){"use strict";
                             hasRules = true;
                         }
 
-                        db.close();
+                        Database.close();
                     }
                 }
                 break;
@@ -374,7 +374,7 @@ RulesFieldWidget.prototype.showDetail = function(e) {"use strict";
             height : 30,
             width : Ti.Platform.displayCaps.platformWidth - 8,
             layout : 'horizontal',
-            backgroundGradient: Omadi.display.backgroundGradientBlue
+            backgroundGradient: Display.backgroundGradientBlue
         });
 
         headerRowLabel = Ti.UI.createLabel({
@@ -407,7 +407,7 @@ RulesFieldWidget.prototype.showDetail = function(e) {"use strict";
             text : 'Forms',
             height : 38,
             width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
-            backgroundGradient: Omadi.display.backgroundGradientGray,
+            backgroundGradient: Display.backgroundGradientGray,
             font : {
                 fontSize : 16,
                 fontWeight : 'bold'
@@ -421,7 +421,7 @@ RulesFieldWidget.prototype.showDetail = function(e) {"use strict";
             text : 'Time Rules',
             height : 38,
             width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
-            backgroundGradient: Omadi.display.backgroundGradientGray,
+            backgroundGradient: Display.backgroundGradientGray,
             font : {
                 fontSize : 16,
                 fontWeight : 'bold'
@@ -436,7 +436,7 @@ RulesFieldWidget.prototype.showDetail = function(e) {"use strict";
             text : 'Description',
             height : 38,
             width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
-            backgroundGradient: Omadi.display.backgroundGradientGray,
+            backgroundGradient: Display.backgroundGradientGray,
             font : {
                 fontFamily : 'Helvetica Neue',
                 fontSize : 16,
@@ -459,7 +459,7 @@ RulesFieldWidget.prototype.showDetail = function(e) {"use strict";
         closeLabel = Ti.UI.createLabel({
            text: 'Close',
            color: '#eee',
-           backgroundGradient: Omadi.display.backgroundGradientBlue,
+           backgroundGradient: Display.backgroundGradientBlue,
            font: {
                fontSize: 18,
                fontWeight: 'bold'
@@ -610,20 +610,16 @@ RulesFieldWidget.prototype.cleanUp = function(){"use strict";
         }
         catch(ex1){}
     }
-    
-    Omadi = null;
 };
 
-exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
-    Omadi = OmadiObj;
+exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
     Widget[instance.field_name] = new RulesFieldWidget(FormObj, instance, fieldViewWrapper);
     
     return Widget[instance.field_name];
 };
 
-exports.getView = function(OmadiObj, node, instance){"use strict";
+exports.getView = function(node, instance){"use strict";
     var formObj, widget;
-    Omadi = OmadiObj;
     
     formObj = {};
     formObj.node = node;

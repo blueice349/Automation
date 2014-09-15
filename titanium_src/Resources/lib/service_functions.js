@@ -1,10 +1,10 @@
-
-/*global Omadi,dbEsc,isJsonString*/
+/*global Omadi,dbEsc,isJsonString,AndroidSysUtil*/
 /*jslint eqeq:true,plusplus:true*/
 
 
 var Comments = require('services/Comments');
 var Utils = require('lib/Utils');
+var GeofenceServices = require('services/GeofenceServices');
 
 Omadi.service = Omadi.service || {};
 
@@ -33,7 +33,7 @@ Omadi.service.refreshSession = function() {"use strict";
                     validatesSecureCertificate: false
                 });
                 http.setTimeout(10000);
-                http.open('POST', Omadi.DOMAIN_NAME + '/js-sync/sync/refreshSession.json');
+                http.open('POST', Ti.App.DOMAIN_NAME + '/js-sync/sync/refreshSession.json');
 
                 Omadi.utils.setCookieHeader(http);
                 http.setRequestHeader("Content-Type", "application/json");
@@ -158,7 +158,7 @@ Omadi.service.setNodeViewed = function(nid) {"use strict";
         validatesSecureCertificate: false
     });
     http.setTimeout(10000);
-    http.open('POST', Omadi.DOMAIN_NAME + '/js-forms/custom_forms/viewed.json?nid=' + nid);
+    http.open('POST', Ti.App.DOMAIN_NAME + '/js-forms/custom_forms/viewed.json?nid=' + nid);
 
     Omadi.utils.setCookieHeader(http);
     http.setRequestHeader("Content-Type", "application/json");
@@ -174,8 +174,6 @@ Omadi.service.syncInitialFormItems = function(nodeCount, commentCount, numPages)
     var http, syncURL, i, max, count;
     
     try{
-        Ti.API.error("in initial form items");
-        
         count = nodeCount + commentCount;
         
         max = count + (numPages * 100);
@@ -225,9 +223,9 @@ Omadi.service.syncInitialInstallDownloadNextPage = function(){"use strict";
             Omadi.service.initialSyncProgressBar.close();
         }
         
-        Ti.API.error("NOW DO AN INCREMENTAL SYNC");
+        Ti.API.info("NOW DO AN INCREMENTAL SYNC");
         
-        Ti.API.error("last sync: " + Omadi.data.getLastUpdateTimestamp());
+        Ti.API.info("last sync: " + Omadi.data.getLastUpdateTimestamp());
         
         Omadi.service.fetchUpdates(true, true);
     }
@@ -312,7 +310,7 @@ Omadi.service.syncInitialLastProgress = 0;
 Omadi.service.syncInitialFormPage = function(page){"use strict";
     var http, syncURL;
     
-    Ti.API.error("syncing for page " + page);
+    Ti.API.info("syncing for page " + page);
     
     try{
         http = Ti.Network.createHTTPClient({
@@ -329,7 +327,7 @@ Omadi.service.syncInitialFormPage = function(page){"use strict";
             Omadi.service.syncInitialLastProgress = e.progress;
         };
         
-        syncURL = Omadi.DOMAIN_NAME + '/js-sync/download.json?sync_timestamp=0&page=' + page;
+        syncURL = Ti.App.DOMAIN_NAME + '/js-sync/download.json?sync_timestamp=0&page=' + page;
         
         http.open('GET', syncURL);
     
@@ -615,7 +613,7 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
                 
                 Ti.API.debug("lastSynctimestamp: " + lastSyncTimestamp);
                 
-                syncURL = Omadi.DOMAIN_NAME + '/js-sync/download.json?sync_timestamp=' + lastSyncTimestamp;
+                syncURL = Ti.App.DOMAIN_NAME + '/js-sync/download.json?sync_timestamp=' + lastSyncTimestamp;
                 if(lastSyncTimestamp <= 1){
                     syncURL += '&page=' + Omadi.service.initialInstallPage;    
                 }
@@ -1081,12 +1079,10 @@ Omadi.service.sendUpdates = function() {"use strict";
         currentWinStartMillis = parseInt(Ti.UI.currentWindow.appStartMillis, 10);
         
         if(isNaN(origAppStartMillis) || isNaN(currentWinStartMillis)){
-            Ti.API.error("start millis is NaN: " + currentWinStartMillis + " - " + origAppStartMillis);
             Utils.sendErrorReport("start millis is NaN: " + currentWinStartMillis + " - " + origAppStartMillis);
         }
         else{
             if(origAppStartMillis == 0 || currentWinStartMillis == 0){
-                Ti.API.error("AppStartMillis upload was zero: " + origAppStartMillis + " - " + currentWinStartMillis);
                 Utils.sendErrorReport("AppStartMillis upload was zero: " + origAppStartMillis + " - " + currentWinStartMillis);
             }
             else{
@@ -1112,12 +1108,12 @@ Omadi.service.sendUpdates = function() {"use strict";
         Utils.sendErrorReport("AppStartMillis upload was undefined, url: " + windowURL);
     }
     
-    Ti.API.error("Sending Data Now");
+    Ti.API.info("Sending Data Now");
     timestamp = Omadi.utils.getUTCTimestamp();
     
     if((timestamp - Omadi.service.lastSendUpdates) < 2){
         // Do not send updates within 2 seconds of each other
-        Ti.API.error("Not allowing data send - too soon after previous send.");
+        Ti.API.info("Not allowing data send - too soon after previous send.");
         return;
     }
     
@@ -1158,7 +1154,7 @@ Omadi.service.sendUpdates = function() {"use strict";
                 timeout: 15000
             });
             
-            http.open('POST', Omadi.DOMAIN_NAME + '/js-sync/sync.json');
+            http.open('POST', Ti.App.DOMAIN_NAME + '/js-sync/sync.json');
 
             http.setRequestHeader("Content-Type", "application/json");
             Omadi.utils.setCookieHeader(http);
@@ -1202,6 +1198,8 @@ Omadi.service.logout = function() {"use strict";
 			Utils.sendErrorReport('Error trying to clear cookies on logout. ' + error);
 		}
     }
+    
+    GeofenceServices.getInstance().unregisterAllGeofences();
     
     Omadi.service.sendLogoutRequest();
 };
@@ -1260,7 +1258,7 @@ Omadi.service.sendLogoutRequest = function(){"use strict";
             enableKeepAlive: false,
             validatesSecureCertificate: false
         });
-        http.open('POST', Omadi.DOMAIN_NAME + '/js-sync/sync/logout.json');
+        http.open('POST', Ti.App.DOMAIN_NAME + '/js-sync/sync/logout.json');
     
         //Timeout until error:
         http.setTimeout(15000);
@@ -1696,7 +1694,7 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
 
 	var now = Omadi.utils.getUTCTimestamp();
     var lastUploadStartTimestamp = Omadi.service.getLastUploadStartTimestamp();
-    var isUploadingFile = lastUploadStartTimestamp === null;
+    var isUploadingFile = lastUploadStartTimestamp !== null;
     
     // Don't try to upload a file while form data is being saved. This causes photos to get messed up.
     // Don't upload a file if another file upload has started in the last 90 seconds.
@@ -1712,7 +1710,7 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
     
     Omadi.service.currentFileUpload = Omadi.data.getNextPhotoData();
     if (!Omadi.service.currentFileUpload) {
-		Ti.API.error('Next photo data is null');
+		Ti.API.info('Next photo data is null');
 		return;
     }
     
@@ -1744,8 +1742,9 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
         Omadi.service.uploadFileHTTP.onsendstream = Omadi.service.photoUploadStream;
         Omadi.service.uploadFileHTTP.onload = Omadi.service.photoUploadSuccess;
         Omadi.service.uploadFileHTTP.onerror = Omadi.service.photoUploadError;
-        Omadi.service.uploadFileHTTP.open('POST', Omadi.DOMAIN_NAME + '/js-sync/upload.json');
         Omadi.service.uploadFileHTTP.timeout = 45000;
+        
+        Omadi.service.uploadFileHTTP.open('POST', Omadi.DOMAIN_NAME + '/js-sync/upload.json');
         
         Omadi.service.uploadFileHTTP.nid = Omadi.service.currentFileUpload.nid;
         Omadi.service.uploadFileHTTP.photoId = Omadi.service.currentFileUpload.id;
@@ -1968,7 +1967,6 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
             db.close();
         }
         catch(nothing1){
-            Ti.API.error("db would not close");
             Utils.sendErrorReport("DB WOULD NOT CLOSE");
         }
         
@@ -2005,7 +2003,7 @@ Omadi.service.checkUpdate = function(useProgressBar, userInitiated){"use strict"
     
     if((timestamp - Omadi.service.lastCheckUpdate) < 2){
         // Only allow updates within 2 seconds of each other
-        Ti.API.error("Not allowing update - too soon after previous update.");
+        Ti.API.info("Not allowing update - too soon after previous update.");
         return;
     }
     

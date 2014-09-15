@@ -1,7 +1,8 @@
 /*jslint eqeq:true, plusplus: true*/
 
-var Widget, Omadi;
+var Widget;
 var Utils = require('lib/Utils');
+var Database = require('lib/Database');
 
 Widget = {};
 
@@ -223,9 +224,8 @@ UserReferenceWidget.prototype.getOptions = function() {"use strict";
     }
 
     if (referenceable_roles.length > 0) {
-        db = Omadi.utils.openMainDatabase();
 
-        result = db.execute("SELECT u.username, u.realname, u.uid FROM user u JOIN user_roles r ON r.uid = u.uid WHERE u.uid NOT IN (0,1) AND u.status = 1 AND rid IN (" + referenceable_roles.join(",") + ") GROUP BY u.uid ORDER BY u.realname ASC");
+        result = Database.query("SELECT u.username, u.realname, u.uid FROM user u JOIN user_roles r ON r.uid = u.uid WHERE u.uid NOT IN (0,1) AND u.status = 1 AND rid IN (" + referenceable_roles.join(",") + ") GROUP BY u.uid ORDER BY u.realname ASC");
 
         if (this.instance.settings.cardinality != -1 && this.instance.required == 0) {
             options.push({
@@ -250,7 +250,7 @@ UserReferenceWidget.prototype.getOptions = function() {"use strict";
             result.next();
         }
         result.close();
-        db.close();
+        Database.close();
     }
 
     return options;
@@ -285,13 +285,9 @@ UserReferenceWidget.prototype.cleanUp = function(){"use strict";
         }
         catch(ex1){}
     }
-    
-    Omadi = null;
 };
 
-exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
-    
-    Omadi = OmadiObj;
+exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
     Widget[instance.field_name] = new UserReferenceWidget(FormObj, instance, fieldViewWrapper);
     
     return Widget[instance.field_name];

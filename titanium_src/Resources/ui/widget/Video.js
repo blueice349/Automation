@@ -1,9 +1,12 @@
 /*jslint eqeq:true,plusplus:true,vars:true*/
 
-var Widget, Omadi;
+var Widget;
 Widget = {};
 
 var Utils = require('lib/Utils');
+var Display = require('lib/Display');
+var Database = require('lib/Database');
+var Location = require('lib/Location');
 
 function VideoWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.formObj = formObj;
@@ -30,7 +33,7 @@ function VideoWidget(formObj, instance, fieldViewWrapper){"use strict";
     }
     
     if(this.instance.settings.cardinality == -1){
-        if(Omadi.utils.isArray(this.dbValues)){
+        if(Utils.isArray(this.dbValues)){
             this.numVisibleFields = this.dbValues.length;
         }
     }
@@ -87,90 +90,6 @@ VideoWidget.prototype.redraw = function(){"use strict";
     this.fieldViewWrapper.add(this.fieldView);
     this.fieldViewWrapper.remove(origFieldView);
 };
-
-// VideoWidget.prototype.getNewElement = function(index){"use strict";
-    // var widgetView, dbValue, imageData, degreeData, i, numImagesShowing = 0, contentWidth, imageNid;
-// 
-    // dbValue = [];
-    // imageData = [];
-    // degreeData = [];
-// 
-    // if ( typeof this.node[this.instance.field_name] !== 'undefined') {
-        // if ( typeof this.node[this.instance.field_name].dbValues !== 'undefined') {
-            // dbValue = this.node[this.instance.field_name].dbValues;
-        // }
-        // if ( typeof this.node[this.instance.field_name].imageData !== 'undefined') {
-            // imageData = this.node[this.instance.field_name].imageData;
-            // degreeData = this.node[this.instance.field_name].degrees;
-        // }
-    // }
-// 
-    // Ti.API.debug("Creating video field: " + this.instance.label);
-// 
-    // widgetView = Ti.UI.createScrollView({
-        // width : '92%',
-        // //***** Don't set contentWidth to anything here.  It is set further down ******/
-        // contentHeight : 100,
-        // height : 100,
-        // arrImages : null,
-        // scrollType : 'horizontal',
-        // layout : 'horizontal',
-        // instance : this.instance
-    // });
-//     
-    // imageNid = this.formObj.nid;
-    // if(typeof this.formObj.origNid !== 'undefined'){
-        // imageNid = this.formObj.origNid;
-    // }
-// 
-    // if (Omadi.utils.isArray(dbValue)) {
-        // for ( i = 0; i < dbValue.length; i++) {
-            // if (dbValue[i] > 0) {
-                // Ti.API.debug("Adding video to scroll view");
-//                  
-                // widgetView.add(this.getImageView(widgetView, i, imageNid, dbValue[i], 0));
-            // }
-        // }
-        // numImagesShowing = dbValue.length;
-    // }
-// 
-    // if (Omadi.utils.isArray(imageData)) {
-// 
-        // for ( i = 0; i < imageData.length; i++) {
-            // widgetView.add(this.getImageView(widgetView, numImagesShowing + i, imageNid, imageData[i], degreeData[i]));
-        // }
-        // numImagesShowing += imageData.length;
-    // }
-// 
-    // contentWidth = numImagesShowing * 110;
-// 
-    // if (this.instance.can_edit && (this.instance.settings.cardinality == -1 || (numImagesShowing < this.instance.settings.cardinality))) {
-//         
-        // widgetView.add(this.getImageView(widgetView, numImagesShowing, null, null, 0));
-// 
-        // contentWidth += 110;
-    // }
-// 
-    // widgetView.contentWidth = contentWidth;
-// 
-    // widgetView.check_conditional_fields = this.formObj.affectsAnotherConditionalField(this.instance);
-    // this.formObj.addCheckConditionalFields(widgetView.check_conditional_fields);
-// 
-    // if (!this.instance.can_edit) {
-        // widgetView.backgroundImage = '';
-        // widgetView.backgroundColor = '#BDBDBD';
-        // widgetView.borderColor = 'gray';
-        // widgetView.borderRadius = 10;
-        // widgetView.color = '#848484';
-        // widgetView.paddingLeft = 3;
-        // widgetView.paddingRight = 3;
-        // if (Ti.App.isAndroid) {
-            // widgetView.softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
-        // }
-    // }
-// 
-    // return widgetView;
-// };
 
 VideoWidget.prototype.getNewElement = function(index){"use strict";
     var widgetView, dbValues, imageData, degreeData, i, j, localDelta, imageNid, deltaData, thumbData;
@@ -253,9 +172,9 @@ VideoWidget.prototype.getChooseVideoButtonView = function(widgetView) {"use stri
     chooseVideoView.addEventListener('click', function(e) {
  
         e.source.setTouchEnabled(false);
-        Omadi.display.loading();
+        Display.loading();
         Widget[e.source.instance.field_name].openVideoChooser(e.source);
-        Omadi.display.doneLoading();
+        Display.doneLoading();
         
         // Allow the imageView to be touched again after waiting a little bit
         setTimeout(function(){
@@ -368,7 +287,7 @@ VideoWidget.prototype.getRemoteImageView = function(fid, index) {"use strict";
         parentView : this.elements[0]
     });
     
-    Omadi.display.setImageViewVideoThumbnail(imageView, this.getImageNid(), fid, this.instance.field_name);
+    Display.setImageViewVideoThumbnail(imageView, this.getImageNid(), fid, this.instance.field_name);
     
     imageView.addEventListener('click', function(e){
         Widget[e.source.instance.field_name].openVideoPlayer(e.source); 
@@ -380,8 +299,7 @@ VideoWidget.prototype.getRemoteImageView = function(fid, index) {"use strict";
 VideoWidget.prototype.getNonUploadedVideos = function() {"use strict";
     var localImages = {0: []};
     try {
-        var db = Omadi.utils.openListDatabase();
-        var result = db.execute('SELECT file_path, fid, degrees, thumb_path FROM _files WHERE nid IN (' + this.getImageNid() + ', ' + (this.node.continuous_nid || 0) + ', 0) AND finished = 0 AND field_name="' + this.instance.field_name + '" ORDER BY timestamp ASC');
+        var result = Database.queryList('SELECT file_path, fid, degrees, thumb_path FROM _files WHERE nid IN (' + this.getImageNid() + ', ' + (this.node.continuous_nid || 0) + ', 0) AND finished = 0 AND field_name="' + this.instance.field_name + '" ORDER BY timestamp ASC');
         
         while(result.isValidRow()) {
             
@@ -400,7 +318,7 @@ VideoWidget.prototype.getNonUploadedVideos = function() {"use strict";
         }
         
         result.close();
-        db.close();
+        Database.close();
     } catch (e) {
         Utils.sendErrorReport('Error in getNonUploadedVideos: ' + e);
     }
@@ -480,7 +398,7 @@ VideoWidget.prototype.getImageView = function(widgetView, index, nid, fid, degre
         }
     }
     else if ( typeof fid === 'number') {
-        Omadi.display.setImageViewVideoThumbnail(imageView, nid, fid, imageView.instance.field_name);
+        Display.setImageViewVideoThumbnail(imageView, nid, fid, imageView.instance.field_name);
     }
  
     imageView.addEventListener('click', function(e) {
@@ -488,9 +406,9 @@ VideoWidget.prototype.getImageView = function(widgetView, index, nid, fid, degre
         try{
             if(e.source.fid === null){
                 e.source.setTouchEnabled(false);
-                Omadi.display.loading();
+                Display.loading();
                 Widget[e.source.instance.field_name].openVideoChooser(e.source);
-                Omadi.display.doneLoading();
+                Display.doneLoading();
                 
                 // Allow the imageView to be touched again after waiting a little bit
                 setTimeout(function(){
@@ -645,7 +563,7 @@ VideoWidget.prototype.openVideoPlayer = function(imageView){"use strict";
             alert("Could not load the video: " + e.error);
         };
         
-        s3URL = Omadi.DOMAIN_NAME + '/js-file/s3/' + imageView.nid + '/' + imageView.fid + '/' + imageView.instance.field_name + '.json';
+        s3URL = Ti.App.DOMAIN_NAME + '/js-file/s3/' + imageView.nid + '/' + imageView.fid + '/' + imageView.instance.field_name + '.json';
         
         Ti.API.info("S3: " + s3URL);
         
@@ -653,7 +571,7 @@ VideoWidget.prototype.openVideoPlayer = function(imageView){"use strict";
         http.setTimeout(30000);
 
         http.setRequestHeader("Content-Type", "application/json");
-        Omadi.utils.setCookieHeader(http);
+        Utils.setCookieHeader(http);
         
         http.send();
     }
@@ -683,13 +601,13 @@ VideoWidget.prototype.openVideoChooser = function(imageView){"use strict";
                     filePath = e.intent.data;
                     source = Ti.Filesystem.getFile(filePath);
                     
-                    Omadi.display.loading("Please Wait...");
+                    Display.loading("Please Wait...");
                     
                     if(Ti.Filesystem.isExternalStoragePresent()){
-                        movieFile = Titanium.Filesystem.getFile(Titanium.Filesystem.externalStorageDirectory, "v_" + Omadi.utils.getUTCTimestamp() + '.mp4');
+                        movieFile = Titanium.Filesystem.getFile(Titanium.Filesystem.externalStorageDirectory, "v_" + Utils.getUTCTimestamp() + '.mp4');
                     }
                     else{
-                        movieFile = Titanium.Filesystem.getFile(Titanium.Filesystem.applicationDataDirectory, "v_" + Omadi.utils.getUTCTimestamp() + '.mp4');    
+                        movieFile = Titanium.Filesystem.getFile(Titanium.Filesystem.applicationDataDirectory, "v_" + Utils.getUTCTimestamp() + '.mp4');    
                     }
                     
                     source.copy(movieFile.nativePath);
@@ -731,7 +649,7 @@ VideoWidget.prototype.openVideoChooser = function(imageView){"use strict";
                         imageView = null;
                     }
                     
-                    Omadi.display.doneLoading();
+                    Display.doneLoading();
                 } 
                 else {
                     Ti.UI.createNotification({
@@ -763,9 +681,9 @@ VideoWidget.prototype.openVideoChooser = function(imageView){"use strict";
                 Ti.API.info("Media length: " + event.media.length + " bytes");
                 Ti.API.info("media type: " + event.mediaType);
                 
-                Omadi.display.loading("Please Wait...");
+                Display.loading("Please Wait...");
                 
-                videoFile = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory, "v_" + Omadi.utils.getUTCTimestamp() + '.mp4');
+                videoFile = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory, "v_" + Utils.getUTCTimestamp() + '.mp4');
                 
                 saved = videoFile.write(event.media);
                 
@@ -802,10 +720,11 @@ VideoWidget.prototype.openVideoChooser = function(imageView){"use strict";
                     imageView.image = thumbVideo.thumbnailImageAtTime(0, Ti.Media.VIDEO_TIME_OPTION_NEAREST_KEYFRAME);
                 }
                 
-                Omadi.display.doneLoading();
-                
                 // Make sure we never lose a video reference due to a crash
                 Widget[imageView.instance.field_name].formObj.saveForm('continuous');
+
+                Display.doneLoading();
+
             }
         });
     }
@@ -832,20 +751,19 @@ VideoWidget.prototype.saveFileInfo = function(imageView, filePath, thumbPath, de
         imageView.filePath = filePath;   
         imageView.thumbPath = thumbPath;
         
-        timestamp = Omadi.utils.getUTCTimestampServerCorrected();
+        timestamp = Utils.getUTCTimestampServerCorrected();
         fieldName = imageView.instance.field_name;
         imageIndex = imageView.imageIndex;
         
         Ti.API.debug("Saved Path: " + filePath);
         
-        location = Omadi.location.getLastLocation();
+        location = Location.getLastLocation();
         
-        uid = Omadi.utils.getUid();
-        clientAccount = Omadi.utils.getClientAccount();
+        uid = Utils.getUid();
+        clientAccount = Utils.getClientAccount();
 
-        db = Omadi.utils.openListDatabase();
-        db.execute("INSERT INTO _files (nid, timestamp, file_path, field_name, file_name, delta, latitude, longitude, accuracy, degrees, thumb_path, filesize, bytes_uploaded, type, uid, client_account) VALUES ('0','" + timestamp + "','" + filePath + "','" + fieldName + "','" + imageName + "'," + imageIndex + ",'" + location.latitude + "','" + location.longitude + "'," + location.accuracy + "," + degrees + ",'" + thumbPath + "'," + filesize + ",0,'" + type + "'," + uid + ",'" + clientAccount + "')");
-        db.close();
+        Database.queryList("INSERT INTO _files (nid, timestamp, file_path, field_name, file_name, delta, latitude, longitude, accuracy, degrees, thumb_path, filesize, bytes_uploaded, type, uid, client_account) VALUES ('0','" + timestamp + "','" + filePath + "','" + fieldName + "','" + imageName + "'," + imageIndex + ",'" + location.latitude + "','" + location.longitude + "'," + location.accuracy + "," + degrees + ",'" + thumbPath + "'," + filesize + ",0,'" + type + "'," + uid + ",'" + clientAccount + "')");
+        Database.close();
     }
     catch(ex) {
         Utils.sendErrorReport("Problem saving the video to the database: " + ex);
@@ -903,23 +821,18 @@ VideoWidget.prototype.cleanUp = function(){"use strict";
         }
         catch(ex1){}
     }
-    
-    Omadi = null;
 };
 
-exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
-    
-    Omadi = OmadiObj;
+exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
     Widget[instance.field_name] = new VideoWidget(FormObj, instance, fieldViewWrapper);
     
     return Widget[instance.field_name];
 };
 
-exports.openVideoPlayer = function(OmadiObj, instance, imageView){"use strict";
+exports.openVideoPlayer = function(instance, imageView){"use strict";
     var widget, formObj;
     formObj = {};
     formObj.node = {};
-    Omadi = OmadiObj;
     
     Widget[instance.field_name] = new VideoWidget(formObj, instance, null);
     

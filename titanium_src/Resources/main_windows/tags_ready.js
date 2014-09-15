@@ -1,6 +1,9 @@
 /*jslint eqeq:true, plusplus: true*/ 
 /*global Omadi */
 
+var Display = require('lib/Display');
+Display.setCurrentWindow(Ti.UI.currentWindow, 'tags_ready');
+
 Ti.include('/lib/functions.js');
 
 var curWin = Ti.UI.currentWindow;
@@ -272,7 +275,7 @@ function showSpecificTags(tags, title){"use strict";
     }
     
     if(Ti.App.isAndroid){
-        Ti.API.error("Add android menu");
+        Ti.API.info("Add android menu");
     }
     else{
         addiOSToolbar();

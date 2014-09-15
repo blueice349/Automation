@@ -1,13 +1,14 @@
 /*jslint nomen:true*/
 
 var _instance = null;
+var Utils = require('lib/Utils');
 
 function Database(){"use strict";
     this.mainDBConn = null;
     this.listDBConn = null;
     // IMPORTANT, IMPORTANT, IMPORTANT, IMPORTANT!!!!!
     // When changing this version number, also change it in the util_functions file
-    this.dbVersion = "DB1724";
+    this.dbVersion = "DB1725";
     this.mainDBName = null;
 }
 
@@ -41,6 +42,18 @@ Database.prototype.getMainDBConn = function(){"use strict";
     }
     
     return this.mainDBConn;
+};
+
+Database.prototype.getGPSDBConn = function(){"use strict";
+    if(this.gpsDBConn === null){
+		this.gpsDBConn = Ti.Database.install('/database/gps_coordinates.sqlite', this.dbVersion + "_" + this.getMainDBName() + '_GPS');
+    
+        if (Ti.App.isIOS) {
+            this.gpsDBConn.file.setRemoteBackup(false);
+        }
+    }
+    
+    return this.gpsDBConn;
 };
 
 Database.prototype.getMainDBName = function(){"use strict";
@@ -79,6 +92,16 @@ Database.prototype.closeDatabases = function(){"use strict";
             this.listDBConn = null;
         }
     }
+    
+    if(this.gpsDBConn !== null){
+        try{
+            this.gpsDBConn.close();
+        }
+        catch(ex2){}
+        finally{
+            this.gpsDBConn = null;
+        }
+    }
 };
 
 Database.prototype.escape = function(string){"use strict";
@@ -112,7 +135,7 @@ exports.query = function(sql){"use strict";
         return db.execute(sql);
     }
     catch(ex){
-        Ti.API.error("Exception running Main " + sql + ":" + ex);
+		Utils.sendErrorReport("Exception running Main " + sql + ":" + ex);
     }
 };
 
@@ -122,7 +145,17 @@ exports.queryList = function(sql){"use strict";
         return db.execute(sql);
     }
     catch(ex){
-        Ti.API.error("Exception running List " + sql + ":" + ex);
+        Utils.sendErrorReport("Exception running List " + sql + ":" + ex);
+    }
+};
+
+exports.queryGPS = function(sql){"use strict"; 
+    try{
+        var db = getInstance().getGPSDBConn();
+        return db.execute(sql);
+    }
+    catch(ex){
+        Utils.sendErrorReport("Exception running List " + sql + ":" + ex);
     }
 };
 

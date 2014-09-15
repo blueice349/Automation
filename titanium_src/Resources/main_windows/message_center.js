@@ -1,6 +1,9 @@
 //Common used functions
 Ti.include('/lib/functions.js');
 
+var Display = require('lib/Display');
+Display.setCurrentWindow(Ti.UI.currentWindow, 'message_center');
+
 var Utils = require('lib/Utils');
 
 /*global  Omadi*/

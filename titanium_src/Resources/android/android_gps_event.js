@@ -64,6 +64,10 @@ function updateCurrentLocation(e) {"use strict";
     timestamp = Omadi.utils.getUTCTimestamp();
 
     if (typeof e.coords !== 'undefined' && e.coords.latitude != 0 && e.coords.longitude != 0) {
+		Ti.App.fireEvent('locationChanged', {
+			lat: e.coords.latitude,
+			lng: e.coords.longitude
+		});
         if (e.coords.accuracy > 200) {
             time_passed = timestamp - Ti.App.Properties.getString("last_alert_popup");
             if (time_passed > 300) {
