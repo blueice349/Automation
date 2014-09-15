@@ -1694,7 +1694,7 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
 
 	var now = Omadi.utils.getUTCTimestamp();
     var lastUploadStartTimestamp = Omadi.service.getLastUploadStartTimestamp();
-    var isUploadingFile = lastUploadStartTimestamp === null;
+    var isUploadingFile = lastUploadStartTimestamp !== null;
     
     // Don't try to upload a file while form data is being saved. This causes photos to get messed up.
     // Don't upload a file if another file upload has started in the last 90 seconds.
@@ -1742,8 +1742,9 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
         Omadi.service.uploadFileHTTP.onsendstream = Omadi.service.photoUploadStream;
         Omadi.service.uploadFileHTTP.onload = Omadi.service.photoUploadSuccess;
         Omadi.service.uploadFileHTTP.onerror = Omadi.service.photoUploadError;
-        Omadi.service.uploadFileHTTP.open('POST', Ti.App.DOMAIN_NAME + '/js-sync/upload.json');
         Omadi.service.uploadFileHTTP.timeout = 45000;
+        
+        Omadi.service.uploadFileHTTP.open('POST', Omadi.DOMAIN_NAME + '/js-sync/upload.json');
         
         Omadi.service.uploadFileHTTP.nid = Omadi.service.currentFileUpload.nid;
         Omadi.service.uploadFileHTTP.photoId = Omadi.service.currentFileUpload.id;
