@@ -2202,7 +2202,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
         newWidth, newHeight, resizedFile, isResized, resizedFilePath, 
         resizeRetval, readyForUpload, restartSuggested, dialog, deleteFromDB,
         fileStream, buffer, numBytesRead, sql, position, 
-        filePart, resizedBlob, maxPhotoPixels, files, i, errorOccurred, retryEncode;
+        filePart, resizedBlob, maxPhotoPixels, files, i, incrementTries, retryEncode;
    
     nextFile = null;
     readyForUpload = true;
@@ -2213,7 +2213,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
     files = Omadi.data.getFileArray();
            
     for(i = 0; i < files.length; i ++){
-        errorOccurred = false;
+        incrementTries = false;
         
         try{
             nextFile = files[i];
@@ -2229,7 +2229,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                 
                 alert("The file at " + nextFile.file_path + " for node #" + nextFile.nid + " cannot be found for upload.");
                 
-                errorOccurred = true;
+                incrementTries = true;
             }
             else{
                 
@@ -2270,7 +2270,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                                 imageBlob = imageFile.read();
                                 
                                 if(!imageBlob){
-                                    errorOccurred = true;
+                                    incrementTries = true;
                                     Ti.API.debug("Image Blob is null");
                                     Utils.sendErrorReport("Image blob is null");
                                 } 
@@ -2282,7 +2282,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                                 // This is probably a memory error, so request a restart
                                 restartSuggested = true;
                                 
-                                errorOccurred = true;
+                                incrementTries = true;
                             }
                         }
                     }
@@ -2291,7 +2291,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                             imageBlob = imageFile.read();
                             
                             if(!imageBlob){
-                                errorOccurred = true;
+                                incrementTries = true;
                                 Ti.API.debug("Image Blob is null");
                                 Utils.sendErrorReport("Image blob is null");
                             }
@@ -2303,10 +2303,10 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                             // This is probably a memory error, so request a restart
                             restartSuggested = true;
                             
-                            errorOccurred = true;
+                            incrementTries = true;
                         }
                         
-                        if(!errorOccurred){
+                        if(!incrementTries){
                             
                             if(Ti.App.isIOS){
                                 // Resize the photo to a smaller size
@@ -2350,7 +2350,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                                 catch(ex) {
                                     Utils.sendErrorReport("Exception resizing iOS Photo: " + ex);
                                     readyForUpload = false;
-                                    errorOccurred = true;
+                                    incrementTries = true;
                                 }
                                 finally{
                                     // Clean up some memory
@@ -2395,7 +2395,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                         }
                         else{
                             Utils.sendErrorReport("Read zero bytes from stream.");
-                            errorOccurred = true;
+                            incrementTries = true;
                         }
                         
                         // Set the actual number of bytes we're uploading for this part
@@ -2407,11 +2407,11 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                     catch(exVideo){
                         Ti.API.error("Exception with video upload: " + exVideo);
                         Utils.sendErrorReport("Exception with video upload: " + exVideo);
-                        errorOccurred = true;
+                        incrementTries = true;
                     }
                 }
                 
-                if(!nextFile.loaded && !errorOccurred){
+                if(!nextFile.loaded && !incrementTries){
                     Ti.API.debug("Upload Part: " + nextFile.upload_part + "/" + nextFile.numUploadParts);
                     Ti.API.debug(nextFile);
                     
@@ -2425,14 +2425,17 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                             Utils.sendErrorReport("Exception getting text of base64 photo of size " + imageBlob.length + ": " + ex6); 
                             // This photo is not going to upload correctly
                             readyForUpload = false;
-                            errorOccurred = true;
+                            incrementTries = false;
+                            
+	                        // A memory problem is usually the culprit here.
+	                        restartSuggested = true;
                         }
                     }
                     catch(ex5){
                         Utils.sendErrorReport("Exception base64 encoding photo of size " + imageBlob.length + ": " + ex5 + ", availableMemory " + Ti.Platform.availableMemory); 
                         // This photo is not going to upload correctly
                         readyForUpload = false;
-                        errorOccurred = true;
+                        incrementTries = false;
                         
                         // A memory problem is usually the culprit here.
                         restartSuggested = true;
@@ -2445,12 +2448,12 @@ Omadi.data.getNextPhotoData = function(){"use strict";
             imageFile = null;
         }
         catch(exAll){
-            errorOccurred = true;
+            incrementTries = true;
             Ti.API.error("File error: " + exAll);
             Utils.sendErrorReport("File error: " + exAll);
         }
         
-        if(errorOccurred){
+        if(incrementTries){
             // Increment the file load tries counter
             listDB = Omadi.utils.openListDatabase();
             listDB.execute("UPDATE _files SET tries = (tries + 1) WHERE id = " + nextFile.id);
