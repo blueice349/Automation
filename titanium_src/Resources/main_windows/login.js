@@ -1,6 +1,9 @@
 /* jslint eqeq: true, plusplus: true */
 /* global Omadi, dbEsc */
 
+var Display = require('lib/Display');
+Display.setCurrentWindow(Ti.UI.currentWindow, 'login');
+
 var Omadi;
 
 // this sets the background color of every

@@ -49,6 +49,11 @@ Display.backgroundGradientGray = {
     }]
 };
 
+Display.setCurrentWindow = function(currentWindow, name) {
+	Display.currentWindow = currentWindow;
+	Display.currentWindow.name = name;
+};
+
 Display.getFileViewType = function(filename){
 
     var iOSWebviewExtensions = [], extension, htmlExtensions = [], dotIndex,
@@ -167,13 +172,23 @@ Display.openWebViewInBrowser = function(nid) {
 
 Display.loading = function(message, win) {
     var height, width;
+    
+    if (Display.indicator) {
+		return;
+    }
+    
     try{
         if ( typeof message === 'undefined') {
             message = 'Loading...';
         }
         
         if(typeof win === 'undefined'){
-            win = Ti.UI.currentWindow;
+            win = Display.currentWindow;
+            
+            if(!Display.currentWindow) {
+				Utils.sendErrorReport('Error in Display.loading: Current window not set');
+				return;
+		    }
         }
     
         Display.indicator = Ti.UI.createLabel({
@@ -190,28 +205,12 @@ Display.loading = function(message, win) {
                 fontWeight : 'bold',
                 fontSize : 35
             },
-            textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
+            textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER,
+            win : win
         });
         
-        Display.indicator.addEventListener('click', function(e) {
-            try{
-                e.source.hide();
-            }
-            catch(ex){
-                Utils.sendErrorReport("exception hiding the indicator: " + ex);
-            }
-        });
-        
-        Ti.UI.currentWindow.addEventListener('close', function(){
-            try{
-                if(Display.indicator){
-                    Display.indicator.hide();
-                    win.remove(Display.indicator);
-                    Display.indicator = null; 
-                }
-            }
-            catch(nothing){}
-        });
+        Display.indicator.addEventListener('click', Display.doneLoading);
+        Display.currentWindow.addEventListener('close', Display.doneLoading);
         
         if(Display.indicator){
             win.add(Display.indicator);
@@ -224,7 +223,7 @@ Display.doneLoading = function() {
     try{
         if (Display.indicator) {
             Display.indicator.hide();
-            Ti.UI.currentWindow.remove(Display.indicator);
+            Display.indicator.win.remove(Display.indicator);
             Display.indicator = null;
         }
     }

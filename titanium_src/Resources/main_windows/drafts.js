@@ -8,6 +8,9 @@ curWin.setBackgroundColor('#eee');
 
 var Utils = require('lib/Utils');
 
+var Display = require('lib/Display');
+Display.setCurrentWindow(Ti.UI.currentWindow, 'drafts');
+
 var tableView = null;
 var win_new;
 var tableData;

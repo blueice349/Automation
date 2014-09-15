@@ -4,6 +4,9 @@ Ti.include('/lib/functions.js');
 /*global Omadi*/
 /*jslint eqeq:true*/
 
+var Display = require('lib/Display');
+Display.setCurrentWindow(Ti.UI.currentWindow, 'actions');
+
 var curWin;
 var currentWinWrapper;
 var refreshText;

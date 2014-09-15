@@ -1,5 +1,8 @@
 var Omadi;
 
+var Display = require('lib/Display');
+Display.setCurrentWindow(Ti.UI.currentWindow, 'mainMenu');
+
 Ti.include("/lib/functions.js");
 
 var Utils = require('lib/Utils');

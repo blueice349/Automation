@@ -1,5 +1,8 @@
 /*global Omadi*/
 
+var Display = require('lib/Display');
+Display.setCurrentWindow(Ti.UI.currentWindow, 'nearMe');
+
 Ti.include('/lib/functions.js');
 
 

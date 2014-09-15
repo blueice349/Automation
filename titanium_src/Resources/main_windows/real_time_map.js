@@ -1,4 +1,8 @@
 /*global addPhotoThumbnailOptions,addPhotoWidgetOptions,addiOSToolbarSettings,addVideoSettings */
+
+var Display = require('lib/Display');
+Display.setCurrentWindow(Ti.UI.currentWindow, 'real_time_map');
+
 Ti.include('/lib/functions.js');
 
 var wrapperView;

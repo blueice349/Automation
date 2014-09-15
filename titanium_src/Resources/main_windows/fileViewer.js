@@ -9,6 +9,9 @@ var webview;
 
 curWin.setBackgroundColor("#fff");
 
+var Display = require('lib/Display');
+Display.setCurrentWindow(Ti.UI.currentWindow, 'fileViewer');
+
 var Utils = require('lib/Utils');
 
 function addIOSToolbar(){"use strict";

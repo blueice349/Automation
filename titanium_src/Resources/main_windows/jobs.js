@@ -1,6 +1,9 @@
 /*jslint eqeq:true, plusplus: true*/ 
 /*global Omadi */
 
+var Display = require('lib/Display');
+Display.setCurrentWindow(Ti.UI.currentWindow, 'jobs');
+
 Ti.include('/lib/functions.js');
 
 var Utils = require('lib/Utils');
