@@ -9,7 +9,10 @@ var Utils = function(){};
 
 exports.getUid = function(){
     var loginJson = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
-    return parseInt(loginJson.user.uid, 10);
+    if(typeof loginJson.user !== 'undefined'){
+        return parseInt(loginJson.user.uid, 10);
+    }
+    return 0;
 };
 
 exports.getUTCTimestamp = function(){
