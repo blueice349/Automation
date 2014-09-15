@@ -10,7 +10,7 @@ Omadi.data.cache.fakeFields = {};
 var Utils = require('lib/Utils');
 
 // Constants
-Omadi.data.MAX_BYTES_PER_UPLOAD = 2097152; // 2MB
+Omadi.data.MAX_BYTES_PER_UPLOAD = 1000000; // 1MB
 
 
 Omadi.data.cameraAndroid = null;
