@@ -63,11 +63,13 @@ PointGeofence.prototype._calculateBoundingBox = function(lat, lng, radiusInMeter
 PointGeofence.newFromDB = function(formType, addressField, radiusInMeters) {
 	var data = [], geofences = [];
 	try {
-		data = PointGeofence._getDataFromDB(formType, addressField);
-		
-		var i;
-		for (i = 0; i < data.length; i++) {
-			geofences.push(new PointGeofence(data[i].nid, formType, data[i].lat, data[i].lng, radiusInMeters));
+		if (this._hasRunsheets()) {
+			data = PointGeofence._getDataFromDB(formType, addressField);
+			
+			var i;
+			for (i = 0; i < data.length; i++) {
+				geofences.push(new PointGeofence(data[i].nid, formType, data[i].lat, data[i].lng, radiusInMeters));
+			}
 		}
 	} catch(error) {
 		Ti.API.error('Error in PointGeofence.newFromDB: ' + error);
@@ -101,6 +103,11 @@ PointGeofence._getDataFromDB = function(formType, addressField) {
 	Database.close();
 	
 	return data;
+};
+
+PointGeofence._hasRunsheets = function() {
+	var result = Database.query("SELECT * FROM node WHERE table_name = 'runsheet'");
+	return result.isValidRow();
 };
 
 module.exports = PointGeofence;

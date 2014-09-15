@@ -5,8 +5,6 @@ var Utils = require('lib/Utils');
 
 var Display = function() {};
 
-Display.indicator = null;
-
 Display.backgroundGradientBlue = {
     type : 'linear',
     startPoint : {
@@ -215,7 +213,7 @@ Display.loading = function(message, win) {
             catch(nothing){}
         });
         
-        if(Display.indicator !== null){
+        if(Display.indicator){
             win.add(Display.indicator);
         }
     }
@@ -224,7 +222,7 @@ Display.loading = function(message, win) {
 
 Display.doneLoading = function() {
     try{
-        if (Display.indicator !== null) {
+        if (Display.indicator) {
             Display.indicator.hide();
             Ti.UI.currentWindow.remove(Display.indicator);
             Display.indicator = null;
@@ -348,7 +346,7 @@ Display.showBigImage = function(imageView) {
         scrollView, picBlob, toolbar, isRotated, back, space, label, 
         timestamp, webView, imageData, imageFile;
     
-    if(Display.largePhotoWindow === null){
+    if(!Display.largePhotoWindow){
         
         try{
             Display.largePhotoWindow = Ti.UI.createWindow({
@@ -469,31 +467,6 @@ Display.showBigImage = function(imageView) {
             Utils.sendErrorReport("Exception showing large photo: " + ex1);
         }
     }
-};
-
-Display.openViewWindow = function(type, nid, allowActions) {
-    var isDispatch, viewWindow, NodeViewTabs;
-    
-    if (typeof allowActions == 'undefined') {
-        allowActions = true;
-    }
-    
-    Display.loading();
-            
-    NodeViewTabs = require('ui/NodeViewTabs');
-    viewWindow = NodeViewTabs.getTabs(Omadi, type, nid, allowActions);
-    
-    if(viewWindow){
-        viewWindow.addEventListener('open', Omadi.display.doneLoading);
-        viewWindow.open();
-    }
-    else{
-        Utils.sendErrorReport("Could not open dispatch form window");
-        alert("Could not open the view.");
-        Omadi.display.doneLoading();
-    }
-
-    return viewWindow;
 };
 
 Display.displayLargeImage = function(imageView, nid, file_id, showInImageView) {

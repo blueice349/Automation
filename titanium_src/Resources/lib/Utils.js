@@ -1780,9 +1780,13 @@ exports.getCurrentVehicleNid = function(){
     
     nid = 0;
     
-    result = Database.query("SELECT in_vehicle_nid FROM history WHERE id_hist=1");
-    if(result.isValidRow()){
-        nid = result.field(0, Ti.Database.FIELD_TYPE_INT);
+    try {
+	    result = Database.queryList("SELECT in_vehicle_nid FROM history WHERE id_hist=1");
+	    if(result.isValidRow()){
+	        nid = result.field(0, Ti.Database.FIELD_TYPE_INT);
+	    }
+    } catch (error) {
+		Utils.sendErrorReport('Error in getCurrentVehicleNid: ' + error);
     }
     result.close();
     Database.close();
@@ -1796,12 +1800,16 @@ exports.getCurrentVehicleName = function(){
     nid = exports.getCurrentVehicleNid();
     name = null;
     
-    if(nid > 0){
-        result = Database.query("SELECT title FROM node WHERE nid = " + nid);
-        if(result.isValidRow()){
-            name = result.field(0);
-        }
-        result.close();
+    try {
+	    if(nid > 0){
+	        result = Database.query("SELECT title FROM node WHERE nid = " + nid);
+	        if(result.isValidRow()){
+	            name = result.field(0);
+	        }
+	        result.close();
+	    }
+    } catch (error) {
+		Utils.sendErrorReport('Error in getCurrentVehicleName: ' + error);
     }
     
     Database.close();

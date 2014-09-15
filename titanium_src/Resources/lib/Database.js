@@ -1,13 +1,14 @@
 /*jslint nomen:true*/
 
 var _instance = null;
+var Utils = require('lib/Utils');
 
 function Database(){"use strict";
     this.mainDBConn = null;
     this.listDBConn = null;
     // IMPORTANT, IMPORTANT, IMPORTANT, IMPORTANT!!!!!
     // When changing this version number, also change it in the util_functions file
-    this.dbVersion = "DB1724";
+    this.dbVersion = "DB1725";
     this.mainDBName = null;
 }
 
@@ -134,7 +135,7 @@ exports.query = function(sql){"use strict";
         return db.execute(sql);
     }
     catch(ex){
-        Ti.API.error("Exception running Main " + sql + ":" + ex);
+		Utils.sendErrorReport("Exception running Main " + sql + ":" + ex);
     }
 };
 
@@ -144,7 +145,7 @@ exports.queryList = function(sql){"use strict";
         return db.execute(sql);
     }
     catch(ex){
-        Ti.API.error("Exception running List " + sql + ":" + ex);
+        Utils.sendErrorReport("Exception running List " + sql + ":" + ex);
     }
 };
 
@@ -154,7 +155,7 @@ exports.queryGPS = function(sql){"use strict";
         return db.execute(sql);
     }
     catch(ex){
-        Ti.API.error("Exception running List " + sql + ":" + ex);
+        Utils.sendErrorReport("Exception running List " + sql + ":" + ex);
     }
 };
 

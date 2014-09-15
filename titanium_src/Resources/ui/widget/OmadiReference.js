@@ -672,7 +672,7 @@ OmadiReferenceWidget.prototype.cleanUp = function(){"use strict";
     }
     catch(ex){
         try{
-            Utils.sendErrorReport("Exception cleaning up integer widget field: " + ex);
+            Utils.sendErrorReport("Exception cleaning up Omadi Reference widget field: " + ex);
         }
         catch(ex1){}
     }

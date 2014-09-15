@@ -10,7 +10,7 @@ Ti.App.DOMAIN_NAME = domainName;
 
 // IMPORTANT, IMPORTANT, IMPORTANT, IMPORTANT!!!!!
 // When changing this version number, also change it in the Database module
-Omadi.DB_VERSION = "DB1724";
+Omadi.DB_VERSION = "DB1725";
 // IMPORTANT, IMPORTANT, IMPORTANT, IMPORTANT!!!!!
 
 Omadi.utils.closeAppWaitingDialogShown = false;
