@@ -250,23 +250,23 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
         
         element.addEventListener('blur', function(e) {
             try{
-                e.source.autocomplete_table.setBorderWidth(0);
-                e.source.autocomplete_table.setHeight(0);
-                e.source.autocomplete_table.setVisible(false);
-                e.source.blurred = true;
+				if (element.autocomplete_table) {
+	                element.autocomplete_table.setBorderWidth(0);
+	                element.autocomplete_table.setHeight(0);
+	                element.autocomplete_table.setVisible(false);
+				}
+                element.blurred = true;
                 
-                if(typeof e.source.instance.settings.restrict_new_autocomplete_terms !== 'undefined' && 
-                    e.source.instance.settings.restrict_new_autocomplete_terms == 1 && 
-                    e.source.dbValue === null && 
-                    e.source.value > ""){
-                        
+                if (element.instance &&
+					element.instance.settings &&
+                    element.instance.settings.restrict_new_autocomplete_terms == 1 && 
+                    element.dbValue === null && 
+                    element.value > ""){
                         alert("The value \"" + e.source.value + "\" will not be saved for the \"" + e.source.instance.label + "\" field because new items have been disabled by the administrator.");
                 }
             }
             catch(ex){
-                try{
-                    Utils.sendErrorReport("exception in taxonomy term blur: " + ex);
-                }catch(ex1){}
+                Utils.sendErrorReport("exception in taxonomy term blur: " + ex);
             }
         });
         

@@ -182,8 +182,8 @@ Omadi.print.chargeCard = function(nid){"use strict";
                    dialog.addEventListener('click', function(e){
                        var portName, commands;
                        try{
-                           if(e.index >= 0 && e.index != e.source.cancel){
-                                portName = e.source.origPortNames[e.index];
+                           if(e.index >= 0 && e.index != dialog.cancel){
+                                portName = dialog.origPortNames[e.index];
                                 
                                 Ti.App.Properties.setString("omadi:printerPortName", portName);
                                 
@@ -248,8 +248,8 @@ Omadi.print.printReceipt = function(nid){"use strict";
                    dialog.addEventListener('click', function(e){
                        var portName, commands;
                        try{
-                           if(e.index >= 0 && e.index != e.source.cancel){
-                                portName = e.source.origPortNames[e.index];
+                           if(e.index >= 0 && e.index != dialog.cancel){
+                                portName = dialog.origPortNames[e.index];
                                 
                                 Ti.App.Properties.setString("omadi:printerPortName", portName);
                                 

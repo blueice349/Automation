@@ -3250,7 +3250,7 @@ FormModule.prototype.changeViolationFieldOptions = function(args){"use strict";
         if(parentNidDBValues.length > 0){
             parentNid = parentNidDBValues[0];
             if(parentNid > 0){
-                
+
                 try{
                     db = Omadi.utils.openMainDatabase();
                     result = db.execute('SELECT table_name FROM node WHERE nid = ' + parentNid);
@@ -3263,7 +3263,7 @@ FormModule.prototype.changeViolationFieldOptions = function(args){"use strict";
                     db.close();
                 }
                 catch(exDB){
-                    Omadi.service.sendErrorRepot("Exception getting violation data: " + exDB);
+                    Utils.sendErrorReport("Exception getting violation data: " + exDB);
                     try{
                         db.close();
                     }
@@ -3338,7 +3338,7 @@ FormModule.prototype.changeViolationFieldOptions = function(args){"use strict";
                                 options.push(violationTerms[i]);
                             }
                         }  
-                        
+
                         /**** START SETTING CURRENT FORM DEFAULT VALUES *****/
                         violationDBValues = this.getDBValues(this.fieldWrappers[violation_field_name]);
                         
@@ -3776,14 +3776,7 @@ FormModule.prototype.getTextField = function(instance){"use strict";
     });
     
     textField.addEventListener('blur', function(e){
-        try{
-            e.source.setBackgroundColor('#fff');
-        }
-        catch(ex){
-            try{
-                Utils.sendErrorReport("exception in text field in form blur: " + ex);
-            }catch(ex1){}
-        }
+        textField.setBackgroundColor('#fff');
     });
     
     return textField;

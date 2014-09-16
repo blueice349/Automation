@@ -43,7 +43,7 @@ exports.getCookie = function(fullCookie){
         }
     }
     catch(ex){
-        exports.sendErrorReport("Exception getting cookie: " + ex);
+        sendErrorReport("Exception getting cookie: " + ex);
     }
     
     return cookie;
@@ -63,14 +63,14 @@ exports.setCookieHeader = function(http) {
             Ti.API.debug("After setting header");
         }
         catch(ex){
-            exports.sendErrorReport("Could not set cookie for " + http.location);
+            sendErrorReport("Could not set cookie for " + http.location);
         }
     }
     
     Ti.API.debug("End of cookie header");
 };
 
-exports.sendErrorReport = function(message){
+var sendErrorReport = function(message){
     var http, uid, domain, appVersion, platform, model, version;
     
     Ti.API.error("ERROR: " + message);
@@ -112,6 +112,8 @@ exports.sendErrorReport = function(message){
         message: message
     }));
 };
+
+exports.sendErrorReport = sendErrorReport;
 
 exports.getTimeFormat = function(){
     var format, loginJson = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
@@ -373,7 +375,7 @@ exports.setCookie = function(cookie) {
     }
     catch(ex){
 		if (Ti.App.isAndroid) {
-			exports.sendErrorReport("Exception setting cookies for web view: " + ex);
+			sendErrorReport("Exception setting cookies for web view: " + ex);
 		}
     }
     return false;
@@ -1602,7 +1604,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
         // No conditions exist, so the row matches
     }
     catch(e) {
-        exports.sendErrorReport("Exception in matching search criteria: " + e);
+        sendErrorReport("Exception in matching search criteria: " + e);
     }
 
     return true;
@@ -1786,7 +1788,7 @@ exports.getCurrentVehicleNid = function(){
 	        nid = result.field(0, Ti.Database.FIELD_TYPE_INT);
 	    }
     } catch (error) {
-		exports.sendErrorReport('Error in getCurrentVehicleNid: ' + error);
+		sendErrorReport('Error in getCurrentVehicleNid: ' + error);
     }
     result.close();
     Database.close();
@@ -1809,7 +1811,7 @@ exports.getCurrentVehicleName = function(){
 	        result.close();
 	    }
     } catch (error) {
-		exports.sendErrorReport('Error in getCurrentVehicleName: ' + error);
+		sendErrorReport('Error in getCurrentVehicleName: ' + error);
     }
     
     Database.close();

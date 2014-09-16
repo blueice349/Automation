@@ -851,7 +851,7 @@ Omadi.bundles.dispatch.showUpdateStatusDialog = function(args){"use strict";
             
             statusDialog.addEventListener('click', function(e){
                 try{
-                    if(e.index >= 0 && e.index != e.source.cancel){
+                    if(e.index >= 0 && e.index != statusDialog.cancel){
                         var status = statusOptions[e.index].dbValue;
                         
                         if(statusOptions[e.index].nextPart){
@@ -927,7 +927,7 @@ Omadi.bundles.dispatch.showDiscontinueJobDialog = function(args){"use strict";
                 
                 discontinueDialog.addEventListener('click', function(e){
                     try{
-                        if(e.index >= 0 && e.index != e.source.cancel){
+                        if(e.index >= 0 && e.index != discontinueDialog.cancel){
                             var status = discontinueOptions[e.index].dbValue;
                             Omadi.bundles.dispatch.discontinueJob(nid, status);
                         }
