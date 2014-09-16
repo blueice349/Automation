@@ -723,10 +723,9 @@ VideoWidget.prototype.openVideoChooser = function(imageView){"use strict";
                 }
                 
 
-                Display.doneLoading();
-
                 // Make sure we never lose a video reference due to a crash
                 self.formObj.saveForm('continuous');
+                Display.doneLoading();
             }
         });
     }
