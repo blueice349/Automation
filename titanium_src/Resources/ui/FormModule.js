@@ -3258,7 +3258,6 @@ FormModule.prototype.changeViolationFieldOptions = function(args){"use strict";
                     result.close();
                     
                     result = db.execute('SELECT ' + rules_parent_field_name + ' FROM ' + parentNodeType + ' WHERE nid = ' + parentNid);
-                    Ti.API.info('------ rules_parent_field_name: ' + rules_parent_field_name + ', parentNodeType: ' + parentNodeType + ', parentNid: ' + parentNid);
                     origRulesData = result.fieldByName(rules_parent_field_name);
                     result.close();
                     db.close();
