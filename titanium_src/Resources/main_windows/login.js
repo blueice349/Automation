@@ -278,10 +278,12 @@ function updateUploadBytes(){"use strict";
         for(i = 0; i < cookies.length; i ++){
             http = Ti.Network.createHTTPClient({
                 enableKeepAlive: false,
-                validatesSecureCertificate: false
+                validatesSecureCertificate: false,
+                timeout: 15000
             });
+            
             http.open('POST', Ti.App.DOMAIN_NAME + '/js-sync/sync/logout.json');
-            http.setTimeout(15000);
+            
             http.setRequestHeader("Content-Type", "application/json");
             
             if(cookies[i] > ""){
@@ -644,29 +646,29 @@ function openMainScreen(loggedIn){"use strict";
 
         portal.addEventListener('focus', function(e) {
             scrollBoxesToTop();
-            e.source.backgroundColor = '#def';
+            portal.backgroundColor = '#def';
         });
         
         portal.addEventListener('blur', function(e) {
-            e.source.backgroundColor = '#fff';
+            portal.backgroundColor = '#fff';
         });
 
         usernameField.addEventListener('focus', function(e) {
             scrollBoxesToTop();
-            e.source.backgroundColor = '#def';
+            usernameField.backgroundColor = '#def';
         });
         
         usernameField.addEventListener('blur', function(e) {
-            e.source.backgroundColor = '#fff';
+            usernameField.backgroundColor = '#fff';
         });
 
         passwordField.addEventListener('focus', function(e) {
             scrollBoxesToTop();
-            e.source.backgroundColor = '#def';
+            passwordField.backgroundColor = '#def';
         });
         
         passwordField.addEventListener('blur', function(e) {
-            e.source.backgroundColor = '#fff';
+            passwordField.backgroundColor = '#fff';
         });
 
         Ti.UI.currentWindow.addEventListener('focus', function() {

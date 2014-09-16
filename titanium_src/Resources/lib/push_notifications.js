@@ -439,9 +439,10 @@ Omadi.push_notifications.sendACSUserId = function(acsUserID) {"use strict";
 
     var http = Ti.Network.createHTTPClient({
         enableKeepAlive: false,
-        validatesSecureCertificate: false
+        validatesSecureCertificate: false,
+        timeout: 15000
     });
-    http.setTimeout(15000);
+    
     http.open('POST', Ti.App.DOMAIN_NAME + '/js-notifications/push_notifications.json');
 
     http.setRequestHeader("Content-Type", "application/json");

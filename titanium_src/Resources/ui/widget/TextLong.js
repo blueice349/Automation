@@ -227,12 +227,7 @@ TextLongWidget.prototype.getNewElement = function(index){"use strict";
     });
     
     element.addEventListener('blur', function(e){
-        try{
-            e.source.setBackgroundColor('#fff');
-        }
-        catch(ex){
-            Utils.sendErrorReport("exception in text long blur: " + ex);
-        }
+        element.setBackgroundColor('#fff');
     });
     
     return element;

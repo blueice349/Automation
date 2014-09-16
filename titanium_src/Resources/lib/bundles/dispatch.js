@@ -194,9 +194,10 @@ Omadi.bundles.dispatch.acceptJob = function(args){"use strict";
             
             http = Ti.Network.createHTTPClient({
                 enableKeepAlive: false,
-                validatesSecureCertificate: false
+                validatesSecureCertificate: false,
+                timeout: 15000
             });
-            http.setTimeout(15000);
+            
             http.open('POST', Ti.App.DOMAIN_NAME + '/js-dispatch/dispatch/accept_job.json');
         
             http.setRequestHeader("Content-Type", "application/json");
@@ -632,9 +633,10 @@ Omadi.bundles.dispatch.updateStatus = function(nid, status, background){"use str
         
         http = Ti.Network.createHTTPClient({
             enableKeepAlive: false,
-            validatesSecureCertificate: false
+            validatesSecureCertificate: false,
+            timeout: 15000
         });
-        http.setTimeout(15000);
+        
         http.open('POST', Ti.App.DOMAIN_NAME + '/js-dispatch/dispatch/update_status.json');
     
         http.setRequestHeader("Content-Type", "application/json");
@@ -727,9 +729,10 @@ Omadi.bundles.dispatch.discontinueJob = function(nid, status, background){"use s
         
         http = Ti.Network.createHTTPClient({
             enableKeepAlive: false,
-            validatesSecureCertificate: false
+            validatesSecureCertificate: false,
+            timeout: 15000
         });
-        http.setTimeout(15000);
+
         http.open('POST', Ti.App.DOMAIN_NAME + '/js-dispatch/dispatch/discontinue_job.json');
     
         http.setRequestHeader("Content-Type", "application/json");
@@ -848,7 +851,7 @@ Omadi.bundles.dispatch.showUpdateStatusDialog = function(args){"use strict";
             
             statusDialog.addEventListener('click', function(e){
                 try{
-                    if(e.index >= 0 && e.index != e.source.cancel){
+                    if(e.index >= 0 && e.index != statusDialog.cancel){
                         var status = statusOptions[e.index].dbValue;
                         
                         if(statusOptions[e.index].nextPart){
@@ -924,7 +927,7 @@ Omadi.bundles.dispatch.showDiscontinueJobDialog = function(args){"use strict";
                 
                 discontinueDialog.addEventListener('click', function(e){
                     try{
-                        if(e.index >= 0 && e.index != e.source.cancel){
+                        if(e.index >= 0 && e.index != discontinueDialog.cancel){
                             var status = discontinueOptions[e.index].dbValue;
                             Omadi.bundles.dispatch.discontinueJob(nid, status);
                         }

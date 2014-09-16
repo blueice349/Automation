@@ -343,25 +343,24 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
             this.autocompleteTables[index] = autocomplete_table;
             
             descView.addEventListener('focus', function(e){
-               e.source.touched = true; 
+               descView.touched = true; 
             });
             
             descView.addEventListener('click', function(e){
-               e.source.touched = true; 
+               descView.touched = true; 
             });
             
             descView.addEventListener('blur', function(e) {
                 var widget, autocompleteTable;
                 try{
-                    widget = self;
-                    if (widget) {
-	                    autocompleteTable = widget.autocompleteTables[e.source.delta];
+                    if (self.autocompleteTables && self.autocompleteTables[e.source.delta]) {
+	                    autocompleteTable = self.autocompleteTables[e.source.delta];
 	                    
 	                    autocompleteTable.setBorderWidth(0);
 	                    autocompleteTable.setHeight(0);
 	                    autocompleteTable.setVisible(false);
                     }
-                    e.source.blurred = true;
+                    descView.blurred = true;
                 }
                 catch(ex){
                     try{
