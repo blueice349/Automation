@@ -1,10 +1,6 @@
 /*jslint eqeq:true, plusplus: true*/
 
-var Widget;
-
 var Utils = require('lib/Utils');
-
-Widget = {};
 
 function LicensePlateWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.formObj = formObj;
@@ -84,7 +80,8 @@ LicensePlateWidget.prototype.redraw = function(){"use strict";
 LicensePlateWidget.prototype.getNewElementWrapper = function(index){"use strict";
     var settings, widgetView, wrapper, dbValue, textValue, part, nameParts, real_field_name, i, 
         options, states, duplicateWarningButtonWrapper, duplicateWarningButton;
-
+	var self = this;
+	
     nameParts = this.instance.field_name.split('___');
 
     if (nameParts[1]) {
@@ -217,7 +214,7 @@ LicensePlateWidget.prototype.getNewElementWrapper = function(index){"use strict"
                     if(typeof e.source.lastValue === 'undefined' || typeof e.source.value === 'undefined' || 
                               e.source.lastValue == "" || e.source.value == ""){
                         Ti.API.debug("Checking conditionally required");
-                        Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
+                        self.formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
                     }
                 }
 
@@ -235,35 +232,30 @@ LicensePlateWidget.prototype.getNewElementWrapper = function(index){"use strict"
                             value = value.trim();
                             
                             if(value.length > 0){
-                                if(typeof Widget[fieldName] !== 'undefined'){
-                                    widget = Widget[fieldName];
-                                    formPart = widget.formObj.form_part;
+                                widget = self;
+                                formPart = widget.formObj.form_part;
+                                
+                                if(formPart <= 0){
+                                
+                                    origLastChange = now;
+                                
+                                    actualLastChange = widget.elements[0].lastChange;
                                     
-                                    if(formPart <= 0){
-                                    
-                                        origLastChange = now;
-                                    
-                                        actualLastChange = widget.elements[0].lastChange;
+                                    if(origLastChange == actualLastChange){
+                                        // The last change happened 5 seconds ago, so possibly send request if it hasn't been sent before
                                         
-                                        if(origLastChange == actualLastChange){
-                                            // The last change happened 5 seconds ago, so possibly send request if it hasn't been sent before
+                                        if(typeof widget.duplicateWarnings[value] === 'undefined'){
+                                            Ti.API.debug("Send Request baby!");    
                                             
-                                            if(typeof widget.duplicateWarnings[value] === 'undefined'){
-                                                Ti.API.debug("Send Request baby!");    
-                                                
-                                                widget.setDuplicateWarnings(fieldName, value, 'silent');
-                                            }
-                                            else{
-                                                Ti.API.debug("Already have the warning cached for " + value);
-                                            }
+                                            widget.setDuplicateWarnings(fieldName, value, 'silent');
                                         }
-                                    }
-                                    else{
-                                        Ti.API.debug("Duplicate form part above 0");
+                                        else{
+                                            Ti.API.debug("Already have the warning cached for " + value);
+                                        }
                                     }
                                 }
                                 else{
-                                    Ti.API.error("duplicate widget " + fieldName + " doesn't exist");
+                                    Ti.API.debug("Duplicate form part above 0");
                                 }
                             }
                             else{
@@ -303,15 +295,10 @@ LicensePlateWidget.prototype.getNewElementWrapper = function(index){"use strict"
                 try{
                     fieldName = e.source.instance.field_name;
                     
-                    if(typeof Widget[fieldName] !== 'undefined'){
-                        widget = Widget[fieldName];
-                        // Make sure the node object is populated correctly since this is not a regular save
-                        widget.formObj.formToNode();
-                        widget.formObj.showDuplicateWarnings(null);
-                    }
-                    else{
-                        Ti.API.error("duplicate widget " + fieldName + " doesn't exist");
-                    }
+                    widget = self;
+                    // Make sure the node object is populated correctly since this is not a regular save
+                    widget.formObj.formToNode();
+                    widget.formObj.showDuplicateWarnings(null);
                 }
                 catch(ex){
                     Utils.sendErrorReport("Exception in duplicate warning timeout: " + ex);
@@ -347,7 +334,7 @@ LicensePlateWidget.prototype.getNewElementWrapper = function(index){"use strict"
         widgetView.addEventListener('click', function(e) {
             try{
                 var postDialog = Titanium.UI.createOptionDialog({
-                    title: Widget[e.source.instance.field_name].formObj.labelViews[e.source.instance.field_name].text
+                    title: self.formObj.labelViews[e.source.instance.field_name].text
                 });
                 
                 postDialog.options = e.source.options;
@@ -386,13 +373,15 @@ LicensePlateWidget.prototype.getNewElementWrapper = function(index){"use strict"
 LicensePlateWidget.prototype.setDuplicateWarnings = function(fieldName, value, saveType){"use strict";
     
     var http, actualFieldName;
+    var self = this;
     
     try{
         http = Ti.Network.createHTTPClient({
             enableKeepAlive: false,
-            validatesSecureCertificate: false
+            validatesSecureCertificate: false,
+            timeout: 10000
         });
-        http.setTimeout(10000);
+        
         http.open('POST', Ti.App.DOMAIN_NAME + '/js-fields/omadi_fields/duplicate_warnings.json');
     
         Utils.setCookieHeader(http);
@@ -406,19 +395,16 @@ LicensePlateWidget.prototype.setDuplicateWarnings = function(fieldName, value, s
                 
                 json = JSON.parse(this.responseText);
                 
-                if(typeof Widget[fieldName] !== 'undefined'){
+                self.duplicateWarnings[value] = json;
                 
-                    Widget[fieldName].duplicateWarnings[value] = json;
-                    
-                    if(typeof Widget[fieldName].formObj !== 'undefined'){
-                        Widget[fieldName].formObj.win.fireEvent('duplicateWarningComplete', {
-                            json: json,
-                            fieldName: fieldName,
-                            value: value,
-                            saveType: saveType
-                        });
-                    }
-                }
+                if(typeof self.formObj !== 'undefined'){
+                    self.formObj.win.fireEvent('duplicateWarningComplete', {
+                        json: json,
+                        fieldName: fieldName,
+                        value: value,
+                        saveType: saveType
+                    });
+                }            
             }
             catch(ex){
                 Utils.sendErrorReport("Exception on onload of setDuplicateWarnings: " + ex);
@@ -434,7 +420,7 @@ LicensePlateWidget.prototype.setDuplicateWarnings = function(fieldName, value, s
         http.send(JSON.stringify({
             field_name: actualFieldName,
             value: value,
-            nid: Widget[fieldName].formObj.nid
+            nid: self.formObj.nid
         }));
     }
     catch(ex){
@@ -661,8 +647,6 @@ LicensePlateWidget.prototype.cleanUp = function(){"use strict";
     Ti.API.debug("in license plate widget cleanup");
     
     try{
-        Widget[this.instance.field_name] = null;
-        
         for(j = 0; j < this.elementWrappers.length; j ++){
             
             this.elementWrappers[j].remove(this.elements[j]);
@@ -692,9 +676,8 @@ LicensePlateWidget.prototype.cleanUp = function(){"use strict";
 };
 
 exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
-    Widget[instance.field_name] = new LicensePlateWidget(FormObj, instance, fieldViewWrapper);
     
-    return Widget[instance.field_name];
+    return new LicensePlateWidget(FormObj, instance, fieldViewWrapper);
 };
 
 

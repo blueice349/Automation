@@ -1,10 +1,6 @@
 /*jslint eqeq:true, plusplus: true*/
 
-var Widget;
-
 var Utils = require('lib/Utils');
-
-Widget = {};
 
 function ListBooleanWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.formObj = formObj;
@@ -107,6 +103,7 @@ ListBooleanWidget.prototype.redraw = function(){"use strict";
 
 ListBooleanWidget.prototype.getNewElement = function(index){"use strict";
     var dbValue, textValue, element;
+    var self = this;
     
     dbValue = "0";
     textValue = "";
@@ -181,7 +178,7 @@ ListBooleanWidget.prototype.getNewElement = function(index){"use strict";
                 }
     
                 if (e.source.check_conditional_fields.length > 0) {
-                    Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
+                    self.formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
                 }
             }
         }
@@ -198,9 +195,6 @@ ListBooleanWidget.prototype.cleanUp = function(){"use strict";
     Ti.API.debug("in checkbox widget cleanup");
     
     try{
-        
-        Widget[this.instance.field_name] = null;
-        
         for(j = 0; j < this.elements.length; j ++){
             this.fieldView.remove(this.elements[j]);
             this.elements[j] = null;
@@ -226,9 +220,7 @@ ListBooleanWidget.prototype.cleanUp = function(){"use strict";
 };
 
 exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
-    Widget[instance.field_name] = new ListBooleanWidget(FormObj, instance, fieldViewWrapper);
-    
-    return Widget[instance.field_name];
+    return new ListBooleanWidget(FormObj, instance, fieldViewWrapper);
 };
 
 

@@ -240,9 +240,10 @@ Display.setImageViewThumbnail = function(imageView, nid, file_id) {
         try {
             http = Ti.Network.createHTTPClient({
                 enableKeepAlive: false,
-                validatesSecureCertificate: false
+                validatesSecureCertificate: false,
+                timeout: 30000
             });
-            http.setTimeout(30000);
+            
             Ti.API.info(Ti.App.DOMAIN_NAME + '/sync/image/thumbnail/' + nid + '/' + file_id);
             http.open('GET', Ti.App.DOMAIN_NAME + '/sync/image/thumbnail/' + nid + '/' + file_id);
 
@@ -294,9 +295,10 @@ Display.displayFullImage = function(imageView) {
             try {
                 http = Ti.Network.createHTTPClient({
                     enableKeepAlive: false,
-                    validatesSecureCertificate: false
+                    validatesSecureCertificate: false,
+                    timeout: 30000
                 });
-                http.setTimeout(30000);
+                
                 http.open('GET', Ti.App.DOMAIN_NAME + '/sync/file/' + imageView.nid + '/' + imageView.fid);
     
                 Utils.setCookieHeader(http);
@@ -491,9 +493,10 @@ Display.displayLargeImage = function(imageView, nid, file_id, showInImageView) {
             try {
                 http = Ti.Network.createHTTPClient({
                     enableKeepAlive: false,
-                    validatesSecureCertificate: false
+                    validatesSecureCertificate: false,
+                    timeout: 30000
                 });
-                http.setTimeout(30000);
+                
                 url = Ti.App.DOMAIN_NAME + '/sync/file/' + nid + '/' + file_id;
                 Ti.API.debug("Requesting " + url);
                 
@@ -552,9 +555,9 @@ Display.setImageViewVideoThumbnail = function(imageView, nid, file_id, field_nam
         try {
             http = Ti.Network.createHTTPClient({
                 enableKeepAlive: false,
-                validatesSecureCertificate: false
+                validatesSecureCertificate: false,
+                timeout: 30000
             });
-            http.setTimeout(30000);
             
             url = Ti.App.DOMAIN_NAME + '/sync/video_file/video_thumbnail/' + nid + '/' + file_id + '/' + field_name;
             

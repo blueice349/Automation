@@ -1,11 +1,7 @@
 /*jslint eqeq:true, plusplus: true*/
 
-var Widget;
-
 var Utils = require('lib/Utils');
 var Display = require('lib/Display');
-
-Widget = {};
 
 function EmailWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.formObj = formObj;
@@ -48,6 +44,7 @@ function EmailWidget(formObj, instance, fieldViewWrapper){"use strict";
 EmailWidget.prototype.getFieldView = function(){"use strict";
     
     var i, element, addButton;
+    var self = this;
     
     this.fieldView = Ti.UI.createView({
        width: '100%',
@@ -80,12 +77,12 @@ EmailWidget.prototype.getFieldView = function(){"use strict";
             height: Ti.UI.SIZE,
             fieldName: this.instance.field_name
         });
-            
+        
         addButton.addEventListener('click', function(e){
             try{
-                Widget[e.source.fieldName].numVisibleFields ++;
-                Widget[e.source.fieldName].formObj.unfocusField();
-                Widget[e.source.fieldName].redraw();
+                self.numVisibleFields ++;
+                self.formObj.unfocusField();
+                self.redraw();
             }
             catch(ex){
                 Utils.sendErrorReport("Exception adding another to email: " + ex);
@@ -130,6 +127,7 @@ EmailWidget.prototype.redraw = function(){"use strict";
 
 EmailWidget.prototype.getNewElement = function(index){"use strict";
     var dbValue, textValue, element;
+    var self = this;
     
     dbValue = "";
     textValue = "";
@@ -177,7 +175,7 @@ EmailWidget.prototype.getNewElement = function(index){"use strict";
                 if(typeof e.source.lastValue === 'undefined' || typeof e.source.value === 'undefined' || 
                           e.source.lastValue == "" || e.source.value == ""){
                     Ti.API.debug("Checking conditionally required");
-                    Widget[e.source.fieldName].formObj.setConditionallyRequiredLabels(Widget[e.source.fieldName].instance, e.source.check_conditional_fields);
+                    self.formObj.setConditionallyRequiredLabels(self.instance, e.source.check_conditional_fields);
                 }
             }
             
@@ -193,8 +191,6 @@ EmailWidget.prototype.cleanUp = function(){"use strict";
     Ti.API.debug("in email widget cleanup");
     
     try{
-        Widget[this.instance.field_name] = null;
-        
         for(j = 0; j < this.elements.length; j ++){
             this.fieldView.remove(this.elements[j]);
             this.elements[j] = null;
@@ -221,9 +217,7 @@ EmailWidget.prototype.cleanUp = function(){"use strict";
 
 
 exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
-    Widget[instance.field_name] = new EmailWidget(FormObj, instance, fieldViewWrapper);
-    
-    return Widget[instance.field_name];
+    return new EmailWidget(FormObj, instance, fieldViewWrapper);
 };
 
 

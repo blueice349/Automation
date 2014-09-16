@@ -1,12 +1,11 @@
 /*jslint eqeq:true,plusplus:true*/
 
-var Widget, CalculatedFieldCache;
+var CalculatedFieldCache;
 
 var Display = require('lib/Display');
 var Utils = require('lib/Utils');
 var Node = require('objects/Node');
 
-Widget = {};
 CalculatedFieldCache = {};
 
 function CalculationFieldWidget(formObj, instance, fieldViewWrapper){"use strict";
@@ -113,6 +112,7 @@ CalculationFieldWidget.prototype.redraw = function(skipFormToNode){"use strict";
 
 CalculationFieldWidget.prototype.getNewElement = function(index, showCalc){"use strict";
     var widgetView, dbValue, origValue, calculationTableView, recalculateButton;
+    var self = this;
     
     Ti.API.debug("Creating calculation_field: " + this.instance.label);
     
@@ -166,10 +166,10 @@ CalculationFieldWidget.prototype.getNewElement = function(index, showCalc){"use 
             try{
                 var instance = e.source.instance;
                 
-                Widget[e.source.instance.field_name].formObj.unfocusField();
+                self.formObj.unfocusField();
                 // Reset the cached values
                 CalculatedFieldCache = {};
-                Widget[e.source.instance.field_name].redraw(instance);
+                self.redraw(instance);
             }
             catch(ex){
                 Utils.sendErrorReport("Exception while clicking recalculate: " + ex);
@@ -869,8 +869,6 @@ CalculationFieldWidget.prototype.cleanUp = function(){"use strict";
     
     try{
         
-        Widget[this.instance.field_name] = null;
-        
         for(j = 0; j < this.elements.length; j ++){
             this.fieldView.remove(this.elements[j]);
             this.elements[j] = null;
@@ -896,9 +894,7 @@ CalculationFieldWidget.prototype.cleanUp = function(){"use strict";
 };
 
 exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
-    Widget[instance.field_name] = new CalculationFieldWidget(FormObj, instance, fieldViewWrapper);
-    
-    return Widget[instance.field_name];
+    return new CalculationFieldWidget(FormObj, instance, fieldViewWrapper);
 };
 
 exports.getView = function(node, instance){"use strict";

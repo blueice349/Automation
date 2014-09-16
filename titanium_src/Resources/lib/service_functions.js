@@ -1,7 +1,6 @@
 /*global Omadi,dbEsc,isJsonString,AndroidSysUtil*/
 /*jslint eqeq:true,plusplus:true*/
 
-
 var Comments = require('services/Comments');
 var Utils = require('lib/Utils');
 var GeofenceServices = require('services/GeofenceServices');
@@ -30,9 +29,10 @@ Omadi.service.refreshSession = function() {"use strict";
 
                 http = Ti.Network.createHTTPClient({
                     enableKeepAlive: false,
-                    validatesSecureCertificate: false
+                    validatesSecureCertificate: false,
+                    timeout: 10000
                 });
-                http.setTimeout(10000);
+                
                 http.open('POST', Ti.App.DOMAIN_NAME + '/js-sync/sync/refreshSession.json');
 
                 Omadi.utils.setCookieHeader(http);
@@ -155,9 +155,10 @@ Omadi.service.setNodeViewed = function(nid) {"use strict";
     /** UPDATE the web server mainDB **/
     http = Ti.Network.createHTTPClient({
         enableKeepAlive: false,
-        validatesSecureCertificate: false
+        validatesSecureCertificate: false,
+        timeout: 10000
     });
-    http.setTimeout(10000);
+    
     http.open('POST', Ti.App.DOMAIN_NAME + '/js-forms/custom_forms/viewed.json?nid=' + nid);
 
     Omadi.utils.setCookieHeader(http);
@@ -1256,12 +1257,10 @@ Omadi.service.sendLogoutRequest = function(){"use strict";
     if(doRequest){
         http = Ti.Network.createHTTPClient({
             enableKeepAlive: false,
-            validatesSecureCertificate: false
+            validatesSecureCertificate: false,
+            timeout: 15000
         });
         http.open('POST', Ti.App.DOMAIN_NAME + '/js-sync/sync/logout.json');
-    
-        //Timeout until error:
-        http.setTimeout(15000);
     
         //Header parameters
         http.setRequestHeader("Content-Type", "application/json");
@@ -1736,25 +1735,24 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
 		// Build HTTP header
         Omadi.service.uploadFileHTTP = Ti.Network.createHTTPClient({
             enableKeepAlive: false,
-            validatesSecureCertificate: false
+            validatesSecureCertificate: false,
+            timeout: 45000,
+            onsendstream: Omadi.service.photoUploadStream,
+            onload: Omadi.service.photoUploadSuccess,
+            onerror: Omadi.service.photoUploadError,
+            nid: Omadi.service.currentFileUpload.nid,
+            photoId: Omadi.service.currentFileUpload.id,
+            delta: Omadi.service.currentFileUpload.delta,
+            field_name: Omadi.service.currentFileUpload.field_name,
+            upload_part: Omadi.service.currentFileUpload.upload_part,
+            numUploadParts: Omadi.service.currentFileUpload.numUploadParts,
+            tries: Omadi.service.currentFileUpload.tries,
+            isBackground: isBackground
         });
         
-        Omadi.service.uploadFileHTTP.onsendstream = Omadi.service.photoUploadStream;
-        Omadi.service.uploadFileHTTP.onload = Omadi.service.photoUploadSuccess;
-        Omadi.service.uploadFileHTTP.onerror = Omadi.service.photoUploadError;
-        Omadi.service.uploadFileHTTP.timeout = 45000;
+        Omadi.service.uploadFileHTTP.open('POST', Ti.App.DOMAIN_NAME + '/js-sync/upload.json');
         
-        Omadi.service.uploadFileHTTP.open('POST', Omadi.DOMAIN_NAME + '/js-sync/upload.json');
-        
-        Omadi.service.uploadFileHTTP.nid = Omadi.service.currentFileUpload.nid;
-        Omadi.service.uploadFileHTTP.photoId = Omadi.service.currentFileUpload.id;
-        Omadi.service.uploadFileHTTP.delta = Omadi.service.currentFileUpload.delta;
-        Omadi.service.uploadFileHTTP.field_name = Omadi.service.currentFileUpload.field_name;
-        Omadi.service.uploadFileHTTP.upload_part = Omadi.service.currentFileUpload.upload_part;
-        Omadi.service.uploadFileHTTP.numUploadParts = Omadi.service.currentFileUpload.numUploadParts;
-        Omadi.service.uploadFileHTTP.tries = Omadi.service.currentFileUpload.tries;
-        Omadi.service.uploadFileHTTP.isBackground = isBackground;
-
+        // Send headers after open
         Omadi.service.uploadFileHTTP.setRequestHeader('Content-Type', 'application/json');
         
         // Include cookie if there is one

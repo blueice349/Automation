@@ -1,11 +1,7 @@
 /*jslint eqeq:true, plusplus: true*/
 
-var Widget;
-
 var Utils = require('lib/Utils');
 var Database = require('lib/Database');
-
-Widget = {};
 
 function VehicleFieldsWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.formObj = formObj;
@@ -95,6 +91,7 @@ VehicleFieldsWidget.prototype.redraw = function(){"use strict";
 
 VehicleFieldsWidget.prototype.getNewElement = function(index){"use strict";
     var settings, dbValue, textValue, part, nameParts, wrapper, autocomplete_table, possibleValues, db, result, makeValue, real_field_name;
+    var self = this;
 
     nameParts = this.instance.field_name.split('___');
 
@@ -190,7 +187,7 @@ VehicleFieldsWidget.prototype.getNewElement = function(index){"use strict";
         var widget;
         
         try{
-            widget = Widget[e.source.fieldName];
+            widget = self;
             widget.element.textValue = widget.element.value = widget.element.dbValue = e.rowData.title;
     
             if (Ti.App.isAndroid) {
@@ -238,7 +235,7 @@ VehicleFieldsWidget.prototype.getNewElement = function(index){"use strict";
     this.element.addEventListener('blur', function(e) {
         var widget;
         try{
-            widget = Widget[e.source.instance.field_name];
+            widget = self;
             if (widget) {
                 widget.autocomplete_table.setBorderWidth(0);
                 widget.autocomplete_table.setHeight(0);
@@ -258,7 +255,7 @@ VehicleFieldsWidget.prototype.getNewElement = function(index){"use strict";
         
         try{
             
-            widget = Widget[e.source.instance.field_name];
+            widget = self;
 
             if(Ti.App.isAndroid && e.source.clickedAutocomplete){
                 widget.element.clickedAutocomplete = false;
@@ -391,8 +388,6 @@ VehicleFieldsWidget.prototype.cleanUp = function(){"use strict";
     Ti.API.debug("in vehicle widget cleanup");
     
     try{
-        Widget[this.instance.field_name] = null;
-        
         this.elementWrapper.remove(this.element);
         this.elementWrapper.remove(this.autocomplete_table);
         this.element = null;
@@ -420,9 +415,7 @@ VehicleFieldsWidget.prototype.cleanUp = function(){"use strict";
 };
 
 exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
-    Widget[instance.field_name] = new VehicleFieldsWidget(FormObj, instance, fieldViewWrapper);
-    
-    return Widget[instance.field_name];
+    return new VehicleFieldsWidget(FormObj, instance, fieldViewWrapper);
 };
 
 

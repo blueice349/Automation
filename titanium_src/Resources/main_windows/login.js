@@ -278,10 +278,12 @@ function updateUploadBytes(){"use strict";
         for(i = 0; i < cookies.length; i ++){
             http = Ti.Network.createHTTPClient({
                 enableKeepAlive: false,
-                validatesSecureCertificate: false
+                validatesSecureCertificate: false,
+                timeout: 15000
             });
+            
             http.open('POST', Ti.App.DOMAIN_NAME + '/js-sync/sync/logout.json');
-            http.setTimeout(15000);
+            
             http.setRequestHeader("Content-Type", "application/json");
             
             if(cookies[i] > ""){

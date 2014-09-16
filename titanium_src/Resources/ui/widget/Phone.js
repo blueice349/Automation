@@ -1,10 +1,7 @@
 /*jslint eqeq:true,plusplus:true,regexp:true*/
 
-var Widget;
 var Utils = require('lib/Utils');
 var Display = require('lib/Display');
-
-Widget = {};
 
 function PhoneWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.formObj = formObj;
@@ -46,6 +43,7 @@ function PhoneWidget(formObj, instance, fieldViewWrapper){"use strict";
 PhoneWidget.prototype.getFieldView = function(){"use strict";
     
     var i, element, addButton;
+    var self = this;
     
     this.fieldView = Ti.UI.createView({
        width: '100%',
@@ -81,9 +79,9 @@ PhoneWidget.prototype.getFieldView = function(){"use strict";
             
         addButton.addEventListener('click', function(e){
             try{
-                Widget[e.source.fieldName].numVisibleFields ++;
-                Widget[e.source.fieldName].formObj.unfocusField();
-                Widget[e.source.fieldName].redraw();
+                self.numVisibleFields ++;
+                self.formObj.unfocusField();
+                self.redraw();
             }
             catch(ex){
                 Utils.sendErrorReport("Exception in phone add another: " + ex);
@@ -128,6 +126,7 @@ PhoneWidget.prototype.redraw = function(){"use strict";
 
 PhoneWidget.prototype.getNewElement = function(index){"use strict";
     var dbValue, textValue, element;
+    var self = this;
     
     dbValue = "";
     textValue = "";
@@ -188,7 +187,7 @@ PhoneWidget.prototype.getNewElement = function(index){"use strict";
                 if(typeof e.source.lastValue === 'undefined' || typeof e.source.value === 'undefined' || 
                           e.source.lastValue == "" || e.source.value == ""){
                     Ti.API.debug("Checking conditionally required");
-                    Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
+                    self.formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
                 }
             }
             
@@ -204,9 +203,6 @@ PhoneWidget.prototype.cleanUp = function(){"use strict";
     Ti.API.debug("in phone widget cleanup");
     
     try{
-        
-        Widget[this.instance.field_name] = null;
-        
         for(j = 0; j < this.elements.length; j ++){
             this.fieldView.remove(this.elements[j]);
             this.elements[j] = null;
@@ -232,9 +228,7 @@ PhoneWidget.prototype.cleanUp = function(){"use strict";
 };
 
 exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
-    Widget[instance.field_name] = new PhoneWidget(FormObj, instance, fieldViewWrapper);
-    
-    return Widget[instance.field_name];
+    return new PhoneWidget(FormObj, instance, fieldViewWrapper);
 };
 
 

@@ -518,7 +518,7 @@ CommentForm.prototype.initNewNode = function(){"use strict";
 };
 
 CommentForm.prototype.save = function(){"use strict";
-    var db, sql, saved, cid, Comment;
+    var db, sql, saved, cid;
     
     saved = false;
     

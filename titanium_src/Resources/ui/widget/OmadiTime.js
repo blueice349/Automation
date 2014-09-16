@@ -1,9 +1,8 @@
 /*jslint eqeq:true, plusplus: true*/
 
-var Widget, dateWindow;
+var dateWindow;
 var Utils = require('lib/Utils');
 var Display = require('lib/Display');
-Widget = {};
 dateWindow = null;
 
 function OmadiTimeWidget(formObj, instance, fieldViewWrapper){"use strict";
@@ -45,6 +44,7 @@ function OmadiTimeWidget(formObj, instance, fieldViewWrapper){"use strict";
 
 OmadiTimeWidget.prototype.getFieldView = function(){"use strict";
     var i, element, addButton;
+    var self = this;
     
     this.fieldView = Ti.UI.createView({
        width: '100%',
@@ -80,9 +80,9 @@ OmadiTimeWidget.prototype.getFieldView = function(){"use strict";
             
         addButton.addEventListener('click', function(e){
             try{
-                Widget[e.source.fieldName].numVisibleFields ++;
-                Widget[e.source.fieldName].formObj.unfocusField();
-                Widget[e.source.fieldName].redraw();
+                self.numVisibleFields ++;
+                self.formObj.unfocusField();
+                self.redraw();
             }
             catch(ex){
                 Utils.sendErrorReport("Exception in omadi time add another: " + ex);
@@ -128,6 +128,7 @@ OmadiTimeWidget.prototype.redraw = function(){"use strict";
 OmadiTimeWidget.prototype.getNewElement = function(index){"use strict";
     /*global mktime*/
     var dbValue, textValue, element, i, showTime, jsDate, dateText, timeText, timeView, dateView, nowTimestamp, midnight;
+    var self = this;
     
     dbValue = null;
     textValue = "";
@@ -170,7 +171,7 @@ OmadiTimeWidget.prototype.getNewElement = function(index){"use strict";
     element.addEventListener('click', function(e) {
         try{
             if (e.source.instance.can_edit) {
-                Widget[e.source.instance.field_name].displayPicker(e.source);
+                self.displayPicker(e.source);
             }
         }
         catch(ex){
@@ -185,6 +186,7 @@ OmadiTimeWidget.prototype.displayPicker = function(element) {"use strict";
 
     var titleLabel, minDate, opacView, widgetDate, okButton, clearButton, wrapperView, 
         buttonView, topButtonsView, time_picker, doneButton, cancelButton;
+    var self = this;
     
     try{
         if (Ti.App.isAndroid) {
@@ -386,13 +388,13 @@ OmadiTimeWidget.prototype.displayPicker = function(element) {"use strict";
                 newDate = e.source.time_picker.getValue();
                 e.source.element.jsDate = newDate;
                 e.source.element.textValue = Utils.PHPFormatDate('g:i A', Math.ceil(newDate.getTime() / 1000));
-                e.source.element.dbValue = Widget[e.source.instance.field_name].dateToSeconds(e.source.element.textValue);
+                e.source.element.dbValue = self.dateToSeconds(e.source.element.textValue);
         
                 e.source.element.setText(e.source.element.textValue);
         
                 if (e.source.element.check_conditional_fields.length > 0) {
                     Ti.API.debug("Checking conditionally required");
-                    Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
+                    self.formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
                 }
             }
             catch(ex){
@@ -411,7 +413,7 @@ OmadiTimeWidget.prototype.displayPicker = function(element) {"use strict";
         
                 if (e.source.element.check_conditional_fields.length > 0) {
                     Ti.API.debug("Checking conditionally required");
-                    Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
+                    self.formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
                 }  
             }
             catch(ex){
@@ -470,9 +472,6 @@ OmadiTimeWidget.prototype.cleanUp = function(){"use strict";
     Ti.API.debug("in time widget cleanup");
     
     try{
-        
-        Widget[this.instance.field_name] = null;
-        
         for(j = 0; j < this.elements.length; j ++){
             this.fieldView.remove(this.elements[j]);
             this.elements[j] = null;
@@ -498,9 +497,7 @@ OmadiTimeWidget.prototype.cleanUp = function(){"use strict";
 };
 
 exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
-    Widget[instance.field_name] = new OmadiTimeWidget(FormObj, instance, fieldViewWrapper);
-    
-    return Widget[instance.field_name];
+    return new OmadiTimeWidget(FormObj, instance, fieldViewWrapper);
 };
 
 

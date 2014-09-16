@@ -1,9 +1,7 @@
 /*jslint eqeq:true, plusplus: true*/
 
-var Widget;
 var Utils = require('lib/Utils');
 var Database = require('lib/Database');
-Widget = {};
 
 function TaxonomyTermReferenceWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.formObj = formObj;
@@ -93,6 +91,7 @@ TaxonomyTermReferenceWidget.prototype.redraw = function(){"use strict";
 TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use strict";
     var dbValue, textValue, element, descriptionText, wrapper, i, 
         defaultTerm, isAutocomplete, autocomplete_table;
+    var self = this;
     
     dbValue = null;
     textValue = "";
@@ -218,7 +217,7 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
                     e.source.textField.setSelection(e.source.textField.value.length, e.source.textField.value.length);
                 }
                 
-                widget = Widget[e.source.instance.field_name];
+                widget = self;
                 
                 if ( typeof widget.onChangeCallbacks !== 'undefined') {
                     if (widget.onChangeCallbacks.length > 0) {
@@ -338,7 +337,7 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
                     
                     if(e.source.blurred){
                         e.source.blurred = false;
-                        Widget[e.source.instance.field_name].formObj.scrollToField(e);
+                        self.formObj.scrollToField(e);
                     }
                 }
                 else {
@@ -350,7 +349,7 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
             e.source.lastValue = e.source.value;
 
             if (e.source.check_conditional_fields.length > 0) {
-                Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
+                self.formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
             }
         });
         
@@ -378,7 +377,7 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
                 try{
                     if (e.source.instance.settings.cardinality == -1) {
                         
-                        Widget[e.source.instance.field_name].formObj.getMultipleSelector(Widget[e.source.instance.field_name], e.source.options, e.source.dbValue);
+                        self.formObj.getMultipleSelector(self, e.source.options, e.source.dbValue);
                     }
                     else {
                         textOptions = [];
@@ -389,7 +388,7 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
                         textOptions.push('- Cancel -');
     
                         postDialog = Titanium.UI.createOptionDialog({
-                            title: Widget[e.source.instance.field_name].formObj.labelViews[e.source.instance.field_name].text
+                            title: self.formObj.labelViews[e.source.instance.field_name].text
                         });
                         
                         postDialog.options = textOptions;
@@ -402,7 +401,7 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
                             try{
                                 if (ev.index >= 0 && ev.index != ev.source.cancel) {
                                     textValue = ev.source.options[ev.index];
-                                    widget = Widget[ev.source.instance.field_name];
+                                    widget = self;
                                     
                                     if (textValue == '- None -') {
                                         textValue = "";
@@ -503,9 +502,6 @@ TaxonomyTermReferenceWidget.prototype.cleanUp = function(){"use strict";
     Ti.API.debug("in taxonomy widget cleanup");
     
     try{
-        
-        Widget[this.instance.field_name] = null;
-        
         for(j = 0; j < this.elementWrappers.length; j ++){
             this.elementWrappers[j].remove(this.elements[j]);
             this.elementWrappers[j].remove(this.descriptionLabel);
@@ -559,7 +555,5 @@ TaxonomyTermReferenceWidget.loadTerm = function(tid) {"use strict";
 };
 
 exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
-    Widget[instance.field_name] = new TaxonomyTermReferenceWidget(FormObj, instance, fieldViewWrapper);
-    
-    return Widget[instance.field_name];
+    return new TaxonomyTermReferenceWidget(FormObj, instance, fieldViewWrapper);
 };

@@ -1,10 +1,7 @@
 /*jslint eqeq:true, plusplus: true*/
 
-var Widget;
 var Utils = require('lib/Utils');
 var Database = require('lib/Database');
-
-Widget = {};
 
 function UserReferenceWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.formObj = formObj;
@@ -88,6 +85,7 @@ UserReferenceWidget.prototype.redraw = function(){"use strict";
 
 UserReferenceWidget.prototype.getNewElement = function(index){"use strict";
     var dbValue, textValue, element, options, descriptionText, descriptionLabel, wrapper, i, loginDetails, textOptions;
+    var self = this;
     
     Ti.API.debug("Creating user reference field: " + this.instance.label);
     
@@ -159,11 +157,11 @@ UserReferenceWidget.prototype.getNewElement = function(index){"use strict";
             var i, postDialog;
             try{
                 if (e.source.instance.settings.cardinality == -1) {
-                    Widget[e.source.instance.field_name].formObj.getMultipleSelector(Widget[e.source.instance.field_name], e.source.options, e.source.dbValue);
+                    self.formObj.getMultipleSelector(self, e.source.options, e.source.dbValue);
                 }
                 else {
                     postDialog = Titanium.UI.createOptionDialog({
-                        title: Widget[e.source.instance.field_name].formObj.labelViews[e.source.instance.field_name].text
+                        title: self.formObj.labelViews[e.source.instance.field_name].text
                     });
                     
                     postDialog.options = e.source.textOptions;
@@ -185,7 +183,7 @@ UserReferenceWidget.prototype.getNewElement = function(index){"use strict";
                             }
         
                             if (ev.source.element.check_conditional_fields.length > 0) {
-                                Widget[ev.source.element.instance.field_name].formObj.setConditionallyRequiredLabels(ev.source.element.instance, ev.source.element.check_conditional_fields);
+                                self.formObj.setConditionallyRequiredLabels(ev.source.element.instance, ev.source.element.check_conditional_fields);
                             }
                         }
                         catch(ex){
@@ -261,8 +259,6 @@ UserReferenceWidget.prototype.cleanUp = function(){"use strict";
     Ti.API.debug("in user widget cleanup");
     
     try{
-        Widget[this.instance.field_name] = null;
-        
         for(j = 0; j < this.elements.length; j ++){
             this.fieldView.remove(this.elements[j]);
             this.elements[j] = null;
@@ -288,9 +284,7 @@ UserReferenceWidget.prototype.cleanUp = function(){"use strict";
 };
 
 exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
-    Widget[instance.field_name] = new UserReferenceWidget(FormObj, instance, fieldViewWrapper);
-    
-    return Widget[instance.field_name];
+    return new UserReferenceWidget(FormObj, instance, fieldViewWrapper);
 };
 
 
