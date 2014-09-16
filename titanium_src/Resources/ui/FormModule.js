@@ -705,53 +705,62 @@ FormModule.prototype.trySaveNode = function(saveType){"use strict";
 };
 
 FormModule.prototype.saveNode = function(saveType) {"use strict";
-	this.node._isContinuous = saveType == 'continuous';
-	this.node._isDraft = saveType == 'draft';
+    var origNode = this.node;
+    
+	this.node._isContinuous = (saveType == 'continuous');
+	this.node._isDraft = (saveType == 'draft');
     
     try {
 	    // Do not allow the web server's data in a background update
 	    // to overwrite the local data just being saved
 	    Ti.App.allowBackgroundUpdate = false;
 	    this.node = Omadi.data.nodeSave(this.node);
-	    // Now that the node is saved on the phone or a big error occurred, allow background logouts
-	    Ti.App.allowBackgroundLogout = true;
 	    
-	    // Setup the current node and nid in the window so a duplicate won't be made for this window
-        this.nid = this.node.nid;
-        
-        if (!this.node._isContinuous) {
-            if (!this.node._saved) {
-	            Utils.sendErrorReport("Node failed to save on the phone: " + JSON.stringify(this.node));
-	            alert("There is a problem with the form data, and it cannot not be saved. Please fix the data or close the form.");
-	            return;
-	        }
-	        
-	        this.nodeSaved = true;
-        }
-
-        var eventData = {
-	        nodeNid: this.node._saveNid,
-	        nodeType: this.node.type,
-	        saveType: saveType
-	    };
-        
-        // Notify the user if there is no network
-        if (Ti.Network.online || this.node._isContinuous || this.node._isDraft) {
-            this.win.dispatchTabGroup.fireEvent('omadi:dispatch:savedDispatchNode', eventData);
-		    Ti.App.fireEvent('savedNode', eventData);
-		} else {
-			var self = this;
-			var dialog = Titanium.UI.createAlertDialog({
-				title : 'No Internet Connection',
-				buttonNames : ['OK'],
-				message: 'Alert management of this ' + this.node.type.toUpperCase() + ' immediately. You do not have an Internet connection right now.  Your data was saved and will be synched when you connect to the Internet.'
-			});
-			dialog.addEventListener('click', function(e) {
+	    if(this.node._saved){
+            // Now that the node is saved on the phone or a big error occurred, allow background logouts
+            Ti.App.allowBackgroundLogout = true;
+            
+            // Setup the current node and nid in the window so a duplicate won't be made for this window
+            this.nid = this.node.nid;
+            
+            if (!this.node._isContinuous) {
+                if (!this.node._saved) {
+                    Utils.sendErrorReport("Node failed to save on the phone: " + JSON.stringify(this.node));
+                    alert("There is a problem with the form data, and it cannot not be saved. Please fix the data or close the form.");
+                    return;
+                }
+                
+                this.nodeSaved = true;
+            }
+            
+            var eventData = {
+                nodeNid: this.node._saveNid,
+                nodeType: this.node.type,
+                saveType: saveType
+            };
+            
+            // Notify the user if there is no network
+            if (Ti.Network.online || this.node._isContinuous || this.node._isDraft) {
+                this.win.dispatchTabGroup.fireEvent('omadi:dispatch:savedDispatchNode', eventData);
+                Ti.App.fireEvent('savedNode', eventData);
+            } else {
+                var self = this;
+                var dialog = Titanium.UI.createAlertDialog({
+                    title : 'No Internet Connection',
+                    buttonNames : ['OK'],
+                    message: 'Alert management of this ' + this.node.type.toUpperCase() + ' immediately. You do not have an Internet connection right now.  Your data was saved and will be synched when you connect to the Internet.'
+                });
+                dialog.addEventListener('click', function(e) {
                 self.win.dispatchTabGroup.fireEvent('omadi:dispatch:savedDispatchNode', eventData);
-			    Ti.App.fireEvent('savedNode', eventData);
-            });
-			dialog.show();
-		}
+                    Ti.App.fireEvent('savedNode', eventData);
+                });
+                dialog.show();
+            }
+        }
+        else{
+            alert("A problem occurred saving the form. Please fix any form problems and try again.");
+            Utils.sendErrorReport("Error saving the node: " + JSON.stringify(origNode) + " " + JSON.stringify(this.node));
+        }
 	} catch (e) {
 		Utils.sendErrorReport("Exception in saveNode: " + e);
 	}
