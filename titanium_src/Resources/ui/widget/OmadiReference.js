@@ -389,12 +389,11 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
     
             this.elements[0].addEventListener('blur', function(e) {
                 try{
-                    var widget = self;
-                    if (widget) {
-	                    widget.autocomplete_table.setBorderWidth(0);
-	                    widget.autocomplete_table.setHeight(0);
-	                    widget.autocomplete_table.setVisible(false);
-	                    widget.elements[0].blurred = true;
+                    if (self.autocomplete_table) {
+	                    self.autocomplete_table.setBorderWidth(0);
+	                    self.autocomplete_table.setHeight(0);
+	                    self.autocomplete_table.setVisible(false);
+	                    self.elements[0].blurred = true;
                     }
                 }
                 catch(ex){

@@ -644,29 +644,29 @@ function openMainScreen(loggedIn){"use strict";
 
         portal.addEventListener('focus', function(e) {
             scrollBoxesToTop();
-            e.source.backgroundColor = '#def';
+            portal.backgroundColor = '#def';
         });
         
         portal.addEventListener('blur', function(e) {
-            e.source.backgroundColor = '#fff';
+            portal.backgroundColor = '#fff';
         });
 
         usernameField.addEventListener('focus', function(e) {
             scrollBoxesToTop();
-            e.source.backgroundColor = '#def';
+            usernameField.backgroundColor = '#def';
         });
         
         usernameField.addEventListener('blur', function(e) {
-            e.source.backgroundColor = '#fff';
+            usernameField.backgroundColor = '#fff';
         });
 
         passwordField.addEventListener('focus', function(e) {
             scrollBoxesToTop();
-            e.source.backgroundColor = '#def';
+            passwordField.backgroundColor = '#def';
         });
         
         passwordField.addEventListener('blur', function(e) {
-            e.source.backgroundColor = '#fff';
+            passwordField.backgroundColor = '#fff';
         });
 
         Ti.UI.currentWindow.addEventListener('focus', function() {

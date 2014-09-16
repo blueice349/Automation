@@ -751,14 +751,7 @@ CommentForm.prototype.getTextField = function(instance){"use strict";
     });
     
     textField.addEventListener('blur', function(e){
-        try{
-            e.source.setBackgroundColor('#fff');
-        }
-        catch(ex){
-            try{
-                Utils.sendErrorReport("exception in text field in form blur: " + ex);
-            }catch(ex1){}
-        }
+        textField.setBackgroundColor('#fff');
     });
     
     return textField;
