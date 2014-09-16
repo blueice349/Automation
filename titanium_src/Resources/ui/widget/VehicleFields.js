@@ -233,20 +233,18 @@ VehicleFieldsWidget.prototype.getNewElement = function(index){"use strict";
     });
 
     this.element.addEventListener('blur', function(e) {
-        var widget;
         try{
-            widget = self;
-            if (widget) {
-                widget.autocomplete_table.setBorderWidth(0);
-                widget.autocomplete_table.setHeight(0);
-                widget.autocomplete_table.setVisible(false);
+            if (self.autocomplete_table) {
+                self.autocomplete_table.setBorderWidth(0);
+                self.autocomplete_table.setHeight(0);
+                self.autocomplete_table.setVisible(false);
             }
-            e.source.blurred = true;
+            if (self.element) {
+				self.element.blurred = true;
+            }
         }
         catch(ex){
-            try{
-                Utils.sendErrorReport("exception in vehicle fields blur: " + ex);
-            }catch(ex1){}
+            Utils.sendErrorReport("exception in vehicle fields blur: " + ex);
         }
     });
 

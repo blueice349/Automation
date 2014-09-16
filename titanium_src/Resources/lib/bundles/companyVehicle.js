@@ -30,13 +30,13 @@ Omadi.bundles.companyVehicle.askAboutVehicle = function() {"use strict";
 
         dialog.addEventListener('click', function(e) {
             try{
-                if (e.index == e.source.options.length - 1 || e.index == -1) {
+                if (e.index == dialog.options.length - 1 || e.index == -1) {
                     if(Omadi.bundles.companyVehicle.getCurrentVehicleNid() > 0){
                         Omadi.bundles.companyVehicle.exitVehicle();   
                     }
                 }
-                else if(typeof e.source.vehicles[e.index] !== 'undefined'){
-                    Omadi.bundles.companyVehicle.setUserVehicle(e.source.vehicles[e.index].nid);
+                else if(typeof dialog.vehicles[e.index] !== 'undefined'){
+                    Omadi.bundles.companyVehicle.setUserVehicle(dialog.vehicles[e.index].nid);
                     
                     Omadi.bundles.inspection.askToReviewLastInspection();
                 }

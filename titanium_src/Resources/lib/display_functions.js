@@ -537,7 +537,7 @@ Omadi.display.showNewNotificationDialog = function(){"use strict";
     
                 dialog.addEventListener('click', function(e) {
                     try{
-                        if (e.index !== e.source.cancel) {
+                        if (e.index !== dialog.cancel) {
                             newWin = Omadi.display.openListWindow('notification', false, [], [], true);
                             if(typeof alertQueue !== 'undefined'){
                                 newWin.addEventListener('close', function(){
@@ -573,7 +573,7 @@ Omadi.display.showNewNotificationDialog = function(){"use strict";
     
                 dialog.addEventListener('click', function(e) {
                     try{
-                        if (e.index !== e.source.cancel) {
+                        if (e.index !== dialog.cancel) {
                             newWin = Omadi.display.openViewWindow('notification', newNotifications.nid);
                             if(typeof alertQueue !== 'undefined'){
                                 newWin.addEventListener('close', function(){

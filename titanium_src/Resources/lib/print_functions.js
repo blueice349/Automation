@@ -34,9 +34,8 @@ Omadi.print.canPrintReceipt = function(nid){"use strict";
         typeof bundle.data.mobile_printer !== 'undefined' &&
         typeof bundle.data.mobile_printer.receipt !== 'undefined' &&
         typeof bundle.data.mobile_printer.receipt.items !== 'undefined' &&
-        Omadi.utils.isArray(bundle.data.mobile_printer.receipt.items) &&
+        bundle.data.mobile_printer.receipt.items &&
         bundle.data.mobile_printer.receipt.items.length > 0){
-            
             
             // Make sure enough data is saved to be able to print the receipt
             if(typeof bundle.data.mobile_printer.allow_at_part !== 'undefined'){
@@ -183,8 +182,8 @@ Omadi.print.chargeCard = function(nid){"use strict";
                    dialog.addEventListener('click', function(e){
                        var portName, commands;
                        try{
-                           if(e.index >= 0 && e.index != e.source.cancel){
-                                portName = e.source.origPortNames[e.index];
+                           if(e.index >= 0 && e.index != dialog.cancel){
+                                portName = dialog.origPortNames[e.index];
                                 
                                 Ti.App.Properties.setString("omadi:printerPortName", portName);
                                 
@@ -249,8 +248,8 @@ Omadi.print.printReceipt = function(nid){"use strict";
                    dialog.addEventListener('click', function(e){
                        var portName, commands;
                        try{
-                           if(e.index >= 0 && e.index != e.source.cancel){
-                                portName = e.source.origPortNames[e.index];
+                           if(e.index >= 0 && e.index != dialog.cancel){
+                                portName = dialog.origPortNames[e.index];
                                 
                                 Ti.App.Properties.setString("omadi:printerPortName", portName);
                                 
