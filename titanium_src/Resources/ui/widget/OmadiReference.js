@@ -1,13 +1,8 @@
 /*jslint eqeq:true, plusplus: true*/
 
-var Widget;
-
 var Utils = require('lib/Utils');
 var Database = require('lib/Database');
 var Node = require('objects/Node');
-
-Widget = {};
-
 
 function OmadiReferenceWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.formObj = formObj;
@@ -89,6 +84,7 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
     var dbValue, textValue, nodeTypes, possibleValues, options,
         i, query, db, result, wrapper, autocomplete_table, calculatedTop, isHidden,
         vehicleNid, addressLabel, street;
+    var self = this;
 
     dbValue = null;
     textValue = "";
@@ -167,7 +163,7 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
     this.addressLabel.addEventListener('click', function(e){
         try{
             var node, widget;
-            widget = Widget[e.source.instance.field_name];
+            widget = self;
             
             if(typeof widget.elements[0] !== 'undefined' && widget.elements[0].dbValue !== null && widget.elements[0].dbValue > 0){
                 node = Node.load(widget.elements[0].dbValue);
@@ -229,7 +225,7 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
                         try{
                             if (ev.index >= 0) {
                                 
-                                widget = Widget[ev.source.instance.field_name];
+                                widget = self;
                                 
                                 if(widget.elements[0].possibleValues[ev.index].nid === null){
                                     text = '';   
@@ -333,7 +329,7 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
                 var i, callback, street, widget;
                 
                 try{
-                    widget = Widget[e.source.fieldName];
+                    widget = self;
                     
                     widget.elements[0].textValue = widget.elements[0].value = e.rowData.title;
                     widget.elements[0].dbValue = e.rowData.nid;
@@ -393,7 +389,7 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
     
             this.elements[0].addEventListener('blur', function(e) {
                 try{
-                    var widget = Widget[e.source.instance.field_name];
+                    var widget = self;
                     if (widget) {
 	                    widget.autocomplete_table.setBorderWidth(0);
 	                    widget.autocomplete_table.setHeight(0);
@@ -423,7 +419,7 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
                     if(e.source.lastValue != e.source.value && (timeChange > 20)){
                         e.source.lastChange = milliseconds;
                     
-                        widget = Widget[e.source.instance.field_name];
+                        widget = self;
                         
                         if(Ti.App.isAndroid && e.source.clickedAutocomplete){
                             widget.elements[0].clickedAutocomplete = false;
@@ -643,8 +639,6 @@ OmadiReferenceWidget.prototype.cleanUp = function(){"use strict";
     Ti.API.debug("in integer widget cleanup");
     
     try{
-        Widget[this.instance.field_name] = null;
-        
         this.elementWrapper.remove(this.elements[0]);
         this.elementWrapper.remove(this.addressLabel);
         
@@ -679,9 +673,7 @@ OmadiReferenceWidget.prototype.cleanUp = function(){"use strict";
 };
 
 exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
-    Widget[instance.field_name] = new OmadiReferenceWidget(FormObj, instance, fieldViewWrapper);
-    
-    return Widget[instance.field_name];
+    return new OmadiReferenceWidget(FormObj, instance, fieldViewWrapper);
 };
 
 

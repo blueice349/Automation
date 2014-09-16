@@ -1,11 +1,7 @@
 /*jslint eqeq:true, plusplus: true*/
 
-var Widget;
-
 var Utils = require('lib/Utils');
 var Display = require('lib/Display');
-
-Widget = {};
 
 function ListTextWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.formObj = formObj || {};
@@ -45,6 +41,7 @@ function ListTextWidget(formObj, instance, fieldViewWrapper){"use strict";
 ListTextWidget.prototype.getFieldView = function(){"use strict";
     
     var i, element, addButton;
+    var self = this;
     
     this.fieldView = Ti.UI.createView({
        width: '100%',
@@ -80,9 +77,9 @@ ListTextWidget.prototype.getFieldView = function(){"use strict";
             
         addButton.addEventListener('click', function(e){
             try{
-                Widget[e.source.fieldName].numVisibleFields ++;
-                Widget[e.source.fieldName].formObj.unfocusField();
-                Widget[e.source.fieldName].redraw();
+                self.numVisibleFields ++;
+                self.formObj.unfocusField();
+                self.redraw();
             }
             catch(ex){
                 Utils.sendErrorReport("Exception in list text add another: " + ex);
@@ -127,6 +124,7 @@ ListTextWidget.prototype.redraw = function(){"use strict";
 
 ListTextWidget.prototype.getNewElementWrapper = function(index){"use strict";
     var dbValue, textValue, element, options, descriptionText, descriptionLabel, wrapper, i;
+    var self = this;
     
     dbValue = null;
     textValue = "";
@@ -223,7 +221,7 @@ ListTextWidget.prototype.getNewElementWrapper = function(index){"use strict";
                             // This is a special case for dispatching
                             if(ev.source.element.fieldName == 'field_tow_type'){
                                 try{
-                                    Widget[ev.source.element.instance.field_name].formObj.win.dispatchTabGroup.fireEvent("omadi:dispatch:towTypeChanged", {
+                                    self.formObj.win.dispatchTabGroup.fireEvent("omadi:dispatch:towTypeChanged", {
                                         dbValue: ev.source.element.dbValue 
                                     });
                                 }
@@ -290,9 +288,6 @@ ListTextWidget.prototype.cleanUp = function(){"use strict";
     Ti.API.debug("in list text widget cleanup");
     
     try{
-        
-        Widget[this.instance.field_name] = null;
-        
         for(j = 0; j < this.elements.length; j ++){
             
             this.elementWrappers[j].remove(this.elements[j]);
@@ -322,9 +317,7 @@ ListTextWidget.prototype.cleanUp = function(){"use strict";
 };
 
 exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
-    Widget[instance.field_name] = new ListTextWidget(FormObj, instance, fieldViewWrapper);
-    
-    return Widget[instance.field_name];
+    return new ListTextWidget(FormObj, instance, fieldViewWrapper);
 };
 
 exports.getOptions = function(instance) {"use strict";

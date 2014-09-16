@@ -4,9 +4,6 @@
 var Database = require('lib/Database');
 var Node = require('objects/Node');
 
-var Utils = function(){};
-
-
 exports.getUid = function(){
     var loginJson = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
     if(typeof loginJson.user !== 'undefined'){
@@ -1789,7 +1786,7 @@ exports.getCurrentVehicleNid = function(){
 	        nid = result.field(0, Ti.Database.FIELD_TYPE_INT);
 	    }
     } catch (error) {
-		Utils.sendErrorReport('Error in getCurrentVehicleNid: ' + error);
+		exports.sendErrorReport('Error in getCurrentVehicleNid: ' + error);
     }
     result.close();
     Database.close();
@@ -1812,7 +1809,7 @@ exports.getCurrentVehicleName = function(){
 	        result.close();
 	    }
     } catch (error) {
-		Utils.sendErrorReport('Error in getCurrentVehicleName: ' + error);
+		exports.sendErrorReport('Error in getCurrentVehicleName: ' + error);
     }
     
     Database.close();

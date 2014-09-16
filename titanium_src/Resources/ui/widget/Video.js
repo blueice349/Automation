@@ -1,8 +1,5 @@
 /*jslint eqeq:true,plusplus:true,vars:true*/
 
-var Widget;
-Widget = {};
-
 var Utils = require('lib/Utils');
 var Display = require('lib/Display');
 var Database = require('lib/Database');
@@ -121,7 +118,7 @@ VideoWidget.prototype.getNewElement = function(index){"use strict";
         instance : this.instance
     });
 
-    this.addImageViewsToWidgetView(dbValues, widgetView);
+    this.addVideoViewsToWidgetView(dbValues, widgetView);
 
     var contentWidth = 110 * dbValues.length;
     if (this.instance.can_edit && (this.instance.settings.cardinality == -1 || (dbValues.length < this.instance.settings.cardinality))) {
@@ -151,6 +148,7 @@ VideoWidget.prototype.getNewElement = function(index){"use strict";
 };
 
 VideoWidget.prototype.getChooseVideoButtonView = function(widgetView) {"use strict";
+    var self = this;
     
     var chooseVideoView = Ti.UI.createImageView({
         left : 5,
@@ -168,12 +166,11 @@ VideoWidget.prototype.getChooseVideoButtonView = function(widgetView) {"use stri
         parentView : widgetView
     });
     
-    var self = this;
     chooseVideoView.addEventListener('click', function(e) {
  
         e.source.setTouchEnabled(false);
         Display.loading();
-        Widget[e.source.instance.field_name].openVideoChooser(e.source);
+        self.openVideoChooser(e.source);
         Display.doneLoading();
         
         // Allow the imageView to be touched again after waiting a little bit
@@ -193,7 +190,7 @@ VideoWidget.prototype.getImageNid = function() {"use strict";
     return imageNid;
 };
 
-VideoWidget.prototype.addImageViewsToWidgetView = function(fids, widgetView) {"use strict";
+VideoWidget.prototype.addVideoViewsToWidgetView = function(fids, widgetView) {"use strict";
     try {
         var localImages = this.getNonUploadedVideos();
         var i,j;
@@ -211,12 +208,13 @@ VideoWidget.prototype.addImageViewsToWidgetView = function(fids, widgetView) {"u
             widgetView.add(imageView);
         }
     } catch (e) {
-        Utils.sendErrorReport('Error in addImageViewsToWidgetView: ' + e);
+        Utils.sendErrorReport('Error in addVideoViewsToWidgetView: ' + e);
     }
 };
 
 VideoWidget.prototype.getLocalImageView = function(fid, imageData, index) {"use strict";
     var image = '/images/video_selected.png';
+    var self = this;
     
     if(Ti.App.isIOS){
         var videoFile = Ti.Filesystem.getFile(imageData.filePath);
@@ -261,13 +259,14 @@ VideoWidget.prototype.getLocalImageView = function(fid, imageData, index) {"use 
     });
     
     imageView.addEventListener('click', function(e){
-        Widget[e.source.instance.field_name].openVideoPlayer(e.source); 
+        self.openVideoPlayer(e.source); 
     });
     
     return imageView;
 };
 
 VideoWidget.prototype.getRemoteImageView = function(fid, index) {"use strict";
+	var self = this;
     var imageView = Ti.UI.createImageView({
         left : 5,
         height : 100,
@@ -290,7 +289,7 @@ VideoWidget.prototype.getRemoteImageView = function(fid, index) {"use strict";
     Display.setImageViewVideoThumbnail(imageView, this.getImageNid(), fid, this.instance.field_name);
     
     imageView.addEventListener('click', function(e){
-        Widget[e.source.instance.field_name].openVideoPlayer(e.source); 
+        self.openVideoPlayer(e.source); 
     });
     
     return imageView;
@@ -328,6 +327,7 @@ VideoWidget.prototype.getNonUploadedVideos = function() {"use strict";
 
 VideoWidget.prototype.getImageView = function(widgetView, index, nid, fid, degrees) {"use strict";
     var imageView, transform, rotateDegrees, image, widgetType, isFilePath, thumbVideo, videoFile;
+    var self = this;
     
     isFilePath = false;
     
@@ -407,7 +407,7 @@ VideoWidget.prototype.getImageView = function(widgetView, index, nid, fid, degre
             if(e.source.fid === null){
                 e.source.setTouchEnabled(false);
                 Display.loading();
-                Widget[e.source.instance.field_name].openVideoChooser(e.source);
+                self.openVideoChooser(e.source);
                 Display.doneLoading();
                 
                 // Allow the imageView to be touched again after waiting a little bit
@@ -416,7 +416,7 @@ VideoWidget.prototype.getImageView = function(widgetView, index, nid, fid, degre
                 }, 1000);
             }
             else{
-                Widget[e.source.instance.field_name].openVideoPlayer(e.source);
+                self.openVideoPlayer(e.source);
             }
         }
         catch(ex){
@@ -429,6 +429,7 @@ VideoWidget.prototype.getImageView = function(widgetView, index, nid, fid, degre
 
 VideoWidget.prototype.openVideoPlayer = function(imageView){"use strict";
     var videoFile, player, toolbar, back, space, label, http, s3URL;
+    var self = this;
     
     this.videoWin = Titanium.UI.createWindow({
         backgroundColor : '#eee',
@@ -447,11 +448,11 @@ VideoWidget.prototype.openVideoPlayer = function(imageView){"use strict";
         
         back.addEventListener('click', function(e) {
             try{
-                Widget[e.source.instance.field_name].videoPlayer.stop();
-                Widget[e.source.instance.field_name].videoPlayer = null;
+                self.videoPlayer.stop();
+                self.videoPlayer = null;
                 
-                Widget[e.source.instance.field_name].videoWin.close();
-                Widget[e.source.instance.field_name].videoWin = null;
+                self.videoWin.close();
+                self.videoWin = null;
             }
             catch(ex){
                 Utils.sendErrorReport("Exception in video back button pressed: " + ex);
@@ -536,7 +537,7 @@ VideoWidget.prototype.openVideoPlayer = function(imageView){"use strict";
                 if(json.success == true){
                     Ti.API.debug("S3 URL: " + json.url);
                     
-                    Widget[this.instance.field_name].videoPlayer = Ti.Media.createVideoPlayer({
+                    self.videoPlayer = Ti.Media.createVideoPlayer({
                         allowsAirPlay: true,
                         autoplay: true,
                         backgroundColor: 'Transparent',
@@ -547,8 +548,8 @@ VideoWidget.prototype.openVideoPlayer = function(imageView){"use strict";
                         top: 0
                     });
                     
-                    Widget[this.instance.field_name].videoWin.add(Widget[imageView.instance.field_name].videoPlayer);
-                    Widget[this.instance.field_name].videoWin.open();
+                    self.videoWin.add(self.videoPlayer);
+                    self.videoWin.open();
                 }
                 else{
                     alert("An error occurred retrieving the file: " + json.error);
@@ -578,6 +579,7 @@ VideoWidget.prototype.openVideoPlayer = function(imageView){"use strict";
 };
 
 VideoWidget.prototype.openVideoChooser = function(imageView){"use strict";
+	var self = this;
 
     if(Ti.App.isAndroid){
         var intent = Titanium.Android.createIntent({
@@ -617,12 +619,12 @@ VideoWidget.prototype.openVideoChooser = function(imageView){"use strict";
                     Ti.API.debug("filesize: " + movieFile.getSize());
                     Ti.API.debug("Is external: " + Ti.Filesystem.isExternalStoragePresent());
                     
-                    Widget[imageView.instance.field_name].saveFileInfo(imageView, filePath, '', 0, movieFile.getSize(), 'video');
+                    self.saveFileInfo(imageView, filePath, '', 0, movieFile.getSize(), 'video');
                     
                     if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
                                 
-                        newImageView = Widget[imageView.instance.field_name].getImageView(imageView.parentView, imageView.imageIndex, null, filePath, 0);
-                        takeNextPhotoView = Widget[imageView.instance.field_name].getImageView(imageView.parentView, imageView.imageIndex + 1, null, null, 0);
+                        newImageView = self.getImageView(imageView.parentView, imageView.imageIndex, null, filePath, 0);
+                        takeNextPhotoView = self.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null, 0);
                        
                         newImageView.image = '/images/video_selected.png';
                         newImageView.height = 100;
@@ -638,7 +640,7 @@ VideoWidget.prototype.openVideoChooser = function(imageView){"use strict";
                     }
                     else{
                         
-                        newImageView = Widget[imageView.instance.field_name].getImageView(imageView.parentView, imageView.imageIndex, null, filePath, 0);
+                        newImageView = self.getImageView(imageView.parentView, imageView.imageIndex, null, filePath, 0);
                        
                         newImageView.image = '/images/video_selected.png';
                         newImageView.height = 100;
@@ -696,7 +698,7 @@ VideoWidget.prototype.openVideoChooser = function(imageView){"use strict";
                     videoFile.setRemoteBackup(false);
                 }
                 
-                Widget[imageView.instance.field_name].saveFileInfo(imageView, filePath, '', 0, event.media.length, 'video');
+                self.saveFileInfo(imageView, filePath, '', 0, event.media.length, 'video');
                 
                 videoFile = Ti.Filesystem.getFile(imageView.filePath);
                 
@@ -711,7 +713,7 @@ VideoWidget.prototype.openVideoChooser = function(imageView){"use strict";
                 
                 if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
                     
-                    takeNextPhotoView = Widget[imageView.instance.field_name].getImageView(imageView.parentView, imageView.imageIndex + 1, null, null, 0);
+                    takeNextPhotoView = self.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null, 0);
                     imageView.image = thumbVideo.thumbnailImageAtTime(0, Ti.Media.VIDEO_TIME_OPTION_NEAREST_KEYFRAME);
                     imageView.parentView.add(takeNextPhotoView);
                     imageView.parentView.setContentWidth(imageView.parentView.getContentWidth() + 110);
@@ -724,7 +726,7 @@ VideoWidget.prototype.openVideoChooser = function(imageView){"use strict";
                 Display.doneLoading();
 
                 // Make sure we never lose a video reference due to a crash
-                Widget[imageView.instance.field_name].formObj.saveForm('continuous');
+                self.formObj.saveForm('continuous');
             }
         });
     }
@@ -797,8 +799,6 @@ VideoWidget.prototype.cleanUp = function(){"use strict";
     Ti.API.debug("in video widget cleanup");
     
     try{
-        Widget[this.instance.field_name] = null;
-        
         for(j = 0; j < this.elements.length; j ++){
             this.fieldView.remove(this.elements[j]);
             this.elements[j] = null;
@@ -824,9 +824,7 @@ VideoWidget.prototype.cleanUp = function(){"use strict";
 };
 
 exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
-    Widget[instance.field_name] = new VideoWidget(FormObj, instance, fieldViewWrapper);
-    
-    return Widget[instance.field_name];
+    return new VideoWidget(FormObj, instance, fieldViewWrapper);
 };
 
 exports.openVideoPlayer = function(instance, imageView){"use strict";
@@ -834,8 +832,8 @@ exports.openVideoPlayer = function(instance, imageView){"use strict";
     formObj = {};
     formObj.node = {};
     
-    Widget[instance.field_name] = new VideoWidget(formObj, instance, null);
+    widget = new VideoWidget(formObj, instance, null);
     
-    Widget[instance.field_name].openVideoPlayer(imageView);
+    widget.openVideoPlayer(imageView);
     
 };

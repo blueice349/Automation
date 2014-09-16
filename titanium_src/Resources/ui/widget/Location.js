@@ -1,10 +1,6 @@
 /*jslint eqeq:true, plusplus: true*/
 
-var Widget;
-
 var Utils = require('lib/Utils');
-
-Widget = {};
 
 function LocationWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.formObj = formObj;
@@ -92,6 +88,7 @@ LocationWidget.prototype.redraw = function(){"use strict";
 
 LocationWidget.prototype.setupNewElement = function(index){"use strict";
     var dbValue, textValue, part, nameParts, real_field_name, i, options, states;
+    var self = this;
 
     nameParts = this.instance.field_name.split('___');
 
@@ -202,7 +199,7 @@ LocationWidget.prototype.setupNewElement = function(index){"use strict";
                     var widget;
                     try{
                         if (ev.index >= 0) {
-                            widget = Widget[ev.source.instance.field_name];
+                            widget = self;
                             widget.element.textValue = ev.source.options[ev.index];
                             widget.element.dbValue = widget.element.states[ev.index].usps;
                             widget.element.setText(ev.source.options[ev.index]);
@@ -256,7 +253,7 @@ LocationWidget.prototype.setupNewElement = function(index){"use strict";
                 if(typeof e.source.lastValue === 'undefined' || typeof e.source.value === 'undefined' || 
                           e.source.lastValue == "" || e.source.value == ""){
                     Ti.API.debug("Checking conditionally required");
-                    Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
+                    self.formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
                 }
             }
             
@@ -484,8 +481,6 @@ LocationWidget.prototype.cleanUp = function(){"use strict";
     Ti.API.debug("in location widget cleanup");
     
     try{
-        Widget[this.instance.field_name] = null;
-        
         this.fieldView.remove(this.element);
         this.element = null;
         
@@ -509,9 +504,7 @@ LocationWidget.prototype.cleanUp = function(){"use strict";
 };
 
 exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
-    Widget[instance.field_name] = new LocationWidget(FormObj, instance, fieldViewWrapper);
-    
-    return Widget[instance.field_name];
+    return new LocationWidget(FormObj, instance, fieldViewWrapper);
 };
 
 

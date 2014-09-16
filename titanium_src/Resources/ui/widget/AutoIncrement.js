@@ -1,11 +1,7 @@
 /*jslint eqeq:true, plusplus: true*/
 /*global setConditionallyRequiredLabelForInstance,affectsAnotherConditionalField*/
 
-var Widget;
-
 var Utils = require('lib/Utils');
-
-Widget = {};
 
 function AutoIncrementWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.formObj = formObj;
@@ -135,8 +131,6 @@ AutoIncrementWidget.prototype.cleanUp = function(){"use strict";
     
     try{
         
-        Widget[this.instance.field_name] = null;
-        
         for(j = 0; j < this.elements.length; j ++){
             this.fieldView.remove(this.elements[j]);
             this.elements[j] = null;
@@ -162,9 +156,7 @@ AutoIncrementWidget.prototype.cleanUp = function(){"use strict";
 };
 
 exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
-    Widget[instance.field_name] = new AutoIncrementWidget(FormObj, instance, fieldViewWrapper);
-    
-    return Widget[instance.field_name];
+    return new AutoIncrementWidget(FormObj, instance, fieldViewWrapper);
 };
 
 
