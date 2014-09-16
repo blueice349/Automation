@@ -1749,7 +1749,7 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
             tries: Omadi.service.currentFileUpload.tries,
             isBackground: isBackground
         });
-        
+
         Omadi.service.uploadFileHTTP.open('POST', Ti.App.DOMAIN_NAME + '/js-sync/upload.json');
         
         // Send headers after open
