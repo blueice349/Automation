@@ -126,9 +126,10 @@ function cookieIsSet(webview) {"use strict";
         try {
             http = Ti.Network.createHTTPClient({
                 enableKeepAlive: false,
-                validatesSecureCertificate: false
+                validatesSecureCertificate: false,
+                timeout: 30000
             });
-            http.setTimeout(30000);
+            
             http.open('GET', url);
     
             Omadi.utils.setCookieHeader(http);
@@ -181,9 +182,10 @@ function cookieIsSet(webview) {"use strict";
             try {
                 http = Ti.Network.createHTTPClient({
                     enableKeepAlive: false,
-                    validatesSecureCertificate: false
+                    validatesSecureCertificate: false,
+                    timeout: 30000
                 });
-                http.setTimeout(30000);
+                
                 http.open('GET', url);
         
                 Omadi.utils.setCookieHeader(http);

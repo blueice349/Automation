@@ -378,9 +378,10 @@ LicensePlateWidget.prototype.setDuplicateWarnings = function(fieldName, value, s
     try{
         http = Ti.Network.createHTTPClient({
             enableKeepAlive: false,
-            validatesSecureCertificate: false
+            validatesSecureCertificate: false,
+            timeout: 10000
         });
-        http.setTimeout(10000);
+        
         http.open('POST', Ti.App.DOMAIN_NAME + '/js-fields/omadi_fields/duplicate_warnings.json');
     
         Utils.setCookieHeader(http);
