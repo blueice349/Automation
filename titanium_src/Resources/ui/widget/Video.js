@@ -722,7 +722,6 @@ VideoWidget.prototype.openVideoChooser = function(imageView){"use strict";
                     imageView.image = thumbVideo.thumbnailImageAtTime(0, Ti.Media.VIDEO_TIME_OPTION_NEAREST_KEYFRAME);
                 }
                 
-
                 // Make sure we never lose a video reference due to a crash
                 self.formObj.saveForm('continuous');
                 Display.doneLoading();
