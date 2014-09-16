@@ -840,8 +840,6 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
                 };
 
                 http.send();
-                
-                
             }
             else if(useProgressBar){
                 alert("You do not have an Internet connection.");
@@ -1696,7 +1694,7 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
 
 	var now = Omadi.utils.getUTCTimestamp();
     var lastUploadStartTimestamp = Omadi.service.getLastUploadStartTimestamp();
-    var isUploadingFile = lastUploadStartTimestamp === null;
+    var isUploadingFile = (lastUploadStartTimestamp !== null);
     
     // Don't try to upload a file while form data is being saved. This causes photos to get messed up.
     // Don't upload a file if another file upload has started in the last 90 seconds.
@@ -1713,6 +1711,7 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
     Omadi.service.currentFileUpload = Omadi.data.getNextPhotoData();
     if (!Omadi.service.currentFileUpload) {
 		Ti.API.error('Next photo data is null');
+		Ti.App.fireEvent("doneSendingPhotos");
 		return;
     }
     
@@ -1738,24 +1737,24 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
 		// Build HTTP header
         Omadi.service.uploadFileHTTP = Ti.Network.createHTTPClient({
             enableKeepAlive: false,
-            validatesSecureCertificate: false
+            validatesSecureCertificate: false,
+            onsendstream: Omadi.service.photoUploadStream,
+            onload: Omadi.service.photoUploadSuccess,
+            onerror: Omadi.service.photoUploadError,
+            timeout: 45000,
+            nid: Omadi.service.currentFileUpload.nid,
+            photoId: Omadi.service.currentFileUpload.id,
+            delta: Omadi.service.currentFileUpload.delta,
+            field_name: Omadi.service.currentFileUpload.field_name,
+            upload_part: Omadi.service.currentFileUpload.upload_part,
+            numUploadParts: Omadi.service.currentFileUpload.numUploadParts,
+            tries: Omadi.service.currentFileUpload.tries,
+            isBackground: isBackground
         });
         
-        Omadi.service.uploadFileHTTP.onsendstream = Omadi.service.photoUploadStream;
-        Omadi.service.uploadFileHTTP.onload = Omadi.service.photoUploadSuccess;
-        Omadi.service.uploadFileHTTP.onerror = Omadi.service.photoUploadError;
         Omadi.service.uploadFileHTTP.open('POST', Omadi.DOMAIN_NAME + '/js-sync/upload.json');
-        Omadi.service.uploadFileHTTP.timeout = 45000;
         
-        Omadi.service.uploadFileHTTP.nid = Omadi.service.currentFileUpload.nid;
-        Omadi.service.uploadFileHTTP.photoId = Omadi.service.currentFileUpload.id;
-        Omadi.service.uploadFileHTTP.delta = Omadi.service.currentFileUpload.delta;
-        Omadi.service.uploadFileHTTP.field_name = Omadi.service.currentFileUpload.field_name;
-        Omadi.service.uploadFileHTTP.upload_part = Omadi.service.currentFileUpload.upload_part;
-        Omadi.service.uploadFileHTTP.numUploadParts = Omadi.service.currentFileUpload.numUploadParts;
-        Omadi.service.uploadFileHTTP.tries = Omadi.service.currentFileUpload.tries;
-        Omadi.service.uploadFileHTTP.isBackground = isBackground;
-
+        // Send headers after open
         Omadi.service.uploadFileHTTP.setRequestHeader('Content-Type', 'application/json');
         
         // Include cookie if there is one

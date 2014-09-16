@@ -455,7 +455,6 @@ Omadi.data.nodeSave = function(node) {"use strict";
                 }
             }
         }
-    
       
         // For autocomplete widgets
         node = Omadi.data.addNewTerms(node);
