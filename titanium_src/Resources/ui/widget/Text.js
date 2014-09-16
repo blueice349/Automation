@@ -1,11 +1,7 @@
 /*jslint eqeq:true, plusplus: true*/
 
-var Widget;
-
 var Utils = require('lib/Utils');
 var Display = require('lib/Display');
-
-Widget = {};
 
 function TextWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.formObj = formObj;
@@ -48,6 +44,7 @@ function TextWidget(formObj, instance, fieldViewWrapper){"use strict";
 TextWidget.prototype.getFieldView = function(){"use strict";
     
     var i, element, addButton;
+    var self = this;
     
     this.fieldView = Ti.UI.createView({
        width: '100%',
@@ -80,25 +77,23 @@ TextWidget.prototype.getFieldView = function(){"use strict";
             height: Ti.UI.SIZE,
             fieldName: this.instance.field_name
         });
-            
-        addButton.addEventListener('click', this.addAnotherCallback);
+        
+        addButton.addEventListener('click', function(e){
+		    try{
+		        self.numVisibleFields ++;
+		        self.formObj.unfocusField();
+		        self.redraw();
+		    }
+		    catch(ex){
+		        Utils.sendErrorReport("Exception in text field add another: " + ex);
+		    }
+		});
         
         this.fieldView.add(addButton);
         this.fieldView.add(this.formObj.getSpacerView());
     }
     
     return this.fieldView;
-};
-
-TextWidget.prototype.addAnotherCallback = function(e){"use strict";
-    try{
-        Widget[e.source.fieldName].numVisibleFields ++;
-        Widget[e.source.fieldName].formObj.unfocusField();
-        Widget[e.source.fieldName].redraw();
-    }
-    catch(ex){
-        Utils.sendErrorReport("Exception in text field add another: " + ex);
-    }
 };
 
 TextWidget.prototype.redraw = function(){"use strict";
@@ -129,6 +124,7 @@ TextWidget.prototype.redraw = function(){"use strict";
 
 TextWidget.prototype.getNewElementWrapper = function(index){"use strict";
     var dbValue, textValue, element, wrapper, duplicateWarningButton;
+    var self = this;
     
     dbValue = "";
     textValue = "";
@@ -186,7 +182,9 @@ TextWidget.prototype.getNewElementWrapper = function(index){"use strict";
         element.capitalization = this.instance.settings.capitalization;
     }
     
-    element.addEventListener('change', this.onChangeListener);
+    element.addEventListener('change', function(event) {
+		self.onChangeListener(event);
+	});
     
     wrapper.add(element);
     
@@ -210,20 +208,15 @@ TextWidget.prototype.getNewElementWrapper = function(index){"use strict";
         }
         
         duplicateWarningButton.addEventListener('click', function(e){
-            var fieldName, value, origLastChange, actualLastChange, widget, formPart;
+            var fieldName, value, origLastChange, actualLastChange, formPart;
             
             try{
                 fieldName = e.source.instance.field_name;
                 
-                if(typeof Widget[fieldName] !== 'undefined'){
-                    widget = Widget[fieldName];
-                    // Make sure the node object is populated correctly since this is not a regular save
-                    widget.formObj.formToNode();
-                    widget.formObj.showDuplicateWarnings(null);
-                }
-                else{
-                    Ti.API.error("duplicate widget " + fieldName + " doesn't exist");
-                }
+                // Make sure the node object is populated correctly since this is not a regular save
+                self.formObj.formToNode();
+                self.formObj.showDuplicateWarnings(null);
+                
             }
             catch(ex){
                 Utils.sendErrorReport("Exception in duplicate warning timeout: " + ex);
@@ -266,7 +259,7 @@ TextWidget.prototype.onChangeListener = function(e) {"use strict";
             if(typeof e.source.lastValue === 'undefined' || typeof e.source.value === 'undefined' || 
                       e.source.lastValue == "" || e.source.value == ""){
                 Ti.API.debug("Checking conditionally required");
-                Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
+                this.formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
             }
         }
         
@@ -274,7 +267,7 @@ TextWidget.prototype.onChangeListener = function(e) {"use strict";
             
             // Only check for duplicate warnings if set in the field settings
             setTimeout(function(){
-                var fieldName, value, origLastChange, actualLastChange, widget, formPart;
+                var fieldName, value, origLastChange, actualLastChange, formPart;
                 
                 try{
                     fieldName = e.source.instance.field_name;
@@ -282,37 +275,31 @@ TextWidget.prototype.onChangeListener = function(e) {"use strict";
                     value = value.trim();
                     
                     if(value.length > 0){
-                        if(typeof Widget[fieldName] !== 'undefined'){
-                            widget = Widget[fieldName];
-                            formPart = widget.formObj.form_part;
+                        formPart = this.formObj.form_part;
+                        
+                        if(formPart <= 0){
+                        
+                            origLastChange = now;
+                        
+                            actualLastChange = this.elements[0].lastChange;
                             
-                            if(formPart <= 0){
-                            
-                                origLastChange = now;
-                            
-                                actualLastChange = widget.elements[0].lastChange;
+                            if(origLastChange == actualLastChange){
+                                // The last change happened 5 seconds ago, so possibly send request if it hasn't been sent before
                                 
-                                if(origLastChange == actualLastChange){
-                                    // The last change happened 5 seconds ago, so possibly send request if it hasn't been sent before
+                                if(typeof this.duplicateWarnings[value] === 'undefined'){
+                                    Ti.API.debug("Send Request baby!");    
                                     
-                                    if(typeof widget.duplicateWarnings[value] === 'undefined'){
-                                        Ti.API.debug("Send Request baby!");    
-                                        
-                                        widget.setDuplicateWarnings(fieldName, value, 'silent');
-                                    }
-                                    else{
-                                        Ti.API.debug("Already have the warning cached for " + value);
-                                    }
+                                    this.setDuplicateWarnings(fieldName, value, 'silent');
                                 }
-                            }
-                            else{
-                                Ti.API.debug("Duplicate form part above 0");
+                                else{
+                                    Ti.API.debug("Already have the warning cached for " + value);
+                                }
                             }
                         }
                         else{
-                            Ti.API.error("duplicate widget " + fieldName + " doesn't exist");
+                            Ti.API.debug("Duplicate form part above 0");
                         }
-                    }
+					}
                     else{
                         Ti.API.error("value is blank");
                     }
@@ -331,6 +318,7 @@ TextWidget.prototype.onChangeListener = function(e) {"use strict";
 TextWidget.prototype.setDuplicateWarnings = function(fieldName, value, saveType){"use strict";
     
     var http;
+    var self = this;
     
     try{
         http = Ti.Network.createHTTPClient({
@@ -351,18 +339,16 @@ TextWidget.prototype.setDuplicateWarnings = function(fieldName, value, saveType)
                 
                 json = JSON.parse(this.responseText);
                 
-                if(typeof Widget[fieldName] !== 'undefined'){
                 
-                    Widget[fieldName].duplicateWarnings[value] = json;
-                    
-                    if(typeof Widget[fieldName].formObj !== 'undefined'){
-                        Widget[fieldName].formObj.win.fireEvent('duplicateWarningComplete', {
-                            json: json,
-                            fieldName: fieldName,
-                            value: value,
-                            saveType: saveType
-                        });
-                    }
+                self.duplicateWarnings[value] = json;
+                
+                if(typeof self.formObj !== 'undefined'){
+                    self.formObj.win.fireEvent('duplicateWarningComplete', {
+                        json: json,
+                        fieldName: fieldName,
+                        value: value,
+                        saveType: saveType
+                    });
                 }
             }
             catch(ex){
@@ -377,7 +363,7 @@ TextWidget.prototype.setDuplicateWarnings = function(fieldName, value, saveType)
         http.send(JSON.stringify({
             field_name: fieldName,
             value: value,
-            nid: Widget[fieldName].formObj.nid
+            nid: this.formObj.nid
         }));
     }
     catch(ex){
@@ -390,8 +376,6 @@ TextWidget.prototype.cleanUp = function(){"use strict";
     Ti.API.debug("in text widget cleanup");
     
     try{
-        
-        Widget[this.instance.field_name] = null;
         
         for(j = 0; j < this.elementWrappers.length; j ++){
             this.elementWrappers[j].remove(this.elements[j]);
@@ -421,9 +405,8 @@ TextWidget.prototype.cleanUp = function(){"use strict";
 };
 
 exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
-    Widget[instance.field_name] = new TextWidget(FormObj, instance, fieldViewWrapper);
     
-    return Widget[instance.field_name];
+    return new TextWidget(FormObj, instance, fieldViewWrapper);
 };
 
 

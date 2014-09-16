@@ -1,9 +1,5 @@
 /*jslint eqeq:true, plusplus: true*/
 
-var Widget;
-
-Widget = {};
-
 var Utils = require('lib/Utils');
 var Display = require('lib/Display');
 
@@ -153,8 +149,6 @@ FileWidget.prototype.cleanUp = function(){"use strict";
     Ti.API.debug("in file widget cleanup");
     
     try{
-        Widget[this.instance.field_name] = null;
-        
         for(j = 0; j < this.elements.length; j ++){
             if (this.elements[j]) {
 	            this.fieldView.remove(this.elements[j]);
@@ -182,9 +176,7 @@ FileWidget.prototype.cleanUp = function(){"use strict";
 };
 
 exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
-    Widget[instance.field_name] = new FileWidget(FormObj, instance, fieldViewWrapper);
-    
-    return Widget[instance.field_name];
+    return new FileWidget(FormObj, instance, fieldViewWrapper);
 };
 
 

@@ -15,7 +15,7 @@ var Node = require('objects/Node');
 var ImageWidget = require('ui/widget/Image');
 
 // Constants
-Omadi.data.MAX_BYTES_PER_UPLOAD = 2097152; // 2MB
+Omadi.data.MAX_BYTES_PER_UPLOAD = 1000000; // 1MB
 
 
 Omadi.data.cameraAndroid = null;

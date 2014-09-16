@@ -1,7 +1,6 @@
 /*jslint eqeq:true, plusplus: true*/
 
-var Widget, dateWindow, date_picker, time_picker, innerWrapperView, wrapperView;
-Widget = {};
+var dateWindow, date_picker, time_picker, innerWrapperView, wrapperView;
 dateWindow = null;
 
 var Utils = require('lib/Utils');
@@ -57,6 +56,7 @@ DatestampWidget.prototype.isEndDate = function(){'use strict';
 
 DatestampWidget.prototype.getFieldView = function(){"use strict";
     var i, element, addButton;
+    var self = this;
     
     this.fieldView = Ti.UI.createView({
        width: '100%',
@@ -90,12 +90,12 @@ DatestampWidget.prototype.getFieldView = function(){"use strict";
             horizontalWrap: false,
             fieldName: this.instance.field_name
         });
-            
+        
         addButton.addEventListener('click', function(e){
             try{
-                Widget[e.source.fieldName].numVisibleFields ++;
-                Widget[e.source.fieldName].formObj.unfocusField();
-                Widget[e.source.fieldName].redraw();
+                self.numVisibleFields ++;
+                self.formObj.unfocusField();
+                self.redraw();
             }
             catch(ex){
                 Utils.sendErrorReport("Exception redrawing datestamp field: " + ex);
@@ -141,6 +141,7 @@ DatestampWidget.prototype.redraw = function(){"use strict";
 
 DatestampWidget.prototype.getNewElement = function(index){"use strict";
     var dbValue, textValue, element, i, showTime, jsDate, dateText, timeText, timeView, dateView;
+	var self = this;
     
     dbValue = this.dbValues[index] || null;
     textValue = this.textValues[index] || "";
@@ -196,7 +197,7 @@ DatestampWidget.prototype.getNewElement = function(index){"use strict";
     dateView.addEventListener('click', function(e) {
         try{
             if (e.source.instance.can_edit) {
-                Widget[e.source.instance.field_name].displayPicker(e.source.delta, e.source.jsDate, 'date', showTime, e.source.origDBValue);
+                self.displayPicker(e.source.delta, e.source.jsDate, 'date', showTime, e.source.origDBValue);
             }
         }
         catch(ex){
@@ -229,7 +230,7 @@ DatestampWidget.prototype.getNewElement = function(index){"use strict";
         timeView.addEventListener('click', function(e) {
             try{
                 if (e.source.instance.can_edit) {
-                    Widget[e.source.instance.field_name].displayPicker(e.source.delta, e.source.jsDate, 'time', true, e.source.origDBValue);
+                    self.displayPicker(e.source.delta, e.source.jsDate, 'time', true, e.source.origDBValue);
                 }
             }
             catch(ex){
@@ -250,6 +251,7 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
     var titleLabel, minDate, opacView, maxDate, 
         okButton, clearButton, buttonView, topButtonsView, 
         widgetYear, doneButton, cancelButton;
+    var self = this;
     
     Ti.API.debug("in display picker");
     
@@ -542,7 +544,7 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
             try{
                 newDate = null;
                 
-                widget = Widget[e.source.instance.field_name];
+                widget = self;
                 
                 if(typeof date_picker !== 'undefined' && date_picker !== null){
                     
@@ -656,7 +658,7 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
             var callback, i, widget;
             
             try{
-                widget = Widget[e.source.instance.field_name];
+                widget = self;
                 
                 widget.elements[e.source.delta].dbValue = null;
                 widget.elements[e.source.delta].textValue = "";
@@ -771,8 +773,6 @@ DatestampWidget.prototype.cleanUp = function(){"use strict";
     
     try{
         
-        Widget[this.instance.field_name] = null;
-        
         for(j = 0; j < this.elements.length; j ++){
             
             if(typeof this.timeViews[j] !== 'undefined'){
@@ -809,9 +809,7 @@ DatestampWidget.prototype.cleanUp = function(){"use strict";
 };
 
 exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
-    Widget[instance.field_name] = new DatestampWidget(FormObj, instance, fieldViewWrapper);
-    
-    return Widget[instance.field_name];
+    return new DatestampWidget(FormObj, instance, fieldViewWrapper);
 };
 
 

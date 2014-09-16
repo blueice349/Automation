@@ -1,11 +1,9 @@
 /*jslint eqeq:true, plusplus:true, vars:true*/
 
-var Widget;
 var Utils = require('lib/Utils');
 var Database = require('lib/Database');
 var Display = require('lib/Display');
 var Location = require('lib/Location');
-Widget = {};
 
 var Utils = require('lib/Utils');
 
@@ -107,6 +105,7 @@ SignatureWidget.prototype.getImageNid = function() {"use strict";
 SignatureWidget.prototype.getNewElement = function(index){"use strict";
     var widgetView, dbValue, imageData, i, numImagesShowing = 0, 
         signNowButton, imageNid, buttonView, imageWrapper, sigLine, thex;
+    var self = this;
 
     dbValue = null;
     imageData = [];
@@ -233,7 +232,7 @@ SignatureWidget.prototype.getNewElement = function(index){"use strict";
     widgetView.add(buttonView);
     
     buttonView.addEventListener('click', function(e){
-        var widget = Widget[e.source.instance.field_name];
+        var widget = self;
         try{
             widget.openSignatureView();
         }
@@ -268,6 +267,7 @@ SignatureWidget.prototype.openSignatureView = function(){"use strict";
     var win, thex, sigLine, screenShadow, wrapper, outsideWrapper, wrapperShadow, 
         doneButton, clearButton, cancelButton, paintView, buttonView, 
         scrollView, textView, textLabel, overlayButton, overlayLabel, hasText;
+    var self = this;
     
     win = Ti.UI.createWindow({  
         orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT],
@@ -516,7 +516,7 @@ SignatureWidget.prototype.openSignatureView = function(){"use strict";
         try{
             blob = paintView.toImage();
             
-            widget = Widget[e.source.instance.field_name];
+            widget = self;
             
             widget.removePreviousSignature();
             
@@ -528,7 +528,7 @@ SignatureWidget.prototype.openSignatureView = function(){"use strict";
             // To leave for a possibly slow iOS device
 
             setTimeout(function(){
-                Widget[e.source.instance.field_name].saveSignature(e.source);
+                self.saveSignature(e.source);
             }, 1000);
         }
         catch(ex){
@@ -638,9 +638,6 @@ SignatureWidget.prototype.cleanUp = function(){"use strict";
     Ti.API.debug("in signature widget cleanup");
     
     try{
-        
-        Widget[this.instance.field_name] = null;
-        
         if(this.imageView !== null){
             this.imageWrapper.remove(this.imageView);
             this.imageView = null;
@@ -675,9 +672,7 @@ SignatureWidget.prototype.cleanUp = function(){"use strict";
 };
 
 exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
-    Widget[instance.field_name] = new SignatureWidget(FormObj, instance, fieldViewWrapper);
-    
-    return Widget[instance.field_name];
+    return new SignatureWidget(FormObj, instance, fieldViewWrapper);
 };
 
 

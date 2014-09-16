@@ -1,8 +1,5 @@
 /*jslint eqeq:true, plusplus: true, vars:true,nomen:true*/
 
-var Widget;
-Widget = {};
-
 var Utils = require('lib/Utils');
 var Display = require('lib/Display');
 var Database = require('lib/Database');
@@ -64,6 +61,7 @@ function ExtraPriceWidget(formObj, instance, fieldViewWrapper){"use strict";
 ExtraPriceWidget.prototype.getFieldView = function(){"use strict";
     
     var i, element, addButton;
+    var self = this;
     
     this.fieldView = Ti.UI.createView({
        width: '100%',
@@ -104,12 +102,12 @@ ExtraPriceWidget.prototype.getFieldView = function(){"use strict";
             horizontalWrap: false,
             fieldName: this.instance.field_name
         });
-            
+        
         addButton.addEventListener('click', function(e){
             try{
-                Widget[e.source.fieldName].numVisibleFields ++;
-                Widget[e.source.fieldName].formObj.unfocusField();
-                Widget[e.source.fieldName].redraw();
+                self.numVisibleFields ++;
+                self.formObj.unfocusField();
+                self.redraw();
             }
             catch(ex){
                 Utils.sendErrorReport("Exception adding one to extra price: " + ex);
@@ -154,10 +152,11 @@ ExtraPriceWidget.prototype.redraw = function(){"use strict";
 
 ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
     var settings, descView, priceView, dbValue, wrapper, dollarView, dataRow, 
-            textValue, priceValue, autocomplete_table, outsideWrapper, description_type, 
-            detailsView, description, details, jsonValue, quantity, total, price, 
-            useQuantity, quantityWrapper, quantityField, totalField, i;
-    
+        textValue, priceValue, autocomplete_table, outsideWrapper, description_type, 
+        detailsView, description, details, jsonValue, quantity, total, price, 
+        useQuantity, quantityWrapper, quantityField, totalField, i;
+    var self = this;
+        
     try{
         dbValue = "";
         description = "";
@@ -277,7 +276,7 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
         priceView.addEventListener('change', function(e){
             var widget, descView, jsonValue;
             
-            widget = Widget[e.source.instance.field_name];
+            widget = self;
             descView = widget.descFields[e.source.delta];
             
             jsonValue = descView.jsonValue;
@@ -354,7 +353,7 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
             descView.addEventListener('blur', function(e) {
                 var widget, autocompleteTable;
                 try{
-                    widget = Widget[e.source.instance.field_name];
+                    widget = self;
                     if (widget) {
 	                    autocompleteTable = widget.autocompleteTables[e.source.delta];
 	                    
@@ -374,7 +373,7 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
             autocomplete_table.addEventListener('click', function(e) {
                 var jsonValue, descView, widget, autocompleteTable, optionsIndex;
                 try{
-                    widget = Widget[e.source.instance.field_name];
+                    widget = self;
                     descView = widget.descFields[e.source.delta];
                     
                     descView.value = e.rowData.title;
@@ -421,7 +420,7 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
                 try{
                     if (e.source.touched === true) {
                         
-                        widget = Widget[e.source.instance.field_name];
+                        widget = self;
                         autocompleteTable = widget.autocompleteTables[e.source.delta];
                         
                         // Must compare as strings since 4. and 4 would need to be different, but wouldn't be for a number
@@ -513,7 +512,7 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
                         if(typeof e.source.lastValue === 'undefined' || typeof e.source.value === 'undefined' || 
                                   e.source.lastValue == "" || e.source.value == ""){
                             Ti.API.debug("Checking conditionally required");
-                            Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
+                            self.formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
                         }
                     }
                     
@@ -568,7 +567,7 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
                                 
                                 if(typeof ev.source.options[ev.index] !== 'undefined'){
                                     
-                                    widget = Widget[e.source.instance.field_name];
+                                    widget = self;
                                     
                                     descView = widget.descFields[e.source.delta];
                                     quantityField = widget.quantityFields[e.source.delta];
@@ -664,7 +663,7 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
                     if(typeof e.source.lastValue === 'undefined' || typeof e.source.value === 'undefined' || 
                               e.source.lastValue == "" || e.source.value == ""){
                         Ti.API.debug("Checking conditionally required");
-                        Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
+                        self.formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
                     }
                 }
                 
@@ -695,7 +694,7 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
         detailsView.addEventListener('change', function(e){
             var widget, descView;
             
-            widget = Widget[e.source.instance.field_name];
+            widget = self;
             descView = widget.descFields[e.source.delta];
             
             jsonValue = descView.jsonValue;
@@ -733,7 +732,7 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
             quantityField.addEventListener('change', function(e){
                 var widget, descView, jsonValue;
                 
-                widget = Widget[e.source.instance.field_name];
+                widget = self;
                 descView = widget.descFields[e.source.delta];
                 
                 jsonValue = descView.jsonValue;
@@ -1270,8 +1269,6 @@ ExtraPriceWidget.prototype.cleanUp = function(){"use strict";
     Ti.API.debug("in amounts widget cleanup");
     
     try{
-        Widget[this.instance.field_name] = null;
-        
         for(j = 0; j < this.elements.length; j ++){
             this.fieldView.remove(this.elements[j]);
             this.elements[j] = null;
@@ -1323,9 +1320,7 @@ ExtraPriceWidget.prototype.cleanUp = function(){"use strict";
 
 
 exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
-    Widget[instance.field_name] = new ExtraPriceWidget(FormObj, instance, fieldViewWrapper);
-    
-    return Widget[instance.field_name];
+    return new ExtraPriceWidget(FormObj, instance, fieldViewWrapper);
 };
 
 exports.getView = function(node, instance){"use strict";

@@ -1,11 +1,8 @@
 /*jslint eqeq:true, plusplus: true*/
 
-var Widget;
 var Utils = require('lib/Utils');
 var Database = require('lib/Database');
 var Display = require('lib/Display');
-
-Widget = {};
 
 function getTimeRulesText(timeValue) {"use strict";
     var timeStrings = [], dayStrings = [], times = [], returnVal, rows, i, row, values, day, time, 
@@ -197,6 +194,7 @@ RulesFieldWidget.prototype.redraw = function(){"use strict";
 
 RulesFieldWidget.prototype.getNewElement = function(index){"use strict";
     var widget, nodeValue, i, key, violation_name, db, result, formTypes, row, view, hasRules;
+    var self = this;
     Ti.API.debug("Creating rules_field field: " + this.instance.label);
     
     hasRules = false;
@@ -243,6 +241,10 @@ RulesFieldWidget.prototype.getNewElement = function(index){"use strict";
                     if (nodeValue.length > 0) {
                 
                         Ti.API.debug("in with the array");
+                        
+                        var showDetail = function(event) {
+							self.showDetail(event);
+                        };
 
                         for ( i = 0; i < nodeValue.length; i++) {
                             try{
@@ -301,7 +303,7 @@ RulesFieldWidget.prototype.getNewElement = function(index){"use strict";
                                 row.add(row.image);
                                 row.add(row.label);
     
-                                row.addEventListener('click', this.showDetail);
+                                row.addEventListener('click', showDetail);
     
                                 view.add(row);
                             }
@@ -415,7 +417,7 @@ RulesFieldWidget.prototype.showDetail = function(e) {"use strict";
             color : '#fff',
             textAlign : 'center'
         });
-        headerRow.add(forms);
+		headerRow.add(forms);
 
         dttm = Ti.UI.createLabel({
             text : 'Time Rules',
@@ -572,7 +574,7 @@ RulesFieldWidget.prototype.showDetail = function(e) {"use strict";
         }
         
         try{
-            Widget[e.source.instance.field_name].formObj.unfocusField();
+            this.formObj.unfocusField();
         }
         catch(ex1){}
         
@@ -587,9 +589,6 @@ RulesFieldWidget.prototype.cleanUp = function(){"use strict";
     var i, j;
     
     try{
-        
-        Widget[this.instance.field_name] = null;
-        
         for(j = 0; j < this.elements.length; j ++){
             this.fieldView.remove(this.elements[j]);
             this.elements[j] = null;
@@ -613,9 +612,7 @@ RulesFieldWidget.prototype.cleanUp = function(){"use strict";
 };
 
 exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
-    Widget[instance.field_name] = new RulesFieldWidget(FormObj, instance, fieldViewWrapper);
-    
-    return Widget[instance.field_name];
+    return new RulesFieldWidget(FormObj, instance, fieldViewWrapper);
 };
 
 exports.getView = function(node, instance){"use strict";
