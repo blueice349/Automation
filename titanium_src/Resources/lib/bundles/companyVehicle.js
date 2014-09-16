@@ -84,9 +84,10 @@ Omadi.bundles.companyVehicle.setUserVehicle = function(vehicle_nid) {"use strict
         
         http = Ti.Network.createHTTPClient({
             enableKeepAlive: false,
-            validatesSecureCertificate: false
+            validatesSecureCertificate: false,
+            timeout: 60000
         });
-        http.setTimeout(60000);
+        
         http.open('POST', Ti.App.DOMAIN_NAME + '/js-company-vehicle/company_vehicle/enter_vehicle.json');
     
         http.setRequestHeader("Content-Type", "application/json");
@@ -157,9 +158,10 @@ Omadi.bundles.companyVehicle.exitVehicle = function(){"use strict";
             
             http = Ti.Network.createHTTPClient({
                 enableKeepAlive: false,
-                validatesSecureCertificate: false
+                validatesSecureCertificate: false,
+                timeout: 30000
             });
-            http.setTimeout(30000);
+            
             http.open('POST', Ti.App.DOMAIN_NAME + '/js-company-vehicle/company_vehicle/exit_vehicle.json');
         
             http.setRequestHeader("Content-Type", "application/json");

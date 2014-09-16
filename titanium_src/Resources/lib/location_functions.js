@@ -170,10 +170,9 @@ Omadi.location.uploadGPSCoordinates = function() {"use strict";
 
                 http = Ti.Network.createHTTPClient({
                     enableKeepAlive: false,
-                    validatesSecureCertificate: false
+                    validatesSecureCertificate: false,
+                    timeout: 30000
                 });
-                //Timeout until error:
-                http.setTimeout(30000);
                 
                 //Opens address to retrieve contact list
                 http.open('POST', Ti.App.DOMAIN_NAME + '/js-location/mobile_location.json');

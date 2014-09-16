@@ -524,7 +524,8 @@ VideoWidget.prototype.openVideoPlayer = function(imageView){"use strict";
         http = Ti.Network.createHTTPClient({
             enableKeepAlive: false,
             validatesSecureCertificate: false,
-            instance: this.instance
+            instance: this.instance,
+            timeout: 30000
         });
         http.onload = function(e){
             /*global isJsonString*/
@@ -569,7 +570,6 @@ VideoWidget.prototype.openVideoPlayer = function(imageView){"use strict";
         Ti.API.info("S3: " + s3URL);
         
         http.open('GET', s3URL);
-        http.setTimeout(30000);
 
         http.setRequestHeader("Content-Type", "application/json");
         Utils.setCookieHeader(http);

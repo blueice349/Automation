@@ -817,11 +817,11 @@ Omadi.display.insertBundleIcon = function(type, imageView){"use strict";
     
     http = Ti.Network.createHTTPClient({
         enableKeepAlive: false,
-        validatesSecureCertificate: false
+        validatesSecureCertificate: false,
+        timeout: 45000,
+        cache: false
     });
-    http.setTimeout(45000);
-    http.cache = false;
-    http.enableKeepAlive = false;
+
     http.open('GET', Ti.App.DOMAIN_NAME + '/custom_forms/icon/' + type);
 
     Ti.API.debug("Getting icon for " + type);

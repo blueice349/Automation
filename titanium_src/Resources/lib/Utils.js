@@ -86,9 +86,9 @@ var sendErrorReport = function(message){
     
     http = Ti.Network.createHTTPClient({
         enableKeepAlive: false,
-        validatesSecureCertificate: false
+        validatesSecureCertificate: false,
+        timeout: 30000
     });
-    http.setTimeout(30000);
     
     http.onerror = function(){
        Ti.App.fireEvent("errorReportFailed");

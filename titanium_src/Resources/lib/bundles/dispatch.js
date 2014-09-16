@@ -194,9 +194,10 @@ Omadi.bundles.dispatch.acceptJob = function(args){"use strict";
             
             http = Ti.Network.createHTTPClient({
                 enableKeepAlive: false,
-                validatesSecureCertificate: false
+                validatesSecureCertificate: false,
+                timeout: 15000
             });
-            http.setTimeout(15000);
+            
             http.open('POST', Ti.App.DOMAIN_NAME + '/js-dispatch/dispatch/accept_job.json');
         
             http.setRequestHeader("Content-Type", "application/json");
@@ -632,9 +633,10 @@ Omadi.bundles.dispatch.updateStatus = function(nid, status, background){"use str
         
         http = Ti.Network.createHTTPClient({
             enableKeepAlive: false,
-            validatesSecureCertificate: false
+            validatesSecureCertificate: false,
+            timeout: 15000
         });
-        http.setTimeout(15000);
+        
         http.open('POST', Ti.App.DOMAIN_NAME + '/js-dispatch/dispatch/update_status.json');
     
         http.setRequestHeader("Content-Type", "application/json");
@@ -727,9 +729,10 @@ Omadi.bundles.dispatch.discontinueJob = function(nid, status, background){"use s
         
         http = Ti.Network.createHTTPClient({
             enableKeepAlive: false,
-            validatesSecureCertificate: false
+            validatesSecureCertificate: false,
+            timeout: 15000
         });
-        http.setTimeout(15000);
+
         http.open('POST', Ti.App.DOMAIN_NAME + '/js-dispatch/dispatch/discontinue_job.json');
     
         http.setRequestHeader("Content-Type", "application/json");
