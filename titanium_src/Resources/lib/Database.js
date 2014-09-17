@@ -1,7 +1,6 @@
 /*jslint nomen:true*/
 
 var _instance = null;
-var Utils = require('lib/Utils');
 
 function Database(){"use strict";
     this.mainDBConn = null;
@@ -135,6 +134,7 @@ exports.query = function(sql){"use strict";
         return db.execute(sql);
     }
     catch(ex){
+        var Utils = require('lib/Utils');
 		Utils.sendErrorReport("Exception running Main " + sql + ":" + ex);
     }
 };
@@ -145,6 +145,7 @@ exports.queryList = function(sql){"use strict";
         return db.execute(sql);
     }
     catch(ex){
+        var Utils = require('lib/Utils');
         Utils.sendErrorReport("Exception running List " + sql + ":" + ex);
     }
 };
@@ -155,6 +156,7 @@ exports.queryGPS = function(sql){"use strict";
         return db.execute(sql);
     }
     catch(ex){
+        var Utils = require('lib/Utils');
         Utils.sendErrorReport("Exception running List " + sql + ":" + ex);
     }
 };

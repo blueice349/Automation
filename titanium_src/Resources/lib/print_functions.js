@@ -34,9 +34,8 @@ Omadi.print.canPrintReceipt = function(nid){"use strict";
         typeof bundle.data.mobile_printer !== 'undefined' &&
         typeof bundle.data.mobile_printer.receipt !== 'undefined' &&
         typeof bundle.data.mobile_printer.receipt.items !== 'undefined' &&
-        Omadi.utils.isArray(bundle.data.mobile_printer.receipt.items) &&
+        bundle.data.mobile_printer.receipt.items &&
         bundle.data.mobile_printer.receipt.items.length > 0){
-            
             
             // Make sure enough data is saved to be able to print the receipt
             if(typeof bundle.data.mobile_printer.allow_at_part !== 'undefined'){

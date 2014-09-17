@@ -839,8 +839,6 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
                 };
 
                 http.send();
-                
-                
             }
             else if(useProgressBar){
                 alert("You do not have an Internet connection.");
@@ -1693,7 +1691,7 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
 
 	var now = Omadi.utils.getUTCTimestamp();
     var lastUploadStartTimestamp = Omadi.service.getLastUploadStartTimestamp();
-    var isUploadingFile = lastUploadStartTimestamp !== null;
+    var isUploadingFile = (lastUploadStartTimestamp !== null);
     
     // Don't try to upload a file while form data is being saved. This causes photos to get messed up.
     // Don't upload a file if another file upload has started in the last 90 seconds.
@@ -1709,7 +1707,8 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
     
     Omadi.service.currentFileUpload = Omadi.data.getNextPhotoData();
     if (!Omadi.service.currentFileUpload) {
-		Ti.API.info('Next photo data is null');
+		Ti.API.error('Next photo data is null');
+		Ti.App.fireEvent("doneSendingPhotos");
 		return;
     }
     
@@ -1736,10 +1735,10 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
         Omadi.service.uploadFileHTTP = Ti.Network.createHTTPClient({
             enableKeepAlive: false,
             validatesSecureCertificate: false,
-            timeout: 45000,
             onsendstream: Omadi.service.photoUploadStream,
             onload: Omadi.service.photoUploadSuccess,
             onerror: Omadi.service.photoUploadError,
+            timeout: 45000,
             nid: Omadi.service.currentFileUpload.nid,
             photoId: Omadi.service.currentFileUpload.id,
             delta: Omadi.service.currentFileUpload.delta,
@@ -1749,9 +1748,9 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
             tries: Omadi.service.currentFileUpload.tries,
             isBackground: isBackground
         });
-
-        Omadi.service.uploadFileHTTP.open('POST', Ti.App.DOMAIN_NAME + '/js-sync/upload.json');
         
+        Omadi.service.uploadFileHTTP.open('POST', Omadi.DOMAIN_NAME + '/js-sync/upload.json');
+
         // Send headers after open
         Omadi.service.uploadFileHTTP.setRequestHeader('Content-Type', 'application/json');
         

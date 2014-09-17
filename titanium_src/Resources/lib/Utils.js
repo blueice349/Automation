@@ -2,7 +2,6 @@
 'use strict';
 
 var Database = require('lib/Database');
-var Node = require('objects/Node');
 
 function getUid(){
     var loginJson = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
@@ -587,7 +586,8 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
     try {
         row_matches = [];
         if ( typeof criteria.search_criteria !== 'undefined' && criteria.search_criteria != "") {
-
+            
+            var Node = require('objects/Node');
             instances = Node.getFields(node.type);
 
             for (criteria_index in criteria.search_criteria) {
