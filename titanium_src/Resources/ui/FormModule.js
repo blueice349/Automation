@@ -716,6 +716,9 @@ FormModule.prototype.saveNode = function(saveType) {"use strict";
 	    Ti.App.allowBackgroundUpdate = false;
 	    this.node = Omadi.data.nodeSave(this.node);
 	    
+	    // Since the continuous_nid can be changed inside the nodeSave above, it needs to be reset in the module
+	    this.continuous_nid = this.node.continuous_nid;
+	    
 	    if(this.node._saved){
             // Now that the node is saved on the phone or a big error occurred, allow background logouts
             Ti.App.allowBackgroundLogout = true;

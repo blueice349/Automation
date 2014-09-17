@@ -1004,6 +1004,8 @@ function openMainScreen(loggedIn){"use strict";
                 db = Omadi.utils.openListDatabase();
                 result = db.execute('SELECT * FROM login WHERE "id_log"=1');
                 domainName = result.fieldByName("picked");
+                Ti.App.DOMAIN_NAME = domainName;
+                
                 setProperties(domainName, Ti.Utils.base64decode(result.fieldByName("login_json")));
                 setClientAccount(domainName, db);
                 

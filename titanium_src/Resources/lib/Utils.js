@@ -1,3 +1,4 @@
+
 /*jslint node:true */
 'use strict';
 
@@ -12,6 +13,56 @@ function getUid(){
 }
 
 exports.getUid = getUid;
+
+function sendErrorReport(message){
+    var http, uid, domain, appVersion, platform, model, version;
+    
+    Ti.API.error("ERROR: " + message);
+    
+    if(typeof Ti.App.DOMAIN_NAME !== 'undefined'){
+        // If we don't have a domain name, this report cannot be sent correctly, so skip trying to send anything
+           
+        uid = getUid();
+        
+        domain = Ti.App.DOMAIN_NAME.replace('https://', '').replace('.omadi.com', '');
+        
+        appVersion = Ti.App.version;
+        model = Ti.Platform.model;
+        version = Ti.Platform.version;
+        platform = Ti.Platform.name;
+        
+        http = Ti.Network.createHTTPClient({
+            enableKeepAlive: false,
+            validatesSecureCertificate: false,
+            timeout: 30000
+        });
+        
+        http.onerror = function(){
+           Ti.App.fireEvent("errorReportFailed");
+        };
+        
+        http.onload = function(){
+           Ti.App.fireEvent("errorReportSuccess");
+        };
+        
+        http.open('POST', Ti.App.DOMAIN_NAME + '/js-sync/error.json');
+        
+        http.setRequestHeader("Content-Type", "application/json");
+        setCookieHeader(http);
+    
+        http.send(JSON.stringify({
+            domain: domain,
+            platform: platform,
+            model: model,
+            version: version,
+            appVersion: appVersion,
+            uid: uid,
+            message: message
+        }));
+    } 
+};
+
+exports.sendErrorReport = sendErrorReport;
 
 function getUTCTimestamp(){
     return Math.round(new Date() / 1000);  
@@ -69,7 +120,7 @@ function setCookieHeader(http) {
             Ti.API.debug("After setting header");
         }
         catch(ex){
-            sendErrorReport("Could not set cookie for " + http.location);
+            sendErrorReport("Could not set cookie for " + http.location + ": " + ex);
         }
     }
     
@@ -77,51 +128,6 @@ function setCookieHeader(http) {
 }
 
 exports.setCookieHeader = setCookieHeader;
-
-function sendErrorReport(message){
-    var http, uid, domain, appVersion, platform, model, version;
-    
-    Ti.API.error("ERROR: " + message);
-    
-    uid = getUid();
-    
-    domain = Ti.App.DOMAIN_NAME.replace('https://', '').replace('.omadi.com', '');
-    appVersion = Ti.App.version;
-    model = Ti.Platform.model;
-    version = Ti.Platform.version;
-    platform = Ti.Platform.name;
-    
-    http = Ti.Network.createHTTPClient({
-        enableKeepAlive: false,
-        validatesSecureCertificate: false,
-        timeout: 30000
-    });
-    
-    http.onerror = function(){
-       Ti.App.fireEvent("errorReportFailed");
-    };
-    
-    http.onload = function(){
-       Ti.App.fireEvent("errorReportSuccess");
-    };
-    
-    http.open('POST', Ti.App.DOMAIN_NAME + '/js-sync/error.json');
-    
-    http.setRequestHeader("Content-Type", "application/json");
-    setCookieHeader(http);
-
-    http.send(JSON.stringify({
-        domain: domain,
-        platform: platform,
-        model: model,
-        version: version,
-        appVersion: appVersion,
-        uid: uid,
-        message: message
-    }));
-}
-
-exports.sendErrorReport = sendErrorReport;
 
 function getTimeFormat(){
     var format, loginJson = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));

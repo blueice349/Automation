@@ -6,8 +6,6 @@ Omadi.utils = Omadi.utils || {};
 
 var Utils = require('lib/Utils');
 
-Ti.App.DOMAIN_NAME = domainName;
-
 // IMPORTANT, IMPORTANT, IMPORTANT, IMPORTANT!!!!!
 // When changing this version number, also change it in the Database module
 Omadi.DB_VERSION = "DB1725";
@@ -179,7 +177,7 @@ Omadi.utils.setCookieHeader = function(http) {"use strict";
             http.setRequestHeader("Cookie", cookie);
         }
         catch(ex){
-            Utils.sendErrorReport("Could not set cookie for " + http.location);
+            Utils.sendErrorReport("Could not set cookie for " + http.location + ": " + ex);
         }
     }
 };

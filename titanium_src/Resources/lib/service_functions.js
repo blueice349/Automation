@@ -1731,6 +1731,16 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
 	Ti.API.info('Uploading photo');
 	
 	try{
+	    
+	    if(Omadi.service.uploadFileHTTP !== null){
+	        try{
+	           // Make sure any previous HTTP requests are aborted (if not complete) before trying to send 
+	           Omadi.service.uploadFileHTTP.abort();
+	        } catch (ex){
+	            Ti.API.error("could not abort existing file upload: " + ex);
+	        }
+	    }
+	    
 		// Build HTTP header
         Omadi.service.uploadFileHTTP = Ti.Network.createHTTPClient({
             enableKeepAlive: false,
@@ -1749,7 +1759,9 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
             isBackground: isBackground
         });
         
-        Omadi.service.uploadFileHTTP.open('POST', Omadi.DOMAIN_NAME + '/js-sync/upload.json');
+        Ti.API.debug("domain: " + Ti.App.DOMAIN_NAME);
+        
+        Omadi.service.uploadFileHTTP.open('POST', Ti.App.DOMAIN_NAME + '/js-sync/upload.json');
 
         // Send headers after open
         Omadi.service.uploadFileHTTP.setRequestHeader('Content-Type', 'application/json');
