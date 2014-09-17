@@ -156,7 +156,6 @@ Omadi.bundles.dispatch.openDispatchDirections = function(node){"use strict";
             Omadi.display.getDrivingDirectionsTo(address);
         }
         else{
-            Utils.sendErrorReport("Street is not filled in: " + locationFieldName + " " + address + JSON.stringify(node));
             alert("The street address is blank, so directions cannot be opened.");
         }
     }
