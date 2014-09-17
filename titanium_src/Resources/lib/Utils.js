@@ -364,7 +364,7 @@ var isObject = function(input){
 exports.isObject = isObject;
 
 var isArray = function(input){
-    return typeof (input) === 'object' && input instanceof 'Array';
+    return typeof (input) === 'object' && input instanceof Array;
 };
 
 exports.isArray = isArray;
