@@ -1731,6 +1731,16 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
 	Ti.API.info('Uploading photo');
 	
 	try{
+	    
+	    if(Omadi.service.uploadFileHTTP === null){
+	        try{
+	           // Make sure any previous HTTP requests are aborted (if not complete) before trying to send 
+	           Omadi.service.uploadFileHTTP.abort();
+	        } catch (ex){
+	            Ti.API.error("could not abort existing file upload.");
+	        }
+	    }
+	    
 		// Build HTTP header
         Omadi.service.uploadFileHTTP = Ti.Network.createHTTPClient({
             enableKeepAlive: false,
