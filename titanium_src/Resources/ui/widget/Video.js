@@ -192,21 +192,43 @@ VideoWidget.prototype.getImageNid = function() {"use strict";
 
 VideoWidget.prototype.addVideoViewsToWidgetView = function(fids, widgetView) {"use strict";
     try {
-        var localImages = this.getNonUploadedVideos();
-        var i,j;
-        
-        for (i = 0, j = 0; i < fids.length; i++) {
-            var imageView = null;
-            if (fids[i] === -1) {
-                imageView = this.getLocalImageView(fids[i], localImages[0][j++], i);
-            } else if (localImages[fids[i]]) {
-                imageView = this.getLocalImageView(fids[i], localImages[fids[i]], i);
-            } else {
-                imageView = this.getRemoteImageView(fids[i], i);
-            }
-            
-            widgetView.add(imageView);
-        }
+		var localImages = this.getNonUploadedVideos();
+		var i,j;
+		var self = this;
+		var showPhotoOptions = function(e){
+		    self.showPhotoOptions(e.source);
+		};
+		var localImageMismatch = false;
+		
+		for (i = 0, j = 0; i < fids.length; i++) {
+			var imageView = null; 
+			if (fids[i] === -1) {
+				j++;
+				if (localImages[0][j]) {
+					imageView = this.getLocalImageView(fids[i], localImages[0][j], i);
+				} else {
+					localImageMismatch = true;
+					continue;
+				}
+			} else if (localImages[fids[i]]) {
+				imageView = this.getLocalImageView(fids[i], localImages[fids[i]], i);
+			} else {
+				imageView = this.getRemoteImageView(fids[i], i);
+			}
+			
+			imageView.addEventListener('click', showPhotoOptions);
+			
+			widgetView.add(imageView);
+		}
+		
+		if (localImageMismatch) {
+			var expected = 0;
+			for (i = 0; i < fids.length; i++) {
+				expected += (fids[i] === -1) ? 1 : 0;
+			}
+			
+			Utils.sendErrorReport('Exception in addVideoViewsToWidgetView: Expected ' + expected + ' unuploaded videos for but only found ' + j);
+		}
     } catch (e) {
         Utils.sendErrorReport('Error in addVideoViewsToWidgetView: ' + e);
     }
