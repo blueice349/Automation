@@ -364,10 +364,6 @@ Omadi.bundles.dispatch.hasStatusOption = function(fieldOptions, status){"use str
     return statusTitle;
 };
 
-Omadi.bundles.dispatch.getStatusText = function(statusKey){"use strict";
-    
-};
-
 Omadi.bundles.dispatch.getStatusOptions = function(nid){"use strict";
     var options, db, result, termResult, vid, dispatchBundle, node, i, j,
         excludeKeys, excludeStatuses, 
