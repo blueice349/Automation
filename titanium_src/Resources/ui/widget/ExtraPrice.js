@@ -1347,9 +1347,11 @@ exports.getView = function(node, instance){"use strict";
                 
                 desc = "";
                 details = "";
-                if(typeof node[instance.field_name].textValues[i] !== 'undefined'){
+                
+                var textValue = node[instance.field_name].textValues[i];
+                if(textValue){
                    
-                    jsonValue = node[instance.field_name].textValues[i];
+                    jsonValue = JSON.parse(textValue);
                   
                     if(jsonValue.desc){
                         desc = jsonValue.desc;
