@@ -28,7 +28,7 @@ function TextLongWidget(formObj, instance, fieldViewWrapper){"use strict";
     }
     
     if(this.instance.settings.cardinality == -1){
-        if(Utils.isArray(this.dbValues)){
+        if(Utils.isObject(this.dbValues)){
             this.numVisibleFields = this.dbValues.length;
         }
         if(this.numVisibleFields < 1){

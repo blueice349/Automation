@@ -358,7 +358,7 @@ var isEmpty = function(number){
 exports.isEmpty = isEmpty;
 
 var isObject = function(input){
-    return typeof (input) === 'object';
+    return typeof (input) === 'object' && input !== null;
 };
 
 exports.isObject = isObject;

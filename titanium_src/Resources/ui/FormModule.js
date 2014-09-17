@@ -3195,7 +3195,7 @@ FormModule.prototype.addChangeCallback = function(fieldName, functionName, args)
         if(typeof this.fieldObjects[fieldName].onChangeCallbacks !== 'undefined'){
             Ti.API.debug("About to push callback");
             
-            if(!Omadi.utils.isArray(this.fieldObjects[fieldName].onChangeCallbacks)){
+            if(!Utils.isObject(this.fieldObjects[fieldName].onChangeCallbacks)){
                 Ti.API.debug("Not an array");
                 this.fieldObjects[fieldName].onChangeCallbacks = [];
             }
@@ -3961,7 +3961,7 @@ FormModule.prototype.setConditionallyRequiredLabelForInstance = function(instanc
                             case 'user_reference':
         
                                 search_values = [];
-                                if (!Omadi.utils.isArray(search_value)) {
+                                if (!Utils.isObject(search_value)) {
                                     for (i in search_value) {
                                         if (search_value.hasOwnProperty(i)) {
                                             search_values.push(i);

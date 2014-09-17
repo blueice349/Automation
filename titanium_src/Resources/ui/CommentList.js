@@ -237,7 +237,7 @@ CommentList.prototype.initComments = function(){"use strict";
                                 comment[fieldName].finalValue = 0;
                                 if(comment[fieldName].tempData){
                                     comment[fieldName].jsonValue = JSON.parse(comment[fieldName].tempData);
-                                    if(Omadi.utils.isArray(comment[fieldName].jsonValue)){
+                                    if(Utils.isObject(comment[fieldName].jsonValue)){
                                         for(i = 0; i < comment[fieldName].jsonValue.length; i ++){
                                             
                                             // If we have a total amount, add that in there instead of the price as they may be different
@@ -292,7 +292,7 @@ CommentList.prototype.initComments = function(){"use strict";
                                         textValue = [];
                                         origDBValue = subResult.fieldByName("filename");
                                         tempDBValues = Omadi.utils.getParsedJSON(origDBValue);
-                                        if(Omadi.utils.isArray(tempDBValues)){
+                                        if(Utils.isObject(tempDBValues)){
                                             textValue = tempDBValues;
                                         }
                                         else{
