@@ -113,7 +113,7 @@ RDNGeofenceListener.prototype._getRDNCommentMessage = function(nid, restored) {
 	if (restored) {
 		message += '.';
 	} else {
-		message += ' and left ' + Utils.formatDuration(exitedTime - enteredTime) + ' later.';
+		message += ' and left ' + Utils.formatApproximateDuration(enteredTime, exitedTime) + ' later.';
 	}
 	
 	return message;

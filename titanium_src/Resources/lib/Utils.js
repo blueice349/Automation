@@ -4,19 +4,23 @@
 var Database = require('lib/Database');
 var Node = require('objects/Node');
 
-exports.getUid = function(){
+function getUid(){
     var loginJson = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
     if(typeof loginJson.user !== 'undefined'){
         return parseInt(loginJson.user.uid, 10);
     }
     return 0;
-};
+}
 
-exports.getUTCTimestamp = function(){
+exports.getUid = getUid;
+
+function getUTCTimestamp(){
     return Math.round(new Date() / 1000);  
-};
+}
 
-exports.getCookie = function(fullCookie){
+exports.getUTCTimestamp = getUTCTimestamp;
+
+function getCookie(fullCookie){
     var db, result, cookie = null;
     
     try{
@@ -48,11 +52,13 @@ exports.getCookie = function(fullCookie){
     }
     
     return cookie;
-};
+}
 
-exports.setCookieHeader = function(http) {
+exports.getCookie = getCookie;
+
+function setCookieHeader(http) {
     Ti.API.debug("before get cookie");
-    var cookie = exports.getCookie();
+    var cookie = getCookie();
     Ti.API.debug("After get cookie");
 
     if(cookie != null && cookie > "" && cookie != "null"){
@@ -69,14 +75,16 @@ exports.setCookieHeader = function(http) {
     }
     
     Ti.API.debug("End of cookie header");
-};
+}
 
-var sendErrorReport = function(message){
+exports.setCookieHeader = setCookieHeader;
+
+function sendErrorReport(message){
     var http, uid, domain, appVersion, platform, model, version;
     
     Ti.API.error("ERROR: " + message);
     
-    uid = exports.getUid();
+    uid = getUid();
     
     domain = Ti.App.DOMAIN_NAME.replace('https://', '').replace('.omadi.com', '');
     appVersion = Ti.App.version;
@@ -101,7 +109,7 @@ var sendErrorReport = function(message){
     http.open('POST', Ti.App.DOMAIN_NAME + '/js-sync/error.json');
     
     http.setRequestHeader("Content-Type", "application/json");
-    exports.setCookieHeader(http);
+    setCookieHeader(http);
 
     http.send(JSON.stringify({
         domain: domain,
@@ -112,11 +120,11 @@ var sendErrorReport = function(message){
         uid: uid,
         message: message
     }));
-};
+}
 
 exports.sendErrorReport = sendErrorReport;
 
-exports.getTimeFormat = function(){
+function getTimeFormat(){
     var format, loginJson = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
     format = 'g:iA';
     
@@ -125,19 +133,23 @@ exports.getTimeFormat = function(){
     }
     
     return format;
-};
+}
 
-exports.PHPFormatDate = function(format, timestamp){
+exports.getTimeFormat = getTimeFormat;
+
+function PHPFormatDate(format, timestamp){
     var jsDate = new Date();
     jsDate.setTime(timestamp * 1000);
     return jsDate.format(format);
-};
+}
+
+exports.PHPFormatDate = PHPFormatDate;
 
 exports.formatDate = function(timestamp, showTime){
     
     var format = "D, M j, Y";
     if(showTime){
-        format += ' - ' + exports.getTimeFormat();
+        format += ' - ' + getTimeFormat();
     }
     
     return (new Date(timestamp * 1000)).format(format);
@@ -145,7 +157,7 @@ exports.formatDate = function(timestamp, showTime){
 
 exports.formatTime = function(timestamp){
     
-    var format = exports.getTimeFormat();
+    var format = getTimeFormat();
     return (new Date(timestamp * 1000)).format(format);
 };
 
@@ -168,7 +180,6 @@ Date.prototype.format = function(format) {
     }
     return returnStr;
 };
-
 
 Date.replaceChars = {
     shortMonths: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
@@ -222,10 +233,47 @@ Date.replaceChars = {
     U: function() { return this.getTime() / 1000; }
 };
 
+function formatApproximateDuration(a, b) {
+	var start = new Date(a < b ? a : b);
+	var stop = new Date(a < b ? b : a);
+	var duration = stop - start;
+	
+	var millisPerSecond = 1000;
+	var millisPerMinute = millisPerSecond * 60;
+	var millisPerHour = millisPerMinute * 60;
+	var millisPerDay = millisPerHour * 24;
+	var millisPerWeek = millisPerDay * 7;
+
+	
+	var totalSeconds = Math.floor(duration / millisPerSecond);
+	var totalMinutes = Math.floor(duration / millisPerMinute);
+	var totalHours = Math.floor(duration / millisPerHour);
+	var totalDays = Math.floor(duration / millisPerDay);
+	var totalWeeks = Math.floor(duration / millisPerWeek);
+	var totalMonths = Math.abs((start.getMonth() + 12 * start.getFullYear()) - (stop.getMonth() + 12 * stop.getFullYear()));
+	if (totalMonths == 1 && start.getDate() > stop.getDate()) {
+		totalMonths = 0;
+	}
+	var totalYears = Math.floor(totalMonths / 12);
+	
+	var string;
+	if (totalYears) { string = totalYears + ' year' + (totalYears != 1 ? 's' : ''); }
+	else if (totalMonths) { string = totalMonths + ' month' + (totalMonths != 1 ? 's' : ''); }
+	else if (totalWeeks) { string = totalWeeks + ' week' + (totalWeeks != 1 ? 's' : ''); }
+	else if (totalDays) { string = totalDays + ' day' + (totalDays != 1 ? 's' : ''); }
+	else if (totalHours) { string = totalHours + ' hour' + (totalHours != 1 ? 's' : ''); }
+	else if (totalMinutes) { string = totalMinutes + ' minute' + (totalMinutes != 1 ? 's' : ''); }
+	else { string = totalSeconds + ' second' + (totalSeconds != 1 ? 's' : ''); }
+	
+	return string;
+}
+
+exports.formatApproximateDuration = formatApproximateDuration;
+
 exports.secondsToString = function(seconds) {
     var format, am_pm, hours, hours_str, minutes, time_string, new_hours;
     
-    format = exports.getTimeFormat();
+    format = getTimeFormat();
 
     am_pm = (format.indexOf('H') === -1);
 
@@ -259,32 +307,6 @@ exports.secondsToString = function(seconds) {
     }
 
     return time_string;
-};
-
-exports.formatDuration = function(timestamp) {
-	var millisPerSecond = 1000;
-	var millisPerMinute = millisPerSecond * 60;
-	var millisPerHour = millisPerMinute * 60;
-	var millisPerDay = millisPerHour * 24;
-
-	var days = Math.round(timestamp / millisPerDay);
-	var hours = Math.round(timestamp / millisPerHour) % 24;
-	var minutes = Math.round(timestamp / millisPerMinute) % 60;
-	var seconds = Math.round(timestamp / millisPerSecond) % 60;
-	
-	var stringParts = [];
-	if (days) { stringParts.push(days + ' day' + (days > 1 ? 's' : '')); }
-	if (hours) { stringParts.push(hours + ' hour' + (hours > 1 ? 's' : '')); }
-	if (minutes) { stringParts.push(minutes + ' minute' + (minutes > 1 ? 's' : '')); }
-	if (seconds) { stringParts.push(seconds + ' second' + (seconds > 1 ? 's' : '')); }
-	
-	var string;
-	if (stringParts.length > 2) {
-		string = stringParts.join(', ');
-	} else {
-		string = stringParts.join(' ');
-	}
-	return string;
 };
 
 exports.getParsedJSON = function(str){
@@ -461,7 +483,7 @@ exports.sortByWeight = function(a, b) {
     return 0;
 };
 
-exports.mktime = function() {
+function mktime() {
     var no, ma = 0, mb = 0, i = 0, d = new Date(), argv = arguments, argc = argv.length, dateManip, set;
 
     if (argc > 0) {
@@ -510,11 +532,13 @@ exports.mktime = function() {
     }
 
     return Math.floor(d.getTime() / 1000);
-};
+}
 
-exports.listSearchSetDatestampValueFromRelative = function(relativeString){
+exports.mktime = mktime;
+
+function listSearchSetDatestampValueFromRelative(relativeString){
     var retval = null, now;
-    now = exports.getUTCTimestamp();
+    now = getUTCTimestamp();
 
     switch(relativeString){
         case 'now':
@@ -546,7 +570,9 @@ exports.listSearchSetDatestampValueFromRelative = function(relativeString){
     }
 
     return retval;
-};
+}
+
+exports.listSearchSetDatestampValueFromRelative = listSearchSetDatestampValueFromRelative;
 
 exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
     var user, row_matches, instances, i, j, criteria_index, criteria_row, field_name, 
@@ -596,7 +622,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                                 compare_times = [];
 
                                 for ( i = 0; i < nodeDBValues.length; i++) {
-                                    compare_times[i] = search_time_value + exports.mktime(0, 0, 0, exports.PHPFormatDate('n', Number(nodeDBValues[i])), exports.PHPFormatDate('j', Number(nodeDBValues[i])), exports.PHPFormatDate('Y', Number(nodeDBValues[i])));
+                                    compare_times[i] = search_time_value + mktime(0, 0, 0, PHPFormatDate('n', Number(nodeDBValues[i])), PHPFormatDate('j', Number(nodeDBValues[i])), PHPFormatDate('Y', Number(nodeDBValues[i])));
                                 }
 
                                 if (search_operator == 'after-time') {
@@ -627,7 +653,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
 
                                     for ( i = 0; i < nodeDBValues.length; i++) {
 
-                                        compare_times2[i] = search_time_value2 + exports.mktime(0, 0, 0, exports.PHPFormatDate('n', Number(nodeDBValues[i])), exports.PHPFormatDate('j', Number(nodeDBValues[i])), exports.PHPFormatDate('Y', Number(nodeDBValues[i])));
+                                        compare_times2[i] = search_time_value2 + mktime(0, 0, 0, PHPFormatDate('n', Number(nodeDBValues[i])), PHPFormatDate('j', Number(nodeDBValues[i])), PHPFormatDate('Y', Number(nodeDBValues[i])));
 
                                     }
                                     
@@ -707,7 +733,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
 
                                 for ( i = 0; i < nodeDBValues.length; i++) {
 
-                                    if (exports.inArray(exports.PHPFormatDate('w', Number(nodeDBValues[i])), weekdays)) {
+                                    if (exports.inArray(PHPFormatDate('w', Number(nodeDBValues[i])), weekdays)) {
 
                                         row_matches[criteria_index] = true;
                                         Ti.API.debug("IS WEEKDAY MATCH");
@@ -720,7 +746,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                                 search_datestamp_operator = search_value.operator;
             
                                 if(search_datestamp_operator != 'user-defined'){
-                                    search_datestamp_value = exports.list_search_set_datestamp_value_from_relative(search_datestamp_operator);
+                                    search_datestamp_value = listSearchSetDatestampValueFromRelative(search_datestamp_operator);
                                 }
                                 
                                 if(search_operator == 'between'){
@@ -734,7 +760,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                                     search_datestamp_operator2 = search_value2.operator;
                                     
                                     if(search_datestamp_operator2 != 'user-defined'){
-                                        search_datestamp_value2 = exports.listSearchSetDatestampValueFromRelative(search_datestamp_operator2);
+                                        search_datestamp_value2 = listSearchSetDatestampValueFromRelative(search_datestamp_operator2);
                                     }
             
                                     if(search_datestamp_value < search_datestamp_value2){
@@ -1191,11 +1217,11 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                                         switch(search_operator) {
                                             case 'starts with':
                                             case 'not starts with':
-                                                query += " AND title LIKE '%" + exports.sqlEscape(search_value) + "%'";
+                                                query += " AND title LIKE '%" + sqlEscape(search_value) + "%'";
                                                 break;
                                             case 'ends with':
                                             case 'not ends with':
-                                                query += " AND title LIKE '%" + exports.sqlEscape(search_value) + "'";
+                                                query += " AND title LIKE '%" + sqlEscape(search_value) + "'";
                                                 break;
                                             case '=':
                                             case '!=':
@@ -1226,19 +1252,19 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                                                     
                                                     
                                                     if(useNids){
-                                                        query += " AND nid IN (" + exports.dbEsc(search_value.join(",")) + ")";
+                                                        query += " AND nid IN (" + dbEsc(search_value.join(",")) + ")";
                                                     }
                                                     else{
-                                                        query += " AND title='" + exports.dbEsc(search_value[0]) + "'";
+                                                        query += " AND title='" + dbEsc(search_value[0]) + "'";
                                                     }
                                                 }
                                                 else{
-                                                    query += " AND title='" + exports.dbEsc(search_value) + "'";
+                                                    query += " AND title='" + dbEsc(search_value) + "'";
                                                 }
                                                 
                                                 break;
                                             default:
-                                                query += " AND title LIKE '%" + exports.sqlEscape(search_value) + "'%";
+                                                query += " AND title LIKE '%" + sqlEscape(search_value) + "'%";
                                                 break;
                                         }
     
@@ -1296,7 +1322,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                                 case 'user_reference':
 
                                     if (search_value == 'current_user') {
-                                        search_value = exports.getUid();
+                                        search_value = getUid();
                                     }
                                     // Make sure the search value is an array
                                     searchValues = [];
@@ -1461,16 +1487,16 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                                             switch(search_operator) {
                                                 case 'starts with':
                                                 case 'not starts with':
-                                                    query += " AND name LIKE '" + exports.sqlEscape(search_value) + "%'";
+                                                    query += " AND name LIKE '" + sqlEscape(search_value) + "%'";
                                                     break;
     
                                                 case 'ends with':
                                                 case 'not ends with':
-                                                    query += " AND name LIKE '%" + exports.sqlEscape(search_value) + "'";
+                                                    query += " AND name LIKE '%" + sqlEscape(search_value) + "'";
                                                     break;
     
                                                 default:
-                                                    query += " AND name LIKE '%" + exports.sqlEscape(search_value) + "%'";
+                                                    query += " AND name LIKE '%" + sqlEscape(search_value) + "%'";
                                                     break;
                                             }
     
@@ -1610,7 +1636,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
     return true;
 };
 
-exports.sqlEscape = function(str) {
+function sqlEscape(str) {
 	str = str || '';
 	var result = str.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, function (char) {
 		switch (char) {
@@ -1635,7 +1661,9 @@ exports.sqlEscape = function(str) {
 	    }
 	});
 	return result;
-};
+}
+
+exports.sqlEscape = sqlEscape;
 
 exports.inArray = function(val, haystack) {
     var i;
@@ -1680,89 +1708,25 @@ exports.strpos = function(haystack, needle, offset) {
     return i === -1 ? false : i;
 };
 
-exports.dbEsc = function(string) {
+function dbEsc(string) {
     if (typeof string === 'undefined' || string === null || string === false) {
         return '';
     }
 
     string += "".toString();
     return string.replace(/[']/g, "''");
-};
+}
+
+exports.dbEsc = dbEsc;
 
 exports.fileSortByModified = function (a, b){
     return ((a.modifiedTimestamp < b.modifiedTimestamp) ? 1 : -1);
 };
 
-exports.getTimeAgoStr = function(unix_timestamp) {
-
-    var d_lastSync, d_now, timeDiff, days, hours, minutes, seconds, timeStr;
-
-    d_now = (new Date()).getTime() / 1000;
-
-    timeDiff = d_now - parseInt(unix_timestamp, 10);
-    
-    if(timeDiff === 0){
-        return '0 seconds ago';
-    }
-    
-    // time difference in ms
-    days = Math.floor(timeDiff / (3600 * 24));
-    //get days
-    timeDiff = Math.round(timeDiff % (3600 * 24));
-
-    hours = Math.floor(timeDiff / 3600);
-    // get hours
-    timeDiff = Math.round(timeDiff % (3600));
-
-    minutes = Math.floor(timeDiff / 60);
-    // get minutes
-    timeDiff = Math.round(timeDiff % (60));
-
-    seconds = Math.floor(timeDiff);
-    // get seconds
-
-    timeStr = "";
-    
-    if (days !== 0) {
-        timeStr += days + ' day';
-        if (days > 1) {
-            timeStr += 's';
-        }
-        timeStr += ' ';
-    }
-
-    if (hours !== 0) {
-        timeStr += hours + ' hour';
-        if (hours > 1) {
-            timeStr += 's';
-        }
-        timeStr += ' ';
-    }
-
-    if (minutes !== 0 && days === 0) {
-        timeStr += minutes + ' minute';
-        if (minutes > 1) {
-            timeStr += 's';
-        }
-        timeStr += ' ';
-    }
-
-    if (seconds !== 0 && hours === 0) {
-        timeStr += seconds + ' second';
-        if (seconds > 1) {
-            timeStr += 's';
-        }
-        timeStr += ' ';
-    }
-
-    if (timeStr !== '') {
-        timeStr += 'ago';
-    }
-    else{
-        timeStr = "Just Now";
-    }
-
-    return timeStr;
+exports.getTimeAgoStr = function(unixTimestamp) {
+	var now = new Date().getTime();
+	
+	return formatApproximateDuration(new Date(), new Date(parseInt(unixTimestamp + '000', 10))) + ' ago';
 };
 
 exports.getClientAccount = function(){
@@ -1777,7 +1741,7 @@ exports.getClientAccount = function(){
     return clientAccount;
 };
 
-exports.getCurrentVehicleNid = function(){
+function getCurrentVehicleNid(){
     var result, nid;
     
     nid = 0;
@@ -1794,12 +1758,14 @@ exports.getCurrentVehicleNid = function(){
     Database.close();
     
     return nid;
-};
+}
+
+exports.getCurrentVehicleNid = getCurrentVehicleNid;
 
 exports.getCurrentVehicleName = function(){
     var result, nid, name;
     
-    nid = exports.getCurrentVehicleNid();
+    nid = getCurrentVehicleNid();
     name = null;
     
     try {
@@ -1823,7 +1789,7 @@ exports.getRealname = function(uid){
     var db, result, realname;
     
     if (typeof uid == 'undefined') {
-		uid = exports.getUid();
+		uid = getUid();
     }
     
     realname = '';

@@ -217,12 +217,9 @@ TextLongWidget.prototype.getNewElement = function(index){"use strict";
     });
     
     element.addEventListener('focus', function(e){
-        try{
-            e.source.setBackgroundColor('#def');
-            self.formObj.currentlyFocusedField = e.source;
-        }
-        catch(ex){
-            Utils.sendErrorReport("Exception in text long focus listener: " + ex);
+        element.setBackgroundColor('#def');
+        if (self.formObj) {
+			self.formObj.currentlyFocusedField = element;
         }
     });
     
