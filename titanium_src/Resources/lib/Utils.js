@@ -1,6 +1,6 @@
-
 /*jslint node:true */
 'use strict';
+
 
 var Database = require('lib/Database');
 
@@ -13,62 +13,6 @@ function getUid(){
 }
 
 exports.getUid = getUid;
-
-function sendErrorReport(message){
-    var http, uid, domain, appVersion, platform, model, version;
-    
-    Ti.API.error("ERROR: " + message);
-    
-    if(typeof Ti.App.DOMAIN_NAME !== 'undefined'){
-        // If we don't have a domain name, this report cannot be sent correctly, so skip trying to send anything
-           
-        uid = getUid();
-        
-        domain = Ti.App.DOMAIN_NAME.replace('https://', '').replace('.omadi.com', '');
-        
-        appVersion = Ti.App.version;
-        model = Ti.Platform.model;
-        version = Ti.Platform.version;
-        platform = Ti.Platform.name;
-        
-        http = Ti.Network.createHTTPClient({
-            enableKeepAlive: false,
-            validatesSecureCertificate: false,
-            timeout: 30000
-        });
-        
-        http.onerror = function(){
-           Ti.App.fireEvent("errorReportFailed");
-        };
-        
-        http.onload = function(){
-           Ti.App.fireEvent("errorReportSuccess");
-        };
-        
-        http.open('POST', Ti.App.DOMAIN_NAME + '/js-sync/error.json');
-        
-        http.setRequestHeader("Content-Type", "application/json");
-        setCookieHeader(http);
-    
-        http.send(JSON.stringify({
-            domain: domain,
-            platform: platform,
-            model: model,
-            version: version,
-            appVersion: appVersion,
-            uid: uid,
-            message: message
-        }));
-    } 
-};
-
-exports.sendErrorReport = sendErrorReport;
-
-function getUTCTimestamp(){
-    return Math.round(new Date() / 1000);  
-}
-
-exports.getUTCTimestamp = getUTCTimestamp;
 
 function getCookie(fullCookie){
     var db, result, cookie = null;
@@ -129,6 +73,70 @@ function setCookieHeader(http) {
 
 exports.setCookieHeader = setCookieHeader;
 
+function phpFormatDate(format, timestamp){
+    var jsDate = new Date();
+    jsDate.setTime(timestamp * 1000);
+    return jsDate.format(format);
+}
+
+exports.phpFormatDate = phpFormatDate;
+
+var sendErrorReport = function(message){
+    var http, uid, domain, appVersion, platform, model, version;
+    
+    Ti.API.error("ERROR: " + message);
+    
+    if(typeof Ti.App.DOMAIN_NAME !== 'undefined'){
+        // If we don't have a domain name, this report cannot be sent correctly, so skip trying to send anything
+           
+        uid = getUid();
+        
+        domain = Ti.App.DOMAIN_NAME.replace('https://', '').replace('.omadi.com', '');
+        
+        appVersion = Ti.App.version;
+        model = Ti.Platform.model;
+        version = Ti.Platform.version;
+        platform = Ti.Platform.name;
+        
+        http = Ti.Network.createHTTPClient({
+            enableKeepAlive: false,
+            validatesSecureCertificate: false,
+            timeout: 30000
+        });
+        
+        http.onerror = function(){
+           Ti.App.fireEvent("errorReportFailed");
+        };
+        
+        http.onload = function(){
+           Ti.App.fireEvent("errorReportSuccess");
+        };
+        
+        http.open('POST', Ti.App.DOMAIN_NAME + '/js-sync/error.json');
+        
+        http.setRequestHeader("Content-Type", "application/json");
+        setCookieHeader(http);
+    
+        http.send(JSON.stringify({
+            domain: domain,
+            platform: platform,
+            model: model,
+            version: version,
+            appVersion: appVersion,
+            uid: uid,
+            message: message
+        }));
+    } 
+};
+
+exports.sendErrorReport = sendErrorReport;
+
+function getUTCTimestamp(){
+    return Math.round(new Date() / 1000);  
+}
+
+exports.getUTCTimestamp = getUTCTimestamp;
+
 function getTimeFormat(){
     var format, loginJson = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
     format = 'g:iA';
@@ -141,14 +149,6 @@ function getTimeFormat(){
 }
 
 exports.getTimeFormat = getTimeFormat;
-
-function PHPFormatDate(format, timestamp){
-    var jsDate = new Date();
-    jsDate.setTime(timestamp * 1000);
-    return jsDate.format(format);
-}
-
-exports.PHPFormatDate = PHPFormatDate;
 
 exports.formatDate = function(timestamp, showTime){
     
@@ -331,7 +331,7 @@ exports.getParsedJSON = function(str){
     return retval;
 };
 
-exports.isEmpty = function(number){
+var isEmpty = function(number){
     if(typeof number === 'undefined'){
         return true;
     }
@@ -355,9 +355,13 @@ exports.isEmpty = function(number){
     return false;
 };
 
-exports.isArray = function(input) {
-    return typeof (input) == 'object' && ( input instanceof Array);
+exports.isEmpty = isEmpty;
+
+var isObject = function(input){
+    return typeof (input) === 'object';
 };
+
+exports.isObject = isObject;
 
 exports.trimWhiteSpace = function(string) {
     
@@ -579,6 +583,82 @@ function listSearchSetDatestampValueFromRelative(relativeString){
 
 exports.listSearchSetDatestampValueFromRelative = listSearchSetDatestampValueFromRelative;
 
+function strpos(haystack, needle, offset) {
+    var i = (haystack + ''.toString()).indexOf(needle, (offset || 0));
+    return i === -1 ? false : i;
+}
+
+exports.strpos = strpos;
+
+function dbEsc(string) {
+    if (typeof string === 'undefined' || string === null || string === false) {
+        return '';
+    }
+
+    string += "".toString();
+    return string.replace(/[']/g, "''");
+}
+
+exports.dbEsc = dbEsc;
+
+function sqlEscape(str) {
+    str = str || '';
+    var result = str.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, function (char) {
+        switch (char) {
+            case "\0":
+                return "\\0";
+            case "\x08":
+                return "\\b";
+            case "\x09":
+                return "\\t";
+            case "\x1a":
+                return "\\z";
+            case "\n":
+                return "\\n";
+            case "\r":
+                return "\\r";
+            case "\"":
+            case "'":
+            case "\\":
+            case "%":
+                return "\\"+char; // prepends a backslash to backslash, percent,
+                                  // and double/single quotes
+        }
+    });
+    return result;
+}
+
+exports.sqlEscape = sqlEscape;
+
+function count(obj){
+    var c = 0, i;
+    
+    if(typeof obj === 'object'){
+        for(i in obj){
+            if(obj.hasOwnProperty(i)){
+                c ++;
+            }
+        }
+    }
+    
+    return c;
+}
+
+exports.count = count;
+
+function inArray(val, haystack) {
+    var i;
+    for (i = 0; i < haystack.length; i++) {
+        if (haystack[i] == val) {
+            return true;
+        }
+    }
+    return false;
+}
+
+exports.inArray = inArray;
+
+
 exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
     var user, row_matches, instances, i, j, criteria_index, criteria_row, field_name, 
     search_field, search_value, search_operator, search_time_value, compare_times, 
@@ -628,7 +708,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                                 compare_times = [];
 
                                 for ( i = 0; i < nodeDBValues.length; i++) {
-                                    compare_times[i] = search_time_value + mktime(0, 0, 0, PHPFormatDate('n', Number(nodeDBValues[i])), PHPFormatDate('j', Number(nodeDBValues[i])), PHPFormatDate('Y', Number(nodeDBValues[i])));
+                                    compare_times[i] = search_time_value + mktime(0, 0, 0, phpFormatDate('n', Number(nodeDBValues[i])), phpFormatDate('j', Number(nodeDBValues[i])), phpFormatDate('Y', Number(nodeDBValues[i])));
                                 }
 
                                 if (search_operator == 'after-time') {
@@ -659,7 +739,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
 
                                     for ( i = 0; i < nodeDBValues.length; i++) {
 
-                                        compare_times2[i] = search_time_value2 + mktime(0, 0, 0, PHPFormatDate('n', Number(nodeDBValues[i])), PHPFormatDate('j', Number(nodeDBValues[i])), PHPFormatDate('Y', Number(nodeDBValues[i])));
+                                        compare_times2[i] = search_time_value2 + mktime(0, 0, 0, phpFormatDate('n', Number(nodeDBValues[i])), phpFormatDate('j', Number(nodeDBValues[i])), phpFormatDate('Y', Number(nodeDBValues[i])));
 
                                     }
                                     
@@ -725,7 +805,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                             else if (search_operator == 'weekday') {
 
                                 weekdays = search_value.weekday;
-                                if (!exports.isArray(search_value.weekday)) {
+                                if (!isObject(search_value.weekday)) {
 
                                     weekdays = [];
 
@@ -739,7 +819,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
 
                                 for ( i = 0; i < nodeDBValues.length; i++) {
 
-                                    if (exports.inArray(PHPFormatDate('w', Number(nodeDBValues[i])), weekdays)) {
+                                    if (inArray(phpFormatDate('w', Number(nodeDBValues[i])), weekdays)) {
 
                                         row_matches[criteria_index] = true;
                                         Ti.API.debug("IS WEEKDAY MATCH");
@@ -811,7 +891,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
 
                                     // Check for empty values
                                     if (nodeDBValues.length === 0) {
-                                        if (exports.isEmpty(search_value) && search_operator === '=') {
+                                        if (isEmpty(search_value) && search_operator === '=') {
                                             row_matches[criteria_index] = true;
                                         }
                                     }
@@ -834,31 +914,31 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                                                 }
                                                 break;
                                             case 'not like':
-                                                if (exports.strpos(node_value, search_value) === false) {
+                                                if (strpos(node_value, search_value) === false) {
                                                     row_matches[criteria_index] = true;
                                                 }
                                                 break;
 
                                             case 'starts with':
-                                                if (exports.strpos(node_value, search_value) === 0) {
+                                                if (strpos(node_value, search_value) === 0) {
                                                     row_matches[criteria_index] = true;
                                                 }
                                                 break;
 
                                             case 'ends with':
-                                                if (exports.strpos(node_value, search_value) === node_value.length - search_value.length) {
+                                                if (strpos(node_value, search_value) === node_value.length - search_value.length) {
                                                     row_matches[criteria_index] = true;
                                                 }
                                                 break;
 
                                             case 'not starts with':
-                                                if (exports.strpos(node_value, search_value) !== 0) {
+                                                if (strpos(node_value, search_value) !== 0) {
                                                     row_matches[criteria_index] = true;
                                                 }
                                                 break;
 
                                             case 'not ends with':
-                                                if (exports.strpos(node_value, search_value) !== node_value.length - search_value.length) {
+                                                if (strpos(node_value, search_value) !== node_value.length - search_value.length) {
                                                     row_matches[criteria_index] = true;
                                                 }
                                                 break;
@@ -876,7 +956,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                                                 break;
 
                                             default:
-                                                if (exports.strpos(node_value, search_value) !== false) {
+                                                if (strpos(node_value, search_value) !== false) {
                                                     row_matches[criteria_index] = true;
                                                 }
                                                 break;
@@ -1066,7 +1146,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                                                 // Make sure the search value is an array
                                                 // This will convert an object to an array or a string to an array
                                                 searchValues = [];
-                                                if (!exports.isArray(search_value)) {
+                                                if (!isObject(search_value)) {
 
                                                     for (i in search_value) {
                                                         if (search_value.hasOwnProperty(i)) {
@@ -1235,7 +1315,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                                                 if(typeof search_field.widget.type !== 'undefined' && search_field.widget.type == 'omadi_reference_select'){
                                                     // Make sure the search value is an array
                                                     searchValues = [];
-                                                    if (!exports.isArray(search_value)) {
+                                                    if (!isObject(search_value)) {
 
                                                         for (i in search_value) {
                                                             if (search_value.hasOwnProperty(i)) {
@@ -1285,7 +1365,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                                         Database.close();
     
                                         if (nodeDBValues.length == 0) {
-                                            if (exports.isEmpty(search_value) && search_operator === '=') {
+                                            if (isEmpty(search_value) && search_operator === '=') {
                                                 row_matches[criteria_index] = true;
                                             }
                                         }
@@ -1302,7 +1382,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                                                     row_matches[criteria_index] = true;
                                                     for ( i = 0; i < nodeDBValues.length; i++) {
                                                         node_value = nodeDBValues[i];
-                                                        if (exports.inArray(node_value, possibleValues)) {
+                                                        if (inArray(node_value, possibleValues)) {
                                                             row_matches[criteria_index] = false;
                                                         }
                                                     }
@@ -1313,7 +1393,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                                             default:
                                                 for ( i = 0; i < nodeDBValues.length; i++) {
                                                     node_value = nodeDBValues[i];
-                                                    if (exports.inArray(node_value, possibleValues)) {
+                                                    if (inArray(node_value, possibleValues)) {
                                                         row_matches[criteria_index] = true;
                                                     }
                                                 }
@@ -1332,7 +1412,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                                     }
                                     // Make sure the search value is an array
                                     searchValues = [];
-                                    if (!exports.isArray(search_value)) {
+                                    if (!isObject(search_value)) {
 
                                         for (i in search_value) {
                                             if (search_value.hasOwnProperty(i)) {
@@ -1374,7 +1454,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                                         else {
                                             for ( i = 0; i < search_value.length; i++) {
                                                 chosen_value = search_value[i];
-                                                if (exports.inArray(chosen_value, nodeDBValues)) {
+                                                if (inArray(chosen_value, nodeDBValues)) {
                                                     row_matches[criteria_index] = false;
                                                 }
                                             }
@@ -1391,7 +1471,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                                             for ( i = 0; i < search_value.length; i++) {
 
                                                 chosen_value = search_value[i];
-                                                if (exports.inArray(chosen_value, nodeDBValues)) {
+                                                if (inArray(chosen_value, nodeDBValues)) {
 
                                                     row_matches[criteria_index] = true;
                                                 }
@@ -1405,7 +1485,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                                     if (search_field.widget.type == 'options_select' || search_field.widget.type == 'violation_select') {
                                         // Make sure the search value is an array
                                         searchValues = [];
-                                        if (!exports.isArray(search_value)) {
+                                        if (!isObject(search_value)) {
 
                                             for (i in search_value) {
                                                 if (search_value.hasOwnProperty(i)) {
@@ -1444,7 +1524,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                                             else {
                                                 for ( i = 0; i < search_value.length; i++) {
                                                     chosen_value = search_value[i];
-                                                    if (exports.inArray(chosen_value, nodeDBValues)) {
+                                                    if (inArray(chosen_value, nodeDBValues)) {
                                                         row_matches[criteria_index] = false;
                                                     }
                                                 }
@@ -1458,7 +1538,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                                             else {
                                                 for ( i = 0; i < search_value.length; i++) {
                                                     chosen_value = search_value[i];
-                                                    if (exports.inArray(chosen_value, nodeDBValues)) {
+                                                    if (inArray(chosen_value, nodeDBValues)) {
                                                         row_matches[criteria_index] = true;
                                                     }
                                                 }
@@ -1528,7 +1608,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                                                         row_matches[criteria_index] = true;
                                                         for ( i = 0; i < nodeDBValues.length; i++) {
                                                             node_value = nodeDBValues[i];
-                                                            if (exports.inArray(node_value, possibleValues)) {
+                                                            if (inArray(node_value, possibleValues)) {
                                                                 row_matches[criteria_index] = false;
                                                             }
                                                         }
@@ -1538,7 +1618,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                                                 default:
                                                     for ( i = 0; i < nodeDBValues.length; i++) {
                                                         node_value = nodeDBValues[i];
-                                                        if (exports.inArray(node_value, possibleValues)) {
+                                                        if (inArray(node_value, possibleValues)) {
                                                             row_matches[criteria_index] = true;
                                                         }
                                                     }
@@ -1563,7 +1643,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                 }
             }
 
-            if (exports.count(criteria.search_criteria) == 1) {
+            if (count(criteria.search_criteria) == 1) {
 
                 retval = row_matches[criteria_index];
             }
@@ -1642,58 +1722,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
     return true;
 };
 
-function sqlEscape(str) {
-	str = str || '';
-	var result = str.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, function (char) {
-		switch (char) {
-			case "\0":
-				return "\\0";
-			case "\x08":
-				return "\\b";
-			case "\x09":
-				return "\\t";
-			case "\x1a":
-				return "\\z";
-			case "\n":
-				return "\\n";
-			case "\r":
-				return "\\r";
-			case "\"":
-			case "'":
-			case "\\":
-			case "%":
-				return "\\"+char; // prepends a backslash to backslash, percent,
-			                      // and double/single quotes
-	    }
-	});
-	return result;
-}
 
-exports.sqlEscape = sqlEscape;
-
-exports.inArray = function(val, haystack) {
-    var i;
-    for (i = 0; i < haystack.length; i++) {
-        if (haystack[i] == val) {
-            return true;
-        }
-    }
-    return false;
-};
-
-exports.count = function(obj){
-    var count = 0, i;
-    
-    if(typeof obj === 'object'){
-        for(i in obj){
-            if(obj.hasOwnProperty(i)){
-                count ++;
-            }
-        }
-    }
-    
-    return count;
-};
 
 exports.formatCurrency = function(amount){
     var price = "";
@@ -1708,22 +1737,6 @@ exports.formatCurrency = function(amount){
 exports.getPhotoWidget = function(){
     return Ti.App.Properties.getString("photoWidget", 'take');
 };
-
-exports.strpos = function(haystack, needle, offset) {
-    var i = (haystack + ''.toString()).indexOf(needle, (offset || 0));
-    return i === -1 ? false : i;
-};
-
-function dbEsc(string) {
-    if (typeof string === 'undefined' || string === null || string === false) {
-        return '';
-    }
-
-    string += "".toString();
-    return string.replace(/[']/g, "''");
-}
-
-exports.dbEsc = dbEsc;
 
 exports.fileSortByModified = function (a, b){
     return ((a.modifiedTimestamp < b.modifiedTimestamp) ? 1 : -1);

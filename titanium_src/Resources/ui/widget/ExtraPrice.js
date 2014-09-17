@@ -43,7 +43,7 @@ function ExtraPriceWidget(formObj, instance, fieldViewWrapper){"use strict";
     if ( typeof this.node[this.instance.field_name] !== 'undefined' &&
         typeof this.node[this.instance.field_name].dbValues !== 'undefined') {
             
-        if(Utils.isArray(this.node[this.instance.field_name].dbValues)){
+        if(Utils.isObject(this.node[this.instance.field_name].dbValues)){
             this.numVisibleFields = this.node[this.instance.field_name].dbValues.length;
             
             if(this.numVisibleFields == 0){
@@ -1339,7 +1339,7 @@ exports.getView = function(node, instance){"use strict";
         
         if (typeof node[instance.field_name].dbValues !== 'undefined') {
                     
-            if(Utils.isArray(node[instance.field_name].dbValues)){
+            if(Utils.isObject(node[instance.field_name].dbValues)){
                 numRows = node[instance.field_name].dbValues.length;
             }
         

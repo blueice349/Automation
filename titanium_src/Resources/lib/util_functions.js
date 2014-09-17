@@ -256,28 +256,17 @@ Omadi.utils.isLoggedIn = function() {"use strict";
     return true;
 };
 
-Omadi.utils.PHPFormatDate = function(format, timestamp){"use strict";
-    var jsDate = new Date();
-    jsDate.setTime(timestamp * 1000);
-    return jsDate.format(format);
-};
-
 Omadi.utils.formatDate = function(timestamp, showTime){"use strict";
     return Utils.formatDate(timestamp, showTime);
 };
 
 Omadi.utils.formatTime = function(timestamp){"use strict";
-    
     var format = Omadi.utils.getTimeFormat();
     return (new Date(timestamp * 1000)).format(format);
 };
 
 Omadi.utils.secondsToString = function(seconds) {"use strict";
     return Utils.secondsToString(seconds);
-};
-
-Omadi.utils.isArray = function(input) {"use strict";
-    return Utils.isArray(input);
 };
 
 Omadi.utils.fileSortByModified = function (a, b){ "use strict";
@@ -464,7 +453,7 @@ Omadi.utils.list_search_get_search_sql = function(nodeType, criteria){"use stric
                          
                          if (instance.widget.type == 'options_select' || instance.widget.type == 'violation_select') {
                              searchValues = [];
-                             if (!Omadi.utils.isArray(search_value)) {
+                             if (!Utils.isObject(search_value)) {
 
                                 for (i in search_value) {
                                     if (search_value.hasOwnProperty(i)) {

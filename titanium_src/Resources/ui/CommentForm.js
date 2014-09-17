@@ -209,7 +209,7 @@ CommentForm.prototype.setConditionallyRequiredLabelForInstance = function(instan
                             case 'user_reference':
         
                                 search_values = [];
-                                if (!Utils.isArray(search_value)) {
+                                if (!Utils.isObject(search_value)) {
                                     for (i in search_value) {
                                         if (search_value.hasOwnProperty(i)) {
                                             search_values.push(i);

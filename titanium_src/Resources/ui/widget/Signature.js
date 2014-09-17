@@ -36,7 +36,7 @@ function SignatureWidget(formObj, instance, fieldViewWrapper){"use strict";
     }
     
     if(this.instance.settings.cardinality == -1){
-        if(Utils.isArray(this.dbValues)){
+        if(Utils.isObject(this.dbValues)){
             this.numVisibleFields = this.dbValues.length;
         }
     }
@@ -190,7 +190,7 @@ SignatureWidget.prototype.getNewElement = function(index){"use strict";
         borderWidth: 2
     });
     
-    if (Utils.isArray(imageData)) {
+    if (Utils.isObject(imageData)) {
         if(typeof imageData[0] !== 'undefined'){
             this.imageView.image = imageData[0];
         }

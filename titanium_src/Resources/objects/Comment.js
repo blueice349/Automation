@@ -123,7 +123,7 @@ Comment.prototype.load = function(cid) {
                                     jsonValue = Utils.getParsedJSON(origDBValue);
                                     tempDBValues = [];
         
-                                    if (Utils.isArray(jsonValue)) {
+                                    if (Utils.isObject(jsonValue)) {
                                         tempDBValues = jsonValue;
                                     }
                                     else {
@@ -389,7 +389,7 @@ Comment.prototype.load = function(cid) {
                                         this.comment[field_name].finalValue = 0;
                                         if(this.comment[field_name].tempData){
                                             this.comment[field_name].jsonValue = JSON.parse(this.comment[field_name].tempData);
-                                            if(Utils.isArray(this.comment[field_name].jsonValue)){
+                                            if(Utils.isObject(this.comment[field_name].jsonValue)){
                                                 for(i = 0; i < this.comment[field_name].jsonValue.length; i ++){
                                                     
                                                     // If we have a total amount, add that in there instead of the price as they may be different
@@ -444,7 +444,7 @@ Comment.prototype.load = function(cid) {
                                                 textValue = [];
                                                 origDBValue = subResult.fieldByName("filename");
                                                 tempDBValues = Utils.getParsedJSON(origDBValue);
-                                                if(Utils.isArray(tempDBValues)){
+                                                if(Utils.isObject(tempDBValues)){
                                                     textValue = tempDBValues;
                                                 }
                                                 else{

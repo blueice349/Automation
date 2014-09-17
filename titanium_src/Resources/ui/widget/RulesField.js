@@ -134,7 +134,7 @@ function RulesFieldWidget(formObj, instance, fieldViewWrapper){"use strict";
     }
     
     if(this.instance.settings.cardinality == -1){
-        if(Utils.isArray(this.dbValues)){
+        if(Utils.isObject(this.dbValues)){
             this.numVisibleFields = this.dbValues.length;
         }
     }
@@ -236,7 +236,7 @@ RulesFieldWidget.prototype.getNewElement = function(index){"use strict";
                     Ti.API.debug("is not string again");
                 }
                 
-                if (Utils.isArray(nodeValue)) {
+                if (Utils.isObject(nodeValue)) {
 
                     if (nodeValue.length > 0) {
                 
@@ -256,7 +256,7 @@ RulesFieldWidget.prototype.getNewElement = function(index){"use strict";
                                 }
     
                                 formTypes = [];
-                                if (!Utils.isArray(nodeValue[i].node_types)) {
+                                if (!Utils.isObject(nodeValue[i].node_types)) {
     
                                     for (key in nodeValue[i].node_types) {
                                         if (nodeValue[i].node_types.hasOwnProperty(key)) {

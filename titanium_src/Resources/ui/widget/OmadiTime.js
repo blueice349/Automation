@@ -30,7 +30,7 @@ function OmadiTimeWidget(formObj, instance, fieldViewWrapper){"use strict";
     }
     
     if(this.instance.settings.cardinality == -1){
-        if(Utils.isArray(this.dbValues)){
+        if(Utils.isObject(this.dbValues)){
             this.numVisibleFields = this.dbValues.length;
         }
         if(this.numVisibleFields < 1){
@@ -149,7 +149,7 @@ OmadiTimeWidget.prototype.getNewElement = function(index){"use strict";
 
     if (dbValue !== null) {
         nowTimestamp = Math.round(jsDate.getTime() / 1000);
-        midnight = mktime(0, 0, 0, Utils.PHPFormatDate('n', nowTimestamp), Utils.PHPFormatDate('j', nowTimestamp), Utils.PHPFormatDate('Y', nowTimestamp));
+        midnight = mktime(0, 0, 0, Utils.phpFormatDate('n', nowTimestamp), Utils.phpFormatDate('j', nowTimestamp), Utils.phpFormatDate('Y', nowTimestamp));
         jsDate.setTime((midnight + dbValue) * 1000);
     }
     
@@ -387,7 +387,7 @@ OmadiTimeWidget.prototype.displayPicker = function(element) {"use strict";
             try{
                 newDate = e.source.time_picker.getValue();
                 e.source.element.jsDate = newDate;
-                e.source.element.textValue = Utils.PHPFormatDate('g:i A', Math.ceil(newDate.getTime() / 1000));
+                e.source.element.textValue = Utils.phpFormatDate('g:i A', Math.ceil(newDate.getTime() / 1000));
                 e.source.element.dbValue = self.dateToSeconds(e.source.element.textValue);
         
                 e.source.element.setText(e.source.element.textValue);

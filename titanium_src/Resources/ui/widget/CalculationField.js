@@ -553,7 +553,7 @@ CalculationFieldWidget.prototype.getRowValues = function(instance){"use strict";
             
             if(typeof instance.settings.calculation.items !== 'undefined'){
                 
-                if(Utils.isArray(instance.settings.calculation.items)){
+                if(Utils.isObject(instance.settings.calculation.items)){
                     // Only sort if the items is an array
                     // We can still support a key/value object, but sort will not work
                     instance.settings.calculation.items = instance.settings.calculation.items.sort(Utils.sortByWeight);
@@ -693,7 +693,7 @@ CalculationFieldWidget.prototype.getRowValues = function(instance){"use strict";
                                         
                                         at_time = calculation_row.increment_at_time;
                                         start_timestamp = Number(start_timestamp);
-                                        relative_increment_time = at_time = Utils.mktime(0,0,0, Utils.PHPFormatDate('n', start_timestamp), Utils.PHPFormatDate('j', start_timestamp), Utils.PHPFormatDate('Y', start_timestamp));
+                                        relative_increment_time = at_time = Utils.mktime(0,0,0, Utils.phpFormatDate('n', start_timestamp), Utils.phpFormatDate('j', start_timestamp), Utils.phpFormatDate('Y', start_timestamp));
                                         
                                         day_count = 0;
                                         if (relative_increment_time < start_timestamp) {

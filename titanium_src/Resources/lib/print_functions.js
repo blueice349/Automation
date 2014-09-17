@@ -584,7 +584,7 @@ Omadi.print.getPrintCommand = function(node, item){"use strict";
             values = [];
             maxLabelLength = maxValueLength = 0;
             
-            if(Omadi.utils.isArray(item.value)){
+            if(Utils.isObject(item.value)){
                 innerItems = item.value.sort(Omadi.utils.sortByWeight);
                 
                 for(index in innerItems){
@@ -733,7 +733,7 @@ Omadi.print.getTextValue = function(node, instance){"use strict";
         
             if(typeof node[fieldName] && 
                 typeof node[fieldName].dbValues !== 'undefined' &&
-                Omadi.utils.isArray(node[fieldName].dbValues)) {
+                Utils.isObject(node[fieldName].dbValues)) {
                     value = "";
                     
                     for(i = 0; i < node[fieldName].dbValues.length; i ++){

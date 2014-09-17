@@ -1,6 +1,6 @@
-
-/*jslint eqeq:true,plusplus:true*/
+/*jslint eqeq:true,plusplus:true,nomen:true*/
 /*global alertQueue,isJsonString*/
+
 
 Omadi.bundles.dispatch = {};
 
@@ -63,9 +63,8 @@ Omadi.bundles.dispatch.getDrivingDirections = function(args){"use strict";
             else {
                 dialog.show();
             }
-        }
+        } 
         else{
-            
             node = Omadi.data.nodeLoad(nid);
             address = "";
             
@@ -306,7 +305,7 @@ Omadi.bundles.dispatch.checkInsertNode = function(insert){"use strict";
      
      // Show if assigned
      if(insert.send_dispatch_requests_to !== 'undefined'){
-         if(Omadi.utils.isArray(insert.send_dispatch_requests_to)){
+         if(Utils.isObject(insert.send_dispatch_requests_to)){
              for(uidIndex in insert.send_dispatch_requests_to){
                  if(insert.send_dispatch_requests_to.hasOwnProperty(uidIndex)){
                     if(userUID == insert.send_dispatch_requests_to[uidIndex]){
@@ -322,7 +321,7 @@ Omadi.bundles.dispatch.checkInsertNode = function(insert){"use strict";
      
      // Show if it's the driver
      if(insert.dispatched_to_driver !== 'undefined'){
-         if(Omadi.utils.isArray(insert.dispatched_to_driver)){
+         if(Utils.isObject(insert.dispatched_to_driver)){
              for(uidIndex in insert.dispatched_to_driver){
                  if(insert.dispatched_to_driver.hasOwnProperty(uidIndex)){
                     if(userUID == insert.dispatched_to_driver[uidIndex]){
@@ -366,6 +365,10 @@ Omadi.bundles.dispatch.hasStatusOption = function(fieldOptions, status){"use str
     return statusTitle;
 };
 
+Omadi.bundles.dispatch.getStatusText = function(statusKey){"use strict";
+    
+};
+
 Omadi.bundles.dispatch.getStatusOptions = function(nid){"use strict";
     var options, db, result, termResult, vid, dispatchBundle, node, i, j,
         excludeKeys, excludeStatuses, 
@@ -390,7 +393,7 @@ Omadi.bundles.dispatch.getStatusOptions = function(nid){"use strict";
             maxStatusToShow = '_none';
             workNodeTypeInfo = Omadi.data.getBundle(node.type);
             
-            if(typeof workNodeTypeInfo.data.dispatch !== 'undefined' && typeof workNodeTypeInfo.data.dispatch.dispatch_parts !== 'undefine'){
+            if(typeof workNodeTypeInfo.data.dispatch !== 'undefined' && typeof workNodeTypeInfo.data.dispatch.dispatch_parts !== 'undefined'){
                 
                 for(formPartIndex in workNodeTypeInfo.data.dispatch.dispatch_parts){
                     if(workNodeTypeInfo.data.dispatch.dispatch_parts.hasOwnProperty(formPartIndex)){
@@ -600,195 +603,328 @@ Omadi.bundles.dispatch.isDispatch = function(type, nid){"use strict";
     return isDispatch;
 };
 
+Omadi.bundles.dispatch.updateStatusOffline = function(nid, status){"use strict";
+    var dispatchNode = Omadi.data.nodeLoad(nid), updated = false;
+    
+    try{
+        if(dispatchNode && dispatchNode.type !== 'dispatch'){
+            if(dispatchNode.dispatch_nid > 0){
+                dispatchNode = Omadi.data.nodeLoad(dispatchNode.dispatch_nid);   
+            }
+        }
+        
+        if(dispatchNode){
+            
+            // Set the new status
+            dispatchNode.field_dispatching_status = {
+               dbValues : [status],
+               // Don't need the textValues for a correct node save
+               textValues : ['']  
+            };
+            
+            var timestamp = Utils.getUTCTimestampServerCorrected();
+            
+            var nowValues = {
+                dbValues: [timestamp],
+                // Don't need the textValues for a correct node save
+                textValues: ['']
+            };
+                        
+            switch(status){
+                case 'pending':
+                case 'call_received':
+                    // Do nothing
+                    break;
+                case 'dispatching_call':
+                    if(!dispatchNode.job_dispatched_time || !dispatchNode.job_dispatched_time.dbValues || !dispatchNode.job_dispatched_time.dbValues[0]){
+                        dispatchNode.job_dispatched_time = nowValues;
+                    }
+                    break;
+                case 'job_accepted':
+                    if(!dispatchNode.job_accepted_time || !dispatchNode.job_accepted_time.dbValues || !dispatchNode.job_accepted_time.dbValues[0]){
+                        dispatchNode.job_accepted_time = nowValues;
+                    }
+                    break;
+                case 'driving_to_job':
+                    if(!dispatchNode.started_driving_time || !dispatchNode.started_driving_time.dbValues || !dispatchNode.started_driving_time.dbValues[0]){
+                        dispatchNode.started_driving_time = nowValues;
+                    }
+                    break;
+                case 'arrived_at_job':
+                    if(!dispatchNode.arrived_at_job_time || !dispatchNode.arrived_at_job_time.dbValues || !dispatchNode.arrived_at_job_time.dbValues[0]){
+                        dispatchNode.arrived_at_job_time = nowValues;
+                    }
+                    break;
+                case 'towing_vehicle':
+                    if(!dispatchNode.started_towing_time || !dispatchNode.started_towing_time.dbValues || !dispatchNode.started_towing_time.dbValues[0]){
+                        dispatchNode.started_towing_time = nowValues;
+                    }
+                    break;
+                case 'arrived_at_destination':
+                    if(!dispatchNode.arrived_at_destination_time || !dispatchNode.arrived_at_destination_time.dbValues || !dispatchNode.arrived_at_destination_time.dbValues[0]){
+                        dispatchNode.arrived_at_destination_time = nowValues;
+                    }
+                    break;
+                case 'job_complete':
+                    if(!dispatchNode.job_complete_time || !dispatchNode.job_complete_time.dbValues || !dispatchNode.job_complete_time.dbValues[0]){
+                        dispatchNode.job_complete_time = nowValues;
+                    }
+                    break;
+            }
+            
+            var node = Omadi.data.nodeSave(dispatchNode);
+            
+            if(node._saved){
+                updated = true;
+            }
+        }
+    }
+    catch(ex){
+        Utils.sendErrorReport("Exception updating the dispatch status offline: " + ex);
+    }
+    
+    return updated;
+};
+
 Omadi.bundles.dispatch.updateStatus = function(nid, status, background){"use strict";
-    var dialog, http;
+    var dialog, http, savedLocally, dialog;
     
     if(typeof background === 'undefined'){
         background = false;
     }
     
-    if(!Ti.Network.online){
-        dialog = Ti.UI.createOptionDialog({
-            message : 'Your Internet connection was lost. Please try again after you get an Internet connection.'
-        });
-        
-        if ( typeof alertQueue !== 'undefined') {
-            alertQueue.push(dialog);
-        }
-        else {
-            dialog.show();
-        }
-        
-        if(background){
-          // TODO: update the dispatch node in the local database and set the dispatch timestmap and status  
-        }
-    }
-    else{
-        
+    // Always update the node locally
+    savedLocally = Omadi.bundles.dispatch.updateStatusOffline(nid, status);
+    
+    if(!savedLocally){
         if(!background){
-            Omadi.display.loading('Updating...');
+            // If not on a form, let the user know there was a problem
+            alert('An error occurred while updating the status. Please try again.');
         }
-        
-        Omadi.data.setUpdating(true);
-        
-        http = Ti.Network.createHTTPClient({
-            enableKeepAlive: false,
-            validatesSecureCertificate: false,
-            timeout: 15000
-        });
-        
-        http.open('POST', Ti.App.DOMAIN_NAME + '/js-dispatch/dispatch/update_status.json');
-    
-        http.setRequestHeader("Content-Type", "application/json");
-        Omadi.utils.setCookieHeader(http);
-    
-        http.onload = function(e) {
-            var json;
+    } else{
+        if(Ti.Network.online){
+            // With an Internet connection, send the status to the server immediately
             
-            Omadi.display.doneLoading();
+            // Must set updating, because this is also being used as a regular sync in case any permissions 
+            // are updated (if an Internet connection exists and the response is fine)
+            Omadi.data.setUpdating(true);
             
-            if (this.responseText !== null && isJsonString(this.responseText) === true) {
-        
-                Omadi.service.fetchedJSON = JSON.parse(this.responseText);            
-                Omadi.data.processFetchedJson();
-                
-                if(!background && !Omadi.service.fetchedJSON.dispatch_update_status.success){
-                    alert(Omadi.service.fetchedJSON.dispatch_update_status.text);
-                }
-            }
-            else{
-                if(!background){
-                    alert("The status was not updated because an unknown error occurred.");
-                }
-                Utils.sendErrorReport("Bad response text for update dispatch status: " + this.responseText);
-            }
-    
-            Omadi.data.setUpdating(false);
-            Ti.App.fireEvent('omadi:finishedDataSync');
-        };
-    
-        http.onerror = function(e) {
-            var dialog;
-            
-            Omadi.display.doneLoading();
-    
-            dialog = Ti.UI.createAlertDialog({
-                message : 'An error occured. Please try again.',
-                buttonNames: ['OK']
+            http = Ti.Network.createHTTPClient({
+                enableKeepAlive: false,
+                validatesSecureCertificate: false,
+                timeout: 15000
             });
             
-            if(!background){
-                if ( typeof alertQueue !== 'undefined') {
-                    alertQueue.push(dialog);
-                }
-                else {
-                    dialog.show();
-                }
-            }
-            
-            Utils.sendErrorReport('Could not update status: ' + JSON.stringify(e));
-        };
+            http.open('POST', Ti.App.DOMAIN_NAME + '/js-dispatch/dispatch/update_status.json');
         
-        http.send(JSON.stringify({
-            nid: nid,
-            status: status
-        }));
+            http.setRequestHeader("Content-Type", "application/json");
+            Omadi.utils.setCookieHeader(http);
+            
+            http.onload = function(e) {
+                if (this.responseText !== null && isJsonString(this.responseText) === true) {
+            
+                    Omadi.service.fetchedJSON = JSON.parse(this.responseText);            
+                    Omadi.data.processFetchedJson();
+                    
+                    if(!background && !Omadi.service.fetchedJSON.dispatch_update_status.success){
+                        alert(Omadi.service.fetchedJSON.dispatch_update_status.text);
+                    }
+                }
+                else{
+                    if(!background){
+                        alert("The status was not updated because an unknown error occurred.");
+                    }
+                    Utils.sendErrorReport("Bad response text for discontinue job: " + this.responseText);
+                }  
+            };
+            
+            http.onload = function(e) {
+                
+                try{
+                    if (this.responseText !== null && isJsonString(this.responseText) === true) {
+                
+                        Omadi.service.fetchedJSON = JSON.parse(this.responseText);            
+                        Omadi.data.processFetchedJson();
+                        
+                        if(!background && !Omadi.service.fetchedJSON.dispatch_update_status.success){
+                            alert(Omadi.service.fetchedJSON.dispatch_update_status.text);
+                        }
+                    }
+                    else{
+                        if(!background){
+                            alert('The status was not updated because an unknown error occurred.');
+                        }
+                        Utils.sendErrorReport("Bad response text for discontinue job: " + this.responseText);
+                    }
+                } catch(ex){
+                    Utils.sendErrorReport('Exception onload of discontinue job: ' + ex);
+                }
+                
+                // Let the system do other syncs
+                Omadi.data.setUpdating(false);
+                Ti.App.fireEvent('omadi:finishedDataSync');
+            };
+            
+            http.onerror = function(e) {
+                // Let the system do other syncs
+                Omadi.data.setUpdating(false);
+                
+                if(e.code == 500){
+                    // Send an error only on a server error
+                    Utils.sendErrorReport('Could not update status: ' + JSON.stringify(e));
+                }
+                
+                if(!background){
+                    // Only when the user is not on a form, popup the error
+                    alert("The status failed to update online, but it will update on the next mobile sync.");
+                }
+            };
+            
+            http.send(JSON.stringify({
+                nid: nid,
+                status: status,
+                sync_timestamp: Omadi.data.getLastUpdateTimestamp()
+            }));
+            
+        } else if(!background){
+            // Show the user a dialog when not on a form
+            dialog = Ti.UI.createAlertDialog({
+                buttonNames: ['Ok'],
+                title: 'No Internet Connection',
+                message: 'The status was saved, but it will not be sent to dispatch until you have an Internet connection.' 
+            }).show();
+        }
     }
 };
 
+Omadi.bundles.dispatch.discontinueJobOffline = function(nid, status){"use strict";
+    
+    var dispatchNode = Omadi.data.nodeLoad(nid), updated = false;
+    
+    try{
+        if(dispatchNode && dispatchNode.type !== 'dispatch'){
+            if(dispatchNode.dispatch_nid > 0){
+                dispatchNode = Omadi.data.nodeLoad(dispatchNode.dispatch_nid);   
+            }
+        }
+        
+        if(dispatchNode){
+            
+            // Set the new status
+            dispatchNode.job_discontinued = {
+               dbValues : [status],
+               // Don't need the textValues for a correct node save
+               textValues : ['']  
+            };
+            
+            dispatchNode.time_discontinued = {
+               dbValues : [Utils.getUTCTimestampServerCorrected()],
+               // Don't need the textValues for a correct node save
+               textValues : ['']  
+            };
+            
+            var node = Omadi.data.nodeSave(dispatchNode);
+            
+            if(node._saved){
+                updated = true;
+            }
+        }
+    } catch(ex){
+        Utils.sendErrorReport('Exception in discontinueJobOffline: ' + ex);
+    }
+    
+    return updated;
+};
+
 Omadi.bundles.dispatch.discontinueJob = function(nid, status, background){"use strict";
-    var dialog, http;
+    var dialog, http, savedLocally;
     
     if(typeof background === 'undefined'){
         background = false;
     }
     
-    if(!Ti.Network.online){
-        dialog = Ti.UI.createOptionDialog({
-            message : 'Your Internet connection was lost. Please try again after you get an Internet connection.'
-        });
-        
-        if ( typeof alertQueue !== 'undefined') {
-            alertQueue.push(dialog);
-        }
-        else {
-            dialog.show();
-        }
-        
-        if(background){
-          // TODO: update the dispatch node in the local database and set the dispatch timestmap and status  
-        }
-    }
-    else{
-        
+    // Always update the node locally
+    savedLocally = Omadi.bundles.dispatch.discontinueJobOffline(nid, status);
+    
+    if(!savedLocally){
         if(!background){
-            Omadi.display.loading('Updating...');
+            // If not on a form, let the user know there was a problem
+            alert('An error occurred while discontinuing the job. Please try again.');
         }
+    } else{
         
-        Omadi.data.setUpdating(true);
-        
-        http = Ti.Network.createHTTPClient({
-            enableKeepAlive: false,
-            validatesSecureCertificate: false,
-            timeout: 15000
-        });
-
-        http.open('POST', Ti.App.DOMAIN_NAME + '/js-dispatch/dispatch/discontinue_job.json');
-    
-        http.setRequestHeader("Content-Type", "application/json");
-        Omadi.utils.setCookieHeader(http);
-    
-        http.onload = function(e) {
-            var json;
+        if(Ti.Network.online){
             
-            Omadi.display.doneLoading();
+            // Must set updating, because this is also being used as a regular sync in case any permissions 
+            // are updated (if an Internet connection exists and the response is fine)
+            Omadi.data.setUpdating(true);
             
-            if (this.responseText !== null && isJsonString(this.responseText) === true) {
-        
-                Omadi.service.fetchedJSON = JSON.parse(this.responseText);            
-                Omadi.data.processFetchedJson();
-                
-                if(!background && !Omadi.service.fetchedJSON.dispatch_update_status.success){
-                    alert(Omadi.service.fetchedJSON.dispatch_update_status.text);
-                }
-            }
-            else{
-                if(!background){
-                    alert("The status was not updated because an unknown error occurred.");
-                }
-                Utils.sendErrorReport("Bad response text for discontinue job: " + this.responseText);
-            }
-    
-            Omadi.data.setUpdating(false);
-            Ti.App.fireEvent('omadi:finishedDataSync');
-        };
-    
-        http.onerror = function(e) {
-            var dialog;
-            
-            Omadi.display.doneLoading();
-    
-            dialog = Ti.UI.createAlertDialog({
-                message : 'An error occured. Please try again.',
-                buttonNames: ['OK']
+            http = Ti.Network.createHTTPClient({
+                enableKeepAlive: false,
+                validatesSecureCertificate: false,
+                timeout: 15000
             });
-            
-            if(!background){
-                if ( typeof alertQueue !== 'undefined') {
-                    alertQueue.push(dialog);
-                }
-                else {
-                    dialog.show();
-                }
-            }
-            
-            Utils.sendErrorReport('Could not discontinue job: ' + JSON.stringify(e));
-        };
+    
+            http.open('POST', Ti.App.DOMAIN_NAME + '/js-dispatch/dispatch/discontinue_job.json');
         
-        http.send(JSON.stringify({
-            nid: nid,
-            status: status
-        }));
+            http.setRequestHeader("Content-Type", "application/json");
+            Omadi.utils.setCookieHeader(http);
+        
+            http.onload = function(e) {
+                try{
+                    if (this.responseText !== null && isJsonString(this.responseText) === true) {
+                
+                        Omadi.service.fetchedJSON = JSON.parse(this.responseText);            
+                        Omadi.data.processFetchedJson();
+                        
+                        if(!background && !Omadi.service.fetchedJSON.dispatch_update_status.success){
+                            alert(Omadi.service.fetchedJSON.dispatch_update_status.text);
+                        }
+                    }
+                    else{
+                        if(!background){
+                            alert('The status was not updated because an unknown error occurred.');
+                        }
+                        Utils.sendErrorReport("Bad response text for discontinue job: " + this.responseText);
+                    }
+                } catch(ex){
+                    Utils.sendErrorReport('Exception onload of discontinue job: ' + ex);
+                }
+                
+                // Let the system do other syncs
+                Omadi.data.setUpdating(false);
+                Ti.App.fireEvent('omadi:finishedDataSync');
+            };
+        
+            http.onerror = function(e) {
+                
+                // Let the system do other syncs
+                Omadi.data.setUpdating(false);
+                
+                if(!background){
+                    // Only when the user is not on a form, popup the error
+                    alert("The job failed to update online, but it will update on the next mobile sync.");
+                }
+                
+                if(e.code == 500){
+                    Utils.sendErrorReport('Could not discontinue job: ' + JSON.stringify(e));
+                }
+            };
+            
+            http.send(JSON.stringify({
+                nid: nid,
+                status: status,
+                sync_timestamp: Omadi.data.getLastUpdateTimestamp()
+            }));
+            
+        } else if(!background){
+            // Show the user a dialog when not on a form
+            dialog = Ti.UI.createAlertDialog({
+                buttonNames: ['Ok'],
+                title: 'No Internet Connection',
+                message: 'The job was discontinued, but it will not be sent to dispatch until you have an Internet connection.' 
+            }).show();
+        }
     }
 };
 

@@ -11,13 +11,13 @@ function rules_field_passed_time_check(time_rule, timestamp) {"use strict";
 
     retval = false;
 
-    timestamp_day = Number(Omadi.utils.PHPFormatDate('w', Number(timestamp)));
+    timestamp_day = Number(Utils.phpFormatDate('w', Number(timestamp)));
 
     Ti.API.debug(timestamp_day);
 
     if (time_rule != '' && time_rule != null) {
 
-        timestamp_midnight = Omadi.utils.mktime(0, 0, 0, Omadi.utils.PHPFormatDate('n', Number(timestamp)), Omadi.utils.PHPFormatDate('j', Number(timestamp)), Omadi.utils.PHPFormatDate('Y', Number(timestamp)));
+        timestamp_midnight = Omadi.utils.mktime(0, 0, 0, Utils.phpFormatDate('n', Number(timestamp)), Utils.phpFormatDate('j', Number(timestamp)), Utils.phpFormatDate('Y', Number(timestamp)));
 
         days = time_rule.split(';');
 
