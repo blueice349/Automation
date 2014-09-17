@@ -190,11 +190,18 @@ ImageWidget.prototype.addImageViewsToWidgetView = function(fids, widgetView) {"u
 		var showPhotoOptions = function(e){
 		    self.showPhotoOptions(e.source);
 		};
+		var localImageMismatch = false;
 		
 		for (i = 0, j = 0; i < fids.length; i++) {
 			var imageView = null; 
 			if (fids[i] === -1) {
-				imageView = this.getLocalImageView(fids[i], localImages[0][j++], i);
+				if (localImages[0][j]) {
+					imageView = this.getLocalImageView(fids[i], localImages[0][j], i);
+				} else {
+					localImageMismatch = true;
+					continue;
+				}
+				j++;
 			} else if (localImages[fids[i]]) {
 				imageView = this.getLocalImageView(fids[i], localImages[fids[i]], i);
 			} else {
@@ -204,6 +211,15 @@ ImageWidget.prototype.addImageViewsToWidgetView = function(fids, widgetView) {"u
 			imageView.addEventListener('click', showPhotoOptions);
 			
 			widgetView.add(imageView);
+		}
+		
+		if (localImageMismatch) {
+			var expected = 0;
+			for (i = 0; i < fids.length; i++) {
+				expected += (fids[i] === -1) ? 1 : 0;
+			}
+			
+			Utils.sendErrorReport('Exception in addImageViewsToWidgetView: Expected ' + expected + ' unuploaded images for but only found ' + j);
 		}
 	} catch (e) {
 		Utils.sendErrorReport('Error in addImageViewsToWidgetView: ' + e);
@@ -216,7 +232,6 @@ ImageWidget.prototype.getLocalImages = function() {"use strict";
 		var result = Database.queryList('SELECT file_path, fid, degrees, thumb_path, nid FROM _files WHERE nid IN (' + this.getImageNid() + ', ' + (this.node.continuous_nid || 0) + ', 0) AND field_name="' + this.instance.field_name + '" ORDER BY timestamp ASC');
 		
 		while(result.isValidRow()) {
-			
 			var localImage = {
 				filePath: result.fieldByName('file_path'),
 				thumbPath: result.fieldByName('thumb_path'),
