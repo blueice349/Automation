@@ -195,13 +195,13 @@ ImageWidget.prototype.addImageViewsToWidgetView = function(fids, widgetView) {"u
 		for (i = 0, j = 0; i < fids.length; i++) {
 			var imageView = null; 
 			if (fids[i] === -1) {
-				if (localImages[0][j]) {
-					imageView = this.getLocalImageView(fids[i], localImages[0][j], i);
+				var localImage = localImages[0][j++];
+				if (localImage) {
+					imageView = this.getLocalImageView(fids[i], localImage, i);
 				} else {
 					localImageMismatch = true;
 					continue;
 				}
-				j++;
 			} else if (localImages[fids[i]]) {
 				imageView = this.getLocalImageView(fids[i], localImages[fids[i]], i);
 			} else {

@@ -174,8 +174,12 @@ TextWidget.prototype.getNewElementWrapper = function(index){"use strict";
         this.instance.settings.max_length = parseInt(this.instance.settings.max_length, 10);
         
         if (this.instance.settings.max_length > 0) {
-            element.maxLength = this.instance.settings.max_length;
+            element.maxLength = Math.min(this.instance.settings.max_length, 255);
+        } else {
+			element.maxLength = 255;
         }
+    } else {
+		element.maxLength = 255;
     }
     
     if (typeof this.instance.settings.capitalization !== null && this.instance.settings.capitalization != null) {
@@ -237,7 +241,6 @@ TextWidget.prototype.onChangeListener = function(e) {"use strict";
     now = new Date();
     milliseconds = now.getTime();
     timeChange = milliseconds - e.source.lastChange;
-    e.source.value = e.source.value.substring(0,255);
     
     if(e.source.lastValue != e.source.value && (timeChange > 20)){
         e.source.lastChange = milliseconds;
