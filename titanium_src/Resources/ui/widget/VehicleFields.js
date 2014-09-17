@@ -31,7 +31,7 @@ function VehicleFieldsWidget(formObj, instance, fieldViewWrapper){"use strict";
     }
     
     if(this.instance.settings.cardinality == -1){
-        if(Utils.isObject(this.dbValues)){
+        if(Utils.isArray(this.dbValues)){
             this.numVisibleFields = this.dbValues.length;
         }
     }

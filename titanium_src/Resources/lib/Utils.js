@@ -358,10 +358,16 @@ var isEmpty = function(number){
 exports.isEmpty = isEmpty;
 
 var isObject = function(input){
-    return typeof (input) === 'object';
+    return typeof (input) === 'object' && input !== null;
 };
 
 exports.isObject = isObject;
+
+var isArray = function(input){
+    return typeof (input) === 'object' && input instanceof 'Array';
+};
+
+exports.isArray = isArray;
 
 exports.trimWhiteSpace = function(string) {
     
@@ -805,7 +811,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                             else if (search_operator == 'weekday') {
 
                                 weekdays = search_value.weekday;
-                                if (!isObject(search_value.weekday)) {
+                                if (!isArray(search_value.weekday)) {
 
                                     weekdays = [];
 
@@ -1146,7 +1152,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                                                 // Make sure the search value is an array
                                                 // This will convert an object to an array or a string to an array
                                                 searchValues = [];
-                                                if (!isObject(search_value)) {
+                                                if (!isArray(search_value)) {
 
                                                     for (i in search_value) {
                                                         if (search_value.hasOwnProperty(i)) {
@@ -1315,7 +1321,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                                                 if(typeof search_field.widget.type !== 'undefined' && search_field.widget.type == 'omadi_reference_select'){
                                                     // Make sure the search value is an array
                                                     searchValues = [];
-                                                    if (!isObject(search_value)) {
+                                                    if (!isArray(search_value)) {
 
                                                         for (i in search_value) {
                                                             if (search_value.hasOwnProperty(i)) {
@@ -1412,7 +1418,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                                     }
                                     // Make sure the search value is an array
                                     searchValues = [];
-                                    if (!isObject(search_value)) {
+                                    if (!isArray(search_value)) {
 
                                         for (i in search_value) {
                                             if (search_value.hasOwnProperty(i)) {
@@ -1485,7 +1491,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                                     if (search_field.widget.type == 'options_select' || search_field.widget.type == 'violation_select') {
                                         // Make sure the search value is an array
                                         searchValues = [];
-                                        if (!isObject(search_value)) {
+                                        if (!isArray(search_value)) {
 
                                             for (i in search_value) {
                                                 if (search_value.hasOwnProperty(i)) {

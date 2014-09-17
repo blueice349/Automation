@@ -304,7 +304,7 @@ Omadi.bundles.dispatch.checkInsertNode = function(insert){"use strict";
      
      // Show if assigned
      if(insert.send_dispatch_requests_to !== 'undefined'){
-         if(Utils.isObject(insert.send_dispatch_requests_to)){
+         if(Utils.isArray(insert.send_dispatch_requests_to)){
              for(uidIndex in insert.send_dispatch_requests_to){
                  if(insert.send_dispatch_requests_to.hasOwnProperty(uidIndex)){
                     if(userUID == insert.send_dispatch_requests_to[uidIndex]){
@@ -320,7 +320,7 @@ Omadi.bundles.dispatch.checkInsertNode = function(insert){"use strict";
      
      // Show if it's the driver
      if(insert.dispatched_to_driver !== 'undefined'){
-         if(Utils.isObject(insert.dispatched_to_driver)){
+         if(Utils.isArray(insert.dispatched_to_driver)){
              for(uidIndex in insert.dispatched_to_driver){
                  if(insert.dispatched_to_driver.hasOwnProperty(uidIndex)){
                     if(userUID == insert.dispatched_to_driver[uidIndex]){

@@ -453,7 +453,7 @@ Omadi.utils.list_search_get_search_sql = function(nodeType, criteria){"use stric
                          
                          if (instance.widget.type == 'options_select' || instance.widget.type == 'violation_select') {
                              searchValues = [];
-                             if (!Utils.isObject(search_value)) {
+                             if (!Utils.isArray(search_value)) {
 
                                 for (i in search_value) {
                                     if (search_value.hasOwnProperty(i)) {

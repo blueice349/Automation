@@ -553,7 +553,7 @@ CalculationFieldWidget.prototype.getRowValues = function(instance){"use strict";
             
             if(typeof instance.settings.calculation.items !== 'undefined'){
                 
-                if(Utils.isObject(instance.settings.calculation.items)){
+                if(Utils.isArray(instance.settings.calculation.items)){
                     // Only sort if the items is an array
                     // We can still support a key/value object, but sort will not work
                     instance.settings.calculation.items = instance.settings.calculation.items.sort(Utils.sortByWeight);

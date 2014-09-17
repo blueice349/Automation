@@ -197,7 +197,7 @@ Node.load = function(nid) {
                                     jsonValue = Utils.getParsedJSON(origDBValue);
                                     tempDBValues = [];
         
-                                    if (Utils.isObject(jsonValue)) {
+                                    if (Utils.isArray(jsonValue)) {
                                         tempDBValues = jsonValue;
                                     }
                                     else {
@@ -466,7 +466,7 @@ Node.load = function(nid) {
                                         if(node[field_name].tempData){
                                             
                                             node[field_name].jsonValue = Utils.getParsedJSON(node[field_name].tempData);
-                                            if(Utils.isObject(node[field_name].jsonValue)){
+                                            if(Utils.isArray(node[field_name].jsonValue)){
                                                 for(i = 0; i < node[field_name].jsonValue.length; i ++){
                                                     
                                                     // If we have a total amount, add that in there instead of the price as they may be different
@@ -504,7 +504,7 @@ Node.load = function(nid) {
                                                 textValue = [];
                                                 origDBValue = subResult.fieldByName("filename");
                                                 tempDBValues = Utils.getParsedJSON(origDBValue);
-                                                if(Utils.isObject(tempDBValues)){
+                                                if(Utils.isArray(tempDBValues)){
                                                     textValue = tempDBValues;
                                                 }
                                                 else{
