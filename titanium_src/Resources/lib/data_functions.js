@@ -374,12 +374,25 @@ Omadi.data.insertNewTerm = function(machine_name, name){"use strict";
     return retval;
 };
 
+Omadi.data.nodeSaving = false;
+
 Omadi.data.nodeSave = function(node) {"use strict";
     var query, field_name, fieldNames, instances, result, db, smallestNid, insertValues, j, k, 
         instance, value_to_insert, has_data, content_s, saveNid, continuousNid, photoNids, origNid,
         continuousId, tempNid, listDB, trueWindowNid, priceIdx, priceTotal, priceData, 
         jsonValue, nodeHasData, lastLocation;
     /*jslint nomen: true*/
+   
+    // Only one save at a time
+    if(Omadi.data.nodeSaving){
+        Ti.API.info("The node was not saved because another node is already being saved.");
+        node._error = 'A timing error prevented the form save.';
+        return node;    
+    }
+    
+    // Set the lock to make sure no other asyncronous activities run this function simultaneously
+    Omadi.data.nodeSaving = true;
+    
     try{
         node._saved = false;
     
@@ -433,6 +446,31 @@ Omadi.data.nodeSave = function(node) {"use strict";
                 origNid = 0;
             }
             
+            try{
+                // A timing issue could come up where the continuous save interval happens after the regular save
+                // This would overwrite the correctly saved node with a continuous save one, and it would be deleted after the window closes
+                // This code should stay in place even after we change from intervals to saving after a value changes, as some kind of timeout will have to still be in place
+                // The best way to get into this code is to turn off internet connection, save the node, and wait on the "No Internet Connection" alert
+                var getNewNid = false;
+                db = Omadi.utils.openMainDatabase();
+                result = db.execute("SELECT COUNT(*) FROM node WHERE nid = " + saveNid + " AND flag_is_updated IN (0,1)");
+                if(result.isValidRow()){
+                    if(result.field(0, Ti.Database.FIELD_TYPE_INT) > 0){
+                        getNewNid = true;
+                    }
+                }
+                result.close();
+                db.close();
+                
+                if(getNewNid){
+                    Ti.API.debug("Retrieving new save nid because the current one is already taken.");
+                    saveNid = node.continuous_nid = Omadi.data.getNewNodeNid();
+                }
+                
+            } catch(ex){
+                Utils.sendErrorReport("Exception checking the nid of a continuous save: " + ex);
+            }
+           
             // The continuous_nid will be saved as the current window's NID
         }
         else if (node.nid == 'new') {
@@ -769,6 +807,9 @@ Omadi.data.nodeSave = function(node) {"use strict";
               Omadi.data.deleteNode(node._deleteNid);  
          }
     }
+    
+    // Reset the lock to allow other nodes to save
+    Omadi.data.nodeSaving = false;
     
     return node;
 };
@@ -1570,7 +1611,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
     files = Omadi.data.getFileArray();
            
     for(i = 0; i < files.length; i ++){
-        incrementTries = false;
+        incrementTries = 0;
         
         try{
             nextFile = files[i];
@@ -1581,7 +1622,8 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                 
                 alert("The file at " + nextFile.file_path + " for node #" + nextFile.nid + " cannot be found for upload.");
                 
-                incrementTries = true;
+                // Don't show this error again, since this will not ever be resolved
+                incrementTries = 10;
             }
             else{
                 
@@ -1622,9 +1664,10 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                                 imageBlob = imageFile.read();
                                 
                                 if(!imageBlob){
-                                    incrementTries = true;
+                                    incrementTries = 1;
                                     Ti.API.debug("Image Blob is null");
                                     Utils.sendErrorReport("Image blob is null");
+                                    restartSuggested = true;
                                 } 
                             }
                             catch(exRead){
@@ -1634,7 +1677,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                                 // This is probably a memory error, so request a restart
                                 restartSuggested = true;
                                 
-                                incrementTries = true;
+                                incrementTries = 1;
                             }
                         }
                     }
@@ -1643,9 +1686,10 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                             imageBlob = imageFile.read();
                             
                             if(!imageBlob){
-                                incrementTries = true;
+                                incrementTries = 1;
                                 Ti.API.debug("Image Blob is null");
                                 Utils.sendErrorReport("Image blob is null");
+                                restartSuggested = true;
                             }
                         }
                         catch(exRead1){
@@ -1655,10 +1699,10 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                             // This is probably a memory error, so request a restart
                             restartSuggested = true;
                             
-                            incrementTries = true;
+                            incrementTries = 1;
                         }
                         
-                        if(!incrementTries){
+                        if(incrementTries == 0){
                             
                             if(Ti.App.isIOS){
                                 // Resize the photo to a smaller size
@@ -1702,7 +1746,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                                 catch(ex) {
                                     Utils.sendErrorReport("Exception resizing iOS Photo: " + ex);
                                     readyForUpload = false;
-                                    incrementTries = true;
+                                    incrementTries = 1;
                                 }
                                 finally{
                                     // Clean up some memory
@@ -1747,7 +1791,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                         }
                         else{
                             Utils.sendErrorReport("Read zero bytes from stream.");
-                            incrementTries = true;
+                            incrementTries = 1;
                         }
                         
                         // Set the actual number of bytes we're uploading for this part
@@ -1758,11 +1802,11 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                     }
                     catch(exVideo){
                         Utils.sendErrorReport("Exception with video upload: " + exVideo);
-                        incrementTries = true;
+                        incrementTries = 1;
                     }
                 }
                 
-                if(!nextFile.loaded && !incrementTries){
+                if(!nextFile.loaded && incrementTries == 0){
                     Ti.API.debug("Upload Part: " + nextFile.upload_part + "/" + nextFile.numUploadParts);
                     Ti.API.debug(nextFile);
                     
@@ -1776,7 +1820,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                             Utils.sendErrorReport("Exception getting text of base64 photo of size " + imageBlob.length + ": " + ex6); 
                             // This photo is not going to upload correctly
                             readyForUpload = false;
-                            incrementTries = false;
+                            incrementTries = 0;
                             
 	                        // A memory problem is usually the culprit here.
 	                        restartSuggested = true;
@@ -1786,7 +1830,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                         Utils.sendErrorReport("Exception base64 encoding photo of size " + imageBlob.length + ": " + ex5 + ", availableMemory " + Ti.Platform.availableMemory); 
                         // This photo is not going to upload correctly
                         readyForUpload = false;
-                        incrementTries = false;
+                        incrementTries = 0;
                         
                         // A memory problem is usually the culprit here.
                         restartSuggested = true;
@@ -1799,14 +1843,14 @@ Omadi.data.getNextPhotoData = function(){"use strict";
             imageFile = null;
         }
         catch(exAll){
-            incrementTries = true;
+            incrementTries = 1;
             Utils.sendErrorReport("File error: " + exAll);
         }
         
-        if(incrementTries){
+        if(incrementTries > 0){
             // Increment the file load tries counter
             listDB = Omadi.utils.openListDatabase();
-            listDB.execute("UPDATE _files SET tries = (tries + 1) WHERE id = " + nextFile.id);
+            listDB.execute("UPDATE _files SET tries = (tries + " + incrementTries + ") WHERE id = " + nextFile.id);
             listDB.close();
         }
         else{
