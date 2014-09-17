@@ -237,6 +237,7 @@ TextWidget.prototype.onChangeListener = function(e) {"use strict";
     now = new Date();
     milliseconds = now.getTime();
     timeChange = milliseconds - e.source.lastChange;
+    e.source.value = e.source.value.substring(0,255);
     
     if(e.source.lastValue != e.source.value && (timeChange > 20)){
         e.source.lastChange = milliseconds;
