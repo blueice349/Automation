@@ -498,58 +498,13 @@ exports.sortByWeight = function(a, b) {
     return 0;
 };
 
-function mktime() {
-    var no, ma = 0, mb = 0, i = 0, d = new Date(), argv = arguments, argc = argv.length, dateManip, set;
-
-    if (argc > 0) {
-        d.setHours(0, 0, 0);
-        d.setDate(1);
-        d.setMonth(1);
-        d.setYear(1972);
-    }
-
-    dateManip = {
-        0 : function(tt) {
-            return d.setHours(tt);
-        },
-        1 : function(tt) {
-            return d.setMinutes(tt);
-        },
-        2 : function(tt) {
-            var set = d.setSeconds(tt);
-            mb = d.getDate() - 1;
-            return set;
-        },
-        3 : function(tt) {
-            set = d.setMonth(parseInt(tt, 10) - 1);
-            ma = d.getFullYear() - 1972;
-            return set;
-        },
-        4 : function(tt) {
-            return d.setDate(tt + mb);
-        },
-        5 : function(tt) {
-            return d.setYear(tt + ma);
-        }
-    };
-
-    for ( i = 0; i < argc; i++) {
-        no = parseInt(argv[i], 10);
-        if (isNaN(no)) {
-            return false;
-        }
-
-        // arg is number, let's manipulate date object
-        if (!dateManip[i](no)) {
-            // failed
-            return false;
-        }
-    }
-
-    return Math.floor(d.getTime() / 1000);
+function getMidnightTimestamp(timestamp) {
+	var date = new Date(timestamp * 1000);
+	return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime() / 1000;
 }
 
-exports.mktime = mktime;
+
+exports.getMidnightTimestamp = getMidnightTimestamp;
 
 function listSearchSetDatestampValueFromRelative(relativeString){
     var retval = null, now;
@@ -714,7 +669,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                                 compare_times = [];
 
                                 for ( i = 0; i < nodeDBValues.length; i++) {
-                                    compare_times[i] = search_time_value + mktime(0, 0, 0, phpFormatDate('n', Number(nodeDBValues[i])), phpFormatDate('j', Number(nodeDBValues[i])), phpFormatDate('Y', Number(nodeDBValues[i])));
+                                    compare_times[i] = search_time_value + getMidnightTimestamp(nodeDBValues[i]);
                                 }
 
                                 if (search_operator == 'after-time') {
@@ -745,7 +700,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
 
                                     for ( i = 0; i < nodeDBValues.length; i++) {
 
-                                        compare_times2[i] = search_time_value2 + mktime(0, 0, 0, phpFormatDate('n', Number(nodeDBValues[i])), phpFormatDate('j', Number(nodeDBValues[i])), phpFormatDate('Y', Number(nodeDBValues[i])));
+                                        compare_times2[i] = search_time_value2 + getMidnightTimestamp(nodeDBValues[i]);
 
                                     }
                                     

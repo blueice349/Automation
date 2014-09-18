@@ -126,7 +126,6 @@ OmadiTimeWidget.prototype.redraw = function(){"use strict";
 };
 
 OmadiTimeWidget.prototype.getNewElement = function(index){"use strict";
-    /*global mktime*/
     var dbValue, textValue, element, i, showTime, jsDate, dateText, timeText, timeView, dateView, nowTimestamp, midnight;
     var self = this;
     
@@ -149,7 +148,7 @@ OmadiTimeWidget.prototype.getNewElement = function(index){"use strict";
 
     if (dbValue !== null) {
         nowTimestamp = Math.round(jsDate.getTime() / 1000);
-        midnight = mktime(0, 0, 0, Utils.phpFormatDate('n', nowTimestamp), Utils.phpFormatDate('j', nowTimestamp), Utils.phpFormatDate('Y', nowTimestamp));
+        midnight = Utils.getMidnightTimestamp(nowTimestamp);
         jsDate.setTime((midnight + dbValue) * 1000);
     }
     

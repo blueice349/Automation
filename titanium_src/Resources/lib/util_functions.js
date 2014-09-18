@@ -415,60 +415,6 @@ Omadi.utils.inArray = function(val, haystack) {"use strict";
     return Utils.inArray(val, haystack);
 };
 
-// PHP equivelent function in javaScript----START
-Omadi.utils.mktime = function() {"use strict";
-
-    // USES ARGV - cannot just call Utils.mktime()
-    var no, ma = 0, mb = 0, i = 0, d = new Date(), argv = arguments, argc = argv.length, dateManip, set;
-
-    if (argc > 0) {
-        d.setHours(0, 0, 0);
-        d.setDate(1);
-        d.setMonth(1);
-        d.setYear(1972);
-    }
-
-    dateManip = {
-        0 : function(tt) {
-            return d.setHours(tt);
-        },
-        1 : function(tt) {
-            return d.setMinutes(tt);
-        },
-        2 : function(tt) {
-            var set = d.setSeconds(tt);
-            mb = d.getDate() - 1;
-            return set;
-        },
-        3 : function(tt) {
-            set = d.setMonth(parseInt(tt, 10) - 1);
-            ma = d.getFullYear() - 1972;
-            return set;
-        },
-        4 : function(tt) {
-            return d.setDate(tt + mb);
-        },
-        5 : function(tt) {
-            return d.setYear(tt + ma);
-        }
-    };
-
-    for ( i = 0; i < argc; i++) {
-        no = parseInt(argv[i], 10);
-        if (isNaN(no)) {
-            return false;
-        }
-
-        // arg is number, let's manipulate date object
-        if (!dateManip[i](no)) {
-            // failed
-            return false;
-        }
-    }
-
-    return Math.floor(d.getTime() / 1000);
-};
-
 Omadi.utils.list_search_node_matches_search_criteria = function(node, criteria) {"use strict";
 	return Utils.listSearchNodeMatchesSearchCriteria(node, criteria);
 };

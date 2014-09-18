@@ -15,7 +15,7 @@ function rules_field_passed_time_check(time_rule, timestamp) {"use strict";
 
     if (time_rule != '' && time_rule != null) {
 
-        timestamp_midnight = Omadi.utils.mktime(0, 0, 0, Utils.phpFormatDate('n', Number(timestamp)), Utils.phpFormatDate('j', Number(timestamp)), Utils.phpFormatDate('Y', Number(timestamp)));
+        timestamp_midnight = Utils.getMidnightTimestamp(timestamp);
         
         days = time_rule.split(';');
 

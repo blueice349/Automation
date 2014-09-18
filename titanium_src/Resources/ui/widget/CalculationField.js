@@ -693,7 +693,7 @@ CalculationFieldWidget.prototype.getRowValues = function(instance){"use strict";
                                         
                                         at_time = calculation_row.increment_at_time;
                                         start_timestamp = Number(start_timestamp);
-                                        relative_increment_time = at_time = Utils.mktime(0,0,0, Utils.phpFormatDate('n', start_timestamp), Utils.phpFormatDate('j', start_timestamp), Utils.phpFormatDate('Y', start_timestamp));
+                                        relative_increment_time = at_time = Utils.getMidnightTimestamp(start_timestamp);
                                         
                                         day_count = 0;
                                         if (relative_increment_time < start_timestamp) {
