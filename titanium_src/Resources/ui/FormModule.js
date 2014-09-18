@@ -13,20 +13,16 @@ function rules_field_passed_time_check(time_rule, timestamp) {"use strict";
 
     timestamp_day = Number(Utils.phpFormatDate('w', Number(timestamp)));
 
-    Ti.API.debug(timestamp_day);
-
     if (time_rule != '' && time_rule != null) {
 
         timestamp_midnight = Omadi.utils.mktime(0, 0, 0, Utils.phpFormatDate('n', Number(timestamp)), Utils.phpFormatDate('j', Number(timestamp)), Utils.phpFormatDate('Y', Number(timestamp)));
-
+        
         days = time_rule.split(';');
 
         day_rule = days[timestamp_day];
 
         values = day_rule.split('|');
         
-        Ti.API.info(JSON.stringify(values));
-
         if (values[0] == '1' || values[0] == 1) {
             if (values[1] == '1' || values[1] == 1) {
                 retval = true;
@@ -45,7 +41,7 @@ function rules_field_passed_time_check(time_rule, timestamp) {"use strict";
                         if (start_time > end_time) {
                             end_time = Number(end_time) + Number((3600 * 24));
                         }
-        
+                        
                         if (Number(timestamp) >= Number(start_time) && Number(timestamp) <= Number(end_time)) {
                             retval = true;
                         }

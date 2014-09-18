@@ -1351,7 +1351,7 @@ exports.getView = function(node, instance){"use strict";
                 var textValue = node[instance.field_name].textValues[i];
                 if(textValue){
                    
-                    jsonValue = Utils.getParsedJson(textValue);
+                    jsonValue = Utils.getParsedJSON(textValue);
                   
                     if(jsonValue.desc){
                         desc = jsonValue.desc;
