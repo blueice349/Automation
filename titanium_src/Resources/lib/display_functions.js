@@ -1394,8 +1394,6 @@ Omadi.display.DefaultProgressBar = function(max, message) {"use strict";
     this.add = function(amount){
         this.current += amount;
         this.bar.setValue(this.current);
-        
-        Ti.API.debug(this.current + " of " + this.max);
     };
     
     this.set = function(current){

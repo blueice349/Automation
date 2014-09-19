@@ -61,8 +61,6 @@ Display.getFileViewType = function(filename){
     
     extension = "none";
     
-    Ti.API.debug(filename);
-    
     if(filename){
         dotIndex = filename.lastIndexOf('.');
         if(dotIndex !== -1 && dotIndex !== filename.length - 1){
