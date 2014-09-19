@@ -1153,21 +1153,20 @@ FormTabs.prototype.savedDispatchNode = function(e){"use strict";
         Dispatch.workSavedInfo = null;
         
         if (e.saveType == 'normal' || e.saveType == 'draft') {
-            if(Ti.App.isAndroid){
-	            // This cannot be done on iOS
-	            // Also, don't close the tabs because that will cause some flashing of screens on iOS... simply close the tabgroup
-	            if(Dispatch.dispatchObj !== null){
-	                Dispatch.dispatchObj.closeWindow();
-	            }
-	            
-	            if(Dispatch.workObj !== null){
-	                Dispatch.workObj.closeWindow();
-	            }
-	            
-                if(Dispatch.commentsTab) {
-                    Dispatch.commentsTab.window.close();
-                }
-	        }
+           
+            // Also, don't close the tabs because that will cause some flashing of screens on iOS... simply close the tabgroup
+            if(Dispatch.dispatchObj !== null){
+                Dispatch.dispatchObj.closeWindow();
+            }
+            
+            if(Dispatch.workObj !== null){
+                Dispatch.workObj.closeWindow();
+            }
+            
+            if(Dispatch.commentsTab) {
+                Dispatch.commentsTab.window.close();
+            }
+	        
             Dispatch.tabGroup.close();
         } else if (e.saveType == 'next_part') {
             Dispatch.workObj.initNewWindowFromCurrentData(Dispatch.workObj.form_part + 1);
