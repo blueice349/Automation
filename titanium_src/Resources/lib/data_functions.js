@@ -1102,7 +1102,7 @@ Omadi.data.getNumFilesReadyToUpload = function(uid){"use strict";
     var mainDB, result, sql, retval = 0;
     
     try{
-        sql = "SELECT COUNT(*) FROM _files WHERE nid > 0 AND finished = 0";
+        sql = "SELECT COUNT(*) FROM _files WHERE nid > 0 AND finished = 0 AND fid > 0";
         
         if(typeof uid !== 'undefined'){
             sql += " AND uid = " + uid;
@@ -1405,6 +1405,7 @@ Omadi.data.getFileArray = function(){"use strict";
     if(Ti.Network.networkType === Ti.Network.NETWORK_MOBILE && !Ti.App.Properties.getBool('allowVideoMobileNetwork', false)){
         sql += " WHERE type != 'video' "; 
     }
+    // Try to upload non-failed files first, then the smallest size, then by delta
     sql += " ORDER BY tries ASC, filesize ASC, delta ASC";
     
     now = Omadi.utils.getUTCTimestamp();
@@ -1615,6 +1616,11 @@ Omadi.data.getNextPhotoData = function(){"use strict";
         
         try{
             nextFile = files[i];
+            if(nextFile.fid <= 0){
+                // Only upload photos that already have an fid assigned to them
+                continue;
+            }
+            
             imageFile = Ti.Filesystem.getFile(nextFile.file_path);
             
             if(!imageFile.exists()){
@@ -2125,6 +2131,7 @@ Omadi.data.processFetchedJson = function(){"use strict";
     }
     catch(ex) {
         alert("Saving Sync Data: " + ex);
+        Utils.sendErrorReport("Exception saving sync data: " + ex);
     }
     finally {
         try {
@@ -2566,10 +2573,7 @@ Omadi.data.processCommentJson = function(mainDB) {"use strict";
                     query += values.join(",");
                     query += ')';
                 
-                    Ti.API.debug(query);
-                    
-                    queries.push(query);
-                    
+                    queries.push(query);    
                 }
             }
         }
@@ -2586,6 +2590,7 @@ Omadi.data.processCommentJson = function(mainDB) {"use strict";
 
     }
     catch(ex) {
+        Utils.sendErrorReport("Exception while installing comments: " + ex);
         alert("Installing Comments: " + ex);
     }
 };
@@ -3045,8 +3050,7 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                         }
                     
 						if (Omadi.service.fetchedJSON.node[type].insert[i].__newFiles) {
-							var queriesToUpdateFids = Omadi.data.updateFidsOnNewFiles(Omadi.service.fetchedJSON.node[type].insert[i].nid, Omadi.service.fetchedJSON.node[type].insert[i].__newFiles);
-							queries.concat(queriesToUpdateFids);
+							Omadi.data.updateFidsOnNewFiles(Omadi.service.fetchedJSON.node[type].insert[i].nid, Omadi.service.fetchedJSON.node[type].insert[i].__newFiles);
 						}
                     }
                 }
@@ -3380,7 +3384,7 @@ Omadi.data.processNodeTypeJson = function(mainDB) {"use strict";
         if (Omadi.service.fetchedJSON.node_type.insert) {
             if (Omadi.service.fetchedJSON.node_type.insert.length) {
             
-                Ti.API.debug("node_type: " + JSON.stringify(Omadi.service.fetchedJSON.node_type));
+                // Ti.API.debug("node_type: " + JSON.stringify(Omadi.service.fetchedJSON.node_type));
 
                 for ( i = 0; i < Omadi.service.fetchedJSON.node_type.insert.length; i++) {
                     type = Omadi.service.fetchedJSON.node_type.insert[i].type;
@@ -3396,6 +3400,9 @@ Omadi.data.processNodeTypeJson = function(mainDB) {"use strict";
                         if (bundle_result.field(0, Ti.Database.FIELD_TYPE_INT) === 0) {
                             Ti.API.debug("CREATING TABLE " + type);
                             queries.push("CREATE TABLE " + type + " ('nid' INTEGER PRIMARY KEY NOT NULL UNIQUE )");
+                            
+                            // Create the comment table too
+                            queries.push("CREATE TABLE 'comment_node_" + type + "' ('cid' INTEGER PRIMARY KEY NOT NULL UNIQUE )");
                         }
                         
                         data = [];

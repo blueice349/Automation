@@ -521,8 +521,6 @@ Comment.prototype.save = function(comment){
             query = "INSERT OR REPLACE INTO comment (cid, nid, uid, subject, created, changed, status, name, node_type, sync_status) VALUES ";
             query += "(" + this.comment.cid + "," + this.comment.nid + "," + this.comment.uid + ",''," + this.comment.created + "," + this.comment.changed + ",1,'','" + Database.escape(tableName) + "',1)"; 
             
-            Ti.API.debug(query);
-            
             Database.query(query);
             
             instances = Node.getFields(tableName);
