@@ -1,11 +1,12 @@
-/*jslint eqeq:true,plusplus:true,vars:true*/
+/*jslint eqeq:true,plusplus:true,vars:true, node:true*/
+'use strict';
 
 var Utils = require('lib/Utils');
 var Display = require('lib/Display');
 var Database = require('lib/Database');
 var Location = require('lib/Location');
 
-function VideoWidget(formObj, instance, fieldViewWrapper){"use strict";
+function VideoWidget(formObj, instance, fieldViewWrapper){
     this.formObj = formObj;
     this.instance = instance;
     this.fieldView = null;
@@ -39,7 +40,7 @@ function VideoWidget(formObj, instance, fieldViewWrapper){"use strict";
     }
 }
 
-VideoWidget.prototype.getFieldView = function(){"use strict";
+VideoWidget.prototype.getFieldView = function(){
     
     var i, element, addButton;
     
@@ -59,7 +60,7 @@ VideoWidget.prototype.getFieldView = function(){"use strict";
     return this.fieldView;
 };
 
-VideoWidget.prototype.redraw = function(){"use strict";
+VideoWidget.prototype.redraw = function(){
     Ti.API.debug("in redraw");
     var origFieldView;
     
@@ -88,7 +89,7 @@ VideoWidget.prototype.redraw = function(){"use strict";
     this.fieldViewWrapper.remove(origFieldView);
 };
 
-VideoWidget.prototype.getNewElement = function(index){"use strict";
+VideoWidget.prototype.getNewElement = function(index){
     var widgetView, dbValues, imageData, degreeData, i, j, localDelta, imageNid, deltaData, thumbData;
 
     dbValues = [];
@@ -147,7 +148,7 @@ VideoWidget.prototype.getNewElement = function(index){"use strict";
     return widgetView;
 };
 
-VideoWidget.prototype.getChooseVideoButtonView = function(widgetView) {"use strict";
+VideoWidget.prototype.getChooseVideoButtonView = function(widgetView) {
     var self = this;
     
     var chooseVideoView = Ti.UI.createImageView({
@@ -182,7 +183,7 @@ VideoWidget.prototype.getChooseVideoButtonView = function(widgetView) {"use stri
     return chooseVideoView;
 };
 
-VideoWidget.prototype.getImageNid = function() {"use strict";
+VideoWidget.prototype.getImageNid = function() {
     var imageNid = this.formObj.nid;
     if(typeof this.formObj.origNid !== 'undefined'){
         imageNid = this.formObj.origNid;
@@ -190,7 +191,7 @@ VideoWidget.prototype.getImageNid = function() {"use strict";
     return imageNid;
 };
 
-VideoWidget.prototype.addVideoViewsToWidgetView = function(fids, widgetView) {"use strict";
+VideoWidget.prototype.addVideoViewsToWidgetView = function(fids, widgetView) {
     try {
 		var localImages = this.getNonUploadedVideos();
 		var i,j;
@@ -234,7 +235,7 @@ VideoWidget.prototype.addVideoViewsToWidgetView = function(fids, widgetView) {"u
     }
 };
 
-VideoWidget.prototype.getLocalImageView = function(fid, imageData, index) {"use strict";
+VideoWidget.prototype.getLocalImageView = function(fid, imageData, index) {
     var image = '/images/video_selected.png';
     var self = this;
     
@@ -287,7 +288,7 @@ VideoWidget.prototype.getLocalImageView = function(fid, imageData, index) {"use 
     return imageView;
 };
 
-VideoWidget.prototype.getRemoteImageView = function(fid, index) {"use strict";
+VideoWidget.prototype.getRemoteImageView = function(fid, index) {
 	var self = this;
     var imageView = Ti.UI.createImageView({
         left : 5,
@@ -317,7 +318,7 @@ VideoWidget.prototype.getRemoteImageView = function(fid, index) {"use strict";
     return imageView;
 };
 
-VideoWidget.prototype.getNonUploadedVideos = function() {"use strict";
+VideoWidget.prototype.getNonUploadedVideos = function() {
     var localImages = {0: []};
     try {
         var result = Database.queryList('SELECT file_path, fid, degrees, thumb_path FROM _files WHERE nid IN (' + this.getImageNid() + ', ' + (this.node.continuous_nid || 0) + ', 0) AND finished = 0 AND field_name="' + this.instance.field_name + '" ORDER BY timestamp ASC');
@@ -347,7 +348,7 @@ VideoWidget.prototype.getNonUploadedVideos = function() {"use strict";
     return localImages;
 };
 
-VideoWidget.prototype.getImageView = function(widgetView, index, nid, fid, degrees) {"use strict";
+VideoWidget.prototype.getImageView = function(widgetView, index, nid, fid, degrees) {
     var imageView, transform, rotateDegrees, image, widgetType, isFilePath, thumbVideo, videoFile;
     var self = this;
     
@@ -449,7 +450,7 @@ VideoWidget.prototype.getImageView = function(widgetView, index, nid, fid, degre
     return imageView;
 };
 
-VideoWidget.prototype.openVideoPlayer = function(imageView){"use strict";
+VideoWidget.prototype.openVideoPlayer = function(imageView){
     var videoFile, player, toolbar, back, space, label, http, s3URL;
     var self = this;
     
@@ -600,7 +601,7 @@ VideoWidget.prototype.openVideoPlayer = function(imageView){"use strict";
     }
 };
 
-VideoWidget.prototype.openVideoChooser = function(imageView){"use strict";
+VideoWidget.prototype.openVideoChooser = function(imageView){
 	var self = this;
 
     if(Ti.App.isAndroid){
@@ -753,11 +754,11 @@ VideoWidget.prototype.openVideoChooser = function(imageView){"use strict";
     
 };
 
-VideoWidget.prototype.openCamera = function(){"use strict";
+VideoWidget.prototype.openCamera = function(){
     
 };
 
-VideoWidget.prototype.saveFileInfo = function(imageView, filePath, thumbPath, degrees, filesize, type) {"use strict";
+VideoWidget.prototype.saveFileInfo = function(imageView, filePath, thumbPath, degrees, filesize, type) {
     /*jslint regexp:true*/
     var nid, db, encodedImage, mime, imageName, timestamp, fieldName, 
         imageIndex, location, uid, clientAccount;
@@ -793,28 +794,36 @@ VideoWidget.prototype.saveFileInfo = function(imageView, filePath, thumbPath, de
     }
 };
 
-VideoWidget.prototype.setFid = function(i, fid) {"use strict";
-    if (typeof this.dbValues[i] === 'undefined') {
-        return;
-    }
-    
-    this.dbValues[i] = fid;
-    
-    var imageView = this.elements[0].getChildren()[i];
-    imageView.fid = fid;
-    imageView.dbValue = fid;
+VideoWidget.prototype.setFid = function(i, fid) {
+	try {
+		if (typeof this.dbValues[i] === 'undefined' || typeof this.elements[0].getChildren()[i] === 'undefined') {
+			return;
+		}
+		
+		this.dbValues[i] = fid;
+		
+		var imageView = this.elements[0].getChildren()[i];
+		imageView.fid = fid;
+		imageView.dbValue = fid;
+	} catch (error) {
+		Utils.sendErrorReport('Error in VideoWidget.prototype.setFid: ' + error);
+	}
 };
 
-VideoWidget.prototype.updateFidsOfNewFiles = function(newFids) {"use strict"; 
-    var i, j;   
-    for (i = 0, j = 0; i < this.dbValues.length && j < newFids.length; i++) {
-        if (this.dbValues[i] == -1) {
-            this.setFid(i, newFids[j++]);
-        }
-    }
+VideoWidget.prototype.updateFidsOfNewFiles = function(newFids) { 
+	try {
+	    var i,j;
+		for (i = 0, j = 0; i < this.dbValues.length && j < newFids.length; i++) {
+			if (this.dbValues[i] == -1) {
+				this.setFid(i, newFids[j++]);
+			}
+		}
+	} catch(error) {
+		Utils.sendErrorReport('Error in VideoWidget.prototype.updateFidsOfNewFiles: ' + error);
+	}
 };
 
-VideoWidget.prototype.cleanUp = function(){"use strict";
+VideoWidget.prototype.cleanUp = function(){
     var i, j;
     Ti.API.debug("in video widget cleanup");
     
@@ -843,11 +852,11 @@ VideoWidget.prototype.cleanUp = function(){"use strict";
     }
 };
 
-exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
+exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){
     return new VideoWidget(FormObj, instance, fieldViewWrapper);
 };
 
-exports.openVideoPlayer = function(instance, imageView){"use strict";
+exports.openVideoPlayer = function(instance, imageView){
     var widget, formObj;
     formObj = {};
     formObj.node = {};
