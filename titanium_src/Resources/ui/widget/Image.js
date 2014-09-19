@@ -1,4 +1,5 @@
-/*jslint eqeq:true, plusplus:true, regexp:true, vars:true*/
+/*jslint eqeq:true, plusplus:true, regexp:true, vars:true, node:true */
+'use strict';
 
 var ImageFactory = null;
 var Utils = require('lib/Utils');
@@ -12,7 +13,7 @@ if(Ti.App.isIOS){
 
 var IMAGE_MAX_BYTES = 524258;
 
-function ImageWidget(formObj, instance, fieldViewWrapper){"use strict";
+function ImageWidget(formObj, instance, fieldViewWrapper){
     this.formObj = formObj || {};
     this.instance = instance;
     this.fieldView = null;
@@ -50,7 +51,7 @@ function ImageWidget(formObj, instance, fieldViewWrapper){"use strict";
     }
 }
 
-ImageWidget.prototype.getFieldView = function(){"use strict";
+ImageWidget.prototype.getFieldView = function(){
     
     this.fieldView = Ti.UI.createView({
        width: '100%',
@@ -68,7 +69,7 @@ ImageWidget.prototype.getFieldView = function(){"use strict";
     return this.fieldView;
 };
 
-ImageWidget.prototype.redraw = function(){"use strict";
+ImageWidget.prototype.redraw = function(){
     Ti.API.debug("in redraw");
     var origFieldView;
     
@@ -97,7 +98,7 @@ ImageWidget.prototype.redraw = function(){"use strict";
     this.fieldViewWrapper.remove(origFieldView);
 };
 
-ImageWidget.prototype.getImageNid = function() {"use strict";
+ImageWidget.prototype.getImageNid = function() {
 	var imageNid = this.formObj.nid;
     if(typeof this.formObj.origNid !== 'undefined'){
         imageNid = this.formObj.origNid;
@@ -105,7 +106,7 @@ ImageWidget.prototype.getImageNid = function() {"use strict";
     return imageNid;
 };
 
-ImageWidget.prototype.getNewElement = function(index){"use strict";
+ImageWidget.prototype.getNewElement = function(index){
     var widgetView, dbValues, imageData, degreeData, i, j, localDelta, imageNid, deltaData, imageDataAdded, thumbData;
 
     dbValues = [];
@@ -167,7 +168,7 @@ ImageWidget.prototype.getNewElement = function(index){"use strict";
     return widgetView;
 };
 
-function processAllFilesDebug(allFiles) {"use strict";
+function processAllFilesDebug(allFiles) {
 	var files = [], i, file;
 	
 	for (i = 0; i < allFiles.length; i++) {
@@ -182,7 +183,7 @@ function processAllFilesDebug(allFiles) {"use strict";
 	return files;
 }
 
-ImageWidget.prototype.addImageViewsToWidgetView = function(fids, widgetView) {"use strict";
+ImageWidget.prototype.addImageViewsToWidgetView = function(fids, widgetView) {
 	try {
 		var localImages = this.getLocalImages();
 		var i,j;
@@ -226,7 +227,7 @@ ImageWidget.prototype.addImageViewsToWidgetView = function(fids, widgetView) {"u
 	}
 };
 
-ImageWidget.prototype.getLocalImages = function() {"use strict";
+ImageWidget.prototype.getLocalImages = function() {
 	var localImages = {0: []};
 	try {
 		var result = Database.queryList('SELECT file_path, fid, degrees, thumb_path, nid FROM _files WHERE nid IN (' + this.getImageNid() + ', ' + (this.node.continuous_nid || 0) + ', 0) AND field_name="' + this.instance.field_name + '" ORDER BY timestamp ASC');
@@ -255,7 +256,7 @@ ImageWidget.prototype.getLocalImages = function() {"use strict";
 	return localImages;
 };
 
-ImageWidget.prototype.getLocalImageView = function(fid, imageData, index) {"use strict";
+ImageWidget.prototype.getLocalImageView = function(fid, imageData, index) {
 	var image = '';
 	if (Ti.App.Properties.getBool('omadi:image:skipThumbnail', false)) {
         image = '/images/video_selected.png';
@@ -285,7 +286,7 @@ ImageWidget.prototype.getLocalImageView = function(fid, imageData, index) {"use 
     return imageView;
 };
 
-ImageWidget.prototype.getRemoteImageView = function(fid, index) {"use strict";
+ImageWidget.prototype.getRemoteImageView = function(fid, index) {
 	var imageView = Ti.UI.createImageView({
         left : 5,
         height : 100,
@@ -309,7 +310,7 @@ ImageWidget.prototype.getRemoteImageView = function(fid, index) {"use strict";
     return imageView;
 };
 
-ImageWidget.prototype.getTakePhotoButtonView = function() {"use strict";
+ImageWidget.prototype.getTakePhotoButtonView = function() {
 	var self = this;
 	
 	var widgetType = Ti.App.Properties.getString("photoWidget", 'take');
@@ -351,28 +352,36 @@ ImageWidget.prototype.getTakePhotoButtonView = function() {"use strict";
     return takePhotoView;
 };
 
-ImageWidget.prototype.setFid = function(i, fid) {"use strict";
-	if (typeof this.dbValues[i] === 'undefined') {
-		return;
-	}
-	
-	this.dbValues[i] = fid;
-	
-	var imageView = this.elements[0].getChildren()[i];
-	imageView.fid = fid;
-	imageView.dbValue = fid;
-};
-
-ImageWidget.prototype.updateFidsOfNewFiles = function(newFids) {"use strict";
-    var i,j;
-	for (i = 0, j = 0; i < this.dbValues.length && j < newFids.length; i++) {
-		if (this.dbValues[i] == -1) {
-			this.setFid(i, newFids[j++]);
+ImageWidget.prototype.setFid = function(i, fid) {
+	try {
+		if (typeof this.dbValues[i] === 'undefined' || typeof this.elements[0].getChildren()[i] === 'undefined') {
+			return;
 		}
+		
+		this.dbValues[i] = fid;
+		
+		var imageView = this.elements[0].getChildren()[i];
+		imageView.fid = fid;
+		imageView.dbValue = fid;
+	} catch (error) {
+		Utils.sendErrorReport('Error in ImageWidget.prototype.setFid: ' + error);
 	}
 };
 
-ImageWidget.prototype.getImageView = function(widgetView, index, nid, fid, filePath, thumbPath, degrees) {"use strict";
+ImageWidget.prototype.updateFidsOfNewFiles = function(newFids) {
+	try {
+	    var i,j;
+		for (i = 0, j = 0; i < this.dbValues.length && j < newFids.length; i++) {
+			if (this.dbValues[i] == -1) {
+				this.setFid(i, newFids[j++]);
+			}
+		}
+	} catch(error) {
+		Utils.sendErrorReport('Error in ImageWidget.prototype.updateFidsOfNewFiles: ' + error);
+	}
+};
+
+ImageWidget.prototype.getImageView = function(widgetView, index, nid, fid, filePath, thumbPath, degrees) {
     var imageView, transform, rotateDegrees, image, widgetType;
     var self = this;
     
@@ -495,7 +504,7 @@ ImageWidget.prototype.getImageView = function(widgetView, index, nid, fid, fileP
     return imageView;
 };
 
-ImageWidget.prototype.showPhotoOptions = function(imageView){"use strict";
+ImageWidget.prototype.showPhotoOptions = function(imageView){
     var dialog, isDeletePhoto, options;
     var self = this;
     
@@ -528,7 +537,7 @@ ImageWidget.prototype.showPhotoOptions = function(imageView){"use strict";
     dialog.show();
 };
 
-ImageWidget.prototype.clickedPhotoOption = function(e){"use strict";
+ImageWidget.prototype.clickedPhotoOption = function(e){
     var dialog, message, title;
     var self = this;
     try{
@@ -602,7 +611,7 @@ ImageWidget.prototype.clickedPhotoOption = function(e){"use strict";
     }
 };
 
-ImageWidget.prototype.getPhotoChooserDir = function(){"use strict";
+ImageWidget.prototype.getPhotoChooserDir = function(){
     var photoCameraPath, retval = null;
     
     photoCameraPath = Ti.App.Properties.getString("photoCameraPath", "");
@@ -618,7 +627,7 @@ ImageWidget.prototype.getPhotoChooserDir = function(){"use strict";
     return retval;
 };
 
-ImageWidget.prototype.openPictureChooser = function(imageView){"use strict";
+ImageWidget.prototype.openPictureChooser = function(imageView){
     var pictureWindow, table, photoDir, imageStrings, i, recentFiles, tempFile, now,
         earliestTimestamp, rows, modified, row, image, extension, checkbox, refreshButton, 
         topBar, titleLabel, buttons, useButton, cancelButton, parentView, allImageViews, 
@@ -896,7 +905,7 @@ ImageWidget.prototype.openPictureChooser = function(imageView){"use strict";
     }
 };
 
-ImageWidget.prototype.imageRowClicked = function(e){"use strict";
+ImageWidget.prototype.imageRowClicked = function(e){
     try{
         if(e.source.isChecked){
             e.source.checkbox.setBackgroundImage(null);
@@ -915,7 +924,7 @@ ImageWidget.prototype.imageRowClicked = function(e){"use strict";
     }
 };
 
-ImageWidget.prototype.openCamera = function(imageView) {"use strict";
+ImageWidget.prototype.openCamera = function(imageView) {
     var blankOverlay, storageDirectory, storageDirectoryFile,
         overlayView, captureButton, doneButton, flexible, 
         flashMode, flashButton, navBar, maxPhotos, cardinality;
@@ -1276,7 +1285,7 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
     }
 };
 
-ImageWidget.prototype.saveFileInfo = function(imageView, filePath, thumbPath, degrees, filesize, type) {"use strict";
+ImageWidget.prototype.saveFileInfo = function(imageView, filePath, thumbPath, degrees, filesize, type) {
     var nid, db, encodedImage, mime, imageName, timestamp, fieldName, 
         imageIndex, location, uid, clientAccount;
 
@@ -1311,7 +1320,7 @@ ImageWidget.prototype.saveFileInfo = function(imageView, filePath, thumbPath, de
     }
 };
 
-ImageWidget.prototype.saveAndroidFileInfo = function(fieldName, imageIndex, filePath, thumbPath, degrees, filesize) {"use strict";
+ImageWidget.prototype.saveAndroidFileInfo = function(fieldName, imageIndex, filePath, thumbPath, degrees, filesize) {
     var nid, imageName, timestamp, location, uid, clientAccount, sql;
 
     try {
@@ -1339,7 +1348,7 @@ ImageWidget.prototype.saveAndroidFileInfo = function(fieldName, imageIndex, file
     }
 };
 
-ImageWidget.prototype.cleanUp = function(){"use strict";
+ImageWidget.prototype.cleanUp = function(){
     var i, j;
     Ti.API.debug("in image widget cleanup");
     
@@ -1368,7 +1377,7 @@ ImageWidget.prototype.cleanUp = function(){"use strict";
     }
 };
 
-ImageWidget.deletePhotoUploadByPath = function(filePath, deleteFile){"use strict";
+ImageWidget.deletePhotoUploadByPath = function(filePath, deleteFile){
     var result, id, nid, delta;
     
     id = null;
@@ -1394,7 +1403,7 @@ ImageWidget.deletePhotoUploadByPath = function(filePath, deleteFile){"use strict
     }
 };
 
-ImageWidget.deletePhotoUpload = function(id, deleteFile) {"use strict";
+ImageWidget.deletePhotoUpload = function(id, deleteFile) {
     var file, result, filePath = null, thumbPath = null, thumbFile;
     
     if(typeof deleteFile !== 'undefined' && deleteFile == true){
@@ -1427,7 +1436,7 @@ ImageWidget.deletePhotoUpload = function(id, deleteFile) {"use strict";
 };
 
 
-ImageWidget.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";
+ImageWidget.getFieldObject = function(FormObj, instance, fieldViewWrapper){
     return new ImageWidget(FormObj, instance, fieldViewWrapper);
 };
 
