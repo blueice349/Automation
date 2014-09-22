@@ -13,7 +13,7 @@ Ti.include('/lib/functions.js');
 Ti.include('/main_windows/ios_geolocation.js');
 
 var Utils = require('lib/Utils');
-var RDNGeofenceListener = require('objects/RDNGeofenceListener');
+var RDNGeofenceListener = require('services/RDNGeofenceListener');
 
 
 Ti.API.info("Starting App.");

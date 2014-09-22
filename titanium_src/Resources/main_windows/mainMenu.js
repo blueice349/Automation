@@ -6,6 +6,7 @@ Display.setCurrentWindow(Ti.UI.currentWindow, 'mainMenu');
 Ti.include("/lib/functions.js");
 
 var Utils = require('lib/Utils');
+var NFCListener = require('services/NFCListener');
 
 var Database = require('lib/Database');
 // Make sure the database is reset so it's not using old data from another session
@@ -34,6 +35,7 @@ var alertQueue = [];
 var currentAlertIndex = 0;
 var useAlertQueue = true;
 var isInitialized = false;
+var nfcListener = null;
 
 var databaseStatusView = Titanium.UI.createView({
     backgroundColor : '#333',
@@ -1023,6 +1025,8 @@ function openFormWindow(e){"use strict";
 
 ( function() {"use strict";
     var db, result, formWindow, time_format, askAboutInspection, dialog, i, showingAlert, nowTimestamp;
+    
+    nfcListener = new NFCListener();
     
     // Initialize the global scope variable to map deleted nids to saved positive nids
     Ti.App.deletedNegatives = {};
