@@ -4,8 +4,6 @@
 var Display = require('lib/Display');
 Display.setCurrentWindow(Ti.UI.currentWindow, 'login');
 
-var Omadi;
-
 // this sets the background color of every
 Ti.UI.currentWindow.setBackgroundColor('#eee');
 
