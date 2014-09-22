@@ -3,5 +3,5 @@
 	"loopfunc": true, // allow functions in loops
 	"-W086": true, // allow switch statement cases that contain code to fall through to the next case.
 	"-W041": true, // allow '==' when camparing with null, undefined, 0 or ''
-	"predef": ["Ti", "Titanium", "alert"] // define globals
+	"predef": ["Ti", "Titanium", "alert", "CryptoJS"] // define globals
 }
