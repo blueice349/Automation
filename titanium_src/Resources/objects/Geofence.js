@@ -1,6 +1,8 @@
 /*jslint node:true */
 'use strict';
 
+var Utils = require('lib/Utils');
+
 var Geofence = function(nid, formType) {
 	this.breached = false;
 	this.timeEntered = null;
@@ -17,9 +19,9 @@ Geofence.prototype.setBreached = function(breached) {
 		this.breached = breached;
 		
 		if (this.breached) {
-			this.timeEntered = new Date().getTime();
+			this.timeEntered = Utils.getUTCMillisServerCorrected();
 		} else {
-			this.timeExited = new Date().getTime();
+			this.timeExited = Utils.getUTCMillisServerCorrected();
 		}
 		
 		var eventData = {

@@ -23,12 +23,14 @@ RDNGeofenceListener.UpdateType = {
 	AGENT_GPS_UPDATE: 102
 };
 
+RDNGeofenceListener.GEOFENCE_RADIUS_METERS = 200;
+
 /* PUBLIC METHODS */
 
 RDNGeofenceListener.prototype.createInitialGeofences = function() {
 	var geofenceServices = GeofenceServices.getInstance();
 	
-	var geofences = PointGeofence.newFromDB('runsheet', 'location', 75);
+	var geofences = PointGeofence.newFromDB('runsheet', 'location', RDNGeofenceListener.GEOFENCE_RADIUS_METERS);
 	var i;
 	for (i = 0; i < geofences.length; i++) {
 		geofenceServices.registerGeofence(geofences[i]);
@@ -44,7 +46,7 @@ RDNGeofenceListener.prototype.addOrUpdateGeofence = function(nid, lat, lng) {
 	var existingGeofence = geofenceServices.getGeofence(nid);
 	
 	if (!existingGeofence || existingGeofence.getLat() != lat || existingGeofence.getLng() != lng) {
-		var geofence = new PointGeofence(nid, 'runsheet', lat, lng, 75);
+		var geofence = new PointGeofence(nid, 'runsheet', lat, lng, RDNGeofenceListener.GEOFENCE_RADIUS_METERS);
 		geofenceServices.registerGeofence(geofence);
 	}
 };
