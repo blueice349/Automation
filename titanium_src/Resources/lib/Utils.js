@@ -419,7 +419,7 @@ exports.setCookie = function(cookie) {
     return false;
 };
 
-exports.getUTCTimestampServerCorrected = function(){
+function getUTCTimestampServerCorrected(){
     var nowServerCorrected, serverOffset;
         
     nowServerCorrected = Math.round(new Date() / 1000);
@@ -432,6 +432,12 @@ exports.getUTCTimestampServerCorrected = function(){
     }
     
     return nowServerCorrected;
+}
+
+exports.getUTCTimestampServerCorrected = getUTCTimestampServerCorrected;
+
+exports.getUTCMillisServerCorrected = function(){
+    return getUTCTimestampServerCorrected() * 1000;
 };
 
 exports.applyNumberFormat = function(instance, value) {

@@ -136,7 +136,7 @@ Omadi.display.logoutButtonPressed = function(){"use strict";
 };
 
 Omadi.display.getFileViewType = function(filename){"use strict";
-	return Display.getFileViewType();
+	return Display.getFileViewType(filename);
 };
 
 Omadi.display.newAppAvailable = function(message) {"use strict";
@@ -1348,7 +1348,7 @@ Omadi.display.ProgressBar = function(current, max) {"use strict";
 
 Omadi.display.DefaultProgressBar = function(max, message) {"use strict";
     /*jslint plusplus: true*/
-
+        
     this.current = 1;
     this.max = max;
 

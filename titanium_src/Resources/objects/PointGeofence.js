@@ -18,8 +18,8 @@ var PointGeofence = function(nid, formType, lat, lng, radiusInMeters) {
 	
 	this.parent.constructor.call(this, nid, formType);
 	
-	this.lat = lat;
-	this.lng = lng;
+	this.lat = parseFloat(lat);
+	this.lng = parseFloat(lng);
 	
 	this.minLat = null;
 	this.maxLat = null;
@@ -51,11 +51,20 @@ PointGeofence.prototype._calculateBoundingBox = function(lat, lng, radiusInMeter
 	
 	var latDelta = Geofence.DEGREES_LATITUDE_PER_METER[key] * radiusInMeters;
 	var lngDelta = Geofence.DEGREES_LONGITUDE_PER_METER[key] * radiusInMeters;
-
-	this.minLat = parseFloat((lat - latDelta).toFixed(6));
-	this.maxLat = parseFloat((lat + latDelta).toFixed(6));
-	this.minLng = parseFloat((lng - lngDelta).toFixed(6));
-	this.maxLng = parseFloat((lng + lngDelta).toFixed(6));
+    
+    try{
+        this.minLat = parseFloat((lat - latDelta).toFixed(6));
+        this.maxLat = parseFloat((lat + latDelta).toFixed(6));
+        this.minLng = parseFloat((lng - lngDelta).toFixed(6));
+        this.maxLng = parseFloat((lng + lngDelta).toFixed(6));
+    }
+    catch(ex){
+        this.minLat = null;
+        this.maxLat = null;
+        this.minLng = null;
+        this.maxLng = null;
+        Utils.sendErrorReport('Failed to create bounding box. ex: ' + ex + ', key: ' + key + ', lag: ' + lat + ', lng: ' + lng + ', latDelta: ' + latDelta + ', lngDelta: ' + lngDelta);   
+    }
 };
 
 /* PUBLIC STATIC METHODS */

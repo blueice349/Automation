@@ -2,6 +2,7 @@
 'use strict';
 
 var PointGeofence = require('objects/PointGeofence');
+var Utils = require('lib/Utils');
 
 var GeofenceServices = function() {
 	this.geofences = {};
@@ -48,9 +49,9 @@ GeofenceServices.prototype._handleLocationChange = function(event) {
 };
 
 GeofenceServices.prototype._updateCurrentLocation = function(lat, lng) {
-	this.currentLocaiton.lat = lat;
-	this.currentLocaiton.lng = lng;
-	this.currentLocaiton.timestamp = new Date().getTime();
+	this.currentLocation.lat = lat;
+	this.currentLocation.lng = lng;
+	this.currentLocation.timestamp = Utils.getUTCMillisServerCorrected();
 };
 
 GeofenceServices.prototype._updateBreached = function(lat, lng) {
@@ -68,7 +69,7 @@ GeofenceServices.prototype._updateBreached = function(lat, lng) {
 GeofenceServices.prototype._restoreState = function() {
 	var state = JSON.parse(Ti.App.Properties.getString('GeofenceServices.state', '{}'));
 	this.breached = state.breached || {};
-	this.currentLocaiton = state.currentLocation || {};
+	this.currentLocation = state.currentLocation || {};
 };
 
 GeofenceServices.prototype._saveState = function() {

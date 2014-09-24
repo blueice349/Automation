@@ -2948,7 +2948,6 @@ FormModule.prototype.getWindow = function(){"use strict";
                 ActiveFormObj.scrollPositionY = e.y;
             });
             
-    
             // Setup only one interval where all forms will be saved together
             // This is best done by only continuously saving when creating the work node form
             // This is also best because the dispatch_nids are generated off of a negative ID, that can be interfered with if 

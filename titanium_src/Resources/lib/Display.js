@@ -59,14 +59,18 @@ Display.getFileViewType = function(filename){
     var iOSWebviewExtensions = [], extension, htmlExtensions = [], dotIndex,
         imageExtensions = [], androidDownloadExtensions = [], textExtensions = [], viewType = null;
     
-    dotIndex = filename.lastIndexOf('.');
-    extension = "";
-    if(dotIndex !== -1 && dotIndex !== filename.length - 1){
-        extension = filename.substring(dotIndex + 1).toLowerCase();
+    extension = "none";
+    
+    if(filename){
+        dotIndex = filename.lastIndexOf('.');
+        if(dotIndex !== -1 && dotIndex !== filename.length - 1){
+            extension = filename.substring(dotIndex + 1).toLowerCase();
+        }
     }
     
     textExtensions.push("txt");
     textExtensions.push("xml");
+    textExtensions.push("none");
     
     htmlExtensions.push("html");
     htmlExtensions.push("htm");

@@ -1244,6 +1244,8 @@ ImageWidget.prototype.openCamera = function(imageView) {
                             Utils.sendErrorReport("Exception setting up another imageview in iOS: " + ex1);
                         }
                         
+                        // Make sure we never lose a photo due to a crash
+                        self.formObj.saveForm('continuous');
                     }
                     catch(ex){
                         Utils.sendErrorReport("Exception saving iOS photo: " + ex);

@@ -8,7 +8,6 @@ var GeofenceServices = require('services/GeofenceServices');
 Omadi.service = Omadi.service || {};
 
 Omadi.service.fetchedJSON = null;
-Omadi.service.initialSyncProgressBar = null;
 Omadi.service.fetchUpdatesProgressBar = null;
 
 
@@ -177,9 +176,9 @@ Omadi.service.syncInitialFormItems = function(nodeCount, commentCount, numPages)
     try{
         count = nodeCount + commentCount;
         
-        max = count + (numPages * 100);
+        max = count + (numPages * 500);
         
-        Omadi.service.initialSyncProgressBar = new Omadi.display.DefaultProgressBar(max, 'Syncing ' + count + ' form items ...');
+        Omadi.service.fetchUpdatesProgressBar = new Omadi.display.DefaultProgressBar(max, 'Syncing ' + count + ' form items ...');
         
         Ti.API.debug("Syncing initial form items: " + count);
         
@@ -220,8 +219,8 @@ Omadi.service.syncInitialInstallDownloadNextPage = function(){"use strict";
     else{
         Omadi.data.setUpdating(false);
         
-        if(Omadi.service.initialSyncProgressBar !== null){
-            Omadi.service.initialSyncProgressBar.close();
+        if(Omadi.service.fetchUpdatesProgressBar !== null){
+            Omadi.service.fetchUpdatesProgressBar.close();
         }
         
         Ti.API.info("NOW DO AN INCREMENTAL SYNC");
@@ -249,9 +248,9 @@ Omadi.service.syncInitialInstallDownloadRetry = function(){"use strict";
         else{
             Utils.sendErrorReport("in else in syncInitialInstallDownloadRetry: page=" + Omadi.service.initialInstallPage + ', total=' + Omadi.service.initialInstallTotalPages);
             
-            if(Omadi.service.initialSyncProgressBar !== null){
-                Omadi.service.initialSyncProgressBar.close();
-                Omadi.service.initialSyncProgressBar = null;
+            if(Omadi.service.fetchUpdatesProgressBar !== null){
+                Omadi.service.fetchUpdatesProgressBar.close();
+                Omadi.service.fetchUpdatesProgressBar = null;
             }
         }
     }
@@ -291,6 +290,11 @@ Omadi.service.processInitialInstallJSON = function(){"use strict";
         
         Ti.API.debug("about to set request_time");
         
+        // Close the mainDB now before trying to update the lastUpdateTimestamp, which uses the same DB. If it doesn't close, the DB may be locked, and it will timeout after a while
+        try{
+            mainDB.close();
+        } catch(noworries){}
+        
         // Setup the last update timestamp to the correct timestamp in case this is the last synced node bunch
         if(typeof Omadi.service.fetchedJSON.request_time !== 'undefined'){
             Omadi.data.setLastUpdateTimestamp(Omadi.service.fetchedJSON.request_time);
@@ -324,7 +328,8 @@ Omadi.service.syncInitialFormPage = function(page){"use strict";
         
         // While streaming - following method should be called before open URL
         http.ondatastream = function(e) {
-            Omadi.service.initialSyncProgressBar.add((e.progress - Omadi.service.syncInitialLastProgress) * 100);
+            // Multiply by 500 because the the max was initialized with 500 times how many pages, as that is how many items a page can contain
+            Omadi.service.fetchUpdatesProgressBar.add((e.progress - Omadi.service.syncInitialLastProgress) * 500);
             Omadi.service.syncInitialLastProgress = e.progress;
         };
         
@@ -405,9 +410,9 @@ Omadi.service.syncInitialFormPage = function(page){"use strict";
                             }
                             else{
                                 Utils.sendErrorReport("Text is not json");
-                                if (Omadi.service.initialSyncProgressBar !== null) {
-                                    Omadi.service.initialSyncProgressBar.close();
-                                    Omadi.service.initialSyncProgressBar = null;
+                                if (Omadi.service.fetchUpdatesProgressBar !== null) {
+                                    Omadi.service.fetchUpdatesProgressBar.close();
+                                    Omadi.service.fetchUpdatesProgressBar = null;
                                 }
                             }
                         }
