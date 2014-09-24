@@ -1026,8 +1026,6 @@ function openFormWindow(e){"use strict";
 ( function() {"use strict";
     var db, result, formWindow, time_format, askAboutInspection, dialog, i, showingAlert, nowTimestamp;
     
-    nfcListener = new NFCListener();
-    
     // Initialize the global scope variable to map deleted nids to saved positive nids
     Ti.App.deletedNegatives = {};
     Ti.App.allowBackgroundUpdate = true;

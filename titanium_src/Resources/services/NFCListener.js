@@ -3,33 +3,70 @@
 
 var Utils = require('lib/Utils');
 var NFCTag = require('objects/NFCTag');
-var nfc = require('ti.nfc');
 
-var	act = Ti.Android.currentActivity;
+if (Ti.App.isAndroid) {
+	var nfc = require('ti.nfc');
+}
 
-var NFCListener = function() {
+var NFCListener = function(activity) {
 	this.adapter = null;
+	this.callbacks = [];
+	this.activity = activity;
 	
 	this._initListeners();
 };
 
+NFCListener.instances = [];
+NFCListener.NULL_CALLBACK = function() {};
 NFCListener.PRIVATE_KEY = 'OYDnEbi5GXUGj1NqsrHTNfqQFtCIg1YQ';
+
+/* PUBLIC METHODS */
+
+NFCListener.prototype.addCallback = function(callback) {
+	if (typeof callback == 'function' && !this._containsCallback(callback)) {
+		this.callbacks.push(callback);
+	}
+};
+
+NFCListener.prototype.removeCallback = function(callback) {
+	var callbacks = [];
+	
+	for (var i = 0; i < this.callbacks.length; i++) {
+		if (this.callbacks[i] != callback) {
+			callbacks.push(this.callbacks[i]);
+		}
+	}
+	
+	this.callbacks = callbacks;
+};
+
+NFCListener.prototype.getActivity = function() {
+	return this.activity;
+};
 
 /* PIVATE METHODS */
 
+NFCListener.prototype._containsCallback = function(callback) {
+	var found = false;
+	for (var i = 0; i < this.callbacks.length; i++) {
+		found = found || (this.callbacks[i] == callback);
+	}
+	return found;
+};
+
 NFCListener.prototype._getAdapter = function() {
-	if (!this.adapter) {
+	if (!this.adapter && nfc) {
 		this.adapter = nfc.createNfcAdapter({
-			onNdefDiscovered: this._handleTagDiscovered,
-			onTagDiscovered: this._handleTagDiscovered,
-			onTechDiscovered: this._handleTagDiscovered
+			onNdefDiscovered: this._handleTagDiscovered.bind(this),
+			onTagDiscovered: this._handleTagDiscovered.bind(this),
+			onTechDiscovered: this._handleTagDiscovered.bind(this)
 		});
 	}
 	return this.adapter;
 };
 
 NFCListener.prototype._getFilter = function() {
-	if (!this.filter) {
+	if (!this.filter && nfc) {
 		this.filter = nfc.createNfcForegroundDispatchFilter({
 			intentFilters: [
 				{ action: nfc.ACTION_TAG_DISCOVERED }
@@ -40,26 +77,29 @@ NFCListener.prototype._getFilter = function() {
 };
 
 NFCListener.prototype._initListeners = function() {
-	var activity = Ti.Android.currentActivity;
-	this._getAdapter().enableForegroundDispatch(this._getFilter());
+	var activity = this.getActivity();
+	var adapter = this._getAdapter();
+	var filter = this._getFilter();
 	
-	var self = this;
+	if (!activity || !adapter || !filter) {
+		return;
+	}
+	
 	activity.addEventListener('newintent', function(e) {
-	    self._getAdapter().onNewIntent(e.intent);
+	    adapter.onNewIntent(e.intent);
 	});
 	activity.addEventListener('resume', function(e) {
-		self._getAdapter().enableForegroundDispatch(self._getFilter());
+		adapter.enableForegroundDispatch(filter);
 	});
 	activity.addEventListener('pause', function(e) {
-		self._getAdapter().disableForegroundDispatch();
+		adapter.disableForegroundDispatch();
 	});
 };
 
 NFCListener.prototype._handleTagDiscovered = function(event) {
 	var tag = new NFCTag(event.tag);
-
-	if (tag.isValidOmadiTag()) {
-		alert(tag.getData());	
+	for (var i = 0; i < this.callbacks.length; i++) {
+		this.callbacks[i](tag);
 	}
 };
 

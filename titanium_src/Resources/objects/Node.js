@@ -296,6 +296,7 @@ Node.load = function(nid) {
                                     case 'location':
                                     case 'license_plate':
                                     case 'vehicle_fields':
+                                    case 'number_integer':
                                         for ( i = 0; i < node[field_name].dbValues.length; i++) {
                                             if (node[field_name].dbValues[i] === null) {
                                                 node[field_name].textValues[i] = "";
@@ -304,17 +305,15 @@ Node.load = function(nid) {
                                                 node[field_name].textValues[i] = node[field_name].dbValues[i];
                                             }
                                         }
-                                        
-                                        
                                         break;
-        
-                                    case 'number_integer':
+                                        
+                                    case 'nfc_field':
                                         for ( i = 0; i < node[field_name].dbValues.length; i++) {
                                             if (node[field_name].dbValues[i] === null) {
-                                                node[field_name].textValues[i] = "";
+                                                node[field_name].textValues[i] = 'Not Linked';
                                             }
                                             else {
-                                                node[field_name].textValues[i] = node[field_name].dbValues[i];
+                                                node[field_name].textValues[i] = 'Linked';
                                             }
                                         }
                                         break;

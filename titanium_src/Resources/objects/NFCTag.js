@@ -1,9 +1,13 @@
 /*jslint node:true */
 'use strict';
 
-var Utils = require('lib/Utils');
-var nfc = require('ti.nfc');
 Ti.include('/lib/vendor/CryptoJS/aes.js');
+
+var Utils = require('lib/Utils');
+
+if (Ti.App.isAndroid) {
+	var nfc = require('ti.nfc');
+}
 
 var NFCTag = function(tag) {
 	this.tag = tag;
@@ -18,13 +22,16 @@ NFCTag.ENCRYPTION_KEY = 'Ti.App.syncApplication';
 /* PUBLIC METHODS */
 
 NFCTag.prototype.initTagWithNewData = function() {
-	this._setData(this._generateData());
+	var data = this._generateData();
+	this._setData(data);
+	
+	return this.getData() == data;
 };
 
 NFCTag.prototype.getData = function() {
 	if (this.data === null) {
 		var data = '';
-		var tech = this.getTech();
+		var tech = this._getTech();
 		
 		if (!tech) {
 			return '';
@@ -58,8 +65,8 @@ NFCTag.prototype.isValidOmadiTag = function() {
 	return this.valid;
 };
 
-NFCTag.prototype.getTech = function() {
-	if (this.tech === null) {
+NFCTag.prototype._getTech = function() {
+	if (this.tech === null && nfc) {
 		this.tech = nfc.createTagTechnologyNdef({
 			tag: this.tag
 		});
@@ -78,12 +85,22 @@ NFCTag.prototype.getTag = function() {
 	return this.tag;
 };
 
+NFCTag.prototype.isWritable = function() {
+	var tech = this._getTech();
+	
+	if (!tech) {
+		return false;
+	}
+	
+	return tech.isWritable();
+};
+
 /* PRIVATE METHODS */
 
 NFCTag.prototype._setData = function(data) {
-	var tech = this.getTech();
+	var tech = this._getTech();
 	
-	if (!tech) {
+	if (!tech || !nfc) {
 		return;
 	}
 	
@@ -97,6 +114,7 @@ NFCTag.prototype._setData = function(data) {
 		var record = nfc.createNdefRecordText({
 			text: data
 		});
+		
 		var message = nfc.createNdefMessage({
 			records: [record]
 		});
@@ -136,14 +154,14 @@ NFCTag.prototype._generateInitializationVector = function() {
 };
 
 NFCTag.prototype._connect = function() {
-	var tech = this.getTech();
+	var tech = this._getTech();
 	if (!tech.isConnected()) {
 		tech.connect();
 	}
 };
 
 NFCTag.prototype._close = function() {
-	var tech = this.getTech();
+	var tech = this._getTech();
 	if (tech.isConnected()) {
 		tech.close();
 	}

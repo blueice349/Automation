@@ -844,6 +844,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                             search_operator = criteria_row.operator;
 
                             switch(search_field.type) {
+                                case 'nfc_field':
                                 case 'text':
                                 case 'text_long':
                                 case 'phone':

@@ -60,6 +60,7 @@ CommentList.prototype.initComments = function(){"use strict";
                         }
                         
                         switch(instances[fieldName].type) {
+                            case 'nfc_field':
                             case 'text':
                             case 'text_long':
                             case 'phone':

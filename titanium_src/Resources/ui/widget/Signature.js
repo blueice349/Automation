@@ -5,8 +5,6 @@ var Database = require('lib/Database');
 var Display = require('lib/Display');
 var Location = require('lib/Location');
 
-var Utils = require('lib/Utils');
-
 function SignatureWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.formObj = formObj;
     this.instance = instance;
