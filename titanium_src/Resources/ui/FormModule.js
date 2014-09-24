@@ -1,5 +1,6 @@
 /*jslint eqeq:true, plusplus:true, vars:true, nomen:true*/
 
+
 var FormObj, Omadi, ActiveFormObj, popupWin, popupWinListView, popupWinFieldObject, popupWinDescriptionLabel;
 FormObj = {};
 popupWin = null;

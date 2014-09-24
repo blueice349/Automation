@@ -161,7 +161,7 @@ Omadi.bundles.dispatch.openDispatchDirections = function(node){"use strict";
     else{
         Utils.sendErrorReport("Could not find locationFieldName: " + JSON.stringify(node) + JSON.stringify(bundle));
         alert("The directions could not be opened. Please try again later.");
-    }  
+    }
 };
 
 Omadi.bundles.dispatch.acceptJob = function(args){"use strict";
@@ -245,7 +245,8 @@ Omadi.bundles.dispatch.acceptJob = function(args){"use strict";
             };
             
             http.send(JSON.stringify({
-                nid: nid
+                nid: nid,
+                sync_timestamp: Omadi.data.getLastUpdateTimestamp()
             }));
         }
     }
