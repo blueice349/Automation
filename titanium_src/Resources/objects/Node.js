@@ -164,7 +164,9 @@ Node.load = function(nid) {
                                  * license_plate
                                  * vehicle_fields
                                  */
-                                if (field_name.indexOf("___") !== -1) {
+                                // Special case for datestamp fields with an end date, don't do the same thing as a regular field with parts
+                                // They are just like a regular field
+                                if (field_name.indexOf("___") !== -1 && field_name.indexOf("___end") === -1) {
                                     dbValue = origDBValue;
                                     
                                     field_parts = field_name.split("___");
@@ -547,7 +549,7 @@ Node.load = function(nid) {
         }
     }
     catch(ex1){
-        Utils.sendErrorReport("Exception loading node: " + ex1);
+        Utils.sendErrorReport("Exception loading node " + nid + ": " + ex1);
     }
     
     return node;

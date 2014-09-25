@@ -379,6 +379,13 @@ FormTabs.prototype.getWindow = function(initNewDispatch){"use strict";
                     nid : 'new',
                     form_part : 0
                 };
+                
+                if(initNewDispatch){
+                    usingDispatch = true;
+                    openDispatch = true;
+                    this.form_part = -1;
+                    this.workNode.form_part = -1;
+                }
             }
             else {
                 this.workNode = {
@@ -387,18 +394,16 @@ FormTabs.prototype.getWindow = function(initNewDispatch){"use strict";
                     form_part : -1
                 };
                 
+                this.dispatchNode = {
+                    type : "dispatch",
+                    nid : 'new',
+                    form_part : 0
+                };
+                
                 usingDispatch = true;
+                openDispatch = true;
+                this.form_part = -1;
             }
-    
-            this.dispatchNode = {
-                type : "dispatch",
-                nid : 'new',
-                form_part : 0
-            };
-    
-            this.form_part = -1;
-            
-            openDispatch = true;
         }
         else {
             this.workNode = Omadi.data.nodeLoad(this.nid);
@@ -507,6 +512,7 @@ FormTabs.prototype.getWindow = function(initNewDispatch){"use strict";
             };
             
             openDispatch = true;
+            usingDispatch = true;
         }
         
         if(this.workNode !== null){

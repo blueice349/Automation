@@ -592,6 +592,9 @@ function sqlEscape(str) {
                                   // and double/single quotes
         }
     });
+    
+    
+    
     return result;
 }
 
@@ -1270,7 +1273,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                                         switch(search_operator) {
                                             case 'starts with':
                                             case 'not starts with':
-                                                query += " AND title LIKE '%" + sqlEscape(search_value) + "%'";
+                                                query += " AND title LIKE '" + sqlEscape(search_value) + "%'";
                                                 break;
                                             case 'ends with':
                                             case 'not ends with':
@@ -1317,7 +1320,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                                                 
                                                 break;
                                             default:
-                                                query += " AND title LIKE '%" + sqlEscape(search_value) + "'%";
+                                                query += " AND title LIKE '%" + sqlEscape(search_value) + "%'";
                                                 break;
                                         }
     

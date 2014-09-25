@@ -26,7 +26,7 @@ var PointGeofence = function(nid, formType, lat, lng, radiusInMeters) {
 	this.minLng = null;
 	this.maxLng = null;
 	
-	this._calculateBoundingBox(lat, lng, radiusInMeters);
+	this._calculateBoundingBox(this.lat, this.lng, radiusInMeters);
 };
 PointGeofence.inheritsFrom(Geofence);
 
@@ -63,7 +63,7 @@ PointGeofence.prototype._calculateBoundingBox = function(lat, lng, radiusInMeter
         this.maxLat = null;
         this.minLng = null;
         this.maxLng = null;
-        Utils.sendErrorReport('Failed to create bounding box. ex: ' + ex + ', key: ' + key + ', lag: ' + lat + ', lng: ' + lng + ', latDelta: ' + latDelta + ', lngDelta: ' + lngDelta);   
+        Utils.sendErrorReport('Failed to create bounding box. ex: ' + ex + ', key: ' + key + ', lat: ' + lat + ', lng: ' + lng + ', latDelta: ' + latDelta + ', lngDelta: ' + lngDelta);   
     }
 };
 
