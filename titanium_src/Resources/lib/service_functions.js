@@ -1378,7 +1378,15 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
                 }
                 else{
                     try{
-                        listDB.execute("UPDATE _files SET bytes_uploaded=" + bytesUploaded + ", fid=" + json.file_id + ", uploading=0 WHERE id=" + photoId);
+                        var sql = "UPDATE _files SET bytes_uploaded=" + bytesUploaded + ", fid=" + json.file_id + ", uploading=0 ";
+                        
+                        if(bytesUploaded == -1){
+                            sql += ", tries = tries+1 ";
+                        }
+                        
+                        sql += " WHERE id=" + photoId;
+                        
+                        listDB.execute(sql);
                     }
                     catch(sqlEx1){
                         Utils.sendErrorReport("Exception in upload success ex1: " + sqlEx1 + ", json: " + JSON.stringify(json));
@@ -1817,7 +1825,6 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
         }
         
         // Upload file
-        Omadi.service.uploadFileHTTP.setValidatesSecureCertificate(false);
         Omadi.service.uploadFileHTTP.send(payload);
     } catch(ex) {
         Utils.sendErrorReport("Exception sending upload data: " + ex);
