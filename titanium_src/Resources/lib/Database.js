@@ -137,6 +137,8 @@ exports.query = function(sql){"use strict";
         var Utils = require('lib/Utils');
 		Utils.sendErrorReport("Exception running Main " + sql + ":" + ex);
     }
+    
+    return null;
 };
 
 exports.queryList = function(sql){"use strict"; 
@@ -148,6 +150,8 @@ exports.queryList = function(sql){"use strict";
         var Utils = require('lib/Utils');
         Utils.sendErrorReport("Exception running List " + sql + ":" + ex);
     }
+    
+    return null;
 };
 
 exports.queryGPS = function(sql){"use strict"; 
@@ -159,6 +163,8 @@ exports.queryGPS = function(sql){"use strict";
         var Utils = require('lib/Utils');
         Utils.sendErrorReport("Exception running List " + sql + ":" + ex);
     }
+    
+    return null;
 };
 
 exports.close = function(){"use strict";

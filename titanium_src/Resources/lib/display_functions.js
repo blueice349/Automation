@@ -368,7 +368,11 @@ Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
         Ti.API.debug("opening form window");
         
         isDispatch = Omadi.bundles.dispatch.isDispatch(type, nid);
-        initNewDispatch = false;
+        
+        // Make sure to init a new dispatch screen if the dispatch node is new
+        // Do not check dispatch create permissions.  If the form isDispatch and new, let them dispatch
+        // Allowing forced dispatches even without a dispatch create allows more more variations in permissions
+        initNewDispatch = (isDispatch && nid == 'new');
         
         Ti.API.debug("IS DISPATCH: " + isDispatch);
         Ti.API.debug("Type: " + type + ", nid: " + nid + ", form_part: " + form_part);

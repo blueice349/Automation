@@ -245,7 +245,8 @@ Omadi.bundles.dispatch.acceptJob = function(args){"use strict";
             };
             
             http.send(JSON.stringify({
-                nid: nid
+                nid: nid,
+                sync_timestamp: Omadi.data.getLastUpdateTimestamp()
             }));
         }
     }

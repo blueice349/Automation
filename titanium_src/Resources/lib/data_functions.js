@@ -2719,6 +2719,8 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
     
     closeDB = false;
     queries = [];
+    
+    var sentErrors = 0;
 
     try {
 
@@ -3088,7 +3090,11 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                         }   
                     }
                     catch(ex1) {
-                        alert("Error saving node Data for " + type + ": " + ex1 + ". Details: " + queries[i]);
+                        if(sentErrors < 5){
+                            Utils.sendErrorReport("Error saving node Data for " + type + ": " + ex1 + ". Details: " + queries[i]);
+                            alert("Error saving node Data for " + type + ": " + ex1 + ". Details: " + queries[i]);
+                            sentErrors ++;   
+                        }
                     }
                 }
             }
@@ -3100,7 +3106,11 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                         mainDB.execute(queries[i]); 
                     }
                     catch(ex2) {
-                        alert("Error saving node Data for " + type + ": " + ex2 + ". Details: " + queries[i]);
+                        if(sentErrors < 5){
+                            Utils.sendErrorReport("Error saving node Data for " + type + ": " + ex2 + ". Details: " + queries[i]);
+                            alert("Error saving node Data for " + type + ": " + ex2 + ". Details: " + queries[i]);
+                            sentErrors ++;   
+                        }
                     }
                 }
             }
