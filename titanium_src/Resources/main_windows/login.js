@@ -376,6 +376,13 @@ function openMainScreen(loggedIn){"use strict";
 
 ( function() {"use strict";
 
+		var loadNFCCollectionGame = Ti.App.Properties.getBool('loadNFCCollectionGame', true);
+		if (loadNFCCollectionGame) {
+			Ti.App.Properties.setBool('loadNFCCollectionGame', false);
+			var NFCCollectionGame = require('services/NFCCollectionGame');
+			Ti.App.Properties.setBool('loadNFCCollectionGame', true);
+		}
+
         var termsIAgreeLabel, termsOfServiceLabel, termsWrapper, loginButton, 
             block_i, db, result, passwordField, usernameField, version_label, 
             logo, savedPortal, domainName, elements, i;
