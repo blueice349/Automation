@@ -81,7 +81,9 @@
                 <activity android:alwaysRetainTaskState="true"
                     android:clearTaskOnLaunch="false"
                     android:configChanges="keyboardHidden|orientation"
-                    android:label="Omadi" android:name=".OmadiActivity" android:theme="@style/Theme.Titanium">
+                    android:label="Omadi"
+                    android:launchMode="singleTask"
+                    android:name=".OmadiActivity" android:theme="@style/Theme.Titanium">
                     <intent-filter>
                         <action android:name="android.intent.action.MAIN"/>
                         <category android:name="android.intent.category.LAUNCHER"/>
@@ -106,5 +108,6 @@
         <module platform="android" version="1.0">com.omadi.starmicronics</module>
         <module platform="iphone" version="0.1">com.omadi.starmicronics</module>
         <module platform="android">uk.me.thepotters.atf.sys</module>
+        <module platform="android">ti.nfc</module>
     </modules>
 </ti:app>

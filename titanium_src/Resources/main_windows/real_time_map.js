@@ -6,14 +6,13 @@ Display.setCurrentWindow(Ti.UI.currentWindow, 'real_time_map');
 Ti.include('/lib/functions.js');
 
 var wrapperView;
-var Map = require('ti.map');
 var mapView = null;
 
 (function(){'use strict';
     
     var topBar;
     
-    mapView = Map.createView({mapType:Map.NORMAL_TYPE});
+    mapView = require('ti.map').createView({mapType:Map.NORMAL_TYPE});
     
     Ti.UI.currentWindow.backgroundColor = '#eee';
     
