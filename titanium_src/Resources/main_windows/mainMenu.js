@@ -7,6 +7,7 @@ Ti.include("/lib/functions.js");
 
 var Utils = require('lib/Utils');
 
+
 var Database = require('lib/Database');
 // Make sure the database is reset so it's not using old data from another session
 Database.reset();
