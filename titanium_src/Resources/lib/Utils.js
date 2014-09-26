@@ -1799,11 +1799,28 @@ exports.getRandomAlphaNum = function() {
 	return alphanum.charAt(Math.floor(Math.random() * alphanum.length));
 };
 
-exports.hex2a = function(hexx) {
-    var hex = hexx.toString();//force conversion
-    var str = '';
-    for (var i = 0; i < hex.length; i += 2)
-        str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
-    return str;
+exports.getValues = function(object) {
+	var values = [];
+	for (var key in object) {
+		values.push(object[key]);
+	}
+	return values;
+};
+
+exports.startsWith = function(str, substr) {
+	return str.lastIndexOf(substr, 0) === 0;
+};
+
+exports.joinAsSentence = function(arr){"use strict";
+	if (arr.length === 0) {
+		return '';
+	}
+	
+	if (arr.length <= 2) {
+		return arr.join(' and ');
+	} 
+	
+	arr[arr.length - 1] = 'and ' + arr[arr.length - 1];
+	return arr.join(', ');
 };
 

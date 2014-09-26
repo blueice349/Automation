@@ -1,7 +1,7 @@
 /* jshint globalstrict:true */
 'use strict';
 
-var NFCListener = require('services/NFCListener');
+var NFCEventDispatcher = require('services/NFCEventDispatcher');
 
 function NFCScanWindow(win) {
 	this.win = win;
@@ -21,20 +21,20 @@ NFCScanWindow.prototype._init = function() {
 	this.win.add(this._getShadowView());
 	this.win.add(this._getWrapperView());
 	
-	this._initNFCListener();
+	this._initNFCEventDispatcher();
 };
 
-NFCScanWindow.prototype._initNFCListener = function() {
+NFCScanWindow.prototype._initNFCEventDispatcher = function() {
 	if (Ti.App.isAndroid) {
-		this.nfcListener = new NFCListener(Titanium.Android.currentActivity);
-		this.nfcListener.addCallback(this._handleTagScanned.bind(this));
+		this.nfcListener = new NFCEventDispatcher(Titanium.Android.currentActivity);
+		this.nfcListener.addNFCListener(this._handleTagScanned.bind(this));
 	}
 };
 
 NFCScanWindow.prototype._handleTagScanned = function(tag) {
-	if (!tag.isValidOmadiTag()) {
+	//if (!tag.isValidOmadiTag()) {
 		tag.initTagWithNewData();
-	}
+	//}
 	
 	if (tag.getData() && tag.isValidOmadiTag()) {
 		this.win.callback(tag.getData());
@@ -90,7 +90,7 @@ NFCScanWindow.prototype._getScanLabel = function() {
 	            fontSize: 26,
 	            fontWeight: 'bold'
 	        },
-	        height: 185,
+	        height: 179,
 	        width: '100%',
 	        textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
 	        verticalAlign: Ti.UI.TEXT_VERTICAL_ALIGNMENT_CENTER
@@ -109,7 +109,7 @@ NFCScanWindow.prototype._getCancelButton = function() {
 	        width: 86,
 	        height: 35,
 	        left: 6,
-	        bottom: 12,
+	        bottom: 6,
 	        textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
 	        font:{
 	            fontWeight: 'bold',

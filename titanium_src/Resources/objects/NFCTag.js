@@ -1,13 +1,12 @@
-/*jslint node:true */
+/* jshint globalstrict:true */
 'use strict';
 
+
 Ti.include('/lib/vendor/CryptoJS/aes.js');
+Ti.include('/lib/vendor/CryptoJS/sha3.js');
 
 var Utils = require('lib/Utils');
-
-if (Ti.App.isAndroid) {
-	var nfc = require('ti.nfc');
-}
+if (Ti.App.isAndroid) { var nfc = require('ti.nfc'); }
 
 var NFCTag = function(tag) {
 	this.tag = tag;
@@ -15,18 +14,12 @@ var NFCTag = function(tag) {
 	this.id = null;
 	this.data = null;
 	this.valid = null;
+	this.writable = null;
 };
 
-NFCTag.ENCRYPTION_KEY = 'Ti.App.syncApplication';
+NFCTag.ENCRYPTION_KEY = CryptoJS.enc.Utf8.parse('6p30BYV1p00eADpKPRfZ8wsqSViW8nAm');
 
 /* PUBLIC METHODS */
-
-NFCTag.prototype.initTagWithNewData = function() {
-	var data = this._generateData();
-	this._setData(data);
-	
-	return this.getData() == data;
-};
 
 NFCTag.prototype.getData = function() {
 	if (this.data === null) {
@@ -49,6 +42,7 @@ NFCTag.prototype.getData = function() {
 			}
 		} catch (error) {
 			// ignore bad connection
+			Ti.API.error('Error in NFCTag.prototype.getData: ' + error);
 		} finally {
 			this._close();
 		}
@@ -57,26 +51,9 @@ NFCTag.prototype.getData = function() {
 	return this.data;
 };
 
-NFCTag.prototype.isValidOmadiTag = function() {
-	if (this.valid === null) {
-		var decryptedId = Utils.hex2a(CryptoJS.AES.decrypt(this._getEncryptedId(), NFCTag.ENCRYPTION_KEY, this._getInitializationVector()));
-		this.valid = this.getId() == decryptedId;
-	}
-	return this.valid;
-};
-
-NFCTag.prototype._getTech = function() {
-	if (this.tech === null && nfc) {
-		this.tech = nfc.createTagTechnologyNdef({
-			tag: this.tag
-		});
-	}
-	return this.tech;
-};
-
 NFCTag.prototype.getId = function() {
 	if (this.id === null) {
-		this.id = this.getTag().id;
+		this.id = String(this.getTag().id);
 	}
 	return this.id;
 };
@@ -85,17 +62,81 @@ NFCTag.prototype.getTag = function() {
 	return this.tag;
 };
 
-NFCTag.prototype.isWritable = function() {
-	var tech = this._getTech();
-	
-	if (!tech) {
-		return false;
+NFCTag.prototype.initTagWithNewData = function() {
+	var success = false;
+	try {
+		var data = this._generateData();
+		this._setData(data);
+		success = (this.getData() == data);
+	} catch (error) {
+		Ti.API.info('Error in NFCTag.prototype.initTagWithNewData: ' + error);
 	}
-	
-	return tech.isWritable();
+	return success;
+};
+
+NFCTag.prototype.isValidOmadiTag = function() {
+	if (this.valid === null) {
+		try {
+			var iv = this._getInitializationVector();
+			var encryptedData = this._getEncryptedData();
+			var decryptedData = CryptoJS.AES.decrypt(encryptedData, NFCTag.ENCRYPTION_KEY, { iv: iv });
+			var data = JSON.parse(decryptedData.toString(CryptoJS.enc.Utf8));
+			this.valid = this.getId() == data.serial;
+		} catch (error) {
+			Ti.API.error('Error in NFCTag.prototype.isValidOmadiTag: ' + error);
+			this.valid = null;
+		}
+	}
+	return this.valid;
+};
+
+NFCTag.prototype.isWritable = function() {
+	if (this.writable === null) {
+		try {
+			this.writable = this._getTech().isWritable();
+		} catch (error) {
+			Ti.API.error('Error in NFCTag.prototype.isWritable: ' + error);
+			this.writable = null;
+		}
+	}
+	return this.writable;
 };
 
 /* PRIVATE METHODS */
+
+NFCTag.prototype._close = function() {
+	try {
+		var tech = this._getTech();
+		if (tech && tech.isConnected()) {
+			tech.close();
+		}
+	} catch (error) {
+		Ti.API.error('Error in NFCTag.prototype._connect: ' + error);
+	}
+};
+
+NFCTag.prototype._connect = function() {
+	try {
+		var tech = this._getTech();
+		if (tech && !tech.isConnected()) {
+			tech.connect();
+		}
+	} catch (error) {
+		Ti.API.error('Error in NFCTag.prototype._connect: ' + error);
+	}
+};
+
+NFCTag.prototype._getTech = function() {
+	if (this.tech === null && nfc) {
+		try {
+			this.tech = nfc.createTagTechnologyNdef({ tag: this.tag });
+		} catch (error) {
+			Ti.API.error('Error in NFCTag.prototype._getTech: ' + error);
+			this.tech = null;
+		}
+	}
+	return this.tech;
+};
 
 NFCTag.prototype._setData = function(data) {
 	var tech = this._getTech();
@@ -123,49 +164,40 @@ NFCTag.prototype._setData = function(data) {
 		this.data = data;
 	} catch (error) {
 		// ignore bad connection
+		Ti.API.error('Error in NFCTag.prototype._setData: ' + error);
 	} finally {
 		this._close();
 	}
 };
 
 NFCTag.prototype._generateData = function() {
-	var id = String(this.getId());
+	var id = this.getId();
 	var iv = this._generateInitializationVector();
-	var encryptedId = CryptoJS.AES.encrypt(id, NFCTag.ENCRYPTION_KEY, iv);
+	var data = JSON.stringify({
+		serial: id,
+		count: -1
+	});
+	var encryptedData = CryptoJS.AES.encrypt(data, NFCTag.ENCRYPTION_KEY, { iv: iv });
 	
-	return 'OMADI' + iv + encryptedId;
+	var generatedData = 'OMADI' + iv.toString(CryptoJS.enc.Utf8) + encryptedData.toString(CryptoJS.enc.base64);
+	return generatedData;
 };
 
-NFCTag.prototype._getInitializationVector = function() {
-	return this.getData().substr(5, 16);
-};
-
-NFCTag.prototype._getEncryptedId = function() {
+NFCTag.prototype._getEncryptedData = function() {
 	var data = this.getData();
 	return data.substring(21, data.length);
 };
 
 NFCTag.prototype._generateInitializationVector = function() {
-	var millis = new Date().getTime();
-	var uid = Utils.getUid();
-	var sha = Ti.Utils.sha256(Ti.Utils.base64encode(String(millis + uid)));
-	var base64 = Ti.Utils.base64encode(sha).toString();
-	return base64.substr(0,16);
+	var input = String(Math.random());
+	var hash = CryptoJS.SHA3(input, { outputLength: 128 }).toString(CryptoJS.enc.Base64);
+	return CryptoJS.enc.Utf8.parse(hash.substr(0, 16));
 };
 
-NFCTag.prototype._connect = function() {
-	var tech = this._getTech();
-	if (!tech.isConnected()) {
-		tech.connect();
-	}
+NFCTag.prototype._getInitializationVector = function() {
+	return CryptoJS.enc.Utf8.parse(this.getData().substring(5, 21));
 };
 
-NFCTag.prototype._close = function() {
-	var tech = this._getTech();
-	if (tech.isConnected()) {
-		tech.close();
-	}
-};
 
 /* PUBLIC STATIC METHODS */
 
