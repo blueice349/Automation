@@ -6,8 +6,6 @@ Display.setCurrentWindow(Ti.UI.currentWindow, 'mainMenu');
 Ti.include("/lib/functions.js");
 
 var Utils = require('lib/Utils');
-var NFCListener = require('services/NFCListener');
-var nfcListener = NFCListener.getInstance();
 
 
 var Database = require('lib/Database');
@@ -1026,6 +1024,8 @@ function openFormWindow(e){"use strict";
 }
 
 ( function() {"use strict";
+	var NFCListener = require('services/NFCListener');
+	
     var db, result, formWindow, time_format, askAboutInspection, dialog, i, showingAlert, nowTimestamp;
     
     // Initialize the global scope variable to map deleted nids to saved positive nids

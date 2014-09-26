@@ -154,8 +154,12 @@ NFCWidget.prototype._getDataLabel = function() {
 };
 
 NFCWidget.prototype._handleTagScanned = function(data) {
-	this.nodeElement.dbValues[0] = this.dbValues[0] = data;
-	this.nodeElement.textValues[0] = this.textValues[0] = 'Linked';
+	if (this.nodeElement && this.nodeElement.dbValues) {
+		this.nodeElement.dbValues[0] = data;
+		this.nodeElement.textValues[0] = 'Linked';
+	}
+	this.dbValues[0] = data;
+	this.textValues[0] = 'Linked';
 	this._getElementWrapperView().dbValue = data;
 	
 	var dataLabel = this._getDataLabel();
