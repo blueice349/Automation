@@ -1,4 +1,5 @@
 /* jshint globalstrict:true */
+'use strict';
 
 var NFCEventDispatcher = require('services/NFCEventDispatcher');
 var Database = require('lib/Database');

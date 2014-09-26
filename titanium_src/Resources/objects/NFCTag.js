@@ -5,7 +5,6 @@
 Ti.include('/lib/vendor/CryptoJS/aes.js');
 Ti.include('/lib/vendor/CryptoJS/sha3.js');
 
-var Utils = require('lib/Utils');
 if (Ti.App.isAndroid) { var nfc = require('ti.nfc'); }
 
 var NFCTag = function(tag) {

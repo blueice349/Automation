@@ -1814,7 +1814,7 @@ exports.startsWith = function(str, substr) {
 	return str.lastIndexOf(substr, 0) === 0;
 };
 
-exports.joinAsSentence = function(arr){"use strict";
+exports.joinAsSentence = function(arr){
 	if (arr.length === 0) {
 		return '';
 	}

@@ -1,12 +1,9 @@
 /* jshint globalstrict:true */
 'use strict';
 
-var Utils = require('lib/Utils');
 var NFCTag = require('objects/NFCTag');
 
-if (Ti.App.isAndroid) {
-	var nfc = require('ti.nfc');
-}
+if (Ti.App.isAndroid) { var nfc = require('ti.nfc'); }
 
 var NFCEventDispatcher = function(activity) {
 	this.adapter = null;
