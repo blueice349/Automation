@@ -19,6 +19,7 @@ function NFCWidget(formObj, instance, fieldViewWrapper){
     this.dataLabel = null;
     this.spacerView = null;
     this.scanWindow = null;
+    this.clearNFCConfimationDialog = null;
     
     if(this.nodeElement){
         this.dbValues = this.nodeElement.dbValues || [];
@@ -108,10 +109,11 @@ NFCWidget.prototype._getElementWrapperView = function() {
 
 NFCWidget.prototype._getScanButton = function() {
 	if (this.scanButton === null) {
+		
 		this.scanButton = Ti.UI.createLabel({
 	        backgroundImage:'/images/blue_button2.png',
 	        color: '#fff',
-	        text: 'Scan',
+	    	text: 'Scan',
 	        width:86,
 	        height:35,
 	        textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
@@ -122,11 +124,11 @@ NFCWidget.prototype._getScanButton = function() {
 	        instance: this.instance
 	    });
 	    
-	    if (this.dbValues[0]) {
-	    	this.scanButton.text = 'Rescan';
+	    if (this._nfcIsLinked()) {
+	    	this.scanButton.text = 'Clear';
 	    }
 	    
-	    this.scanButton.addEventListener('click', this._openScanWindow.bind(this));
+	    this.scanButton.addEventListener('click', this._scanButtonPressed.bind(this));
 	}
 	return this.scanButton;
 };
@@ -145,7 +147,7 @@ NFCWidget.prototype._getDataLabel = function() {
 	        left: 10
 	    });
 	    
-	    if (this.dbValues[0]) {
+	    if (this._nfcIsLinked()) {
 	    	this.dataLabel.text = 'NFC Linked';
 	    	this.dataLabel.color = NFCWidget.GREEN;
 	    }
@@ -153,7 +155,67 @@ NFCWidget.prototype._getDataLabel = function() {
 	return this.dataLabel;
 };
 
-NFCWidget.prototype._handleTagScanned = function(data) {
+NFCWidget.prototype._scanButtonPressed = function() {
+	if (this._nfcIsLinked()) {
+		this._getClearNFCConfimationDialog().show();
+	} else {
+		this._getScanWindow().open();
+	}
+};
+
+NFCWidget.prototype._getClearNFCConfimationDialog = function() {
+	if (this.clearNFCConfimationDialog == null) {
+		this.clearNFCConfimationDialog = Ti.UI.createAlertDialog({
+			buttonNames: ['OK', 'Cancel'],
+			title: 'Are you sure you want to clear this NFC tag?'
+		});
+		
+		this.clearNFCConfimationDialog.addEventListener('click', this._clearNFCConfimationDialogCallback.bind(this));
+	}
+	return this.clearNFCConfimationDialog;
+};
+
+NFCWidget.prototype._clearNFCConfimationDialogCallback = function(event) {
+	if (event.index === 0) {
+		this._clearNFC();
+	}
+};
+
+NFCWidget.prototype._clearNFC = function() {
+	if (this.nodeElement && this.nodeElement.dbValues) {
+		this.nodeElement.dbValues[0] = null;
+		this.nodeElement.textValues[0] = 'Not Linked';
+	}
+	
+	this.dbValues[0] = null;
+	this.textValues[0] = 'Not Linked';
+	this._getElementWrapperView().dbValue = null;
+	
+	var dataLabel = this._getDataLabel();
+	dataLabel.text = 'No NFC Linked';
+	dataLabel.color = NFCWidget.RED;
+	
+	if (Ti.App.isAndroid) {
+		var scanButton = this._getScanButton();
+		scanButton.text = 'Scan';
+	}
+};
+
+NFCWidget.prototype._getScanWindow = function() {
+	if (this.scanWindow === null) {
+		this.scanWindow = Ti.UI.createWindow({  
+	        orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT],
+	        modal: true,
+	        navBarHidden: true,
+        	url: '/main_windows/nfcScanWindow.js',
+        	callback: this._setNFC.bind(this)
+	    });
+	}
+	
+	return this.scanWindow;
+};
+
+NFCWidget.prototype._setNFC = function(data) {
 	if (this.nodeElement && this.nodeElement.dbValues) {
 		this.nodeElement.dbValues[0] = data;
 		this.nodeElement.textValues[0] = 'Linked';
@@ -166,23 +228,17 @@ NFCWidget.prototype._handleTagScanned = function(data) {
 	dataLabel.text = 'New NFC Linked';
 	dataLabel.color = NFCWidget.GREEN;
 	
-	var scanButton = this._getScanButton();
-	scanButton.text = 'Rescan';
+	if (Ti.App.isAndroid) {
+		var scanButton = this._getScanButton();
+		scanButton.text = 'Clear';
+	}
 };
 
-NFCWidget.prototype._openScanWindow = function() {
-	if (this.scanWindow === null) {
-		this.scanWindow = Ti.UI.createWindow({  
-	        orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT],
-	        modal: true,
-	        navBarHidden: true,
-        	url: '/main_windows/nfcScanWindow.js',
-        	callback: this._handleTagScanned.bind(this)
-	    });
-	}
-	
-	this.scanWindow.open();
+NFCWidget.prototype._nfcIsLinked = function() {
+	return !!this.dbValues[0];
 };
+
+
 
 exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){
     return new NFCWidget(FormObj, instance, fieldViewWrapper);
