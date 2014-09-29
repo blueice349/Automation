@@ -82,6 +82,7 @@
                     android:clearTaskOnLaunch="false"
                     android:configChanges="keyboardHidden|orientation"
                     android:label="Omadi"
+                    android:launchMode="standard"
                     android:name=".OmadiActivity" android:theme="@style/Theme.Titanium">
                     <intent-filter>
                         <action android:name="android.intent.action.MAIN"/>
