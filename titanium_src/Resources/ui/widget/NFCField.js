@@ -99,7 +99,7 @@ NFCWidget.prototype._getElementWrapperView = function() {
 			dbValue: this.dbValues[0]
 		});
 		
-		if (Ti.App.isAndroid) {
+		if (this._canEdit()) {
 			this.elementWrapperView.add(this._getScanButton());
 		}
 		this.elementWrapperView.add(this._getDataLabel());
@@ -236,6 +236,10 @@ NFCWidget.prototype._setNFC = function(data) {
 
 NFCWidget.prototype._nfcIsLinked = function() {
 	return !!this.dbValues[0];
+};
+
+NFCWidget.prototype._canEdit = function() {
+	return Ti.App.isAndroid && this.instance.can_edit;
 };
 
 
