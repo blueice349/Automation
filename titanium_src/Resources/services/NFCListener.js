@@ -50,9 +50,10 @@ NFCListener.prototype._handleTagScanned = function(tag) {
 	var data = validTags[tag.getData()];
 	if (data) {
 		this._processTag(tag, data.nid, data.field);
+		tag.playSuccessFeedback();
 	} else {
 		alert('There was an error reading the NFC tag. It may not be a valid Omadi tag.');
-		Titanium.Media.vibrate([500, 1000, 500, 1000]);
+		tag.playErrorFeedback();
 	}
 };
 

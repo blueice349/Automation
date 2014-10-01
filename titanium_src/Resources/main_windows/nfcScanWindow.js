@@ -32,19 +32,21 @@ NFCScanWindow.prototype._initNFCEventDispatcher = function() {
 };
 
 NFCScanWindow.prototype._handleTagScanned = function(tag) {
-	//if (!tag.isValidOmadiTag()) {
+	if (!tag.isValidOmadiTag()) {
 		tag.initTagWithNewData();
-	//}
+	}
 	
 	if (tag.getData() && tag.isValidOmadiTag()) {
 		this.win.callback(tag.getData());
 		this._closeWindow();
+		tag.playSuccessFeedback();
 	} else {
 		if (!tag.isWritable()) {
 			alert('This tag cannot be used because it is write protected.');
 		} else {
 			alert('There was an error scanning this tag. Please try again.');
 		}
+		tag.playErrorFeedback();
 	}
 };
 

@@ -89,6 +89,14 @@ NFCTag.prototype.isValidOmadiTag = function() {
 	return this.valid;
 };
 
+NFCTag.prototype.playSuccessFeedback = function() {
+	Titanium.Media.vibrate([0, 250, 125, 250]);
+};
+
+NFCTag.prototype.playErrorFeedback = function() {
+	Titanium.Media.vibrate([0, 1000, 500, 1000]);
+};
+
 NFCTag.prototype.isWritable = function() {
 	if (this.writable === null) {
 		try {
