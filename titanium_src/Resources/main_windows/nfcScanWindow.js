@@ -32,11 +32,7 @@ NFCScanWindow.prototype._initNFCEventDispatcher = function() {
 };
 
 NFCScanWindow.prototype._handleTagScanned = function(tag) {
-	if (!tag.isValidOmadiTag()) {
-		tag.initTagWithNewData();
-	}
-	
-	if (tag.getData() && tag.isValidOmadiTag()) {
+	if (tag.initTagWithNewData()) {
 		this.win.callback(tag.getData());
 		this._closeWindow();
 		tag.playSuccessFeedback();

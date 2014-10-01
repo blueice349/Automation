@@ -48,7 +48,7 @@ NFCListener.prototype._getSignature = function(data) {
 NFCListener.prototype._handleTagScanned = function(tag) {
 	var validTags = this._getValidTags();
 	var data = validTags[tag.getData()];
-	if (data) {
+	if (data && (!tag.hasScanCounter() || tag.getScanCount() != -1)) {
 		this._processTag(tag, data.nid, data.field);
 		tag.playSuccessFeedback();
 	} else {
@@ -123,6 +123,7 @@ NFCListener.prototype._processTag = function(tag, nid, field) {
 		timestamp: Utils.getUTCTimestamp(),
 		nid: nid,
 		field: field,
+		scans: tag.getScanCount(),
 		id: new Date().getTime(),
 		tries: 0
 	});
@@ -146,6 +147,8 @@ NFCListener.prototype._sendData = function(tries) {
 	
 	
     var networkData = this._getNetworkData(data);
+    
+    Ti.API.info('Sending tag data: ' + networkData);
 	
 	var http = Ti.Network.createHTTPClient({
         enableKeepAlive: false,
