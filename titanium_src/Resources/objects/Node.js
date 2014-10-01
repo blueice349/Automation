@@ -593,7 +593,10 @@ Node.getFields = function(type) {
             }
 
 			if (field_name.indexOf("___end") !== -1) {
-				instances[field_name.split('___')[0]].label += ' Start';
+			    if (instances[field_name.split('___')[0]]){
+				    instances[field_name.split('___')[0]].label += ' Start';
+				}
+				
 				instances[field_name].label += ' End';
 				instances[field_name].part = null;
                 instances[field_name].partLabel = null;

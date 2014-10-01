@@ -142,7 +142,7 @@ ImageWidget.prototype.getNewElement = function(index){
 
 	var contentWidth = 110 * dbValues.length;
 	if (this.instance.can_edit && (this.instance.settings.cardinality == -1 || (dbValues.length < this.instance.settings.cardinality))) {
-		widgetView.add(this.getTakePhotoButtonView());
+        widgetView.add(this.getTakePhotoButtonView());
 		contentWidth += 110;
 	}
 	
@@ -192,9 +192,9 @@ ImageWidget.prototype.addImageViewsToWidgetView = function(fids, widgetView) {
 		    self.showPhotoOptions(e.source);
 		};
 		var localImageMismatch = false;
+		var imageView = null; 
 		
 		for (i = 0, j = 0; i < fids.length; i++) {
-			var imageView = null; 
 			if (fids[i] === -1) {
 				var localImage = localImages[0][j++];
 				if (localImage) {
@@ -214,6 +214,17 @@ ImageWidget.prototype.addImageViewsToWidgetView = function(fids, widgetView) {
 			widgetView.add(imageView);
 		}
 		
+		if(localImages[0] && j < localImages[0].length){
+		    for(j; j < localImages[0].length; j ++){
+		        imageView = this.getLocalImageView(-1, localImages[0][j], i++);
+		        imageView.addEventListener('click', showPhotoOptions);
+                widgetView.add(imageView);
+                
+                // Make sure the dbValues is up to date so the next photo icon will be shown
+                this.dbValues.push(-1);
+		    }
+		}
+		
 		if (localImageMismatch) {
 			var expected = 0;
 			for (i = 0; i < fids.length; i++) {
@@ -230,7 +241,13 @@ ImageWidget.prototype.addImageViewsToWidgetView = function(fids, widgetView) {
 ImageWidget.prototype.getLocalImages = function() {
 	var localImages = {0: []};
 	try {
-		var result = Database.queryList('SELECT file_path, fid, degrees, thumb_path, nid FROM _files WHERE nid IN (' + this.getImageNid() + ', ' + (this.node.continuous_nid || 0) + ', 0) AND field_name="' + this.instance.field_name + '" ORDER BY timestamp ASC');
+	    var imageNids = [0, this.getImageNid()];
+	    
+	    if(this.node.continuous_nid){
+	        imageNids.push(this.node.continuous_nid);
+	    }
+	    
+		var result = Database.queryList('SELECT file_path, fid, degrees, thumb_path, nid FROM _files WHERE nid IN (' + imageNids.join(',')  + ') AND field_name="' + this.instance.field_name + '" ORDER BY timestamp ASC');
 		
 		while(result.isValidRow()) {
 			var localImage = {

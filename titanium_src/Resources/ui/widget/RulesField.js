@@ -529,7 +529,7 @@ RulesFieldWidget.prototype.showDetail = function(e) {"use strict";
         
         detail_row.add(dttmView);
         
-        if(typeof detailsVal.time_rules !== 'undefined'){
+        if(detailsVal && detailsVal.time_rules){
             dttmViewLabel = Ti.UI.createLabel({
                 top : 0,
                 left : 5,

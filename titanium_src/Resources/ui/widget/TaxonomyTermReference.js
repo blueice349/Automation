@@ -228,7 +228,10 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
                     }
                 }
                 
-                if (widget.elements[e.source.delta].check_conditional_fields.length > 0) {
+                if (widget.elements && 
+                    widget.elements[e.source.delta] && 
+                    widget.elements[e.source.delta].check_conditional_fields &&
+                    widget.elements[e.source.delta].check_conditional_fields.length > 0) {
                     widget.formObj.setConditionallyRequiredLabels(e.source.instance, widget.elements[e.source.delta].check_conditional_fields);
                 }
     
