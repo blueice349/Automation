@@ -153,10 +153,10 @@ FormTabs.prototype.doDispatchSave = function(saveType){"use strict";
                     Dispatch.dispatchObj.formToNode();
                 }
                 
-                Dispatch.workObj.validate_form_data('normal');
+                Dispatch.workObj.validate_form_data(saveType);
                 
                 if(Dispatch.dispatchTab){
-                    Dispatch.dispatchObj.validate_form_data('normal');
+                    Dispatch.dispatchObj.validate_form_data(saveType);
                 }
                 
                 form_errors = Dispatch.workObj.form_errors;

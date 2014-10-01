@@ -3064,7 +3064,7 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                     for ( i = 0; i < Omadi.service.fetchedJSON.node[type]['delete'].length; i++) {
                         queries.push("DELETE FROM node WHERE nid = " + Omadi.service.fetchedJSON.node[type]['delete'][i].nid);
                         queries.push("DELETE FROM " + type + " WHERE nid = " + Omadi.service.fetchedJSON.node[type]['delete'][i].nid);
-                    }   
+                    }
             }
 
             closeDB = false;

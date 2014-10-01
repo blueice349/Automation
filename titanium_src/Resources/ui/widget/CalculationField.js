@@ -166,7 +166,10 @@ CalculationFieldWidget.prototype.getNewElement = function(index, showCalc){"use 
             try{
                 var instance = e.source.instance;
                 
-                self.formObj.unfocusField();
+                if(self.formObj){
+                    self.formObj.unfocusField();
+                }
+                
                 // Reset the cached values
                 CalculatedFieldCache = {};
                 self.redraw(instance);
