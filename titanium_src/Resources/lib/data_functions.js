@@ -4,7 +4,6 @@
 Omadi.data = Omadi.data || {};
 
 Omadi.data.cache = {};
-Omadi.data.cache.fields = {};
 Omadi.data.cache.regions = {};
 Omadi.data.cache.fakeFields = {};
 
@@ -17,11 +16,9 @@ var ImageWidget = require('ui/widget/Image');
 // Constants
 Omadi.data.MAX_BYTES_PER_UPLOAD = 1000000; // 1MB
 
-
 Omadi.data.cameraAndroid = null;
 
 Omadi.data.isUpdating = function() {"use strict";
-
     return Ti.App.Properties.getBool("isUpdating", false);
 };
 
@@ -141,7 +138,6 @@ Omadi.data.fieldExists = function(nodeType, fieldName){"use strict";
 Omadi.data.getFields = function(type) {"use strict";
 	return Node.getFields(type);
 };
-
 
 Omadi.data.getFakeFields = function(type){"use strict";
     var db, result, fakeFields, field_name, nameParts;
@@ -2402,6 +2398,9 @@ Omadi.data.processFieldsJson = function(mainDB) {"use strict";
 
         if (Omadi.service.fetchedJSON.fields["delete"]) {
             if (Omadi.service.fetchedJSON.fields["delete"].length) {
+                
+                
+                
                 for ( i = 0; i < Omadi.service.fetchedJSON.fields["delete"].length; i++) {
                     //Deletes rows from terms
                     queries.push('DELETE FROM fields WHERE fid=' + Omadi.service.fetchedJSON.fields["delete"][i].fid);
@@ -2418,7 +2417,7 @@ Omadi.data.processFieldsJson = function(mainDB) {"use strict";
             mainDB.execute("COMMIT TRANSACTION");
             
             // Reset the field cache
-            Omadi.data.cache.fields = {};
+            Node.resetFieldCache();
         }
     }
     catch(ex) {

@@ -558,14 +558,18 @@ Node.load = function(nid) {
 Node.cache = {};
 Node.cache.fields = {};
 
+Node.resetFieldCache = function(){
+  Node.cache.fields = {};  
+};
+
 Node.getFields = function(type) {
 	var db, result, instances, field_name, nameParts;
     
-    if (typeof Node.cache.fields[type] !== 'undefined') {
+    if (Node.cache.fields[type]) {
         instances = Node.cache.fields[type];
     }
     else {
-
+        
         instances = {};
         result = Database.query("SELECT type, field_name, label, description, bundle, weight, required, widget, settings, disabled, region, fid, can_view, can_edit FROM fields WHERE bundle = '" + type + "' and disabled = 0 ORDER BY weight");
 

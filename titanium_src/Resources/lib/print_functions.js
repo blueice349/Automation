@@ -6,7 +6,6 @@ Ti.include('/lib/CC_functions.js');
 var Utils = require('lib/Utils');
 
 Omadi.print = {};
-
 Omadi.print.StarMicronics = null;
 Omadi.print.printNid = null;
 
@@ -370,6 +369,8 @@ Omadi.print.getPrintCommands = function(){"use strict";
     
     Ti.API.debug(bundle.data.mobile_printer.receipt.items);
     
+    
+    
     items = bundle.data.mobile_printer.receipt.items.sort(Omadi.utils.sortByWeight);
     
     instances = Omadi.data.getFields(node.type);
@@ -438,7 +439,7 @@ Omadi.print.getPrintCommands = function(){"use strict";
                 }
             }
             else{
-                Ti.API.debug("We have something: " + item.value);
+                //Ti.API.debug("We have something: " + item.value);
                 buffer.append(Omadi.print.getPrintCommand(node, item));   
             }
         }
@@ -480,192 +481,200 @@ Omadi.print.getPrintCommand = function(node, item){"use strict";
         type: Ti.Codec.TYPE_BYTE
     });
     
-    if(typeof item.settings !== 'undefined'){
-        if(typeof item.settings.alignment !== 'undefined'){
-            // Always put this in the regular buffer - not styleBuffer - as it is used for the entire line
-            buffer.append(Omadi.print.commands.textAlignment(item.settings.alignment));
-        }
-        
-        if(typeof item.settings.size !== 'undefined'){
-            styleBuffer.append(Omadi.print.commands.size(parseInt(item.settings.size, 10)));
-        }
-        else{
-            styleBuffer.append(Omadi.print.commands.size(0));   
-        }
-        
-        if(typeof item.settings.style !== 'undefined'){
-            if(typeof item.settings.style.bold !== 'undefined' && item.settings.style.bold == 'bold'){
-                styleBuffer.append(Omadi.print.commands.bold(true));
-            }
-            else{
-                styleBuffer.append(Omadi.print.commands.bold(false));   
-            }
-            
-            if(typeof item.settings.style.invert_color !== 'undefined' && item.settings.style.invert_color == 'invert_color'){
-                styleBuffer.append(Omadi.print.commands.invertColor(true));
-            }
-            else{
-                styleBuffer.append(Omadi.print.commands.invertColor(false));   
-            }
-            
-            if(typeof item.settings.style.upside_down !== 'undefined' && item.settings.style.upside_down == 'upside_down'){
-                styleBuffer.append(Omadi.print.commands.upsideDown(true));
-            }
-            else{
-                styleBuffer.append(Omadi.print.commands.upsideDown(false));   
-            }
-            
-            if(typeof item.settings.style.thick_underline !== 'undefined' && item.settings.style.thick_underline == 'thick_underline'){
-                styleBuffer.append(Omadi.print.commands.underline(2));
-            }
-            else if(typeof item.settings.style.underline !== 'undefined' && item.settings.style.underline == 'underline'){
-                styleBuffer.append(Omadi.print.commands.underline(1));
-            }
-            else{
-                styleBuffer.append(Omadi.print.commands.underline(0));   
-            }
-            
-            if(typeof item.settings.style.no_line_break !== 'undefined' && item.settings.style.no_line_break == 'no_line_break'){
-                addLineBreak = false;
-            }
-        }
-    }
+    try{
     
-    if(item.type == 'line' || item.type == 'area'){
-        if(typeof item.value !== 'undefined'){
-            
-            stringValue = item.value;
-            if(addLineBreak){
-                stringValue += "\n";
+        if(typeof item.settings !== 'undefined'){
+            if(typeof item.settings.alignment !== 'undefined'){
+                // Always put this in the regular buffer - not styleBuffer - as it is used for the entire line
+                buffer.append(Omadi.print.commands.textAlignment(item.settings.alignment));
             }
-            // Do not add the space like is done with the value item
-            buffer.append(styleBuffer);
-            buffer.append(Omadi.print.stringToByteArray(stringValue));
-        }
-    }
-    else if(item.type == 'value'){
-        if(typeof item.value !== 'undefined'){
             
-           
-            stringValue = Omadi.print.getValue(item.value, node);
-            
-            if(addLineBreak){
-                stringValue += "\n";
+            if(typeof item.settings.size !== 'undefined'){
+                styleBuffer.append(Omadi.print.commands.size(parseInt(item.settings.size, 10)));
             }
             else{
-                stringValue += " ";
+                styleBuffer.append(Omadi.print.commands.size(0));   
             }
             
-            buffer.append(styleBuffer);
-            buffer.append(Omadi.print.stringToByteArray(stringValue));
-        }
-    }
-    else if(item.type == 'item'){
-        if(typeof item.value !== 'undefined'){
-            var labels, values, maxLabelLength, maxValueLength, innerItem, index, labelValue,
-                lineLength, extraSpaces, i, label, value, numLabelSpaces, labelSpaces, j,
-                numValueSpaces, valueSpaces, valueValue, itemValue, resetBuffer, innerItems;
-            
-            resetBuffer = Ti.createBuffer({
-                type: Ti.Codec.TYPE_BYTE 
-            });
-            
-            Ti.API.debug("before reset buffer");
-            
-            resetBuffer.append(Omadi.print.commands.size(0));   
-            resetBuffer.append(Omadi.print.commands.bold(false));
-            resetBuffer.append(Omadi.print.commands.invertColor(false)); 
-            resetBuffer.append(Omadi.print.commands.upsideDown(false)); 
-            resetBuffer.append(Omadi.print.commands.underline(0));    
-            
-            Ti.API.debug("After reset buffer");
-            
-            labels = [];
-            values = [];
-            maxLabelLength = maxValueLength = 0;
-            
-            if(Utils.isArray(item.value)){
-                innerItems = item.value.sort(Omadi.utils.sortByWeight);
+            if(typeof item.settings.style !== 'undefined'){
+                if(typeof item.settings.style.bold !== 'undefined' && item.settings.style.bold == 'bold'){
+                    styleBuffer.append(Omadi.print.commands.bold(true));
+                }
+                else{
+                    styleBuffer.append(Omadi.print.commands.bold(false));   
+                }
                 
-                for(index in innerItems){
-                    if(innerItems.hasOwnProperty(index)){
-                        innerItem = innerItems[index];
-                        
-                        valueValue = Omadi.print.getValue(innerItem.value, node).toString();
-                        labelValue = innerItem.label.toString();
+                if(typeof item.settings.style.invert_color !== 'undefined' && item.settings.style.invert_color == 'invert_color'){
+                    styleBuffer.append(Omadi.print.commands.invertColor(true));
+                }
+                else{
+                    styleBuffer.append(Omadi.print.commands.invertColor(false));   
+                }
+                
+                if(typeof item.settings.style.upside_down !== 'undefined' && item.settings.style.upside_down == 'upside_down'){
+                    styleBuffer.append(Omadi.print.commands.upsideDown(true));
+                }
+                else{
+                    styleBuffer.append(Omadi.print.commands.upsideDown(false));   
+                }
+                
+                if(typeof item.settings.style.thick_underline !== 'undefined' && item.settings.style.thick_underline == 'thick_underline'){
+                    styleBuffer.append(Omadi.print.commands.underline(2));
+                }
+                else if(typeof item.settings.style.underline !== 'undefined' && item.settings.style.underline == 'underline'){
+                    styleBuffer.append(Omadi.print.commands.underline(1));
+                }
+                else{
+                    styleBuffer.append(Omadi.print.commands.underline(0));   
+                }
+                
+                if(typeof item.settings.style.no_line_break !== 'undefined' && item.settings.style.no_line_break == 'no_line_break'){
+                    addLineBreak = false;
+                }
+            }
+        }
+        
+        if(item.type == 'line' || item.type == 'area'){
+            if(typeof item.value !== 'undefined'){
+                
+                stringValue = item.value;
+                if(addLineBreak){
+                    stringValue += "\n";
+                }
+                // Do not add the space like is done with the value item
+                buffer.append(styleBuffer);
+                buffer.append(Omadi.print.stringToByteArray(stringValue));
+            }
+        }
+        else if(item.type == 'value'){
+            if(typeof item.value !== 'undefined'){
+                
+                stringValue = Omadi.print.getValue(item.value, node, item.type);
+                
+                if(addLineBreak){
+                    stringValue += "\n";
+                }
+                else{
+                    stringValue += " ";
+                }
+                
+                buffer.append(styleBuffer);
+                buffer.append(Omadi.print.stringToByteArray(stringValue));
+            }
+        }
+        else if(item.type == 'item'){
+            if(typeof item.value !== 'undefined'){
+                var labels, values, maxLabelLength, maxValueLength, innerItem, index, labelValue,
+                    lineLength, extraSpaces, i, label, value, numLabelSpaces, labelSpaces, j,
+                    numValueSpaces, valueSpaces, valueValue, itemValue, resetBuffer, innerItems;
+                
+                resetBuffer = Ti.createBuffer({
+                    type: Ti.Codec.TYPE_BYTE 
+                });
+                
+                resetBuffer.append(Omadi.print.commands.size(0));   
+                resetBuffer.append(Omadi.print.commands.bold(false));
+                resetBuffer.append(Omadi.print.commands.invertColor(false)); 
+                resetBuffer.append(Omadi.print.commands.upsideDown(false)); 
+                resetBuffer.append(Omadi.print.commands.underline(0));
+                
+                labels = [];
+                values = [];
+                maxLabelLength = maxValueLength = 0;
+                
+                itemValue = Utils.verifyIsArray(item.value);
+                
+                if(itemValue.length > 0){
+                    
+                    innerItems = itemValue.sort(Omadi.utils.sortByWeight);
+                    
+                    for(index in innerItems){
+                        if(innerItems.hasOwnProperty(index)){
+                            innerItem = innerItems[index];
                             
-                        if(valueValue.length > maxValueLength){
-                            maxValueLength = valueValue.length;
+                            valueValue = Omadi.print.getValue(innerItem.value, node, item.type).toString();
+                            
+                            labelValue = innerItem.label.toString();
+                                
+                            if(valueValue.length > maxValueLength){
+                                maxValueLength = valueValue.length;
+                            }
+                            
+                            if(labelValue.length > maxLabelLength){
+                                maxLabelLength = labelValue.length;
+                            }
+                            
+                            labels.push(labelValue);
+                            values.push(valueValue);
+                        }
+                    }
+                    
+                    lineLength = 48;
+                    extraSpaces = 3;
+                    
+                    if(typeof item.settings.alignment !== 'undefined'){
+                        if(item.settings.alignment == 'justify'){
+                            if(item.settings.size == 0){
+                                extraSpaces = lineLength - maxLabelLength - maxValueLength;
+                            }
+                            else if(item.settings.size == 1){
+                                extraSpaces = lineLength - maxLabelLength - (maxValueLength * 2);
+                            }
+                        }
+                    }
+                    
+                    stringValue = "";
+                    
+                    Ti.API.debug('labels: ' + JSON.stringify(labels));
+                    Ti.API.debug('values: ' + JSON.stringify(values));
+                    
+                    for(i = 0; i < labels.length; i ++){
+        
+                        label = labels[i].toString();
+                        value = values[i].toString();
+                        
+                        numLabelSpaces = maxLabelLength - label.length + extraSpaces;
+                        
+                        labelSpaces = "";
+                        for(j = 0; j < numLabelSpaces; j ++){
+                            labelSpaces += " ";
                         }
                         
-                        if(labelValue.length > maxLabelLength){
-                            maxLabelLength = labelValue.length;
+                        numValueSpaces = maxValueLength - value.length;
+                        
+                        valueSpaces = "";
+                        for(j = 0; j < numValueSpaces; j ++){
+                            valueSpaces += " ";
                         }
                         
-                        labels.push(labelValue);
-                        values.push(valueValue);
-                    }
-                }
-                
-                lineLength = 48;
-                extraSpaces = 3;
-                
-                if(typeof item.settings.alignment !== 'undefined'){
-                    if(item.settings.alignment == 'justify'){
-                        if(item.settings.size == 0){
-                            extraSpaces = lineLength - maxLabelLength - maxValueLength;
+                        buffer.append(resetBuffer);
+                        
+                        buffer.append(Omadi.print.stringToByteArray(label + labelSpaces));
+                        
+                        if(valueSpaces.length > 0){
+                            buffer.append(Omadi.print.stringToByteArray(valueSpaces));
                         }
-                        else if(item.settings.size == 1){
-                            extraSpaces = lineLength - maxLabelLength - (maxValueLength * 2);
+                        
+                        if(styleBuffer.length > 0){
+                            buffer.append(styleBuffer);
                         }
+                        
+                        buffer.append(Omadi.print.stringToByteArray(value + "\n"));
+                        
+                        Ti.API.debug(label + labelSpaces + valueSpaces + value);
                     }
-                }
-                
-                stringValue = "";
-                
-                for(i = 0; i < labels.length; i ++){
-    
-                    label = labels[i].toString();
-                    value = values[i].toString();
-                    
-                    numLabelSpaces = maxLabelLength - label.length + extraSpaces;
-                    
-                    labelSpaces = "";
-                    for(j = 0; j < numLabelSpaces; j ++){
-                        labelSpaces += " ";
-                    }
-                    
-                    numValueSpaces = maxValueLength - value.length;
-                    
-                    valueSpaces = "";
-                    for(j = 0; j < numValueSpaces; j ++){
-                        valueSpaces += " ";
-                    }
-                    
-                    buffer.append(resetBuffer);
-                    
-                    buffer.append(Omadi.print.stringToByteArray(label + labelSpaces));
-                    
-                    if(valueSpaces.length > 0){
-                        buffer.append(Omadi.print.stringToByteArray(valueSpaces));
-                    }
-                    
-                    if(styleBuffer.length > 0){
-                        buffer.append(styleBuffer);
-                    }
-                    
-                    buffer.append(Omadi.print.stringToByteArray(value + "\n"));
-                    
-                    Ti.API.debug(label + labelSpaces + valueSpaces + value);
                 }
             }
         }
+    }
+    catch(ex){
+        Utils.sendErrorReport("Exception while generating a print buffer: " + ex);
     }
     
     return buffer;
 };
 
-Omadi.print.getValue = function(fieldOption, node){"use strict";
+Omadi.print.getValue = function(fieldOption, node, itemType){"use strict";
     var fieldNames, fieldName, stringValue, referenceField, i,
         referenceNode, instances, instance, parts, partFieldName;
     
@@ -678,7 +687,7 @@ Omadi.print.getValue = function(fieldOption, node){"use strict";
         
         if(typeof instances[fieldName] !== 'undefined'){
             instance = instances[fieldName];
-            stringValue = Omadi.print.getTextValue(node, instance);          
+            stringValue = Omadi.print.getTextValue(node, instance, itemType);          
         }
     }
     else{
@@ -695,7 +704,7 @@ Omadi.print.getValue = function(fieldOption, node){"use strict";
                         instance = instances[fieldName];
                         
                         if(typeof referenceNode[fieldName] !== 'undefined'){
-                            stringValue = Omadi.print.getTextValue(referenceNode, instance);        
+                            stringValue = Omadi.print.getTextValue(referenceNode, instance, itemType);        
                         } 
                     }
                 }
@@ -705,7 +714,85 @@ Omadi.print.getValue = function(fieldOption, node){"use strict";
     return stringValue;
 };
 
-Omadi.print.getTextValue = function(node, instance){"use strict";
+Omadi.print.getExtraPriceTextValue = function(node, instance, itemType){"use strict";
+    var value, fieldName, i, json, labelValue, maxLenDesc, numSpaces, maxLenQty, useQuantity, qtyLabel;
+    
+    value = "";
+    fieldName = instance.field_name;
+    
+    if (typeof node[fieldName] && 
+        typeof node[fieldName].dbValues !== 'undefined' &&
+        Utils.isArray(node[fieldName].dbValues)) {
+        
+        if (itemType == 'value'){
+            value = "";
+        
+            maxLenDesc = 0;
+            maxLenQty = 0;
+            useQuantity = (instance.settings && instance.settings.use_quantity && instance.settings.use_quantity == 1);
+                            
+            for (i = 0; i < node[fieldName].dbValues.length; i ++){
+               json = Utils.getParsedJSON(node[fieldName].textValues[i]); 
+               if(json && json.desc){
+                   if(json.desc.length > maxLenDesc){
+                       maxLenDesc = json.desc.length;
+                   }
+                   
+                   if(useQuantity && json.quantity && json.price){
+                       qtyLabel = json.quantity + " @" + Utils.formatCurrency(json.price);
+                       if(qtyLabel.length > maxLenQty){
+                           maxLenQty = qtyLabel.length;
+                       }
+                   }
+               }
+            }
+            
+            for (i = 0; i < node[fieldName].dbValues.length; i ++){
+                json = Utils.getParsedJSON(node[fieldName].textValues[i]);
+                labelValue = node[fieldName].textValues[i];
+                
+                if (json && json.desc){
+                    labelValue = json.desc;
+                    
+                    if (useQuantity && json.quantity && json.price){
+                            
+                        labelValue += Omadi.print.getSpaces(maxLenDesc - labelValue.length);
+                        
+                        qtyLabel = json.quantity + " @" + Utils.formatCurrency(json.price);
+                        labelValue += ' - ' + qtyLabel;
+                        
+                        labelValue += Omadi.print.getSpaces(maxLenQty - qtyLabel.length);
+                    }
+                }
+                
+                value += labelValue + ": ";
+                value += Utils.formatCurrency(node[fieldName].dbValues[i]) + "\n";
+            }
+        }
+        else{
+            value = 0;
+            for(i = 0; i < node[fieldName].dbValues.length; i ++){
+                value += node[fieldName].dbValues[i];
+            }
+            
+            value = Omadi.utils.formatCurrency(value);
+        }
+    }
+    
+    return value;
+};
+
+Omadi.print.getSpaces = function(numSpaces){"use strict";
+    var i, spaces = "";
+    
+    for(i = 0; i < numSpaces; i ++){
+        spaces += " ";
+    }
+    
+    return spaces;
+};
+
+Omadi.print.getTextValue = function(node, instance, itemType){"use strict";
     var dbValue, textValue, value, fieldName, i;
     
     value = "";
@@ -730,18 +817,7 @@ Omadi.print.getTextValue = function(node, instance){"use strict";
             break;
         
         case 'extra_price':
-        
-            if(typeof node[fieldName] && 
-                typeof node[fieldName].dbValues !== 'undefined' &&
-                Utils.isArray(node[fieldName].dbValues)) {
-                    value = "";
-                    
-                    for(i = 0; i < node[fieldName].dbValues.length; i ++){
-                        value += node[fieldName].textValues[i] + ": ";
-                        value += Omadi.utils.formatCurrency(node[fieldName].dbValues[i]) + "\n";
-                    }
-            }
-            
+            value = Omadi.print.getExtraPriceTextValue(node, instance, itemType);
             break;
         
         default:

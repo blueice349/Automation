@@ -991,13 +991,18 @@ Omadi.bundles.dispatch.showUpdateStatusDialog = function(args){"use strict";
                             Omadi.display.loading();
                             
                             node = Omadi.data.nodeLoad(nid);
-                            Ti.App.fireEvent('openFormWindow', {
-                                node_type: node.type,
-                                nid: node.nid,
-                                form_part: node.form_part + 1
-                            });
-                            
-                            setTimeout(Omadi.display.doneLoading, 5000);
+                            if(node){
+                                Ti.App.fireEvent('openFormWindow', {
+                                    node_type: node.type,
+                                    nid: node.nid,
+                                    form_part: node.form_part + 1
+                                });
+                                setTimeout(Omadi.display.doneLoading, 5000);
+                            }
+                            else{
+                                Omadi.display.doneLoading();
+                                alert("The form you were trying to update was not found on your device.");
+                            }
                         }
                         else{
                             Omadi.bundles.dispatch.updateStatus(nid, status);
@@ -1065,7 +1070,7 @@ Omadi.bundles.dispatch.showDiscontinueJobDialog = function(args){"use strict";
                         }
                     }
                     catch(ex){
-                        Utils.sendErrorReport("Exception updating job status: " + ex);
+                        Utils.sendErrorReport("Exception discontinuing job: " + ex);
                     }
                 });
                 

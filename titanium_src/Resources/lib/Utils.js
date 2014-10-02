@@ -357,17 +357,37 @@ var isEmpty = function(number){
 
 exports.isEmpty = isEmpty;
 
-var isObject = function(input){
+function isObject(input){
     return typeof (input) === 'object' && input !== null;
-};
-
+}
 exports.isObject = isObject;
 
-var isArray = function(input){
-    return typeof (input) === 'object' && input instanceof Array;
-};
-
+function isArray(input){
+    if (!Array.isArray) {
+      Array.isArray = function(input) {
+        return Object.prototype.toString.call(input) === '[object Array]';
+      };
+    }
+    
+    return Array.isArray(input);
+}
 exports.isArray = isArray;
+
+function verifyIsArray(input){
+    if (!isArray(input)){
+        var newArray = [], i;
+        for (i in input){
+            if(input.hasOwnProperty(i)){
+                newArray.push(input[i]);
+            }
+        }
+        
+        return newArray;
+    }
+    
+    return input;
+}
+exports.verifyIsArray = verifyIsArray;
 
 exports.trimWhiteSpace = function(string) {
     
