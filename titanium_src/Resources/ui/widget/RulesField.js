@@ -557,7 +557,9 @@ RulesFieldWidget.prototype.showDetail = function(e) {"use strict";
         });
         detail_row.add(descView);
         
-        if(typeof detailsVal.description !== 'undefined'){
+        if (detailsVal && 
+            detailsVal.description){
+                
             descViewLabel = Ti.UI.createLabel({
                 top : 0,
                 left : 5,
@@ -581,7 +583,7 @@ RulesFieldWidget.prototype.showDetail = function(e) {"use strict";
         detail_popup.open();
     }
     catch(ex){
-        Utils.sendErrorReport("Could not show the details for a rules: " + ex);   
+        Utils.sendErrorReport("Could not show the details for a rules field: " + ex);   
     }
 };
 

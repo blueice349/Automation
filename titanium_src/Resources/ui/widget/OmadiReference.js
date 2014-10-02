@@ -204,12 +204,15 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
         this.elements[0].textValue = textValue;
         this.elements[0].options = options;
         this.elements[0].possibleValues = possibleValues;
+        this.elements[0].defaultValueChildFields = [];
         this.elements[0].top = 1;
         this.elements[0].bottom = 1;
         this.elements[0].setText(textValue);
         
         this.elements[0].check_conditional_fields = this.formObj.affectsAnotherConditionalField(this.instance);
         this.formObj.addCheckConditionalFields(this.elements[0].check_conditional_fields);
+        
+        this.elements[0].defaultValueChildFields = this.setupParentDefaultFields();
         
         if(this.instance.can_edit){
             this.elements[0].addEventListener('click', function(e) {
@@ -253,6 +256,8 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
                                 if (widget.elements[0].check_conditional_fields.length > 0) {
                                     widget.formObj.setConditionallyRequiredLabels(ev.source.instance, widget.elements[0].check_conditional_fields);
                                 }
+                                
+                                widget.setChildDefaultValues(widget.elements[0]);
                             }
                         }
                         catch(ex){

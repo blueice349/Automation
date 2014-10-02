@@ -351,7 +351,7 @@ Omadi.display.openViewWindow = function(type, nid, allowActions) {"use strict";
         viewWindow.open();
     }
     else{
-        Utils.sendErrorReport("Could not open dispatch form window");
+        Utils.sendErrorReport("Could not open dispatch view window");
         alert("Could not open the view.");
         Omadi.display.doneLoading();
     }

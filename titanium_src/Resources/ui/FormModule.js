@@ -1301,7 +1301,8 @@ FormModule.prototype.validateMaxLength = function(instance){"use strict";
                     maxLength = parseInt(instance.settings.max_length, 10);
                     if(maxLength > 0){
                         for(i = 0; i < this.node[instance.field_name].dbValues.length; i ++){
-                            if (this.node[instance.field_name].dbValues[i].length > maxLength) {
+                            if (this.node[instance.field_name].dbValues[i] && 
+                                this.node[instance.field_name].dbValues[i].length > maxLength) {
                                 this.form_errors.push(instance.label + " cannot have more than " + maxLength + " characters.");
                             }  
                         }
