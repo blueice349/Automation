@@ -582,7 +582,7 @@ Omadi.print.getPrintCommand = function(node, item){"use strict";
                 values = [];
                 maxLabelLength = maxValueLength = 0;
                 
-                itemValue = Utils.verifyIsArray(item.value);
+                itemValue = Utils.toArray(item.value);
                 
                 if(itemValue.length > 0){
                     

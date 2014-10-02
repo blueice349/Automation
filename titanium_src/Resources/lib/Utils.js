@@ -373,7 +373,7 @@ function isArray(input){
 }
 exports.isArray = isArray;
 
-function verifyIsArray(input){
+function toArray(input){
     if (!isArray(input)){
         var newArray = [], i;
         for (i in input){
@@ -387,7 +387,7 @@ function verifyIsArray(input){
     
     return input;
 }
-exports.verifyIsArray = verifyIsArray;
+exports.toArray = toArray;
 
 exports.trimWhiteSpace = function(string) {
     
