@@ -81,15 +81,11 @@ NFCTag.prototype.hasScanCounter = function() {
 			return this.hasScanCounter_;
 		}
 		
-		Ti.API.info('------ Has correct prefix: ' + this.getId().substr(0, 2) + ', ' + NFCTag.NXP.ID_PREFIX);
-		
 		var tech = this._getTech('MifareUltralight');
 		if (!tech) {
 			this.hasScanCounter_ = false;
 			return this.hasScanCounter_;
 		}
-		
-		Ti.API.info('------ Has MifareUltralight tech: ' + JSON.stringify(tech));
 		
 		var buffer = Ti.createBuffer({
 			type: Ti.Codec.TYPE_BYTE,

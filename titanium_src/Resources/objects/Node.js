@@ -621,6 +621,22 @@ Node.getFields = function(type) {
     return instances;
 };
 
+Node.getFirstStreetAddress = function(node) {
+    if(node){
+        var instances = Node.getFields(node.type);
+        for (var field_name in instances) {
+            if (instances[field_name].type == 'location' &&
+            	instances[field_name].part == 'street' &&
+            	node[field_name] &&
+            	node[field_name].dbValues &&
+            	node[field_name].dbValues[0]) {
+            		return node[field_name].dbValues[0];
+            }
+        }   
+    }
+    return '';
+};
+
 
 
 module.exports = Node;
