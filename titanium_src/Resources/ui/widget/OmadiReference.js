@@ -17,6 +17,13 @@ function OmadiReferenceWidget(formObj, instance, fieldViewWrapper){
     this.defaultFields = null;
     
     this._resetMemberVariables();
+	
+    this.numVisibleFields = 1;
+    if (this.instance.settings.cardinality == -1) {
+    	this.numVisibleFields = this.dbValues.length || 1;
+    } else {
+        this.numVisibleFields = this.instance.settings.cardinality;
+    }
 }
 
 OmadiReferenceWidget.GREY = '#999';
@@ -72,7 +79,6 @@ OmadiReferenceWidget.prototype.redraw = function(){
 OmadiReferenceWidget.prototype._resetMemberVariables = function() {
 	try {
 	    this.node = this.formObj.node;
-	    this.numVisibleFields = 1;
 	    this.dbValues = [];
 	    this.textValues = [];
 	    this.possibleValues = null;
@@ -89,12 +95,6 @@ OmadiReferenceWidget.prototype._resetMemberVariables = function() {
 	    if (this.nodeElement) {
 	        this.dbValues = this.nodeElement.dbValues || [];
 	        this.textValues = this.nodeElement.textValues || [];
-	    }
-	    
-	    if (this.instance.settings.cardinality == -1) {
-	    	this.numVisibleFields = this.dbValues.length || 1;
-	    } else {
-	        this.numVisibleFields = this.instance.settings.cardinality;
 	    }
 	} catch (error) {
 		Utils.sendErrorReport('Error in OmadiReferenceWidget.prototype._resetMemberVariables: ' + error);
