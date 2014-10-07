@@ -870,18 +870,14 @@ function openMainScreen(loggedIn){"use strict";
                                 Ti.API.info('database exists');
                             }
                             else {
-                                db_list.execute("BEGIN IMMEDIATE TRANSACTION");
                                 //Create another database
                                 Ti.API.info('database does not exist, creating a new one');
                                 db_list.execute("INSERT INTO domains (domain, db_name) VALUES ('" + dbEsc(portal.value) + "','" + dbEsc(Omadi.utils.getUserDBName(portal.value, usernameField.value)) + "')");
-                                db_list.execute("COMMIT TRANSACTION");
                             }
         
                             list_result.close();
         
-                            db_list.execute("BEGIN IMMEDIATE TRANSACTION");
                             db_list.execute("UPDATE history SET domain = '" + dbEsc(portal.value) + "', username = '" + dbEsc(usernameField.value) + "', db_name='" + dbEsc("db_" + portal.value + '_' + usernameField.value) + "' WHERE id_hist=1");
-                            db_list.execute("COMMIT TRANSACTION");
         
                             //Passes parameter to the second window:
                             domainName = 'https://' + portal.value + '.omadi.com';
@@ -896,14 +892,9 @@ function openMainScreen(loggedIn){"use strict";
         
                             list_result = db_list.execute('SELECT COUNT(*) AS count FROM login WHERE id_log=1');
                             if (list_result.fieldByName('count') > 0) {
-                                db_list.execute("BEGIN IMMEDIATE TRANSACTION");
                                 db_list.execute("UPDATE login SET picked = '" + dbEsc(domainName) + "', login_json = '" + dbEsc(Ti.Utils.base64encode(this.responseText)) + "', is_logged = 'true', cookie = '" + dbEsc(cookie) + "', logged_time = '" + Omadi.utils.getUTCTimestamp() + "' WHERE id_log=1");
-                                db_list.execute("COMMIT TRANSACTION");
-                            }
-                            else {
-                                db_list.execute("BEGIN IMMEDIATE TRANSACTION");
+                            } else {
                                 db_list.execute("INSERT INTO login SET picked = '" + dbEsc(domainName) + "', login_json = '" + dbEsc(Ti.Utils.base64encode(this.responseText)) + "', is_logged = 'true', cookie = '" + dbEsc(cookie) + "', logged_time = '" + Omadi.utils.getUTCTimestamp() + "', id_log=1");
-                                db_list.execute("COMMIT TRANSACTION");
                             }
                             
                             // Get rid of any background uploads as the cookie is updated

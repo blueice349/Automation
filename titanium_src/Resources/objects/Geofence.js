@@ -5,11 +5,10 @@ var Utils = require('lib/Utils');
 
 var Geofence = function(nid, formType) {
 	this.breached = false;
-	this.timeEntered = null;
-	this.timeExited = null;
 	this.nid = nid;
 	this.formType = formType;
 	this.restored = false;
+	this.data = {};
 };
 
 /* PUBLIC METHODS */
@@ -18,16 +17,8 @@ Geofence.prototype.setBreached = function(breached) {
 	if (this.breached != breached) {
 		this.breached = breached;
 		
-		if (this.breached) {
-			this.timeEntered = Utils.getUTCMillisServerCorrected();
-		} else {
-			this.timeExited = Utils.getUTCMillisServerCorrected();
-		}
-		
 		var eventData = {
-			nid: this.nid,
-			formType: this.formType,
-			restored: this.restored
+			geofence: this
 		};
 		
 		if (breached) {
@@ -42,41 +33,51 @@ Geofence.prototype.getNid = function() {
 	return this.nid;
 };
 
-Geofence.prototype.getBreached = function() {
+Geofence.prototype.getFormType = function() {
+	return this.formType;
+};
+
+Geofence.prototype.wasRestored = function() {
+	return this.restored;
+};
+
+Geofence.prototype.getData = function() {
+	return this.data;
+};
+
+Geofence.prototype.setData = function(data) {
+	this.data = data || {};
+};
+
+Geofence.prototype.isBreached = function() {
 	return this.breached;
-};
-
-Geofence.prototype.getTimeEntered = function() {
-	return this.timeEntered;
-};
-
-Geofence.prototype.getTimeExited = function() {
-	return this.timeExited;
 };
 
 Geofence.prototype.getState = function() {
 	return {
 		breached: this.breached,
-		timeEntered: this.timeEntered
+		data: this.data
 	};
 };
 
 Geofence.prototype.changeUserLocation = function(lat, lng) {
-	this.setBreached(this._isInBounds(lat, lng));
+	this.setBreached(this.isInBounds(lat, lng));
 	this.restored = false;
 };
 
 Geofence.prototype.restoreState = function(state) {
 	this.breached = state.breached;
-	this.timeEntered = state.timeEntered;
+	this.data = state.data;
 	this.restored = true;
 };
 
-/* PRIVATE METHODS */
-
-Geofence.prototype._isInBounds = function(lat, lng) {
-	throw new Error('NotImplementedError: Geofence._isInBounds');
+Geofence.prototype.isInBounds = function(lat, lng) {
+	throw new Error('NotImplementedError: Geofence.isInBounds');
 };
+
+Geofence.newFromDB = function() {};
+
+/* PRIVATE METHODS */
 
 
 

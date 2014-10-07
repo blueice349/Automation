@@ -10,9 +10,7 @@ var GeofenceServices = function() {
 	this.currentLocation = {};
 	
 	var self = this;
-	Ti.App.addEventListener('locationChanged', function(event) {
-		self._handleLocationChange(event);
-	});
+	Ti.Geolocation.addEventListener('location', this._handleLocationChange.bind(this));
 	
 	this._restoreState();
 };
@@ -40,11 +38,16 @@ GeofenceServices.prototype.getGeofence = function(nid) {
 	return this.geofences[nid];
 };
 
+GeofenceServices.prototype.getCurrentLocation = function() {
+	return this.currentLocation;
+};
+
 /* PIVATE METHODS */
 
 GeofenceServices.prototype._handleLocationChange = function(event) {
-	this._updateCurrentLocation(event.lat, event.lng);
-	this._updateBreached(event.lat, event.lng);
+	var currentLocation = JSON.parse(Ti.Geolocation.getLastGeolocation() || '{}');
+	this._updateCurrentLocation(currentLocation.latitude, currentLocation.longitude);
+	this._updateBreached(currentLocation.latitude, currentLocation.longitude);
 	this._saveState();
 };
 
@@ -58,7 +61,7 @@ GeofenceServices.prototype._updateBreached = function(lat, lng) {
 	var nid;
 	for (nid in this.geofences) {
 		this.geofences[nid].changeUserLocation(lat, lng);
-		if (this.geofences[nid].getBreached()) {
+		if (this.geofences[nid].isBreached()) {
 			this.breached[nid] = this.geofences[nid].getState();
 		} else {
 			delete this.breached[nid];

@@ -3535,6 +3535,7 @@ Omadi.data.processNodeTypeJson = function(mainDB) {"use strict";
             for(i = 0; i < resetBundles.length; i ++){
                 // Just clear the bundle cache for other functions to use correctly
                 Omadi.data.getBundle(resetBundles[i], true);
+        		Ti.App.fireEvent('bundleUpdated', { bundle: resetBundles[i] });
             }
         }
 
