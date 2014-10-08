@@ -1,5 +1,6 @@
 /*jslint eqeq:true, plusplus:true, vars:true, nomen:true*/
 
+
 var FormObj, Omadi, ActiveFormObj, popupWin, popupWinListView, popupWinFieldObject, popupWinDescriptionLabel;
 FormObj = {};
 popupWin = null;
@@ -1182,6 +1183,7 @@ FormModule.prototype.validateRequired = function(instance){"use strict";
             for(i = 0; i < dbValues.length; i ++){
                 
                 switch(instance.type){
+                    case 'nfc_field':
                     case 'text':
                     case 'text_long':
                     case 'phone':
@@ -3566,6 +3568,7 @@ FormModule.prototype.getFieldView = function(instance, fieldViewWrapper){"use st
             case 'list_boolean': Module = require('ui/widget/ListBoolean'); break;
             case 'list_text': Module = require('ui/widget/ListText'); break;
             case 'location': Module = require('ui/widget/Location'); break;
+            case 'nfc_field': Module = require('ui/widget/NFCField'); break;
             case 'number_decimal': Module = require('ui/widget/NumberDecimal'); break;
             case 'number_integer': Module = require('ui/widget/NumberInteger'); break;
             case 'omadi_reference': Module = require('ui/widget/OmadiReference'); break;
@@ -3917,6 +3920,7 @@ FormModule.prototype.setConditionallyRequiredLabelForInstance = function(instanc
                     if(typeof this.instances[field_name] !== 'undefined' && typeof this.instances[field_name].type !== 'undefined'){
                     
                         switch(this.instances[field_name].type) {
+                            case 'nfc_field':
                             case 'text':
                             case 'text_long':
                             case 'link_field':

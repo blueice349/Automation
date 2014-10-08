@@ -1026,9 +1026,6 @@ function openFormWindow(e){"use strict";
 ( function() {"use strict";
     // Make sure the field cache is reset if the user is logging into a separate account
     Node.resetFieldCache();
-
-	var NFCListener = require('services/NFCCollectionGame');
-
     var db, result, formWindow, time_format, askAboutInspection, dialog, i, showingAlert, nowTimestamp;
     
     // Initialize the global scope variable to map deleted nids to saved positive nids

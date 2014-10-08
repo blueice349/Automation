@@ -873,6 +873,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                             search_operator = criteria_row.operator;
 
                             switch(search_field.type) {
+                                case 'nfc_field':
                                 case 'text':
                                 case 'text_long':
                                 case 'phone':
@@ -1815,3 +1816,34 @@ exports.getRealname = function(uid){
     
     return realname;
 };
+
+exports.getRandomAlphaNum = function() {
+	var alphanum = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+	return alphanum.charAt(Math.floor(Math.random() * alphanum.length));
+};
+
+exports.getValues = function(object) {
+	var values = [];
+	for (var key in object) {
+		values.push(object[key]);
+	}
+	return values;
+};
+
+exports.startsWith = function(str, substr) {
+	return str.lastIndexOf(substr, 0) === 0;
+};
+
+exports.joinAsSentence = function(arr){
+	if (arr.length === 0) {
+		return '';
+	}
+	
+	if (arr.length <= 2) {
+		return arr.join(' and ');
+	} 
+	
+	arr[arr.length - 1] = 'and ' + arr[arr.length - 1];
+	return arr.join(', ');
+};
+

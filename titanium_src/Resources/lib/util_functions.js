@@ -395,16 +395,7 @@ Omadi.utils.count = function(obj){"use strict";
 };
 
 Omadi.utils.joinAsSentence = function(arr){"use strict";
-	if (arr.length === 0) {
-		return '';
-	}
-	
-	if (arr.length <= 2) {
-		return arr.join(' and ');
-	} 
-	
-	arr[arr.length - 1] = 'and ' + arr[arr.length - 1];
-	return arr.join(', ');
+	return Utils.joinAsSentence(arr);
 };
 
 Omadi.utils.isNumber = function(n) {"use strict";

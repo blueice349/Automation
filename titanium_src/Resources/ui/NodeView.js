@@ -720,15 +720,6 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
                         });
     
                         switch(fieldObj.type) {
-                            case 'text':
-                            case 'text_long':
-                            case 'list_boolean':
-                            case 'user_reference':
-                            case 'taxonomy_term_reference':
-                            case 'number_integer':
-                            case 'number_decimal':
-                                break;
-    
                             case 'phone':
                                 valueLabel.color = '#369';
                                 if(this.node[fieldObj.field_name].textValues[i] != null){

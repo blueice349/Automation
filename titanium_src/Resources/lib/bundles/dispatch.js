@@ -161,7 +161,7 @@ Omadi.bundles.dispatch.openDispatchDirections = function(node){"use strict";
     else{
         Utils.sendErrorReport("Could not find locationFieldName: " + JSON.stringify(node) + JSON.stringify(bundle));
         alert("The directions could not be opened. Please try again later.");
-    }  
+    }
 };
 
 Omadi.bundles.dispatch.acceptJob = function(args){"use strict";
@@ -352,10 +352,8 @@ Omadi.bundles.dispatch.checkInsertNode = function(insert){"use strict";
 };
 
 Omadi.bundles.dispatch.hasStatusOption = function(fieldOptions, status){"use strict";
-    var i, statusTitle;
-    
-    statusTitle = false;
-    for(i = 0; i < fieldOptions.length; i ++){
+    var statusTitle = false;
+    for(var i = 0; i < fieldOptions.length; i ++){
         if(fieldOptions[i].dbValue == status){
             statusTitle = fieldOptions[i].title;
             break;   
@@ -415,7 +413,6 @@ Omadi.bundles.dispatch.getStatusOptions = function(nid){"use strict";
                     fieldOptions = ListTextWidget.getOptions(statusInstance);
                     
                     switch(currentStatusKey){
-                        
                         case 'call_received':
                         case 'dispatching_call':
                             statusTitle = Omadi.bundles.dispatch.hasStatusOption(fieldOptions, 'job_accepted');
@@ -683,7 +680,7 @@ Omadi.bundles.dispatch.updateStatusOffline = function(nid, status){"use strict";
 };
 
 Omadi.bundles.dispatch.updateStatus = function(nid, status, background){"use strict";
-    var dialog, http, savedLocally, dialog;
+    var dialog, http, savedLocally;
     
     if(typeof background === 'undefined'){
         background = false;
@@ -926,7 +923,7 @@ Omadi.bundles.dispatch.discontinueJob = function(nid, status, background){"use s
 
 Omadi.bundles.dispatch.showUpdateStatusDialog = function(args){"use strict";
     
-    var http, dialog, nid = 0, node, statusDialog, statusOptions, options, i;
+    var http, dialog, nid = 0, node, statusDialog, statusOptions, options;
     
     if(typeof args[0] !== 'undefined'){
         nid = args[0];
@@ -969,7 +966,7 @@ Omadi.bundles.dispatch.showUpdateStatusDialog = function(args){"use strict";
         else{
         
             options = [];
-            for(i = 0; i < statusOptions.length; i ++){
+            for(var i = 0; i < statusOptions.length; i ++){
                 options.push(statusOptions[i].title);
             }
             

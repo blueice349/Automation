@@ -4,8 +4,6 @@
 var Display = require('lib/Display');
 Display.setCurrentWindow(Ti.UI.currentWindow, 'login');
 
-var Omadi;
-
 // this sets the background color of every
 Ti.UI.currentWindow.setBackgroundColor('#eee');
 
@@ -15,7 +13,7 @@ Ti.include('/lib/functions.js');
 Ti.include('/main_windows/ios_geolocation.js');
 
 var Utils = require('lib/Utils');
-var RDNGeofenceListener = require('objects/RDNGeofenceListener');
+var RDNGeofenceListener = require('services/RDNGeofenceListener');
 
 
 Ti.API.info("Starting App.");

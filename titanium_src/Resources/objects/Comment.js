@@ -214,6 +214,7 @@ Comment.prototype.load = function(cid) {
                                 }
                                 
                                 switch(instances[field_name].type) {
+                                    case 'nfc_field':
                                     case 'text':
                                     case 'text_long':
                                     case 'phone':
@@ -222,18 +223,6 @@ Comment.prototype.load = function(cid) {
                                     case 'location':
                                     case 'license_plate':
                                     case 'vehicle_fields':
-                                        for ( i = 0; i < this.comment[field_name].dbValues.length; i++) {
-                                            if (this.comment[field_name].dbValues[i] === null) {
-                                                this.comment[field_name].textValues[i] = "";
-                                            }
-                                            else {
-                                                this.comment[field_name].textValues[i] = this.comment[field_name].dbValues[i];
-                                            }
-                                        }
-                                        
-                                        
-                                        break;
-        
                                     case 'number_integer':
                                         for ( i = 0; i < this.comment[field_name].dbValues.length; i++) {
                                             if (this.comment[field_name].dbValues[i] === null) {

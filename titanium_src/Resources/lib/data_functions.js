@@ -1,6 +1,5 @@
 /*jslint plusplus:true,eqeq:true,nomen:true*/
 
-
 Omadi.data = Omadi.data || {};
 
 Omadi.data.cache = {};
@@ -8,7 +7,7 @@ Omadi.data.cache.regions = {};
 Omadi.data.cache.fakeFields = {};
 
 var Utils = require('lib/Utils');
-var RDNGeofenceListener = require('objects/RDNGeofenceListener');
+var RDNGeofenceListener = require('services/RDNGeofenceListener');
 var GeofenceServices = require('services/GeofenceServices');
 var Node = require('objects/Node');
 var ImageWidget = require('ui/widget/Image');

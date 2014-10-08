@@ -14,23 +14,118 @@ var NFCTag = function(tag) {
 	this.data = null;
 	this.valid = null;
 	this.writable = null;
+	this.scanCount = null;
+	this.hasScanCounter_ = null;
 };
 
 NFCTag.ENCRYPTION_KEY = CryptoJS.enc.Utf8.parse('6p30BYV1p00eADpKPRfZ8wsqSViW8nAm');
 
+NFCTag.NXP = {
+	ID_PREFIX: '04',
+	Command: {
+		READ_COUNTER: 0x39,
+		READ: 0x30,
+		WRITE: 0xA2
+	},
+	Address: {
+		COUNTER: 0x02,
+		CONFIG_ONE: 0x2A
+	},
+	TagType: {
+		NTAG213: 0x12
+	}
+};
+
 /* PUBLIC METHODS */
+
+NFCTag.prototype.getScanCount = function() {
+	if (this.scanCount === null) {
+		if (!this.hasScanCounter()) {
+			this.scanCount = -1;
+			return this.scanCount;
+		}
+		
+		var tech = this._getTech('MifareUltralight');
+		if (!tech) {
+			this.scanCount = -1;
+			return this.scanCount;
+		}
+		
+		var buffer = Ti.createBuffer({
+			type: Ti.Codec.TYPE_BYTE,
+			length: 2
+		});
+		buffer[0] = NFCTag.NXP.Command.READ_COUNTER;
+		buffer[1] = NFCTag.NXP.Address.COUNTER;
+		
+		try {
+			tech.connect();
+			var data = tech.transceive(buffer);
+			tech.close();
+			
+			if (data.length === 3) {
+				this.scanCount = (data[2] << 16) + (data[1] << 8) + data[0];
+			}
+		} catch (error) {
+			Ti.API.error('Error in NFCTag.prototype.getScanCount: ' + error);
+			this.scanCount = -1;
+		}
+	}
+	return this.scanCount;
+};
+
+NFCTag.prototype.hasScanCounter = function() {
+	if (this.hasScanCounter_ === null) {
+		if (this.getId().substr(0, 2) != NFCTag.NXP.ID_PREFIX) {
+			this.hasScanCounter_ = false;
+			return this.hasScanCounter_;
+		}
+		
+		Ti.API.info('------ Has correct prefix: ' + this.getId().substr(0, 2) + ', ' + NFCTag.NXP.ID_PREFIX);
+		
+		var tech = this._getTech('MifareUltralight');
+		if (!tech) {
+			this.hasScanCounter_ = false;
+			return this.hasScanCounter_;
+		}
+		
+		Ti.API.info('------ Has MifareUltralight tech: ' + JSON.stringify(tech));
+		
+		var buffer = Ti.createBuffer({
+			type: Ti.Codec.TYPE_BYTE,
+			length: 2
+		});
+		buffer[0] = NFCTag.NXP.Command.READ_COUNTER;
+		buffer[1] = NFCTag.NXP.Address.COUNTER;
+		
+		try {
+			tech.connect();
+			var data = tech.transceive(buffer);
+			tech.close();
+			
+			this.hasScanCounter_ = true;
+		} catch (error) {
+			this.hasScanCounter_ = false;
+			if (tech.isConnected()) {
+				tech.close();
+			}
+		}
+	}
+	return this.hasScanCounter_;
+};
 
 NFCTag.prototype.getData = function() {
 	if (this.data === null) {
 		var data = '';
-		var tech = this._getTech();
 		
+		var tech = this._getTech('Ndef');
 		if (!tech) {
-			return '';
+			this.data = data;
+			return this.data;
 		}
 		
 		try {
-			this._connect();
+			tech.connect();
 			
 			var message = tech.getNdefMessage();
 			if (message) {
@@ -39,13 +134,11 @@ NFCTag.prototype.getData = function() {
 					data += records[i].getText();
 				}
 			}
+			tech.close();
+			this.data = data;
 		} catch (error) {
-			// ignore bad connection
 			Ti.API.error('Error in NFCTag.prototype.getData: ' + error);
-		} finally {
-			this._close();
 		}
-		this.data = data;
 	}
 	return this.data;
 };
@@ -62,15 +155,26 @@ NFCTag.prototype.getTag = function() {
 };
 
 NFCTag.prototype.initTagWithNewData = function() {
-	var success = false;
 	try {
 		var data = this._generateData();
 		this._setData(data);
-		success = (this.getData() == data);
+		
+		if (this.getData() !== data) {
+			return false;
+		}
+		
+		if (this.hasScanCounter()) {
+			this._enableScanCounter();
+			if (!this._isScanCounterEnabled()) {
+				return false;
+			}
+		}
 	} catch (error) {
 		Ti.API.info('Error in NFCTag.prototype.initTagWithNewData: ' + error);
+		return false;
 	}
-	return success;
+	
+	return true;
 };
 
 NFCTag.prototype.isValidOmadiTag = function() {
@@ -89,63 +193,103 @@ NFCTag.prototype.isValidOmadiTag = function() {
 	return this.valid;
 };
 
+NFCTag.prototype.playSuccessFeedback = function() {
+	Titanium.Media.vibrate([0, 250, 125, 250]);
+};
+
+NFCTag.prototype.playErrorFeedback = function() {
+	Titanium.Media.vibrate([0, 1000, 500, 1000]);
+};
+
 NFCTag.prototype.isWritable = function() {
 	if (this.writable === null) {
-		try {
-			this.writable = this._getTech().isWritable();
-		} catch (error) {
-			Ti.API.error('Error in NFCTag.prototype.isWritable: ' + error);
-			this.writable = null;
+		var tech = this._getTech('Ndef');
+		var writable = false;
+		if (tech) {
+			writable = tech.isWritable();
 		}
+		
+		this.writable = writable;
 	}
 	return this.writable;
 };
 
 /* PRIVATE METHODS */
 
-NFCTag.prototype._close = function() {
+NFCTag.prototype._enableScanCounter = function() {
+	
+	var tech = this._getTech('MifareUltralight');
+	if (!tech) {
+		return;
+	}
+	
+	var buffer = Ti.createBuffer({
+		type: Ti.Codec.TYPE_BYTE,
+		length: 6
+	});
+	buffer[0] = NFCTag.NXP.Command.WRITE;
+	buffer[1] = NFCTag.NXP.Address.CONFIG_ONE;
+	buffer[2] = parseInt('00010000', 2);
+	buffer[3] = 0x00;
+	buffer[4] = 0x00;
+	buffer[5] = 0x00;
+	
+	
 	try {
-		var tech = this._getTech();
-		if (tech && tech.isConnected()) {
-			tech.close();
-		}
+		tech.connect();
+		tech.transceive(buffer);
+		tech.close();
 	} catch (error) {
-		Ti.API.error('Error in NFCTag.prototype._connect: ' + error);
+		Ti.API.error('Error in NFCTag.prototype._enableScanCounter: ' + error);
 	}
 };
 
-NFCTag.prototype._connect = function() {
+NFCTag.prototype._isScanCounterEnabled = function() {
+	var tech = this._getTech('MifareUltralight');
+	if (!tech) {
+		return false;
+	}
+	
+	var buffer = Ti.createBuffer({
+		type: Ti.Codec.TYPE_BYTE,
+		length: 2
+	});
+	buffer[0] = NFCTag.NXP.Command.READ;
+	buffer[1] = NFCTag.NXP.Address.CONFIG_ONE;
+	
 	try {
-		var tech = this._getTech();
-		if (tech && !tech.isConnected()) {
-			tech.connect();
-		}
+		tech.connect();
+		var data = tech.transceive(buffer);
+		tech.close();
+
+		return data[0] == parseInt('00010000', 2);
 	} catch (error) {
-		Ti.API.error('Error in NFCTag.prototype._connect: ' + error);
+		Ti.API.error('Error in NFCTag.prototype._isScanCounterEnabled: ' + error);
+		return false;
 	}
 };
 
-NFCTag.prototype._getTech = function() {
+NFCTag.prototype._getTech = function(type) {
 	if (this.tech === null && nfc) {
-		try {
-			this.tech = nfc.createTagTechnologyNdef({ tag: this.tag });
-		} catch (error) {
-			Ti.API.error('Error in NFCTag.prototype._getTech: ' + error);
-			this.tech = null;
+		var techList = this.tag.getTechList();
+		var tech = {};
+		for (var i = 0; i < techList.length; i++) {
+			var techName = techList[i].split('.').pop();
+			tech[techName] = nfc['createTagTechnology' + techName]({ tag: this.tag });
 		}
+		this.tech = tech;
 	}
-	return this.tech;
+	return this.tech[type];
 };
 
 NFCTag.prototype._setData = function(data) {
-	var tech = this._getTech();
-	
-	if (!tech || !nfc) {
+	var tech = this._getTech('Ndef');
+	if (!tech) {
 		return;
 	}
 	
 	try {
-		this._connect();
+		tech.connect();
 		
 		if (!tech.isWritable()) {
 			return;
@@ -160,12 +304,10 @@ NFCTag.prototype._setData = function(data) {
 		});
 		
 		tech.writeNdefMessage(message);
+		tech.close();
 		this.data = data;
 	} catch (error) {
-		// ignore bad connection
 		Ti.API.error('Error in NFCTag.prototype._setData: ' + error);
-	} finally {
-		this._close();
 	}
 };
 
