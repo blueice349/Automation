@@ -72,6 +72,7 @@ TimecardGeofenceVerifier.prototype._isLocationFresh = function() {
 	
 	if (now - timestamp > 900000) { // 15 minutes
 		this.error = 'Unable to determine current location. Please make sure GPS is turned on and has a good signal.';
+		Ti.Geolocation.getCurrentPosition(function(){});
 		return false;
 	}
 	return true;
@@ -92,7 +93,7 @@ TimecardGeofenceVerifier.prototype._handleBundleUpdated = function(event) {
 	if (event.bundle == 'timecard') {
 		var bundle = Omadi.data.getBundle('timecard');
 		this.enabled = bundle.data.timecard.allow_geofence_verification == 1;
-		if (JSON.stringify(bundle.data.locations) !== JSON.stringify(this.locationReferences)) {
+		if (JSON.stringify(bundle.data.locations) !== JSON.stringify(this._getLocationReferences())) {
 			this.locationReferences = bundle.data.locations;
 			this.currentGeofences = null;
 			this.geofences = null;
