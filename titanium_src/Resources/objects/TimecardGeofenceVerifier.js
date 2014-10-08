@@ -1,9 +1,12 @@
-/*jshint globalscrict:true */
+/*jshint globalstrict:true */
+/* global Omadi */
 'use strict';
 
 var GeofenceServices = require('services/GeofenceServices');
 var PointGeofence = require('objects/PointGeofence');
 var Database = require('lib/Database');
+
+Ti.include('/lib/functions.js');
 
 var TimecardGeofenceVerifier = function() {
 	this.verifyClockIn = null;
