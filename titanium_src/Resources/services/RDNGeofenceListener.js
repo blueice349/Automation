@@ -6,15 +6,11 @@ var PointGeofence = require('objects/PointGeofence');
 var Node = require('objects/Node');
 var Comment = require('objects/Comment');
 var Utils = require('lib/Utils');
+var Database = require('lib/Database');
 
 var RDNGeofenceListener = function() {
-	var self = this;
-	Ti.App.addEventListener('geofenceEntered', function(event) {
-		self._handleGeofenceEntered(event);
-	});
-	Ti.App.addEventListener('geofenceExited', function(event) {
-		self._handleGeofenceExited(event);
-	});
+	Ti.App.addEventListener('geofenceEntered', this._handleGeofenceEntered.bind(this));
+	Ti.App.addEventListener('geofenceExited', this._handleGeofenceExited.bind(this));
 };
 
 /* CONSTANTS */
@@ -23,17 +19,17 @@ RDNGeofenceListener.UpdateType = {
 	AGENT_GPS_UPDATE: 102
 };
 
-RDNGeofenceListener.GEOFENCE_RADIUS_METERS = 200;
-
 /* PUBLIC METHODS */
 
 RDNGeofenceListener.prototype.createInitialGeofences = function() {
 	var geofenceServices = GeofenceServices.getInstance();
 	
-	var geofences = PointGeofence.newFromDB('runsheet', 'location', RDNGeofenceListener.GEOFENCE_RADIUS_METERS);
-	var i;
-	for (i = 0; i < geofences.length; i++) {
-		geofenceServices.registerGeofence(geofences[i]);
+	if (RDNGeofenceListener._hasRunsheets()) {
+		var geofences = PointGeofence.newFromDB('runsheet', null, 'location');
+		var i;
+		for (i = 0; i < geofences.length; i++) {
+			geofenceServices.registerGeofence(geofences[i]);
+		}
 	}
 };
 
@@ -76,26 +72,29 @@ RDNGeofenceListener.prototype.deleteGeofences = function(data) {
 /* PRIVATE METHODS */
 
 RDNGeofenceListener.prototype._handleGeofenceEntered = function(event) {
-	Ti.API.info('Entered ' + event.formType + ' ' + event.nid);
+	if (event.geofence.getFormType() === 'runsheet') {
+		event.geofence.getData().timeEntered = Utils.getUTCMillisServerCorrected();
+	}
 };
 
 RDNGeofenceListener.prototype._handleGeofenceExited = function(event) {
-	Ti.API.info('Exited ' + event.formType + ' ' + event.nid);
-	
-	Comment.save(this._createRDNComment(event.nid, event.restored));
-	Ti.App.fireEvent('sendComments');
+	if (event.geofence.getFormType() === 'runsheet') {
+		event.geofence.getData().timeExited = Utils.getUTCMillisServerCorrected();
+		Comment.save(this._createRDNComment(event.geofence));
+		Ti.App.fireEvent('sendComments');
+	}
 };
 
-RDNGeofenceListener.prototype._createRDNComment = function(nid, restored) {
+RDNGeofenceListener.prototype._createRDNComment = function(geofence) {
 	var now = Utils.getUTCTimestampServerCorrected();
-	var message = this._getRDNCommentMessage(nid, restored);
+	var message = this._getRDNCommentMessage(geofence);
 	
 	return {
 		created: now,
 		changed: now,
 		uid: Utils.getUid(),
 		cid: Comment.getNewCommentCid(),
-		nid: nid,
+		nid: geofence.getNid(),
 		comment_body: {
 			dbValues: [message]
 		},
@@ -105,20 +104,28 @@ RDNGeofenceListener.prototype._createRDNComment = function(nid, restored) {
 	};
 };
 
-RDNGeofenceListener.prototype._getRDNCommentMessage = function(nid, restored) {
-	var geofence = GeofenceServices.getInstance().getGeofence(nid);
-	var enteredTime = new Date(geofence.getTimeEntered());
-	var exitedTime = new Date(geofence.getTimeExited());
+RDNGeofenceListener.prototype._getRDNCommentMessage = function(geofence) {
+	var data = geofence.getData();
+	var enteredTime = new Date(data.timeEntered);
+	var exitedTime = new Date(data.timeExited);
 	
 	var message = Utils.getRealname() + ' arrived at ' + enteredTime.format('g:i:s A') + ' on ' + enteredTime.format('j M Y');
 	
-	if (restored) {
+	if (geofence.wasRestored()) {
 		message += '.';
 	} else {
 		message += ' and left ' + Utils.formatApproximateDuration(enteredTime, exitedTime) + ' later.';
 	}
 	
 	return message;
+};
+
+RDNGeofenceListener._hasRunsheets = function() {
+	var result = Database.query("SELECT * FROM node WHERE table_name = 'runsheet'");
+	var hasRunsheets = result.isValidRow();
+	result.close();
+	Database.close();
+	return hasRunsheets;
 };
 
 var rdnGeofenceListener = new RDNGeofenceListener();
