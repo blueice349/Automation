@@ -12,6 +12,7 @@ var RDNGeofenceListener = require('objects/RDNGeofenceListener');
 var GeofenceServices = require('services/GeofenceServices');
 var Node = require('objects/Node');
 var ImageWidget = require('ui/widget/Image');
+var TimecardGeofenceVerifier = require('objects/TimecardGeofenceVerifier');
 
 // Constants
 Omadi.data.MAX_BYTES_PER_UPLOAD = 1000000; // 1MB
@@ -2089,6 +2090,8 @@ Omadi.data.processFetchedJson = function(){"use strict";
 						rdnGeofenceListener.deleteGeofences(Omadi.service.fetchedJSON.node.runsheet['delete']);
 					}
                 }
+                
+                TimecardGeofenceVerifier.getInstance().clearCache();
             }
             
             if ( typeof Omadi.service.fetchedJSON.comment !== 'undefined') {
@@ -3535,6 +3538,7 @@ Omadi.data.processNodeTypeJson = function(mainDB) {"use strict";
             for(i = 0; i < resetBundles.length; i ++){
                 // Just clear the bundle cache for other functions to use correctly
                 Omadi.data.getBundle(resetBundles[i], true);
+                TimecardGeofenceVerifier.getInstance().clearCache();
         		Ti.App.fireEvent('bundleUpdated', { bundle: resetBundles[i] });
             }
         }
