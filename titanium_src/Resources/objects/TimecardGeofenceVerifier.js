@@ -18,7 +18,6 @@ var TimecardGeofenceVerifier = function() {
 	this.locationReferences = null;
 	this.error = null;
 	
-	Ti.App.addEventListener('bundleUpdated', this._handleBundleUpdated.bind(this));
 	Ti.App.addEventListener('loggingOut', this._handleLoggingOut.bind(this));
 	Ti.Geolocation.addEventListener('location', this._handleLocationChanged.bind(this));
 };
@@ -41,10 +40,10 @@ TimecardGeofenceVerifier.prototype.canClockOut = function() {
 	return this._isLocationFresh() && this._isLocationAuthorized();
 };
 
-TimecardGeofenceVerifier.prototype.getCurrentGeofences = function() {
+TimecardGeofenceVerifier.prototype.getCurrentGeofences = function(currentLocation) {
 	if (this.currentGeofences === null) {
 		var geofences = this._getGeofences();
-		var currentLocation = GeofenceServices.getInstance().getCurrentLocation();
+		currentLocation = currentLocation || GeofenceServices.getInstance().getCurrentLocation();
 		this.currentGeofences = [];
 		for (var i = 0; i < geofences.length; i++) {
 			if (geofences[i].isInBounds(currentLocation.lat, currentLocation.lng)) {
@@ -59,7 +58,29 @@ TimecardGeofenceVerifier.prototype.getError = function() {
 	return this.error;
 };
 
+TimecardGeofenceVerifier.prototype.clearCache = function() {
+	var bundle = Omadi.data.getBundle('timecard');
+	this.enabled = bundle.data.timecard.allow_geofence_verification == 1;
+	if (JSON.stringify(bundle.data.locations) !== JSON.stringify(this._getLocationReferences())) {
+		this.locationReferences = bundle.data.locations;
+		this.currentGeofences = null;
+		this.geofences = null;
+	}
+};
+
 /* PRIVATE METHODS */
+
+TimecardGeofenceVerifier.prototype._isLocationFresh = function() {
+	var timestamp = GeofenceServices.getInstance().getCurrentLocation().timestamp || 0;
+	var now = new Date().getTime();
+	
+	if (now - timestamp > 900000) { // 15 minutes
+		this.error = 'Unable to determine current location. Please make sure GPS is on and has a good signal.';
+		Ti.Geolocation.getCurrentPosition(this._handleFreshLocationAccuired.bind(this));
+		return false;
+	}
+	return true;
+};
 
 TimecardGeofenceVerifier.prototype._isLocationAuthorized = function() {
 	if (this.getCurrentGeofences().length === 0) {
@@ -69,16 +90,14 @@ TimecardGeofenceVerifier.prototype._isLocationAuthorized = function() {
 	return true;
 };
 
-TimecardGeofenceVerifier.prototype._isLocationFresh = function() {
-	var timestamp = GeofenceServices.getInstance().getCurrentLocation().timestamp;
-	var now = new Date().getTime();
+TimecardGeofenceVerifier.prototype._handleFreshLocationAccuired = function(event) {
+	var currentLocation = JSON.parse(Ti.Geolocation.getLastGeolocation() || '{}');
 	
-	if (now - timestamp > 900000) { // 15 minutes
-		this.error = 'Unable to determine current location. Please make sure GPS is turned on and has a good signal.';
-		Ti.Geolocation.getCurrentPosition(function(){});
-		return false;
+	if (this.getCurrentGeofences({lat: currentLocation.latitude, lng: currentLocation.longitude}).length !== 0) {
+		alert('Location acquired. You can clock in or out now.');
+	} else {
+		alert('You must be in an authorized location to clock in or out.');
 	}
-	return true;
 };
 
 TimecardGeofenceVerifier.prototype._handleLoggingOut = function(event) {
@@ -90,19 +109,6 @@ TimecardGeofenceVerifier.prototype._handleLoggingOut = function(event) {
 	this.enabled = null;
 	this.locationReferences = null;
 	this.error = null;
-};
-
-TimecardGeofenceVerifier.prototype._handleBundleUpdated = function(event) {
-	if (event.bundle == 'timecard') {
-		var bundle = Omadi.data.getBundle('timecard');
-		this.enabled = bundle.data.timecard.allow_geofence_verification == 1;
-		if (JSON.stringify(bundle.data.locations) !== JSON.stringify(this._getLocationReferences())) {
-			this.locationReferences = bundle.data.locations;
-			this.currentGeofences = null;
-			this.geofences = null;
-		}
-		
-	}
 };
 
 TimecardGeofenceVerifier.prototype._handleLocationChanged = function() {
@@ -143,10 +149,8 @@ TimecardGeofenceVerifier.prototype._getUserJson = function() {
 };
 
 TimecardGeofenceVerifier.prototype._getLocationReferences = function() {
-	if (this.locationReferences === null) {
-		var bundle = Omadi.data.getBundle('timecard');
-		this.locationReferences = bundle.data.timecard.locations || [];
-	}
+	var bundle = Omadi.data.getBundle('timecard');
+	this.locationReferences = bundle.data.timecard.locations || [];
 	return this.locationReferences;
 };
 
