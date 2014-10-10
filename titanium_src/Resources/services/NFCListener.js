@@ -46,9 +46,13 @@ NFCListener.prototype._getSignature = function(data) {
 };
 
 NFCListener.prototype._handleTagScanned = function(tag) {
+	if (!tag.isValidOmadiTag()) {
+		return;
+	}
+	
 	var validTags = this._getValidTags();
 	var data = validTags[tag.getData()];
-	if (data && (!tag.hasScanCounter() || tag.getScanCount() != -1)) {
+	if (data) {
 		this._processTag(tag, data.nid, data.field);
 		tag.playSuccessFeedback();
 	} else {
