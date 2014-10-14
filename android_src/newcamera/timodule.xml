@@ -18,6 +18,7 @@
 	        <application>
 	            <activity
 	                android:name="com.omadi.newcamera.OmadiCameraActivity"
+	                android:screenOrientation="landscape"
 	                android:theme="@style/Theme.MyFullScreen" >
 	                <action android:name="com.omadi.newcamera.OmadiCameraActivity" />
 	            </activity>
