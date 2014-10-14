@@ -33,15 +33,18 @@ TimecardGeofenceVerifier.prototype.canClockIn = function() {
 };
 
 TimecardGeofenceVerifier.prototype.canClockOut = function() {
+	/*
 	if (!this._isEnabled() || !this._shouldVerifyClockOut()) {
 		return true;
 	}
 	
 	return this._isLocationFresh() && this._isLocationAuthorized();
+	*/
+	return this.canClockIn();
 };
 
 TimecardGeofenceVerifier.prototype.getCurrentGeofences = function(currentLocation) {
-	if (this.currentGeofences === null) {
+	//if (this.currentGeofences === null) {
 		var geofences = this._getGeofences();
 		currentLocation = currentLocation || GeofenceServices.getInstance().getCurrentLocation();
 		this.currentGeofences = [];
@@ -50,7 +53,7 @@ TimecardGeofenceVerifier.prototype.getCurrentGeofences = function(currentLocatio
 				this.currentGeofences.push(geofences[i]);
 			}
 		}
-	}
+	//}
 	return this.currentGeofences;
 };
 
@@ -116,35 +119,35 @@ TimecardGeofenceVerifier.prototype._handleLocationChanged = function() {
 };
 
 TimecardGeofenceVerifier.prototype._isEnabled = function() {
-	if (this.enabled === null) {
+	//if (this.enabled === null) {
 		var bundle = Omadi.data.getBundle('timecard');
 		this.enabled = bundle.data.timecard.allow_geofence_verification == 1;
-	}
+	//}
 	return this.enabled;
 };
 
 TimecardGeofenceVerifier.prototype._shouldVerifyClockIn = function() {
-	if (this.verifyClockIn === null) {
+	//if (this.verifyClockIn === null) {
 		var userJson = this._getUserJson();
 		this.verifyClockIn = userJson.timecard_require_geofence &&
 				userJson.timecard_require_geofence.und &&
 				userJson.timecard_require_geofence.und[0] &&
 				userJson.timecard_require_geofence.und[0].value === '1';
-	}
+	//}
 	return this.verifyClockIn;
 };
 
 TimecardGeofenceVerifier.prototype._shouldVerifyClockOut = function() {
-	if (this.verifyClockOut === null) {
+	//if (this.verifyClockOut === null) {
 		this.verifyClockOut = this._shouldVerifyClockIn();
-	}
+	//}
 	return this.verifyClockOut;
 };
 
 TimecardGeofenceVerifier.prototype._getUserJson = function() {
-	if (this.userJson === null) {
+	//if (this.userJson === null) {
 		this.userJson = JSON.parse(Ti.App.Properties.getString('Omadi_session_details', '{user:{}}')).user;
-	}
+	//}
 	return this.userJson;
 };
 
@@ -155,7 +158,7 @@ TimecardGeofenceVerifier.prototype._getLocationReferences = function() {
 };
 
 TimecardGeofenceVerifier.prototype._getGeofences = function() {
-	if (this.geofences === null) {
+	//if (this.geofences === null) {
 		this.geofences = [];
 		
 		var locationReferences = this._getLocationReferences();
@@ -167,7 +170,7 @@ TimecardGeofenceVerifier.prototype._getGeofences = function() {
 			var geofences = PointGeofence.newFromDB(formType, referenceField, addressField);
 			this.geofences = this.geofences.concat(geofences);
 		}
-	}
+	//}
 	return this.geofences;
 };
 
