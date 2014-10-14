@@ -15,6 +15,7 @@ import org.appcelerator.kroll.KrollObject;
 
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
@@ -32,6 +33,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.FrameLayout;
@@ -73,6 +75,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 	private ImageView flash;
 	RelativeLayout zoomBase;
 	private boolean isPreviewRunning = false;
+	private boolean isLandscapeDevice;
 	
 	public static ToolsOverlay toolsOverlay = null;
 	
@@ -111,6 +114,11 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 	    sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 		
 		setContentView(previewLayout);
+		
+		Configuration config = getResources().getConfiguration();
+		int rotation = getWindowManager().getDefaultDisplay().getRotation();
+		isLandscapeDevice = ((rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180) && config.orientation == Configuration.ORIENTATION_LANDSCAPE) ||
+				((rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270) && config.orientation == Configuration.ORIENTATION_PORTRAIT);
 	}
 	
 	public static Camera.Parameters getCameraParameters(){
@@ -675,6 +683,9 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 					}
 					
 					if(lastDegrees != degrees){
+						if (isLandscapeDevice) {
+							degrees = (degrees + 90) % 360;
+						}
 						toolsOverlay.degreesChanged(degrees);
 					}
 				}
