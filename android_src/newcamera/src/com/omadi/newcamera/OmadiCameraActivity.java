@@ -15,7 +15,6 @@ import org.appcelerator.kroll.KrollObject;
 
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
-import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
@@ -33,8 +32,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.util.Log;
-import android.view.Display;
-import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.FrameLayout;
@@ -42,7 +39,6 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import ti.modules.titanium.media.android.AndroidModule.MediaScannerClient;
 import android.os.Environment;
-import android.os.Build;
 import android.provider.MediaStore.Images;
 
 import java.io.BufferedInputStream;
@@ -77,7 +73,6 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 	private ImageView flash;
 	RelativeLayout zoomBase;
 	private boolean isPreviewRunning = false;
-	private boolean isLandscapeDevice;
 	
 	public static ToolsOverlay toolsOverlay = null;
 	
@@ -110,15 +105,12 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 		// set overall layout - will populate in onResume
 		previewLayout = new FrameLayout(this);
 		
+		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+		
 		// Getting the sensor service.
 	    sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 		
 		setContentView(previewLayout);
-		
-		Configuration config = getResources().getConfiguration();
-		int rotation = getWindowManager().getDefaultDisplay().getRotation();
-		isLandscapeDevice = ((rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180) && config.orientation == Configuration.ORIENTATION_LANDSCAPE) ||
-				((rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270) && config.orientation == Configuration.ORIENTATION_PORTRAIT);
 	}
 	
 	public static Camera.Parameters getCameraParameters(){
@@ -172,27 +164,31 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 	}
 	
 	public void surfaceChanged(SurfaceHolder previewHolder, int format, int width, int height) {
-		Camera.Parameters parameters = camera.getParameters();
-	    
-		stopPreview();
 		
-		if(parameters != null){
-		    Size optimalSize = getOptimalPreviewSize(parameters);
+		Log.d("CAMERA", "CAMERA SURFACE CHANGED");
+		
+		Camera.Parameters p = camera.getParameters();
+	    
+		if(p!=null){
+	    	
+		    Size optimalSize = getOptimalPreviewSize(p, height);
 		    if(optimalSize != null){
-		    	Log.d("CAMERA", "CAMERA OPTIMAL PREVIEW SIZE: " + optimalSize.width + "x" + optimalSize.height);
-		    	parameters.setPreviewSize(optimalSize.width, optimalSize.height);
+		    	
+		    	p.setPreviewSize(optimalSize.width, optimalSize.height);
 		    }
 		    
-		    Size optimalPictureSize = getOptimalPictureSize(parameters);
+		    Size optimalPictureSize = getOptimalPictureSize(p);
 		    if(optimalPictureSize != null){
+		    	
 		    	Log.d("CAMERA", "CAMERA OPTIMAL PICTURE SIZE: " + optimalPictureSize.width + "x" + optimalPictureSize.height);
-		    	parameters.setPictureSize(optimalPictureSize.width, optimalPictureSize.height);
+		    	p.setPictureSize(optimalPictureSize.width, optimalPictureSize.height);
 		    }
 		    
 		    // Set to 90% quality
-		    parameters.setJpegQuality(90);
-		    parameters.setPictureFormat(ImageFormat.JPEG);
-		    camera.setParameters(parameters);
+		    p.setJpegQuality(90);
+		    p.setPictureFormat(ImageFormat.JPEG);
+		    
+		    camera.setParameters(p);
 	    }
 		
 		startPreview(previewHolder);
@@ -201,82 +197,90 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 	}
 	
 	private Size getOptimalPictureSize(Camera.Parameters p){
-		List<Size> supportedSizes = p.getSupportedPictureSizes();
 		
+		List<Size> pictureSizes = p.getSupportedPictureSizes();
 		Size optimalSize = null;
-		Size smallestSize = null;
 		
-		for (Size supportedSize : supportedSizes) {
-			int width = supportedSize.height < supportedSize.width ? supportedSize.width : supportedSize.height;
-			int height = supportedSize.height < supportedSize.width ? supportedSize.height : supportedSize.width;
-			
-			if (height <= 800 && width <= 1280 && (optimalSize == null || (optimalSize.width < supportedSize.width && optimalSize.height < supportedSize.height))) {
-				optimalSize = supportedSize;
-			}
-			
-			if (smallestSize == null) {
-				smallestSize = supportedSize;
-			} else if (smallestSize.width >= supportedSize.width && smallestSize.height >= supportedSize.height) {
-				smallestSize = supportedSize;
-			}
-		}
-		
-		if (optimalSize == null) {
-			return smallestSize;
-		}
-		return optimalSize;
-		
-//	    if(pictureSizes.size() > 0){
-//		    int target = 1280;
-//		    int minDiff = Integer.MAX_VALUE;
-//		    
-//		    for (Size pictureSize : pictureSizes) {
-//		    	Log.d("CAMERA", "CAMERA SIZE: " + pictureSize.width + "x" + pictureSize.height);
-//		    	
-//		    	if(landscape && pictureSize.width > pictureSize.height){
-//		    		// Make sure it's in landscape mode
-//		    		if(pictureSize.width <= target){
-//		    			// Make sure it's smaller than the target size
-//		    			
-//		    			if(target - pictureSize.width < minDiff){
-//		    				optimalSize = pictureSize;
-//		    				minDiff = target - pictureSize.width;
-//		    			}
-//		    		}
-//		    	}
-//		    }
-//		    
-//		    if(optimalSize == null){
-//		    	// Get smallest size
-//		    	for (Size pictureSize : pictureSizes) {
-//		    		if(pictureSize.width > pictureSize.height){
-//		    			// Make sure it's in landscape mode
-//				    	if(optimalSize == null){
-//				    		optimalSize = pictureSize;
-//				    	}
-//				    	else if(pictureSize.width < optimalSize.width){
-//				    		optimalSize = pictureSize;
-//				    	}
-//				    }
-//		    	}
-//		    }
-//	    }
-//	    
-//	    return optimalSize;
+	    if(pictureSizes.size() > 0){
+		    int target = 1280;
+		    int minDiff = Integer.MAX_VALUE;
+		    
+		    for (Size pictureSize : pictureSizes) {
+		    	Log.d("CAMERA", "CAMERA SIZE: " + pictureSize.width + "x" + pictureSize.height);
+		    	
+		    	if(pictureSize.width > pictureSize.height){
+		    		// Make sure it's in landscape mode
+		    		if(pictureSize.width <= target){
+		    			// Make sure it's smaller than the target size
+		    			
+		    			if(target - pictureSize.width < minDiff){
+		    				optimalSize = pictureSize;
+		    				minDiff = target - pictureSize.width;
+		    			}
+		    		}
+		    	}
+		    }
+		    
+		    if(optimalSize == null){
+		    	// Get smallest size
+		    	for (Size pictureSize : pictureSizes) {
+		    		if(pictureSize.width > pictureSize.height){
+		    			// Make sure it's in landscape mode
+				    	if(optimalSize == null){
+				    		optimalSize = pictureSize;
+				    	}
+				    	else if(pictureSize.width < optimalSize.width){
+				    		optimalSize = pictureSize;
+				    	}
+				    }
+		    	}
+		    }
+	    }
+	    
+	    return optimalSize;
 	}
 	
-	private Size getOptimalPreviewSize(Camera.Parameters p) {
-		List<Size> supportedSizes = p.getSupportedPreviewSizes();
+	private Size getOptimalPreviewSize(Camera.Parameters p, int h) {
+		List<Size> sizes = p.getSupportedPreviewSizes();
+		Size photoSize = this.getOptimalPictureSize(p);
+	    final double ASPECT_TOLERANCE = 0.05;
+	    double targetRatio = (double)photoSize.width / (double)photoSize.height;
+	    if (sizes == null) return null;
+
+	    Size optimalSize = null;
+	    double minDiff = Double.MAX_VALUE;
+
+	    int targetHeight = h;
+
+	    // Try to find an size match aspect ratio and size
+	    for (Size size : sizes) {
+		    double ratio = (double) size.width / size.height;
+		    if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE){
+		    	continue;
+		    }
+		    if(size.width > size.height){
+		    	// Make sure it's in landscape mode
+			    if (Math.abs(size.height - targetHeight) < minDiff) {
+				    optimalSize = size;
+				    minDiff = Math.abs(size.height - targetHeight);
+				}
+		    }
+	    }
 		
-		Size optimalSize = null;
-		
-		for (Size supportedSize : supportedSizes) {
-			if (optimalSize == null || supportedSize.width > optimalSize.width && supportedSize.height > optimalSize.height) {
-				optimalSize = supportedSize;
-			}
-		}
-		
-		return optimalSize;
+	    // Cannot find the one match the aspect ratio, ignore the requirement
+	    if (optimalSize == null) {
+		    minDiff = Double.MAX_VALUE;
+		    for (Size size : sizes) {
+		    	if(size.width > size.height){
+		    		// Make sure it's in landscape mode
+				    if (Math.abs(size.height - targetHeight) < minDiff) {
+					    optimalSize = size;
+					    minDiff = Math.abs(size.height - targetHeight);
+				    }
+		    	}
+		    }
+	    }
+	    return optimalSize;
 	}
 
 	public void surfaceCreated(SurfaceHolder previewHolder) {
@@ -416,18 +420,12 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 			NewcameraModule.sendErrorReport("CAMERA is not open, unable to release: " + t.getMessage());
 			t.printStackTrace();
 		}
+
+		cameraActivity.setResult(Activity.RESULT_OK);
+		cameraActivity.finish();
+		cameraActivity = null;
 		
 		Log.d("CAMERA", "CAMERA Sensor unregistered");
-	}
-	
-	@Override
-	protected void onStop() {
-		if (!hasWindowFocus()) {
-			cameraActivity.setResult(Activity.RESULT_OK);
-			cameraActivity.finish();
-			cameraActivity = null;
-		}
-		super.onStop();
 	}
 
 	public void takePicture() {
@@ -618,6 +616,26 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 			}
 		}
 	};
+
+//	static PictureCallback jpegCallback = new PictureCallback() {
+//		public void onPictureTaken(byte[] data, Camera camera) {
+//			FileOutputStream outputStream = null;
+//			try {
+//				// write photo to storage
+//				outputStream = new FileOutputStream(cameraActivity.storageUri.getPath());
+//				outputStream.write(data);
+//				outputStream.close();
+//
+//				cameraActivity.setResult(Activity.RESULT_OK);
+//				cameraActivity.finish();
+//			} catch (FileNotFoundException e) {
+//				e.printStackTrace();
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//			}
+//		}
+//	};
+	
 	
 	/**
 	 * Putting in place a listener so we can get the sensor data only when
@@ -626,49 +644,40 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 	public void onSensorChanged(SensorEvent event) {
 		
 		try{
-			if (camera != null) {
-				Display display = getWindowManager().getDefaultDisplay();
-			    if (isLandscapeDevice) {
-				    if (display.getRotation() == Surface.ROTATION_0) {
-			            camera.setDisplayOrientation(0);
-			            toolsOverlay.degreesChanged(0);
-			        }
-		
-			        if (display.getRotation() == Surface.ROTATION_90) {
-			            camera.setDisplayOrientation(270);
-			            toolsOverlay.degreesChanged(90);
-			        }
-		
-			        if (display.getRotation() == Surface.ROTATION_180) {
-			            camera.setDisplayOrientation(180);
-			            toolsOverlay.degreesChanged(180);
-			        }
-		
-			        if (display.getRotation() == Surface.ROTATION_270) {
-			            camera.setDisplayOrientation(90);
-			            toolsOverlay.degreesChanged(270);
-			        }
-			    } else {
-			    	if (display.getRotation() == Surface.ROTATION_0) {      
-			            camera.setDisplayOrientation(90);
-			            toolsOverlay.degreesChanged(270);
-			        }
-		
-			        if (display.getRotation() == Surface.ROTATION_90) { 
-			            camera.setDisplayOrientation(0);
-			            toolsOverlay.degreesChanged(0);
-			        }
-		
-			        if (display.getRotation() == Surface.ROTATION_180) { 
-			            camera.setDisplayOrientation(270);
-			            toolsOverlay.degreesChanged(90);
-			        }
-		
-			        if (display.getRotation() == Surface.ROTATION_270) { 
-			            camera.setDisplayOrientation(180);
-			            toolsOverlay.degreesChanged(180);
-			        }
-			    }
+			synchronized (this) {
+				if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+					
+					int lastDegrees = degrees;
+					
+					if (event.values[0] < 4 && event.values[0] > -4) {
+						
+						if (event.values[1] > 0 && orientation != ExifInterface.ORIENTATION_ROTATE_90) {
+							// UP
+							degrees = 270;
+						} 
+						else if (event.values[1] < 0 && orientation != ExifInterface.ORIENTATION_ROTATE_270) {
+							// UP SIDE DOWN
+							degrees = 90;
+						}
+						
+					} 
+					else if (event.values[1] < 4 && event.values[1] > -4) {
+						
+						if (event.values[0] > 0 && orientation != ExifInterface.ORIENTATION_NORMAL) {
+							// LEFT
+							degrees = 0;
+						} 
+						else if (event.values[0] < 0 && orientation != ExifInterface.ORIENTATION_ROTATE_180) {
+							// RIGHT
+							degrees = 180;
+						}
+						
+					}
+					
+					if(lastDegrees != degrees){
+						toolsOverlay.degreesChanged(degrees);
+					}
+				}
 			}
 		}
 		catch(Exception e){

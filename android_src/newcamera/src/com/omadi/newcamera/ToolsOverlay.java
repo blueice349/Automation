@@ -490,7 +490,14 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 	}
 	
 	public void degreesChanged(int degrees){
+		
 		this.degrees = degrees;
+		
+		Log.d("CAMERA", "CAMERA Degrees now " + degrees);
+		
+		redrawButtons();
+		
+		Log.d("CAMERA", "CAMERA redrew buttons");
 	}
 	
 	private void redrawButtons(){
@@ -499,20 +506,102 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 			RelativeLayout.LayoutParams containerParams = null;
 			RelativeLayout.LayoutParams captureParams = null;
 			RelativeLayout.LayoutParams flashParams = null;
-			containerParams = new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT, 65);
-		    containerParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+			//RotateAnimation animation = null;
+			
+			if(degrees == 270){ // regular portrait
+				containerParams = new RelativeLayout.LayoutParams(65, LayoutParams.FILL_PARENT);
+			    containerParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+			    
+			    captureParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+				captureParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
+				captureParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+				captureImage.setLayoutParams(captureParams);
+				
+				if(flashView != null){
+					flashParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+					flashParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
+					flashParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+					flashView.setLayoutParams(flashParams);
+				}
+				
+				//animation = getRotateAnimation(270);
+			}
+			else if(degrees == 90){
+				containerParams = new RelativeLayout.LayoutParams(65, LayoutParams.FILL_PARENT);
+			    containerParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+			    
+			    captureParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+				captureParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
+				captureParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+				captureImage.setLayoutParams(captureParams);
+				
+				if(flashView != null){
+					flashParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+					flashParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
+					flashParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+					flashView.setLayoutParams(flashParams);
+				}
+				
+				//animation = getRotateAnimation(90);
+			}
+			else if(degrees == 180){
+				containerParams = new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT, 65);
+			    containerParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+			    
+			    captureParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+				captureParams.addRule(RelativeLayout.CENTER_VERTICAL);
+				captureParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+				captureImage.setLayoutParams(captureParams);
+				
+				if(flashView != null){
+					flashParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+					flashParams.addRule(RelativeLayout.CENTER_VERTICAL);
+					flashParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+					flashView.setLayoutParams(flashParams);
+				}
+				
+				//animation = getRotateAnimation(180);
+			}
+			else{// Degrees = 0
+				containerParams = new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT, 65);
+			    containerParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+			    
+			    captureParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+				captureParams.addRule(RelativeLayout.CENTER_VERTICAL);
+				captureParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+				captureImage.setLayoutParams(captureParams);
+				
+				if(flashView != null){
+					flashParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+					flashParams.addRule(RelativeLayout.CENTER_VERTICAL);
+					flashParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+					flashView.setLayoutParams(flashParams);
+				}
+				
+				//animation = getRotateAnimation(0);
+			}
+			
+			//if (animation != null) {
+			//	captureImage.startAnimation(animation);
+				
+			//	if(flashView != null){
+					//flashView.startAnimation(animation);
+			//	}
+			//}
+			
 			container.setLayoutParams(containerParams);
-		    
-		    captureParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-			captureParams.addRule(RelativeLayout.CENTER_VERTICAL);
-			captureParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-			captureImage.setLayoutParams(captureParams);
+					
+			Matrix matrix = new Matrix();
+			captureImage.setScaleType(ImageView.ScaleType.MATRIX);
+			matrix.postRotate((float)degrees, captureImage.getDrawable().getBounds().width()/2, captureImage.getDrawable().getBounds().height()/2);
+			captureImage.setImageMatrix(matrix);
 			
 			if(flashView != null){
-				flashParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-				flashParams.addRule(RelativeLayout.CENTER_VERTICAL);
-				flashParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-				flashView.setLayoutParams(flashParams);
+				
+				Matrix matrix2 = new Matrix();
+				flashView.setScaleType(ImageView.ScaleType.MATRIX);
+				matrix2.postRotate((float)degrees, flashView.getDrawable().getBounds().width()/2, flashView.getDrawable().getBounds().height()/2);
+				flashView.setImageMatrix(matrix2);
 			}
 		}
 		catch(Exception e){
@@ -521,5 +610,35 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 		}
 	}
 	
-	public void pictureTaken(){}
+	public void pictureTaken(){
+		//captureImage.setEnabled(false);
+		//captureImage.setVisibility(INVISIBLE);
+	}
+	
+//	private RotateAnimation getRotateAnimation(int toDegrees) {
+//		//float compensation = 0;
+//
+////		if (Math.abs(degrees - toDegrees) > 180) {
+////			compensation = 360;
+////		}
+////
+////		// When the device is being held on the left side (default position for
+////		// a camera) we need to add, not subtract from the toDegrees.
+////		if (toDegrees == 0) {
+////			compensation = -compensation;
+////		}
+//
+//		// Creating the animation and the RELATIVE_TO_SELF means that he image
+//		// will rotate on it center instead of a corner.
+//		RotateAnimation animation = new RotateAnimation(0, toDegrees, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+//
+//		// Adding the time needed to rotate the image
+//		animation.setDuration(3000);
+//
+//		// Set the animation to stop after reaching the desired position. With
+//		// out this it would return to the original state.
+//		animation.setFillAfter(true);
+//
+//		return animation;
+//	}
 }
