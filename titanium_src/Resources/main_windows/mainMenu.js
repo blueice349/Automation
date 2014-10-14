@@ -471,11 +471,8 @@ function setupBottomButtons() {"use strict";
         try{
             var alertsWindow, locationEnabled;
             
-            locationEnabled = Omadi.location.isLocationEnabled();
-            
-            if(locationEnabled){
-                
-                alertsWindow = Ti.UI.createWindow({
+            locationEnabled = Omadi.location.isLocationEnabled(function() {
+            	alertsWindow = Ti.UI.createWindow({
                     navBarHidden : true,
                     url : '/main_windows/message_center.js',
                     orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
@@ -485,7 +482,7 @@ function setupBottomButtons() {"use strict";
                 
                 alertsWindow.addEventListener('open', Omadi.display.doneLoading);
                 alertsWindow.open();
-            }
+            });
         }
         catch(ex){
             Utils.sendErrorReport("Exception alerts view clicked: " + ex);
@@ -1191,16 +1188,17 @@ function openFormWindow(e){"use strict";
     Ti.App.syncInterval = setInterval(backgroundCheckForUpdates, 300000);
     Ti.App.photoUploadCheck = setInterval(Omadi.service.uploadFile, 60000);
 
+	var callback;
     if ( typeof curWin.fromSavedCookie !== 'undefined' && !curWin.fromSavedCookie) {
         
         // The option dialog should go after clock in, but some of the options
         // are blocked because of the alert dialog being show in askclockin
         
-        Omadi.bundles.timecard.askClockIn();
+        callback = Omadi.bundles.timecard.askClockIn;
         Omadi.bundles.companyVehicle.askAboutVehicle();
     }
     
-    Omadi.location.isLocationEnabled();
+    Omadi.location.isLocationEnabled(callback);
     
     Ti.API.debug("before init");
     Omadi.push_notifications.init();

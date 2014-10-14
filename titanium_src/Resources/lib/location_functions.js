@@ -4,7 +4,7 @@ Omadi.location = Omadi.location || {};
 
 var Utils = require('lib/Utils');
 
-Omadi.location.isLocationEnabled = function(){"use strict";
+Omadi.location.isLocationEnabled = function(callback){"use strict";
     /*global alertQueue */
     var dialog = null, locAuth, retval = true;
     
@@ -41,6 +41,10 @@ Omadi.location.isLocationEnabled = function(){"use strict";
     
     if(dialog !== null){
         dialog.show();
+    }
+    
+    if (retval)  {
+    	Ti.Geolocation.getCurrentPosition(callback);
     }
     
     return retval;
