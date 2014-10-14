@@ -18,11 +18,6 @@ var saveCoordinate = function(e){"use strict";
         speed = e.coords.speed;
         altitude = e.coords.altitude;
         
-        Ti.App.fireEvent('locationChanged', {
-			lat: e.coords.latitude,
-			lng: e.coords.longitude
-		});
-        
         Ti.API.info('BACKGROUND LOCATION: ' + latitude + ', ' + longitude + ': ' + accuracy);
     
         if(latitude !== 0 && longitude !== 0) {

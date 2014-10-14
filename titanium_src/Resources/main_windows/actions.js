@@ -164,9 +164,13 @@ function addClockInClockOut() {"use strict";
 
                 dialog.addEventListener('click', function(e) {
                     if (e.index == 0) {
-                        Omadi.bundles.timecard.doClockOut(false);
-                        button.setText("Clock In");
-                        text.setText('You are clocked out.');
+	                	if (TimecardGeofenceVerifier.getInstance().canClockOut()) {
+							Omadi.bundles.timecard.doClockOut(false);
+							button.setText("Clock In");
+							text.setText('You are clocked out.');
+	                	} else {
+	                		alert('Clock out failed: ' + TimecardGeofenceVerifier.getInstance().getError());
+	                	}
                     }
                 });
             }
@@ -178,9 +182,13 @@ function addClockInClockOut() {"use strict";
 
                 dialog.addEventListener('click', function(e) {
                     if (e.index == 0) {
-                        Omadi.bundles.timecard.doClockIn();
-                        button.setText("Clock Out");
-                        text.setText('You are currently clocked in.');
+                    	if (TimecardGeofenceVerifier.getInstance().canClockIn()) {
+	                		Omadi.bundles.timecard.doClockIn();
+	                        button.setText("Clock Out");
+	                        text.setText('You are currently clocked in.');
+	                	} else {
+	                		alert('Clock in failed: ' + TimecardGeofenceVerifier.getInstance().getError());
+	                	}
                     }
                 });
             }

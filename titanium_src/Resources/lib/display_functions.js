@@ -140,9 +140,13 @@ Omadi.display.getFileViewType = function(filename){"use strict";
 };
 
 Omadi.display.newAppAvailable = function(message) {"use strict";
-    var dialog, now = Omadi.utils.getUTCTimestamp();
-
-    if (now - Ti.App.Properties.getDouble("lastAppUpdateNotification", 0) > 3600) {
+    var dialog, now, sixHours;
+    
+    now = Omadi.utils.getUTCTimestamp();
+    sixHours = now + (3600 * 12);
+    
+    // Only allow new app update dialog boxes to popup every 6 hours
+    if (now - Ti.App.Properties.getDouble("lastAppUpdateNotification", 0) > sixHours) {
         dialog = Ti.UI.createAlertDialog({
             message : message,
             ok : 'OK',
@@ -351,7 +355,7 @@ Omadi.display.openViewWindow = function(type, nid, allowActions) {"use strict";
         viewWindow.open();
     }
     else{
-        Utils.sendErrorReport("Could not open dispatch form window");
+        Utils.sendErrorReport("Could not open dispatch view window");
         alert("Could not open the view.");
         Omadi.display.doneLoading();
     }

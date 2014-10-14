@@ -6,6 +6,7 @@ FormObj = {};
 popupWin = null;
 
 var Utils = require('lib/Utils');
+var TimecardGeofenceVerifier = require('objects/TimecardGeofenceVerifier');
 
 function rules_field_passed_time_check(time_rule, timestamp) {"use strict";
     var retval, timestamp_day, timestamp_midnight, days, day_rule, values, start_time, end_time, i;
@@ -1073,7 +1074,19 @@ FormModule.prototype.getRegionWrappers = function(){"use strict";
     return regionWrappers;
 };
 
-
+FormModule.prototype.validateTimecardGeofence = function(){"use strict";
+	if (this.type != 'timecard') {
+		return;
+	}
+	
+	if (this.form_part === 0 && !TimecardGeofenceVerifier.getInstance().canClockIn()) {
+		this.form_errors.push('Clock in failed: ' + TimecardGeofenceVerifier.getInstance().getError());
+	}
+	
+	if (this.form_part === 1 && !TimecardGeofenceVerifier.getInstance().canClockOut()) {
+		this.form_errors.push('Clock out failed: ' + TimecardGeofenceVerifier.getInstance().getError());
+	}
+};
 
 FormModule.prototype.validateRestrictions = function(){"use strict";
     var instances, query, db = null, result, timestamp, field_name, vin, license_plate, nid, restrictions, i, account;
@@ -1303,7 +1316,8 @@ FormModule.prototype.validateMaxLength = function(instance){"use strict";
                     maxLength = parseInt(instance.settings.max_length, 10);
                     if(maxLength > 0){
                         for(i = 0; i < this.node[instance.field_name].dbValues.length; i ++){
-                            if (this.node[instance.field_name].dbValues[i].length > maxLength) {
+                            if (this.node[instance.field_name].dbValues[i] && 
+                                this.node[instance.field_name].dbValues[i].length > maxLength) {
                                 this.form_errors.push(instance.label + " cannot have more than " + maxLength + " characters.");
                             }  
                         }
@@ -1401,6 +1415,7 @@ FormModule.prototype.validate_form_data = function(saveType){"use strict";
         else if(saveType != 'continuous'){
         
             this.validateRestrictions();
+            this.validateTimecardGeofence();
 
             // Only show restriction error if one exists
             if(this.form_errors !== null && this.form_errors.length == 0){
@@ -1537,19 +1552,21 @@ FormModule.prototype.saveForm = function(saveType){"use strict";
     try{
         this.formToNode();
         
-        if(saveType == 'draft'){
-            this.node._isDraft = true;
-        }
-        else{
-            this.node._isDraft = false;
-        }
+        if (this.type == 'timecard') {
+	        var nids = [];
+		    var geofences = TimecardGeofenceVerifier.getInstance().getCurrentGeofences();
+		    for (var i = 0; i < geofences.length; i++) {
+		    	nids.push(geofences[i].getNid());
+		    }
+	        if (this.form_part === 0) {
+	        	this.node.clock_in_reference = { dbValues: nids };
+	        } else if (this.form_part === 1) {
+	        	this.node.clock_out_reference = { dbValues: nids };
+	        }
+	    }
         
-        if(saveType == 'continuous'){
-            this.node._isContinuous = true;
-        }
-        else{
-            this.node._isContinuous = false;
-        }
+        this.node._isDraft = saveType == 'draft';
+        this.node._isContinuous = saveType == 'continuous';
         
         this.node.viewed = Omadi.utils.getUTCTimestamp();
         

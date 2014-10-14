@@ -152,6 +152,10 @@ NFCTag.prototype.getTag = function() {
 
 NFCTag.prototype.initTagWithNewData = function() {
 	try {
+		if (!this.isWritable()) {
+			return false;
+		}
+		
 		var data = this._generateData();
 		this._setData(data);
 		
@@ -165,6 +169,8 @@ NFCTag.prototype.initTagWithNewData = function() {
 				return false;
 			}
 		}
+		
+		this._makeReadOnly();
 	} catch (error) {
 		Ti.API.info('Error in NFCTag.prototype.initTagWithNewData: ' + error);
 		return false;
@@ -176,11 +182,7 @@ NFCTag.prototype.initTagWithNewData = function() {
 NFCTag.prototype.isValidOmadiTag = function() {
 	if (this.valid === null) {
 		try {
-			var iv = this._getInitializationVector();
-			var encryptedData = this._getEncryptedData();
-			var decryptedData = CryptoJS.AES.decrypt(encryptedData, NFCTag.ENCRYPTION_KEY, { iv: iv });
-			var data = JSON.parse(decryptedData.toString(CryptoJS.enc.Utf8));
-			this.valid = this.getId() == data.serial;
+			this.valid = this._isLocked() && this._scanCounterIsValid() && this._idsMatch();
 		} catch (error) {
 			Ti.API.error('Error in NFCTag.prototype.isValidOmadiTag: ' + error);
 			this.valid = null;
@@ -202,7 +204,9 @@ NFCTag.prototype.isWritable = function() {
 		var tech = this._getTech('Ndef');
 		var writable = false;
 		if (tech) {
+			tech.connect();
 			writable = tech.isWritable();
+			tech.close();
 		}
 		
 		this.writable = writable;
@@ -212,8 +216,44 @@ NFCTag.prototype.isWritable = function() {
 
 /* PRIVATE METHODS */
 
-NFCTag.prototype._enableScanCounter = function() {
+NFCTag.prototype._idsMatch = function() {
+	try {
+		var iv = this._getInitializationVector();
+		var encryptedData = this._getEncryptedData();
+		var decryptedData = CryptoJS.AES.decrypt(encryptedData, NFCTag.ENCRYPTION_KEY, { iv: iv });
+		var data = JSON.parse(decryptedData.toString(CryptoJS.enc.Utf8));
+		return this.getId() == data.serial;
+	} catch (error) {
+		Ti.API.error('Error in NFCTag.prototype._idMatches: ' + error);
+		return false;
+	}
+};
+
+NFCTag.prototype._scanCounterIsValid = function() {
+	// Returns false when there should be a scan counter but isn't. This happens when the phone is pulled away before the scan counter can be read.
+	return !this.hasScanCounter() || this.getScanCount() != -1;
+};
+
+NFCTag.prototype._isLocked = function() {
+	return !this.isWritable();
+};
+
+NFCTag.prototype._makeReadOnly = function() {
+	var tech = this._getTech('Ndef');
+	if (!tech) {
+		return;
+	}
 	
+	try {
+		tech.connect();
+		tech.makeReadOnly();
+		tech.close();
+	} catch (error) {
+		Ti.API.error('Error in NFCTag.prototype._makeReadOnly: ' + error);
+	}
+};
+
+NFCTag.prototype._enableScanCounter = function() {
 	var tech = this._getTech('MifareUltralight');
 	if (!tech) {
 		return;
@@ -312,7 +352,7 @@ NFCTag.prototype._generateData = function() {
 	var iv = this._generateInitializationVector();
 	var data = JSON.stringify({
 		serial: id,
-		count: -1
+		count: this.getScanCount()
 	});
 	var encryptedData = CryptoJS.AES.encrypt(data, NFCTag.ENCRYPTION_KEY, { iv: iv });
 	

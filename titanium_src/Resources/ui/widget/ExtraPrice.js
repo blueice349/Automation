@@ -212,6 +212,10 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
                 if(typeof jsonValue.total !== 'undefined'){
                     total = jsonValue.total;
                 }
+                
+                if(typeof jsonValue.price !== 'undefined'){
+                    price = jsonValue.price;
+                }
             }
             catch(ex){
                 jsonValue = {};
@@ -224,7 +228,7 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
         }
         
         Ti.API.debug("Creating extra_price field: " + this.instance.label);
-        
+       
         outsideWrapper = Ti.UI.createView({
             width: '100%',
             height: Ti.UI.SIZE,
@@ -245,9 +249,16 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
         });
         
         priceValue = dbValue;
+        
+        // dbValue is the total value 
+        // If we're using a quantity, make sure the price per unit is set as the price value
+        if(useQuantity && jsonValue.price){
+            priceValue = jsonValue.price;
+        }
+        
         if(priceValue != ""){
             if(!isNaN(parseFloat(dbValue))){
-                priceValue = parseFloat(Math.round(dbValue * 100) / 100).toFixed(2);
+                priceValue = parseFloat(Math.round(priceValue * 100) / 100).toFixed(2);
             }
             else{
                 priceValue = "";
@@ -286,6 +297,7 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
             }
             
             jsonValue.price = e.source.value;
+            
             descView.jsonValue = jsonValue;
             descView.textValue = JSON.stringify(jsonValue);
             
@@ -815,6 +827,12 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
         
         // Populate the autofill
         if(this.isAutofill){
+            
+            // Disable the field on creation and edit
+            this.descFields[index].backgroundColor = '#ccc';
+            this.descFields[index].backgroundGradient = null;
+            this.descFields[index].touchEnabled = false;
+            
             if(typeof this.possibleValues[index] !== 'undefined'){
                 if(typeof this.possibleValues[index].title !== 'undefined'){    
                     description = this.possibleValues[index].title;
@@ -833,10 +851,6 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
                         this.descFields[index].text = description;
                         this.descFields[index].value = description;
                         
-                        this.descFields[index].backgroundColor = '#ccc';
-                        this.descFields[index].backgroundGradient = null;
-                        this.descFields[index].touchEnabled = false;
-                        
                         this.itemChangeDelta(index);
                         
                         if(typeof this.quantityFields[index] !== 'undefined'){
@@ -844,6 +858,9 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
                             
                             this.setTotalDelta(index);
                         }
+                        
+                        // Make sure the data updates in the widget view in this init stage so other fields can use it properly
+                        this.priceFields[index].fireEvent('change');
                     }
                 }
             }

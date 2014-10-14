@@ -4,7 +4,7 @@ Omadi.location = Omadi.location || {};
 
 var Utils = require('lib/Utils');
 
-Omadi.location.isLocationEnabled = function(){"use strict";
+Omadi.location.isLocationEnabled = function(callback){"use strict";
     /*global alertQueue */
     var dialog = null, locAuth, retval = true;
     
@@ -41,6 +41,10 @@ Omadi.location.isLocationEnabled = function(){"use strict";
     
     if(dialog !== null){
         dialog.show();
+    }
+    
+    if (retval)  {
+    	Ti.Geolocation.getCurrentPosition(callback);
     }
     
     return retval;
@@ -93,11 +97,6 @@ Omadi.location.getLastLocation = function(expire){"use strict";
 
 Omadi.location.currentPositionCallback = function(e) {"use strict";
     var coords = e.coords, db;
-    
-    Ti.App.fireEvent('locationChanged', {
-		lat: e.coords.latitude,
-		lng: e.coords.longitude
-	});
 
     if ( typeof coords !== 'undefined' && typeof coords.longitude !== 'undefined' && coords.longitude !== 0 && coords.latitude !== 0) {
 

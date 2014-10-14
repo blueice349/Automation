@@ -3,7 +3,6 @@
 Omadi.data = Omadi.data || {};
 
 Omadi.data.cache = {};
-Omadi.data.cache.fields = {};
 Omadi.data.cache.regions = {};
 Omadi.data.cache.fakeFields = {};
 
@@ -12,15 +11,14 @@ var RDNGeofenceListener = require('services/RDNGeofenceListener');
 var GeofenceServices = require('services/GeofenceServices');
 var Node = require('objects/Node');
 var ImageWidget = require('ui/widget/Image');
+var TimecardGeofenceVerifier = require('objects/TimecardGeofenceVerifier');
 
 // Constants
 Omadi.data.MAX_BYTES_PER_UPLOAD = 1000000; // 1MB
 
-
 Omadi.data.cameraAndroid = null;
 
 Omadi.data.isUpdating = function() {"use strict";
-
     return Ti.App.Properties.getBool("isUpdating", false);
 };
 
@@ -140,7 +138,6 @@ Omadi.data.fieldExists = function(nodeType, fieldName){"use strict";
 Omadi.data.getFields = function(type) {"use strict";
 	return Node.getFields(type);
 };
-
 
 Omadi.data.getFakeFields = function(type){"use strict";
     var db, result, fakeFields, field_name, nameParts;
@@ -2092,6 +2089,8 @@ Omadi.data.processFetchedJson = function(){"use strict";
 						rdnGeofenceListener.deleteGeofences(Omadi.service.fetchedJSON.node.runsheet['delete']);
 					}
                 }
+                
+                TimecardGeofenceVerifier.getInstance().clearCache();
             }
             
             if ( typeof Omadi.service.fetchedJSON.comment !== 'undefined') {
@@ -2401,6 +2400,9 @@ Omadi.data.processFieldsJson = function(mainDB) {"use strict";
 
         if (Omadi.service.fetchedJSON.fields["delete"]) {
             if (Omadi.service.fetchedJSON.fields["delete"].length) {
+                
+                
+                
                 for ( i = 0; i < Omadi.service.fetchedJSON.fields["delete"].length; i++) {
                     //Deletes rows from terms
                     queries.push('DELETE FROM fields WHERE fid=' + Omadi.service.fetchedJSON.fields["delete"][i].fid);
@@ -2417,7 +2419,7 @@ Omadi.data.processFieldsJson = function(mainDB) {"use strict";
             mainDB.execute("COMMIT TRANSACTION");
             
             // Reset the field cache
-            Omadi.data.cache.fields = {};
+            Node.resetFieldCache();
         }
     }
     catch(ex) {
@@ -3535,6 +3537,8 @@ Omadi.data.processNodeTypeJson = function(mainDB) {"use strict";
             for(i = 0; i < resetBundles.length; i ++){
                 // Just clear the bundle cache for other functions to use correctly
                 Omadi.data.getBundle(resetBundles[i], true);
+                TimecardGeofenceVerifier.getInstance().clearCache();
+        		Ti.App.fireEvent('bundleUpdated', { bundle: resetBundles[i] });
             }
         }
 

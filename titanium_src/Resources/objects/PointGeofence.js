@@ -5,6 +5,7 @@
 var Geofence = require('objects/Geofence');
 var Utils = require('lib/Utils');
 var Database = require('lib/Database');
+var Node = require('objects/Node');
 
 Function.prototype.inheritsFrom = function(parent) {
 	var child = this;
@@ -23,8 +24,10 @@ var PointGeofence = function(nid, formType, lat, lng, radiusInMeters) {
 	
 	this.minLat = null;
 	this.maxLat = null;
+	this.radiusLat = null;
 	this.minLng = null;
 	this.maxLng = null;
+	this.radiusLng = null;
 	
 	this._calculateBoundingBox(this.lat, this.lng, radiusInMeters);
 };
@@ -40,11 +43,14 @@ PointGeofence.prototype.getLng = function() {
 	return this.lng;
 };
 
-/* PRIVATE METHODS */
-
-PointGeofence.prototype._isInBounds = function(lat, lng) {
-	return lat > this.minLat && lat < this.maxLat && lng > this.minLng && lng < this.maxLng;
+PointGeofence.prototype.isInBounds = function(lat, lng) {
+	if (lat > this.minLat && lat < this.maxLat && lng > this.minLng && lng < this.maxLng) {
+		return Math.pow(lat - this.lat, 2) / Math.pow(this.radiusLat, 2) + Math.pow(lng - this.lng, 2) / Math.pow(this.radiusLng, 2) <= 1;
+	}
+	return false;
 };
+
+/* PRIVATE METHODS */
 
 PointGeofence.prototype._calculateBoundingBox = function(lat, lng, radiusInMeters) {
 	var key = Math.abs(Math.floor(lat / 5) * 5).toFixed();
@@ -55,8 +61,12 @@ PointGeofence.prototype._calculateBoundingBox = function(lat, lng, radiusInMeter
     try{
         this.minLat = parseFloat((lat - latDelta).toFixed(6));
         this.maxLat = parseFloat((lat + latDelta).toFixed(6));
+        this.radiusLat = (this.maxLat - this.minLat) / 2;
         this.minLng = parseFloat((lng - lngDelta).toFixed(6));
         this.maxLng = parseFloat((lng + lngDelta).toFixed(6));
+        this.radiusLng = (this.maxLng - this.minLng) / 2;
+        
+        
     }
     catch(ex){
         this.minLat = null;
@@ -69,16 +79,26 @@ PointGeofence.prototype._calculateBoundingBox = function(lat, lng, radiusInMeter
 
 /* PUBLIC STATIC METHODS */
 
-PointGeofence.newFromDB = function(formType, addressField, radiusInMeters) {
-	var data = [], geofences = [];
+PointGeofence.newFromDB = function(formType, referenceField, addressField) {
+	var geofences = [];
 	try {
-		if (this._hasRunsheets()) {
+		var data, radius, type;
+		if (!referenceField) {
 			data = PointGeofence._getDataFromDB(formType, addressField);
-			
-			var i;
-			for (i = 0; i < data.length; i++) {
-				geofences.push(new PointGeofence(data[i].nid, formType, data[i].lat, data[i].lng, radiusInMeters));
+			radius = PointGeofence._getRadius(formType, addressField);
+			type = formType;
+		} else {
+			data = [];
+			var nids = PointGeofence._getReferenceNids(formType, referenceField);
+			if (nids.length != 0) {
+				var referenceFormType = PointGeofence._getFormType(nids[0]);
+				data = PointGeofence._getDataFromDB(referenceFormType, addressField, nids);
+				radius = PointGeofence._getRadius(referenceFormType, addressField);
+				type = referenceFormType;
 			}
+		}
+		for (var i = 0; i < data.length; i++) {
+			geofences.push(new PointGeofence(data[i].nid, type, data[i].lat, data[i].lng, radius));
 		}
 	} catch(error) {
 		Ti.API.error('Error in PointGeofence.newFromDB: ' + error);
@@ -89,34 +109,86 @@ PointGeofence.newFromDB = function(formType, addressField, radiusInMeters) {
 
 /* PRIVATE STATIC METHODS */
 
-PointGeofence._getDataFromDB = function(formType, addressField) {
-	var result = Database.query("SELECT nid, " + addressField + "___lat as lat, " + addressField + "___lng as lng FROM " + formType + " WHERE lat IS NOT NULL AND lng IS NOT NULL");
-	
-	var data = [];
-	
-	while (result.isValidRow()) {
-		var row = {
-			nid: result.fieldByName('nid'),
-			lat: parseFloat(result.fieldByName('lat')),
-			lng: parseFloat(result.fieldByName('lng'))
-		};
-		
-		if (row.lat || row.lng) {
-			data.push(row);
-		}
-		
-		result.next();
+PointGeofence._getRadius = function(formType, addressField) {
+	var fields = Node.getFields(formType);
+	if (fields &&
+		fields[addressField] &&
+		fields[addressField].settings &&
+		fields[addressField].settings.geofence &&
+		fields[addressField].settings.geofence.temp_geofence_radius) {
+		return fields[addressField].settings.geofence.temp_geofence_radius;
 	}
-	
-	result.close();
-	Database.close();
-	
-	return data;
+	return 201;
 };
 
-PointGeofence._hasRunsheets = function() {
-	var result = Database.query("SELECT * FROM node WHERE table_name = 'runsheet'");
-	return result.isValidRow();
+PointGeofence._getReferenceNids = function(formType, referenceField) {
+	var referenceNids = [];
+	try {
+		var result = Database.query('SELECT ' + referenceField + ' FROM ' + formType + ' WHERE ' + referenceField + ' IS NOT NULL AND nid > 0');
+		while (result.isValidRow()) {
+			var nids = Utils.getParsedJSON(result.fieldByName(referenceField));
+			if (!Utils.isArray(nids)) {
+				nids = [nids];
+			}
+			for (var i = 0; i < nids.length; i++) {
+				referenceNids.push(parseInt(nids[i], 10));
+			}
+			result.next();
+		}
+		result.close();
+		Database.close();
+	} catch (error) {
+		Utils.sendErrorReport('Error in PointGeofence._getReferenceNids: ' + error);
+	}
+	return referenceNids;
+};
+
+
+PointGeofence._getFormType = function(nid) {
+	var formType;
+	try {
+		var result = Database.query('SELECT table_name FROM node WHERE nid = ' + nid);
+		if (result.isValidRow()) {
+			formType = result.fieldByName('table_name');
+		}
+		result.close();
+		Database.close();
+	} catch (error) {
+		Utils.sendErrorReport('Error in PointGeofence._getFromType: ' + error);
+	}
+	return formType;
+};
+
+PointGeofence._getDataFromDB = function(formType, addressField, nids) {
+	var data = [];
+	
+	try {
+		var query = 'SELECT nid, ' + addressField + '___lat as lat, ' + addressField + '___lng as lng FROM ' + formType + ' WHERE lat IS NOT NULL AND lng IS NOT NULL';
+		if (nids) {
+			query += ' AND nid IN (' + nids.join(', ') + ')';
+		}
+		var result = Database.query(query);
+		while (result.isValidRow()) {
+			var row = {
+				nid: result.fieldByName('nid'),
+				lat: parseFloat(result.fieldByName('lat')),
+				lng: parseFloat(result.fieldByName('lng'))
+			};
+			
+			if (row.lat || row.lng) {
+				data.push(row);
+			}
+			
+			result.next();
+		}
+		
+		result.close();
+		Database.close();
+	} catch (error) {
+		Utils.sendErrorReport('Error in PointGeofence._getDataFromDB: ' + error);
+	}
+		
+	return data;
 };
 
 module.exports = PointGeofence;

@@ -189,15 +189,12 @@ Omadi.push_notifications.getPassword = function() {"use strict";
     return password;
 };
 
-Omadi.push_notifications.logoutUser = function(callback) {"use strict";
-    
+Omadi.push_notifications.logoutUser = function() {"use strict";
     Ti.App.registeredPushListener = false;
-    
-    if(typeof callback === 'undefined'){
-        callback = null;
-    }
-    
-    Omadi.push_notifications.unsubscribeACSPush();
+    Omadi.push_notifications.unsubscribeACSPush(Omadi.push_notifications.logoutACSUser);  
+};
+
+Omadi.push_notifications.logoutACSUser = function(){"use strict";
     
     Cloud.Users.logout(function(e) {
         if (e.success) {
@@ -212,12 +209,9 @@ Omadi.push_notifications.logoutUser = function(callback) {"use strict";
            
             Utils.sendErrorReport('onACSLogout ' + JSON.stringify(e));
         }
-        
-        if(callback !== null){
-            callback();
-        }
     });
 };
+
 
 Omadi.push_notifications.unsubscribeACSPush = function(callback){"use strict";
     

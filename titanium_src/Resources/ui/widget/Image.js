@@ -132,7 +132,6 @@ ImageWidget.prototype.getNewElement = function(index){
         arrImages : null,
         scrollType : 'horizontal',
         layout : 'horizontal',
-
         instance : this.instance
     });
     

@@ -2,6 +2,7 @@
 Omadi.bundles.timecard = {};
 
 var Utils = require('lib/Utils');
+var TimecardGeofenceVerifier = require('objects/TimecardGeofenceVerifier');
 
 Omadi.bundles.timecard.askClockOutLogout = function(){"use strict";
     var verifyLogout;
@@ -17,7 +18,12 @@ Omadi.bundles.timecard.askClockOutLogout = function(){"use strict";
         verifyLogout.addEventListener('click', function(e) {
             try{
                 if(e.index == 0){
-                    Omadi.bundles.timecard.doClockOut(true);
+                	if (TimecardGeofenceVerifier.getInstance().canClockOut()) {
+                		Omadi.bundles.timecard.doClockOut(true);
+                	} else {
+                		alert('Clock out failed: ' + TimecardGeofenceVerifier.getInstance().getError());
+                	}
+                    
                 }
                 else if (e.index == 1) {
                     Ti.API.info("Logging out from 3-button timecard dialog.");
@@ -67,14 +73,18 @@ Omadi.bundles.timecard.askClockIn = function(){"use strict";
             });
             
             dialog.addEventListener('click', function(e){
-               try{
-                   if(e.index == 0){
-                       Omadi.bundles.timecard.doClockIn();
-                   }
-                   
-                   if(typeof alertQueue !== 'undefined'){
-                       Ti.App.fireEvent('showNextAlertInQueue');
-                   }
+				try{
+					if (e.index == 0) {
+						if (TimecardGeofenceVerifier.getInstance().canClockIn()) {
+							Omadi.bundles.timecard.doClockIn();
+						} else {
+							alert('Clock in failed: ' + TimecardGeofenceVerifier.getInstance().getError());
+						}
+					}
+					
+					if (typeof alertQueue !== 'undefined') {
+						Ti.App.fireEvent('showNextAlertInQueue');
+					}
                 }
                 catch(ex){
                     Utils.sendErrorReport("exception in clock in now?: " + ex);
@@ -122,10 +132,18 @@ Omadi.bundles.timecard.doClockIn = function() {"use strict";
     uid = Omadi.utils.getUid();
     now = Omadi.utils.getUTCTimestamp();
     
+    var nids = [];
+    var geofences = TimecardGeofenceVerifier.getInstance().getCurrentGeofences();
+    for (var i = 0; i < geofences.length; i++) {
+    	nids.push(geofences[i].getNid());
+    }
     node = {
         nid : Omadi.data.getNewNodeNid(),
         clock_in_time : {
             dbValues : [now]
+        },
+        clock_in_reference: {
+        	dbValues: nids
         },
         user_0 : {
             dbValues: [uid]  
@@ -159,7 +177,7 @@ Omadi.bundles.timecard.doClockIn = function() {"use strict";
 
 Omadi.bundles.timecard.userShouldClockInOut = function(){"use strict";
     var loginDetails, bundle;
-    
+        
     loginDetails = JSON.parse(Ti.App.Properties.getString("Omadi_session_details"));
     
     if(typeof loginDetails.user.user_should_clock_inout !== 'undefined' && 
@@ -216,6 +234,14 @@ Omadi.bundles.timecard.doClockOut = function(logoutNext) {"use strict";
     now = Omadi.utils.getUTCTimestamp();
     lastNode.clock_out_time = {
         dbValues : [now]
+    };
+    var nids = [];
+    var geofences = TimecardGeofenceVerifier.getInstance().getCurrentGeofences();
+    for (var i = 0; i < geofences.length; i++) {
+    	nids.push(geofences[i].getNid());
+    }
+    lastNode.clock_out_reference = {
+        dbValues : nids
     };
     lastNode.changed = now;
     lastNode.changed_uid = Omadi.utils.getUid();
