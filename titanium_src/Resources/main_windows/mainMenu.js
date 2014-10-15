@@ -1024,6 +1024,10 @@ function openFormWindow(e){"use strict";
     // Make sure the field cache is reset if the user is logging into a separate account
     Node.resetFieldCache();
 	var NFCListener = require('services/NFCListener');
+	
+	
+	var RouteListener = require('objects/RouteListener');
+	RouteListener.askToStartRoute();
     
     var db, result, formWindow, time_format, askAboutInspection, dialog, i, showingAlert, nowTimestamp;
     

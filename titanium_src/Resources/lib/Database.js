@@ -177,3 +177,18 @@ exports.escape = function(string){"use strict";
     return getInstance().escape(string);
 };
 
+exports.resultToObject = function(result) {
+	var fieldCount = result.getFieldCount();
+	var data = [];
+	
+	while (result.isValidRow()) {
+		var row = {};
+		for (var i = 0; i < fieldCount; i++) {
+			row[result.getFieldName(i)] = result.field(i);
+		}
+		data.push(row);
+		result.next();
+	}
+	
+	return data;
+};
