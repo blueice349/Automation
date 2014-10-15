@@ -43,7 +43,7 @@ RDNGeofenceListener.prototype.addOrUpdateGeofence = function(nid, lat, lng) {
 	
 	if (!existingGeofence || existingGeofence.getLat() != lat || existingGeofence.getLng() != lng) {
 		var geofence = new PointGeofence(nid, lat, lng, RDNGeofenceListener.GEOFENCE_RADIUS_METERS);
-		geofence.setData('formType', 'runsheet')
+		geofence.setProperty('formType', 'runsheet');
 		geofenceServices.registerGeofence(geofence);
 	}
 };
