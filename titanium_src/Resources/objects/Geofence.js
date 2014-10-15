@@ -3,12 +3,11 @@
 
 var Utils = require('lib/Utils');
 
-var Geofence = function(nid, formType) {
+var Geofence = function(nid) {
 	this.breached = false;
 	this.nid = nid;
-	this.formType = formType;
 	this.restored = false;
-	this.data = {};
+	this.properties = {};
 };
 
 /* PUBLIC METHODS */
@@ -33,20 +32,16 @@ Geofence.prototype.getNid = function() {
 	return this.nid;
 };
 
-Geofence.prototype.getFormType = function() {
-	return this.formType;
-};
-
 Geofence.prototype.wasRestored = function() {
 	return this.restored;
 };
 
-Geofence.prototype.getData = function() {
-	return this.data;
+Geofence.prototype.getProperty = function(property) {
+	return this.properties[property];
 };
 
-Geofence.prototype.setData = function(data) {
-	this.data = data || {};
+Geofence.prototype.setProperty = function(key, value) {
+	this.properties[key] = value;
 };
 
 Geofence.prototype.isBreached = function() {

@@ -1,16 +1,25 @@
 /* jshint globalstrict:true */
 'use strict';
 
+var RouteLocation = require('objects/RouteLocation');
 var Database = require('lib/Database');
+var Utils = require('lib/Utils');
 
 var RouteListener = function(route) {
 	this.nid = route.id;
-	
-	console.log('------ route: ' + JSON.stringify(route));
+	this.locationNids = JSON.parse(route.locations);
+	this.locations = [];
+	this.currentLocationIndex = 0;
 };
 
-RouteListener.prototype.registerCheckpoints = function() {
-	 //var result = Database.query();
+RouteListener.prototype._getLocations = function() {
+	if (this.locations === null) {
+		this.locations = [];
+		for (var i = 0; i < this.locationNids.length; i++) {
+			this.locations.push(new RouteLocation(this.locationNids[i]));
+		}
+	}
+	return this.locations;
 };
 
 var instance = null;

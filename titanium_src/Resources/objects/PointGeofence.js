@@ -15,19 +15,27 @@ Function.prototype.inheritsFrom = function(parent) {
 	return child;
 };
 
-var PointGeofence = function(nid, formType, lat, lng, radiusInMeters) {
+var PointGeofence = function(nid, lat, lng, radiusInMeters) {
+	this.parent.constructor.call(this, nid);
 	
-	this.parent.constructor.call(this, nid, formType);
-	
-	this.lat = parseFloat(lat);
-	this.lng = parseFloat(lng);
-	
+	this.data = null;
+	this.radius = null;
+	this.addressField = null;
+	this.lat = null;
+	this.lng = null;
 	this.minLat = null;
 	this.maxLat = null;
 	this.radiusLat = null;
 	this.minLng = null;
 	this.maxLng = null;
 	this.radiusLng = null;
+	
+	lat = lat || this._getData().lat;
+	lng = lng || this._getData().lng;
+	radiusInMeters = radiusInMeters || this._getRadius();
+	
+	this.lat = parseFloat(lat);
+	this.lng = parseFloat(lng);
 	
 	this._calculateBoundingBox(this.lat, this.lng, radiusInMeters);
 };
@@ -51,6 +59,33 @@ PointGeofence.prototype.isInBounds = function(lat, lng) {
 };
 
 /* PRIVATE METHODS */
+
+PointGeofence.prototype._getData = function() {
+	if (this.data === null) {
+		this.data = PointGeofence._getDataFromDB(this._getFormType(), this._getAddressField(), [this.nid]);
+	}
+	return this.data;
+};
+PointGeofence.prototype._getRadius = function() {
+	if (this.radius === null) {
+		this.radius = PointGeofence._getRadius(this._getFormType(), this._getAddressField());
+	}
+	return this.radius;
+};
+
+PointGeofence.prototype._getAddressField = function() {
+	if (this.addressField === null) {
+		this.addressField = PointGeofence._getAddressField(this._getFormType());
+	}
+	return this.addressField;
+};
+
+PointGeofence.prototype._getFormType = function() {
+	if (this.formType === null) {
+		this.formType = PointGeofence._getFormType(this.nid);
+	}
+	return this.formType;
+};
 
 PointGeofence.prototype._calculateBoundingBox = function(lat, lng, radiusInMeters) {
 	var key = Math.abs(Math.floor(lat / 5) * 5).toFixed();
@@ -98,7 +133,7 @@ PointGeofence.newFromDB = function(formType, referenceField, addressField) {
 			}
 		}
 		for (var i = 0; i < data.length; i++) {
-			geofences.push(new PointGeofence(data[i].nid, type, data[i].lat, data[i].lng, radius));
+			geofences.push(new PointGeofence(data[i].nid, data[i].lat, data[i].lng, radius));
 		}
 	} catch(error) {
 		Ti.API.error('Error in PointGeofence.newFromDB: ' + error);
@@ -109,16 +144,25 @@ PointGeofence.newFromDB = function(formType, referenceField, addressField) {
 
 /* PRIVATE STATIC METHODS */
 
+PointGeofence._radiusCache = {};
 PointGeofence._getRadius = function(formType, addressField) {
-	var fields = Node.getFields(formType);
-	if (fields &&
-		fields[addressField] &&
-		fields[addressField].settings &&
-		fields[addressField].settings.geofence &&
-		fields[addressField].settings.geofence.temp_geofence_radius) {
-		return fields[addressField].settings.geofence.temp_geofence_radius;
+	if (!PointGeofence._radiusCache[formType]) {
+		PointGeofence._radiusCache[formType] = {};
 	}
-	return 201;
+	
+	if (!PointGeofence._radiusCache[formType][addressField]) {
+		var fields = Node.getFields(formType);
+		if (fields &&
+			fields[addressField] &&
+			fields[addressField].settings &&
+			fields[addressField].settings.geofence &&
+			fields[addressField].settings.geofence.temp_geofence_radius) {
+			PointGeofence._radiusCache[formType][addressField] = fields[addressField].settings.geofence.temp_geofence_radius;
+		} else {
+			PointGeofence._radiusCache[formType][addressField] = 201;
+		}
+	}
+	return PointGeofence._radiusCache[formType][addressField];
 };
 
 PointGeofence._getReferenceNids = function(formType, referenceField) {
@@ -143,20 +187,21 @@ PointGeofence._getReferenceNids = function(formType, referenceField) {
 	return referenceNids;
 };
 
-
+PointGeofence._formTypeCache = {};
 PointGeofence._getFormType = function(nid) {
-	var formType;
-	try {
-		var result = Database.query('SELECT table_name FROM node WHERE nid = ' + nid);
-		if (result.isValidRow()) {
-			formType = result.fieldByName('table_name');
+	if (!PointGeofence._formTypeCache[nid]) {
+		try {
+			var result = Database.query('SELECT table_name FROM node WHERE nid = ' + nid);
+			if (result.isValidRow()) {
+				PointGeofence._formTypeCache[nid] = result.fieldByName('table_name');
+			}
+			result.close();
+			Database.close();
+		} catch (error) {
+			Utils.sendErrorReport('Error in PointGeofence._getFromType: ' + error);
 		}
-		result.close();
-		Database.close();
-	} catch (error) {
-		Utils.sendErrorReport('Error in PointGeofence._getFromType: ' + error);
 	}
-	return formType;
+	return PointGeofence._formTypeCache[nid];
 };
 
 PointGeofence._getDataFromDB = function(formType, addressField, nids) {
@@ -189,6 +234,10 @@ PointGeofence._getDataFromDB = function(formType, addressField, nids) {
 	}
 		
 	return data;
+};
+
+PointGeofence._getAddressField = function(formType) {
+	return Utils.getBundle(formType).mobile.location_sort_field || 'location';
 };
 
 module.exports = PointGeofence;

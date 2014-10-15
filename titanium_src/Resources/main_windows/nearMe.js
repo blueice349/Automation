@@ -1,6 +1,8 @@
 /*global Omadi*/
 
 var Display = require('lib/Display');
+var Database = require('lib/Database');
+var Utils = require('lib/Utils');
 Display.setCurrentWindow(Ti.UI.currentWindow, 'nearMe');
 
 Ti.include('/lib/functions.js');
@@ -10,7 +12,7 @@ var win;
 
 var initWin = function() {'use strict';
 	win = Ti.UI.currentWindow;
-	win.bundle = Omadi.data.getBundle(win.formType);
+	win.bundle = Utils.getBundle(win.formType);
 	win.setBackgroundColor('#eee');
 };
 
@@ -38,8 +40,7 @@ var getSortField = function() {'use strict';
 };
 
 var getDataFromDB = function() {'use strict';
-	var db = Omadi.utils.openMainDatabase();
-	var result = db.execute("SELECT n.title, n.nid, n.viewed, type." + getSortField() + "___lat as lat, type." + getSortField() + "___lng as lng FROM node n INNER JOIN " + win.formType + " type ON type.nid = n.nid" + getFilterQuery());
+	var result = Database.query("SELECT n.title, n.nid, n.viewed, type." + getSortField() + "___lat as lat, type." + getSortField() + "___lng as lng FROM node n INNER JOIN " + win.formType + " type ON type.nid = n.nid" + getFilterQuery());
 	
 	var data = [];
 	
@@ -55,7 +56,7 @@ var getDataFromDB = function() {'use strict';
 	}
 	
 	result.close();
-	db.close();
+	Database.close();
 	
 	return data;
 };
