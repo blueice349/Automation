@@ -1,5 +1,4 @@
 /*jslint node:true */
-/*global Omadi */
 'use strict';
 
 var Geofence = require('objects/Geofence');
@@ -237,7 +236,7 @@ PointGeofence._getDataFromDB = function(formType, addressField, nids) {
 };
 
 PointGeofence._getAddressField = function(formType) {
-	return Utils.getBundle(formType).mobile.location_sort_field || 'location';
+	return Node.getBundle(formType).mobile.location_sort_field || 'location';
 };
 
 module.exports = PointGeofence;

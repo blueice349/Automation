@@ -1,11 +1,10 @@
 /*jshint globalstrict:true */
-/* global Omadi */
 'use strict';
 
 var GeofenceServices = require('services/GeofenceServices');
 var PointGeofence = require('objects/PointGeofence');
 var Database = require('lib/Database');
-var Utils = require('lib/Utils');
+var Node = require('objects/Node');
 
 var TimecardGeofenceVerifier = function() {
 	this.verifyClockIn = null;
@@ -61,7 +60,7 @@ TimecardGeofenceVerifier.prototype.getError = function() {
 };
 
 TimecardGeofenceVerifier.prototype.clearCache = function() {
-	var bundle = Utils.getBundle('timecard');
+	var bundle = Node.getBundle('timecard');
 	this.enabled = bundle.data.timecard.allow_geofence_verification == 1;
 	if (JSON.stringify(bundle.data.locations) !== JSON.stringify(this._getLocationReferences())) {
 		this.locationReferences = bundle.data.locations;
@@ -119,7 +118,7 @@ TimecardGeofenceVerifier.prototype._handleLocationChanged = function() {
 
 TimecardGeofenceVerifier.prototype._isEnabled = function() {
 	//if (this.enabled === null) {
-		var bundle = Utils.getBundle('timecard');
+		var bundle = Node.getBundle('timecard');
 		this.enabled = bundle.data.timecard.allow_geofence_verification == 1;
 	//}
 	return this.enabled;
@@ -151,7 +150,7 @@ TimecardGeofenceVerifier.prototype._getUserJson = function() {
 };
 
 TimecardGeofenceVerifier.prototype._getLocationReferences = function() {
-	var bundle = Utils.getBundle('timecard');
+	var bundle = Node.getBundle('timecard');
 	this.locationReferences = bundle.data.timecard.locations || [];
 	return this.locationReferences;
 };

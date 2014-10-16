@@ -1846,26 +1846,3 @@ exports.joinAsSentence = function(arr){
 	arr[arr.length - 1] = 'and ' + arr[arr.length - 1];
 	return arr.join(', ');
 };
-
-var bundleCache = {};
-exports.getBundle = function(type, reset) {
-    if(!bundleCache[type] || reset) {
-        var result = Database.query('SELECT _data, display_name, can_create, can_view, child_forms FROM bundles WHERE bundle_name="' + type + '"');
-        if (result.isValidRow()) {
-        	bundleCache[type] = {
-                type : type,
-                data : JSON.parse(result.fieldByName('_data')),
-                child_forms : JSON.parse(result.fieldByName('child_forms')),
-                label : result.fieldByName('display_name'),
-                can_create : result.fieldByName('can_create', Ti.Database.FIELD_TYPE_INT),
-                can_view : result.fieldByName('can_view', Ti.Database.FIELD_TYPE_INT)
-            };
-        } else {
-            bundleCache[type] = null;
-        }
-    
-        result.close();
-        Database.close();
-    }
-    return bundleCache[type];
-};

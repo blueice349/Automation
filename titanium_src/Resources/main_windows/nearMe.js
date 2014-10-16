@@ -2,7 +2,7 @@
 
 var Display = require('lib/Display');
 var Database = require('lib/Database');
-var Utils = require('lib/Utils');
+var Node = require('objects/Node');
 Display.setCurrentWindow(Ti.UI.currentWindow, 'nearMe');
 
 Ti.include('/lib/functions.js');
@@ -12,7 +12,7 @@ var win;
 
 var initWin = function() {'use strict';
 	win = Ti.UI.currentWindow;
-	win.bundle = Utils.getBundle(win.formType);
+	win.bundle = Node.getBundle(win.formType);
 	win.setBackgroundColor('#eee');
 };
 

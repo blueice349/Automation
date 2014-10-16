@@ -129,42 +129,18 @@ exports.reset = function(){"use strict";
 };
 
 exports.query = function(sql){"use strict"; 
-    try{ 
-        var db = getInstance().getMainDBConn();
-        return db.execute(sql);
-    }
-    catch(ex){
-        var Utils = require('lib/Utils');
-		Utils.sendErrorReport("Exception running Main " + sql + ":" + ex);
-    }
-    
-    return null;
+    var db = getInstance().getMainDBConn();
+    return db.execute(sql);
 };
 
 exports.queryList = function(sql){"use strict"; 
-    try{
-        var db = getInstance().getListDBConn();
-        return db.execute(sql);
-    }
-    catch(ex){
-        var Utils = require('lib/Utils');
-        Utils.sendErrorReport("Exception running List " + sql + ":" + ex);
-    }
-    
-    return null;
+    var db = getInstance().getListDBConn();
+    return db.execute(sql);
 };
 
-exports.queryGPS = function(sql){"use strict"; 
-    try{
-        var db = getInstance().getGPSDBConn();
-        return db.execute(sql);
-    }
-    catch(ex){
-        var Utils = require('lib/Utils');
-        Utils.sendErrorReport("Exception running List " + sql + ":" + ex);
-    }
-    
-    return null;
+exports.queryGPS = function(sql){"use strict";
+    var db = getInstance().getGPSDBConn();
+    return db.execute(sql);
 };
 
 exports.close = function(){"use strict";
@@ -177,7 +153,7 @@ exports.escape = function(string){"use strict";
     return getInstance().escape(string);
 };
 
-exports.resultToObject = function(result) {
+exports.resultToObjectArray = function(result) {
 	var fieldCount = result.getFieldCount();
 	var data = [];
 	

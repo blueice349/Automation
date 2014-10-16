@@ -3,6 +3,8 @@
 
 var Database = require('lib/Database');
 var Utils = require('lib/Utils');
+var Location = require('lib/Location');
+var Display = require('lib/Display');
 
 var Node = function() {
 	
@@ -34,10 +36,10 @@ Node.getNodeType = function(nid){
 };
 
 Node.load = function(nid) {
-    var db, node, result, subResult, field_name, dbValue, tempDBValues, textValue, 
+    var node, result, subResult, field_name, dbValue, tempDBValues, textValue, 
         subValue, decoded, i, real_field_name, part, field_parts, widget, instances, 
         tempValue, origDBValue, jsonValue, allowedValues, allowedKey, filePath, newNid,
-        listDB, intNid;
+        intNid;
 
     node = null;
     
@@ -562,7 +564,7 @@ Node.resetFieldCache = function(){
 };
 
 Node.getFields = function(type) {
-	var db, result, instances, field_name, nameParts;
+	var result, instances, field_name, nameParts;
     
     if (Node.cache.fields[type]) {
         instances = Node.cache.fields[type];
@@ -641,6 +643,616 @@ Node.getFirstStreetAddress = function(node) {
     return '';
 };
 
+var savingNode = false;
+Node.save = function(node) {
+    var query, field_name, fieldNames, instances, result, smallestNid, insertValues, j, k, 
+        instance, value_to_insert, has_data, content_s, saveNid, continuousNid, photoNids, origNid,
+        continuousId, tempNid, trueWindowNid, priceIdx, priceTotal, priceData, 
+        jsonValue, nodeHasData, lastLocation;
+   
+    // Only one save at a time
+    if(savingNode){
+        Ti.API.info("The node was not saved because another node is already being saved.");
+        node._error = 'A timing error prevented the form save.';
+        return node;    
+    }
+    
+    // Set the lock to make sure no other asyncronous activities run this function simultaneously
+    savingNode = true;
+    
+    try{
+        node._saved = false;
+    
+        instances = Node.getFields(node.type);
+    
+        fieldNames = [];
+    
+        for (field_name in instances) {
+            if (instances.hasOwnProperty(field_name)) {
+                if (field_name != null && typeof instances[field_name] !== 'undefined') {
+                    
+                    // Don't save anything for rules_field, as they are read-only for mobile devices
+                    if(instances[field_name].type != 'rules_field'){
+                        fieldNames.push(field_name);
+                        
+                        if(instances[field_name].type == 'extra_price'){
+                            // Must check if data exists in node to add the extra field since the same
+                            // check is done later on to add the data.
+                            // This this is wrong, the column vs value count could be off.
+                            if ( typeof node[field_name] !== 'undefined') {
+                                fieldNames.push(field_name + "___data");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+      
+        // For autocomplete widgets
+        node = Node.addNewTerms(node);
+        
+        node.title = Node.getTitle(node);
+        
+        // Setup the default for the saveNid
+        saveNid = node.nid;
+        
+        if(node._isContinuous){
+            
+            Ti.API.debug("Saving continuous id: " + node.continuous_nid);
+            
+            // Start a new record if the continuous_nid isn't set
+            if(!node.continuous_nid){
+                node.continuous_nid = Node.getNewNid();
+            }
+            
+            // Save the actual nid as the continuous negative NID
+            saveNid = node.continuous_nid;
+            origNid = node.nid;
+            
+            if(isNaN(origNid)){
+                origNid = 0;
+            }
+            
+            try{
+                // A timing issue could come up where the continuous save interval happens after the regular save
+                // This would overwrite the correctly saved node with a continuous save one, and it would be deleted after the window closes
+                // This code should stay in place even after we change from intervals to saving after a value changes, as some kind of timeout will have to still be in place
+                // The best way to get into this code is to turn off internet connection, save the node, and wait on the "No Internet Connection" alert
+                var getNewNid = false;
+                result = Database.query("SELECT COUNT(*) FROM node WHERE nid = " + saveNid + " AND flag_is_updated IN (0,1)");
+                if(result.isValidRow()){
+                    if(result.field(0, Ti.Database.FIELD_TYPE_INT) > 0){
+                        getNewNid = true;
+                    }
+                }
+                result.close();
+                Database.close();
+                
+                if(getNewNid){
+                    Ti.API.debug("Retrieving new save nid because the current one is already taken.");
+                    saveNid = node.continuous_nid = Node.getNewNid();
+                }
+                
+            } catch(ex){
+                Utils.sendErrorReport("Exception checking the nid of a continuous save: " + ex);
+            }
+           
+            // The continuous_nid will be saved as the current window's NID
+        }
+        else if (node.nid == 'new') {
+            Ti.API.debug("Saving new node");
+            if(!node.continuous_nid){
+                node.continuous_nid = Node.getNewNid();
+            }
+            node.nid = saveNid = node.continuous_nid;
+        }
+        else if(node._isDraft){
+            // This else if must come after the node.nid == 'new'
+            
+            // If the draft is already saved as a negative nid, then don't generate a new one
+            // If this node has a positive nid, make sure we create a copy with a new negative nid
+            if(node.nid > 0){
+                node.origNid = node.nid;
+                saveNid = node.continuous_nid;
+            }
+        }
+        else if(node.flag_is_updated == 3 && node.continuous_nid < 0){
+            // This was saved as a draft, and we are doing a regular save
+            // Delete the draft version after a successful node save
+            // as a continuous save is saved over the original draft
+            // The logic elsewhere will not delete the node unless the node is correctly saved
+            Ti.API.debug("Saving draft to normal: " + JSON.stringify(node));
+            if(node.nid > 0){
+                // Add any newly0 created/removed attachments to the draft so they aren't lost
+				Database.queryList("UPDATE _files SET nid = " + node.nid + " WHERE nid=" + node.continuous_nid);
+				Database.close();
+				
+                // Only do the delete when the original nid is greater than 0
+                // ie. a draft should not be deleted if it's never been to the server, or the data moving to the server will be deleted
+                node._deleteNid = node.continuous_nid;
+            }
+            
+            saveNid = node.nid;
+        }
+        else{
+            saveNid = node.nid;
+        }
+        
+        node._saveNid = saveNid;
+        
+        if(typeof node.sync_hash === 'undefined' || node.sync_has == null){
+            node.sync_hash = Ti.Utils.md5HexDigest(JSON.stringify(node) + (new Date()).getTime());
+        }
+    }
+    catch(ex){
+        Utils.sendErrorReport("Exception in first part of node save: " + ex);
+    }
+    
+    try {
+        nodeHasData = false;
+        
+        if(fieldNames.length > 0){
+            query = "INSERT OR REPLACE INTO " + node.type + " (nid, `";
+            query += fieldNames.join('`,`');
+            query += "`) VALUES (" + saveNid + ',';
+    
+            insertValues = [];
+            
+            for (j = 0; j < fieldNames.length; j++) {
+                field_name = fieldNames[j];
+                
+                if (instances[field_name] != null) {
+                    instance = instances[field_name];
+    
+                    value_to_insert = null;
+    
+                    if ( typeof node[field_name] !== 'undefined') {
+    
+                        //Build cardinality for fields
+                        if (instance.settings.cardinality == -1 || instance.settings.cardinality > 1) {
+    
+                            has_data = false;
+    
+                            for ( k = 0; k < node[field_name].dbValues.length; k++) {
+                                if (node[field_name].dbValues[k] !== null) {
+                                    has_data = true;
+                                }
+                            }
+    
+                            if (has_data) {
+                                value_to_insert = JSON.stringify(node[field_name].dbValues);
+                            }
+                        }
+                        else if(instance.type == 'extra_price'){
+                            priceTotal = 0;
+                            priceData = [];
+                            
+                            // Add up all the prices and save the total amount
+                            if(node[field_name].dbValues.length > 0){
+                                
+                                for(priceIdx = 0; priceIdx < node[field_name].dbValues.length; priceIdx ++){
+                                    
+                                    if(!isNaN(parseFloat(node[field_name].dbValues[priceIdx]))){
+                                        priceTotal += parseFloat(node[field_name].dbValues[priceIdx]);
+                                        
+                                        try{
+                                            if(typeof node[field_name].textValues[priceIdx] !== 'undefined'){
+                                                jsonValue = JSON.parse(node[field_name].textValues[priceIdx]);
+                                            }
+                                            else{
+                                                jsonValue = {};
+                                            }
+                                        }
+                                        catch(exJSON){
+                                            Utils.sendErrorReport("Could not parse JSON for extra_price: " + node[field_name].textValues[priceIdx]);
+                                        }
+                                        if(jsonValue != null){
+                                            priceData.push(jsonValue);
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            insertValues.push(priceTotal);
+                            value_to_insert = JSON.stringify(priceData);
+                            
+                            if(priceTotal != 0){
+                                nodeHasData = true;
+                            }
+                        }
+                        else {
+                            if (node[field_name].dbValues.length == 1) {
+                                value_to_insert = node[field_name].dbValues[0];
+                            }   
+                        }
+                    }
+    
+                    if (value_to_insert === null) {
+                        insertValues.push('null');
+                    }
+                    else {
+                        switch(instance.type) {
+    
+                            case 'user_reference':
+                            case 'taxonomy_term_reference':
+                            case 'omadi_reference':
+                            case 'datestamp':
+                            case 'omadi_time':
+                            case 'auto_increment':
+                            case 'image':
+                            case 'file':
+    
+                                if (Utils.isEmpty(value_to_insert)) {
+                                    value_to_insert = "null";
+                                }
+                                else{
+                                    nodeHasData = true;
+                                }
+    
+                                insertValues.push("'" + Utils.dbEsc(value_to_insert) + "'");
+                                break;
+    
+                            case 'number_decimal':
+                            case 'number_integer':
+                            case 'list_boolean':
+                            case 'calculation_field':
+                            case 'extra_price':
+    
+                                if (Utils.isEmpty(value_to_insert) && value_to_insert != 0) {
+                                    insertValues.push('null');
+                                }
+                                else {
+                                    insertValues.push("'" + Utils.dbEsc(value_to_insert) + "'");
+                                    nodeHasData = true;
+                                }
+                                break;
+    
+                            default:
+                                
+                                if(("".toString() + value_to_insert).length > 0){
+                                    nodeHasData = true;    
+                                }
+                                
+                                insertValues.push("'" + Utils.dbEsc(value_to_insert) + "'");
+                                break;
+                        }
+                    }
+                }
+            }
+    
+            query += insertValues.join(',');
+            query += ")";
+            
+        }
+        
+        // Only save if data exists or it's a continuously saved node in the background
+        if(nodeHasData || node._isContinuous){
+            
+            try {
+                Ti.API.debug(query);
+                Database.query(query);
+                
+                // Make sure dispatch_nid is set for the save
+                if(typeof node.dispatch_nid === 'undefined'){
+                    node.dispatch_nid = 0;
+                }
+                
+                if(typeof node.custom_copy_orig_nid === 'undefined'){
+                    node.custom_copy_orig_nid = 0;
+                }
+                
+                if(typeof node.viewed === 'undefined'){
+                    node.viewed = 0;
+                }
+                
+                if (node._isContinuous) {          
+                    Ti.API.debug("SAVING TO CONTINUOUS: " + saveNid + " " + origNid + " " + node.dispatch_nid);    
+                    
+                    query = "INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid, dispatch_nid, copied_from_nid) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + Utils.dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",4,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1," + origNid + "," + node.dispatch_nid + "," + node.custom_copy_orig_nid + ")";
+                }
+                else if (node._isDraft) {
+                    // Only save drafts as a negative nid
+                    query = "INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid, dispatch_nid, copied_from_nid) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + Utils.dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",3,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1," + node.origNid + "," + node.dispatch_nid + "," + node.custom_copy_orig_nid + ")";
+                }
+                else{
+                    // This is a save the will be sent to the server
+                    
+                    lastLocation = Location.getLastLocation();
+                    
+                    if (saveNid > 0) {
+                        query = "UPDATE node SET changed=" + node.changed + 
+                            ", changed_uid=" + node.changed_uid + 
+                            ", title='" + Utils.dbEsc(node.title) + 
+                            "', flag_is_updated=1, table_name='" + node.type + 
+                            "', form_part=" + node.form_part + 
+                            ", no_data_fields='" + node.no_data + 
+                            "',viewed=" + node.viewed + 
+                            ", latitude='" + lastLocation.latitude +
+                            "', longitude='" + lastLocation.longitude +
+                            "', accuracy=" + lastLocation.accuracy +
+                            " WHERE nid=" + saveNid;
+                    }
+                    else {
+                        // Give all permissions for this node. Once it comes back, the correct permissions will be there.  If it never gets uploaded, the user should be able to do whatever they want with that info.
+                        query = "INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid, dispatch_nid, copied_from_nid, latitude, longitude, accuracy) VALUES (" + 
+                            saveNid + "," + 
+                            node.created + "," + 
+                            node.changed + ",'" + 
+                            Utils.dbEsc(node.title) + "'," + 
+                            node.author_uid + "," + 
+                            node.changed_uid + ",1,'" + 
+                            node.type + "'," + 
+                            node.form_part + ",'" + 
+                            node.no_data + "'," + 
+                            node.viewed + ",'" + 
+                            node.sync_hash + "',1,1,0," + 
+                            node.dispatch_nid + "," + 
+                            node.custom_copy_orig_nid + ",'" +
+                            lastLocation.latitude + "','" +
+                            lastLocation.longitude + "'," +
+                            lastLocation.accuracy + ")";
+                    }
+                }
+                
+                Ti.API.debug(query);
+                Database.query(query);
+                
+                photoNids = [0];
+                
+                if(!node.continuous_nid){
+                    continuousId = parseInt(node.continuous_nid, 10);
+                    if(!isNaN(continuousId) && continuousId != 0){
+                        photoNids.push(continuousId);
+                    }
+                }
+                
+                trueWindowNid = 'new';
+                if(!node.nid){
+                    trueWindowNid = parseInt(node.nid, 10);
+                    if(!isNaN(trueWindowNid) && trueWindowNid != 0){
+                        photoNids.push(trueWindowNid);
+                    }
+                }
+                
+                if(node.origNid){
+                    photoNids.push(node.origNid);
+                }
+                
+                // Do not save the photos to the continuous
+                // Do not save photos to a dispatch node or a timecard node
+                if(!node._isContinuous && node.type != 'dispatch' && node.type != 'timecard'){
+                    Database.queryList('UPDATE _files SET nid=' + saveNid + ' WHERE nid IN (' + photoNids.join(',') + ') AND finished=0');
+                    Database.close();
+                }
+    
+                node._saved = true;
+                Ti.API.debug("NODE SAVE WAS SUCCESSFUL");
+            
+            }
+            catch(ex1) {
+                Display.doneLoading();
+                alert("Error saving to the node table: " + ex1);
+                Database.query("DELETE FROM " + node.type + " WHERE nid = " + saveNid);
+                Utils.sendErrorReport("Error saving to the node table: " + ex1);
+            }
+        }    
+        else{
+            // The node didn't have any data to save in fields, so do not save, and send a report
+            Utils.sendErrorReport("Node has no data: " + JSON.stringify(node));
+            node._saved = false;
+        }
 
+    }
+    catch(ex2) {
+        Display.doneLoading();
+        alert("Error saving to " + node.type + " table: " + ex2 + " : " + query);
+        Utils.sendErrorReport("Error saving to " + node.type + " table: " + ex2 + " : " + query);
+    }
+	Database.close();
+    
+    if(node._saved === true){
+         if(typeof node._deleteNid !== 'undefined'){
+              // This was setup with the drafts section above
+              Node.deleteNode(node._deleteNid);  
+         }
+    }
+    
+    // Reset the lock to allow other nodes to save
+    savingNode = false;
+    
+    return node;
+};
+
+Node.deleteNode = function(nid){
+    var result, table_name, dispatchNid;
+    try{
+        // Currently, only delete negative nids, which are drafts or non-saved nodes
+        // To delete positive nids, we need to sync that to the server, which is not yet supported
+        if(nid < 0){
+            dispatchNid = 0;
+            
+            result = Database.query("SELECT table_name, dispatch_nid FROM node WHERE nid = " + nid);
+            
+            if(result.isValidRow()){
+                table_name = result.fieldByName("table_name");
+                dispatchNid = result.fieldByName("dispatch_nid", Ti.Database.FIELD_TYPE_INT);
+    
+                Database.query("DELETE FROM node WHERE nid = " + nid);
+                
+                if(table_name){
+                    Database.query("DELETE FROM " + table_name + " WHERE nid = " + nid);
+                }
+            }
+            
+            result.close();
+            
+            // Delete any photos from the DB where the nid matches
+            Database.queryList("UPDATE _files SET nid = -1000000 WHERE nid = " + nid);
+            Database.close();
+            
+            if(dispatchNid < 0){
+                Node.deleteNode(dispatchNid);
+            }
+        }
+    }
+    catch(ex){
+        Utils.sendErrorReport("Exception deleting node: " + ex);
+    }
+};
+
+Node.addNewTerms = function(node){
+    var instances, field_name, i;
+    
+    try{
+        instances = Node.getFields(node.type);
+        
+        for(field_name in instances){
+            if(instances.hasOwnProperty(field_name)){
+                if(typeof instances[field_name].type !== 'undefined' && instances[field_name].type == 'taxonomy_term_reference' && instances[field_name].widget.type == 'taxonomy_autocomplete'){
+                    
+                    if(typeof node[field_name] !== 'undefined' && typeof node[field_name].dbValues !== 'undefined'){
+                        for(i = 0; i < node[field_name].dbValues.length; i ++){
+                            if(node[field_name].dbValues[i] == -1){
+                                node[field_name].dbValues[i] = Node.insertNewTerm(instances[field_name].settings.vocabulary, node[field_name].textValues[i]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    catch(ex){
+        Utils.sendErrorReport("Exception in addNewTerms: " + ex);
+    }
+    
+    return node;
+};
+
+Node.insertNewTerm = function(machine_name, name){
+    var result, tid = -2, vid = 0, retval = null;
+    
+    try{
+        result = Database.query("SELECT MIN(tid) FROM term_data");
+        if(result.isValidRow()){
+            tid = result.field(0, Ti.Database.FIELD_TYPE_INT);
+            tid -= 1; 
+        }
+        result.close();
+        
+        result = Database.query("SELECT vid FROM vocabulary WHERE machine_name='" + Utils.dbEsc(machine_name) + "'");
+        if(result.isValidRow()){
+            vid = result.fieldByName('vid');
+            
+            // -2 is the first negative tid to use because -1 is a place holder for a non-set new term
+            tid = Math.min(tid, -2);
+            
+            Database.query("INSERT INTO term_data (tid, vid, name, description, weight, created) VALUES (" + tid + "," + vid + ",'" + Utils.dbEsc(name) + "','',0," + Utils.getUTCTimestamp() + ")");
+            Ti.API.debug("tid: " + tid);
+            retval = tid;
+        }
+        result.close();
+        Database.close();
+    }
+    catch(ex){
+        Utils.sendErrorReport("Exception in insertNewTerm: " + ex);
+    }
+    
+    return retval;
+};
+
+Node.getTitle = function(node) {
+    var title, bundle, index, field_name, titleValues = [], spacer = ' - ', realname, result;
+
+    title = "- No Title -";
+
+    bundle = Node.getBundle(node.type);
+    
+    if (bundle && typeof bundle.data.title_fields !== 'undefined') {
+        for (index in bundle.data.title_fields) {
+            if (bundle.data.title_fields.hasOwnProperty(index)) {
+                field_name = bundle.data.title_fields[index];
+
+                if (field_name == 'uid') {
+                    field_name = 'author_uid';
+                }
+
+                if ((field_name == 'author_uid' || field_name == 'changed_uid') && typeof node.changed_uid !== 'undefined') {
+                    titleValues.push(Utils.getRealname(node[field_name]));
+                }
+                else if ((field_name == 'created' || field_name == 'changed') && typeof node[field_name] !== 'undefined') {
+                    titleValues.push(Utils.formatDate(node[field_name], true));
+                }
+                else if ( typeof node[field_name] !== 'undefined' && typeof node[field_name].textValues !== 'undefined' && typeof node[field_name].textValues[0] !== 'undefined') {
+                    titleValues.push(node[field_name].textValues[0]);
+                }
+            }
+        }
+    }
+
+    if (titleValues.length > 0) {
+        if ( typeof bundle.data.title_fields_separator !== 'undefined') {
+            spacer = bundle.data.title_fields_separator;
+        }
+
+        title = titleValues.join(spacer);
+    }
+
+    return title;
+};
+
+var bundleCache = {};
+Node.getBundle = function(type, reset) {
+    if(!bundleCache[type] || reset) {
+        var result = Database.query('SELECT _data, display_name, can_create, can_view, child_forms FROM bundles WHERE bundle_name="' + type + '"');
+        if (result.isValidRow()) {
+        	bundleCache[type] = {
+                type : type,
+                data : JSON.parse(result.fieldByName('_data')),
+                child_forms : JSON.parse(result.fieldByName('child_forms')),
+                label : result.fieldByName('display_name'),
+                can_create : result.fieldByName('can_create', Ti.Database.FIELD_TYPE_INT),
+                can_view : result.fieldByName('can_view', Ti.Database.FIELD_TYPE_INT)
+            };
+        } else {
+            bundleCache[type] = null;
+        }
+    
+        result.close();
+        Database.close();
+    }
+    return bundleCache[type];
+};
+
+Node.getNewNid = function() {
+    var result, smallestNid;
+    //Get smallest nid
+    try{
+        result = Database.query("SELECT MIN(nid) FROM node");
+    
+        if (result.isValidRow()) {
+            smallestNid = result.field(0);
+            
+            smallestNid = parseInt(smallestNid, 10);
+            if (isNaN(smallestNid) || smallestNid > 0) {
+                smallestNid = -1;
+            }
+            else {
+                smallestNid--;
+            }
+        }
+        else {
+            smallestNid = -1;
+        }
+        
+        result.close();
+        Database.close();
+    }
+    catch(ex){
+        Utils.sendErrorReport("Exception in getNewNodeNid: " + ex);   
+        Database.close();
+    }
+
+    return smallestNid;
+};
 
 module.exports = Node;
