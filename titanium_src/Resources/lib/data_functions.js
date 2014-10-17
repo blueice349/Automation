@@ -2091,7 +2091,7 @@ Omadi.data.processFetchedJson = function(){"use strict";
 					}
                 }
                 
-                TimecardGeofenceVerifier.getInstance().clearCache();
+                //TimecardGeofenceVerifier.getInstance().clearCache();
             }
             
             if ( typeof Omadi.service.fetchedJSON.comment !== 'undefined') {
