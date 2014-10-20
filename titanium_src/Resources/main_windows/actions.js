@@ -5,6 +5,7 @@ Ti.include('/lib/functions.js');
 /*jslint eqeq:true*/
 
 var Display = require('lib/Display');
+var RouteListener = require('objects/RouteListener');
 Display.setCurrentWindow(Ti.UI.currentWindow, 'actions');
 
 var curWin;
@@ -75,6 +76,88 @@ function addSeparator(){"use strict";
     wrapper.add(line);
     
     currentWinWrapper.add(wrapper);
+}
+
+function addStartRouteButton() {"use strict";
+	if (RouteListener.getPossibleRoutes().length == 0) {
+		return;
+	}
+	
+	    var wrapper, button, dialog, image, textButton;
+   
+    wrapper = Ti.UI.createView({
+       height: Ti.UI.SIZE,
+       width: Ti.UI.FILL
+    });
+    
+    textButton = Ti.UI.createView({
+        layout: 'vertical',
+        height: Ti.UI.SIZE,
+        left: 48,
+        right: 0
+    });
+    
+    button = Ti.UI.createLabel({
+        style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
+        backgroundGradient : {
+            type : 'linear',
+            startPoint : {
+                x : '50%',
+                y : '0%'
+            },
+            endPoint : {
+                x : '50%',
+                y : '100%'
+            },
+            colors : [{
+                color : '#A7A9AC',
+                offset : 0.0
+            }, {
+                color : '#6D6E71',
+                offset : 0.33
+            }, {
+                color : '#58595B',
+                offset : 1.0
+            }]
+        },
+        color: '#fff',
+        borderRadius: 7,
+        width: 200,
+        height: 35,
+        font: {
+            fontWeight: 'bold',
+            fontSize: 16
+        },
+        borderColor: '#333',
+        borderWidth: 1,
+        top: 3,
+        bottom: 3,
+        text: 'Start Route',
+        textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
+    });
+    
+    button.addEventListener('click', function(e) {
+    	curWin.addEventListener('close', function() {
+    		RouteListener.askToStartRoute();
+    	});
+    	curWin.close();
+    });
+    
+    // image = Ti.UI.createImageView({
+       // image: '/images/settings_color.png',
+       // top: 2,
+       // left: '3%',
+       // width: 48
+    // });
+//     
+    // wrapper.add(image);
+    
+    textButton.add(button);
+    
+    wrapper.add(textButton);
+    currentWinWrapper.add(wrapper);
+    
+    addSeparator();
 }
 
 function addClockInClockOut() {"use strict";
@@ -1075,6 +1158,8 @@ function addSettings(){"use strict";
         addDrafts();
         
         addLocalPhotos();
+        
+        addStartRouteButton();
         
         addRefresh();
         

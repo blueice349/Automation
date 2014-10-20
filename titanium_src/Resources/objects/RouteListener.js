@@ -7,6 +7,16 @@ var Utils = require('lib/Utils');
 var Node = require('objects/Node');
 var NFCEventDispatcher = require('services/NFCEventDispatcher');
 
+var commonDialog;
+function showDialog(dialog) {
+	if (commonDialog) {
+		commonDialog.hide();
+	}
+	commonDialog = dialog;
+	commonDialog.show();
+}
+
+
 var RouteListener = function(route) {
 	this.nid = route.nid;
 	this.node = null;
@@ -15,12 +25,12 @@ var RouteListener = function(route) {
 	this.locationNids = JSON.parse(route.locationNids);
 	this.index = null;
 	this.location = null;
-	
+	this.repeat = null;
+	this.numberCompleted = null;
 	this.tagScannedCallback = null;
 	this.nfcEventDispatcher = null;
 	
 	this._startRoute();
-	this._initNFCEventDispatcher();
 };
 
 RouteListener.prototype._initNFCEventDispatcher = function() {
@@ -28,6 +38,12 @@ RouteListener.prototype._initNFCEventDispatcher = function() {
 		this.tagScannedCallback = this._handleTagScanned.bind(this);
 		this.nfcEventDispatcher = new NFCEventDispatcher(Titanium.Android.currentActivity);
 		this.nfcEventDispatcher.addNFCListener(this.tagScannedCallback);
+	}
+};
+
+RouteListener.prototype._cleanUpNFCEventDispatcher = function() {
+	if (Ti.App.isAndroid) {
+		this.nfcEventDispatcher.removeNFCListener(this.tagScannedCallback);
 	}
 };
 
@@ -43,7 +59,7 @@ RouteListener.prototype._handleTagScanned = function(tag) {
 		if (this._getIndex() == this.locationNids.length) {
 			this._completeRoute();
 		} else {
-			alert(this._getLocation().getName());
+			this._calloutNextCheckpoint();
 		}
 	}
 };
@@ -78,23 +94,56 @@ RouteListener.prototype._setIndex = function(index) {
 };
 
 RouteListener.prototype._startRoute = function() {
-	if (this._getStatus() != 'started') {
+	var status = this._getStatus();
+	if (status != 'started') {
 		this._setStatus('started');
 		this._setIndex(0);
 	}
-	alert(this._getLocation().getName());
+	
+	var dialog = Ti.UI.createAlertDialog({
+		title: (status == 'started' ? 'Continuing "' : 'Begining "') + this.title + '"',
+	    buttonNames: ['Ok']
+	});
+	
+	dialog.addEventListener('click', function() {
+		this._calloutNextCheckpoint();
+		this._initNFCEventDispatcher();
+	}.bind(this));
+	
+	showDialog(dialog);
+};
+
+RouteListener.prototype._calloutNextCheckpoint = function() {
+	var dialog = Ti.UI.createAlertDialog({
+       title: 'Next checkpoint: ' + this._getLocation().getName(),
+       buttonNames: ['Ok']
+    });
+    
+    showDialog(dialog);
 };
 
 RouteListener.prototype._completeRoute = function() {
 	if (this._getStatus() != 'complete') {
-		this._setStatus('complete');
+		this._setIndex(0);
+		this._cleanUpNFCEventDispatcher();
+		this._incrementNumberCompleted();
+		
+		if (this._getRepeat() != -1 && this._getNumberCompleted() > this._getRepeat()) {
+			this._setStatus('complete');
+		} else {
+			this._setStatus('not_started');
+		}
 		
 		var dialog = Ti.UI.createAlertDialog({
 	       title: 'Route completed.',
-	       buttonNames: ['ok']
+	       buttonNames: ['Ok']
 	    });
 	    
-	    dialog.show();
+	    dialog.addEventListener('click', function() {
+	    	exports.askToStartRoute();
+	    });
+	    
+	    showDialog(dialog);
 	}
 };
 
@@ -120,6 +169,32 @@ RouteListener.prototype._getStatus = function() {
 	return this.status;
 };
 
+RouteListener.prototype._getRepeat = function() {
+	if (this.repeat === null) {
+		this.repeat = this._getNode().repeat_0.dbValues[0];
+	}
+	return this.repeat;
+};
+
+RouteListener.prototype._getNumberCompleted = function() {
+	if (this.numberCompleted === null) {
+		this.numberCompleted = this._getNode().number_completed.dbValues[0] || 0;
+	}
+	return this.numberCompleted;
+};
+
+RouteListener.prototype._incrementNumberCompleted = function() {
+	var numberCompleted = this._getNumberCompleted() + 1;
+	
+	var node  = this._getNode();
+	node.number_completed = {
+		dbValues: [numberCompleted],
+		textValues: [numberCompleted]
+	};
+	Node.save(node);
+	this.numberCompleted = numberCompleted;
+};
+
 RouteListener.prototype._getNode = function() {
 	if (this.node === null) {
 		this.node = Node.load(this.nid);
@@ -130,7 +205,7 @@ RouteListener.prototype._getNode = function() {
 var instance = null;
 
 exports.askToStartRoute = function() {
-	var routes = getPossibleRoutes();
+	var routes = exports.getPossibleRoutes();
 	if (routes.length == 0) {
 		return;
 	}
@@ -140,51 +215,30 @@ exports.askToStartRoute = function() {
        buttonNames: ['Begin route', 'No']
     });
     
-    
     dialog.addEventListener('click', function(event) {
     	if (event.index == 0) {
     		askSelectRoute(routes);
     	}
     });
     
-    dialog.show();
+    showDialog(dialog);
 };
 
-function askSelectRoute(routes) {
-	if (routes.length == 1) {
-		instance = new RouteListener(routes[0]);
-	} else {
-		
-		var options = [];
-		for (var i = 0; i < routes.length; i++) {
-			options[i] = routes[i].title + (routes[i].status == 'started' ? ' (started)' : '');
-		}
-		
-		var dialog = Ti.UI.createOptionDialog({
-	       title: 'Select a route.',
-	       options: options
-	    });
-	    
-	    dialog.addEventListener('click', function(event) {
-	    	instance = new RouteListener(routes[event.index]);
-	    });
-	    
-		dialog.show();
-	}
-}
-
-function getPossibleRoutes() {
+exports.getPossibleRoutes = function() {
 	if (!hasRouteAssignment()) {
 		return [];
 	}
 	
 	var now = Utils.getUTCTimestampServerCorrected();
 	var query = 'SELECT ' + 
-					'route.nid AS nid, ' +
-					'route_assignment.nid AS assignmentNid, ' +
+					'assignment_date AS start, ' +
+					'assignment_date___end AS end, ' +
+					'route_assignment.nid AS nid, ' +
 					'name_0 AS title, ' +
 					'locations as locationNids, ' +
-					'assignment_status AS status ' +
+					'assignment_status AS status, ' +
+					'number_completed, ' +
+					'repeat_0 AS repeat ' +
 				'FROM ' +
 					'route_assignment INNER JOIN route ON route_assignment.route_reference = route.nid ' +
 				'WHERE ' +
@@ -192,14 +246,14 @@ function getPossibleRoutes() {
 					'route_assignment.nid > 0 AND ' +
 					'assignment_status != "complete" AND ' +
 					'assignment_date < ' + now + ' AND ' +
-					'(assignment_date___end IS NULL OR assignment_date___end > ' + now + ')';
+					'(assignment_date___end IS NULL OR assignment_date = assignment_date___end OR assignment_date___end > ' + now + ')';
 	var result = Database.query(query);
 	var data = Database.resultToObjectArray(result);
 	result.close();
 	Database.close();
 	
 	return data;
-}
+};
 
 function hasRouteAssignment() {
 	var result = Database.query('SELECT COUNT(*) FROM node WHERE nid > 0 AND table_name = "route_assignment"');
@@ -207,6 +261,34 @@ function hasRouteAssignment() {
 	result.close();
 	Database.close();
 	return count !== 0;
+}
+
+function askSelectRoute(routes) {
+	var options = [];
+	for (var i = 0; i < routes.length; i++) {
+		options[i] = routes[i].title;
+		
+		if (routes[i].repeat != 0) {
+			options[i] += ' (' + (parseInt(routes[i].number_completed || 0, 10) + 1) + (routes[i].repeat == -1 ? '' : '/' + (parseInt(routes[i].repeat, 10) + 1)) + ')';
+		}
+		
+		if (routes[i].status == 'started') {
+			options[i] += ' (started)';
+		}
+	}
+	
+	var dialog = Ti.UI.createOptionDialog({
+       title: 'Select a route.',
+       options: options
+    });
+    
+    dialog.addEventListener('click', function(event) {
+    	if (routes[event.index]) {
+    		instance = new RouteListener(routes[event.index]);
+    	}
+    });
+    
+    showDialog(dialog);
 }
 
 function dbValueToTextValue(dbValue) {
