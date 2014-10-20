@@ -24,11 +24,11 @@ var RouteListener = function(route) {
 	this.title = route.title;
 	this.locationNids = JSON.parse(route.locationNids);
 	this.index = null;
-	this.location = null;
 	this.repeat = null;
 	this.numberCompleted = null;
 	this.tagScannedCallback = null;
 	this.nfcEventDispatcher = null;
+	this.locations = [];
 	
 	this._startRoute();
 };
@@ -48,27 +48,81 @@ RouteListener.prototype._cleanUpNFCEventDispatcher = function() {
 };
 
 RouteListener.prototype._handleTagScanned = function(tag) {
-	if (tag.getData() == this._getLocation().getData()) {
-		this.nextLocationNode = null;
-		this.nextLocationName = null;
-		this.nextLocationIndex = null;
-		this.nextLocationTagData = null;
-		
-		this._setIndex(this._getIndex() + 1);
-		
-		if (this._getIndex() == this.locationNids.length) {
-			this._completeRoute();
-		} else {
-			this._calloutNextCheckpoint();
+	var index = this._getIndex();
+	var tagIndex = this._getTagIndex(tag, this._getIndex());
+	
+	if (tagIndex == index) {
+		this._currentLocationScanned();
+	} else if (tagIndex != -1) {
+		this._futureLocationScanned(tagIndex);
+	} else {
+		tagIndex = this._getTagIndex(tag);
+		if (tagIndex != -1) {
+			this._previousLocationScanned(tagIndex);
 		}
 	}
 };
 
-RouteListener.prototype._getLocation = function() {
-	if (this.location === null) {
-		this.location = new RouteLocation(this.locationNids[this._getIndex()]);
+RouteListener.prototype._getTagIndex = function(tag, start) {
+	for (var i = start || 0; i < this.locationNids.length; i++) {
+		if (tag.getData() == this._getLocation(i).getData()) {
+			return i;
+		}
 	}
-	return this.location;
+	return -1;
+};
+
+RouteListener.prototype._currentLocationScanned = function() {
+	this._setIndex(this._getIndex() + 1);
+	if (this._getIndex() == this.locationNids.length) {
+		this._completeRoute();
+	} else {
+		this._calloutNextCheckpoint();
+	}
+};
+
+RouteListener.prototype._futureLocationScanned = function(tagIndex) {
+	var skippedLocations = [];
+	for (var i = this._getIndex(); i < tagIndex; i++) {
+		skippedLocations.push(this._getLocation(i).getName());
+	}
+	
+	var dialog = Ti.UI.createAlertDialog({
+		title: skippedLocations.length + ' skipped location' + (skippedLocations.length > 1 ? 's' : ''),
+		message: 'You forgot to scan the following locations. Either go back and scan them or skip them and move on to the next location.\n' + skippedLocations.join('\n'),
+		buttonNames: ['Go Back', 'Skip']
+    });
+    
+    dialog.addEventListener('click', function(event) {
+    	if (event.index == 1) { // skip
+    		this._setIndex(tagIndex);
+    		this._currentLocationScanned();
+    	}
+    }.bind(this));
+    
+    showDialog(dialog);
+};
+
+RouteListener.prototype._previousLocationScanned = function(tagIndex) {
+	var dialog = Ti.UI.createAlertDialog({
+       title: 'You have already scanned this location.',
+       buttonNames: ['Ok']
+    });
+    
+    dialog.addEventListener('click', this._calloutNextCheckpoint.bind(this));
+    
+    showDialog(dialog);
+};
+
+RouteListener.prototype._getLocation = function(index) {
+	if (typeof this.locations[index] == 'undefined') {
+		if (!this.locationNids[index]) {
+			this._setIndex(0); // It got broken somehow. Fix the cache and return the first location.
+			index = 0;
+		}
+		this.locations[index] = new RouteLocation(this.locationNids[index]);
+	}
+	return this.locations[index];
 };
 
 RouteListener.prototype._getIndex = function() {
@@ -89,7 +143,6 @@ RouteListener.prototype._setIndex = function(index) {
 		var routeProgress = Titanium.App.Properties.getObject('routeProgress', {});
 		routeProgress[this.nid] = this.index;
 		Titanium.App.Properties.setObject('routeProgress', routeProgress);
-		this.location = new RouteLocation(this.locationNids[this.index]);
 	}
 };
 
@@ -115,7 +168,7 @@ RouteListener.prototype._startRoute = function() {
 
 RouteListener.prototype._calloutNextCheckpoint = function() {
 	var dialog = Ti.UI.createAlertDialog({
-       title: 'Next checkpoint: ' + this._getLocation().getName(),
+       title: 'Next checkpoint: ' + this._getLocation(this._getIndex()).getName(),
        buttonNames: ['Ok']
     });
     
@@ -140,6 +193,7 @@ RouteListener.prototype._completeRoute = function() {
 	    });
 	    
 	    dialog.addEventListener('click', function() {
+	    	instance = null;
 	    	exports.askToStartRoute();
 	    });
 	    

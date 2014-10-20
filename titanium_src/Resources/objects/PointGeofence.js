@@ -28,6 +28,7 @@ var PointGeofence = function(nid, lat, lng, radiusInMeters) {
 	this.minLng = null;
 	this.maxLng = null;
 	this.radiusLng = null;
+	this.formType = null;
 	
 	lat = lat || this._getData().lat;
 	lng = lng || this._getData().lng;
@@ -236,7 +237,11 @@ PointGeofence._getDataFromDB = function(formType, addressField, nids) {
 };
 
 PointGeofence._getAddressField = function(formType) {
-	return Node.getBundle(formType).mobile.location_sort_field || 'location';
+	var bundle = Node.getBundle(formType);
+	if (bundle && bundle.mobile && bundle.mobile.location_sort_field) {
+		return bundle.mobile.location_sort_field;
+	}
+	return 'location';
 };
 
 module.exports = PointGeofence;
