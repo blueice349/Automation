@@ -64,8 +64,8 @@ TimecardGeofenceVerifier.prototype.getError = function() {
 TimecardGeofenceVerifier.prototype.clearCache = function() {
 	var bundle = Omadi.data.getBundle('timecard');
 	this.enabled = bundle.data.timecard.allow_geofence_verification == 1;
-	if (JSON.stringify(bundle.data.locations) !== JSON.stringify(this._getLocationReferences())) {
-		this.locationReferences = bundle.data.locations;
+	if (JSON.stringify(bundle.data.timecard.locations) !== JSON.stringify(this._getLocationReferences())) {
+		this.locationReferences = bundle.data.timecard.locations;
 		this.currentGeofences = null;
 		this.geofences = null;
 	}

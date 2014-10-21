@@ -1408,6 +1408,11 @@ Omadi.display.DefaultProgressBar = function(max, message) {"use strict";
         this.current = current;
         this.bar.setValue(this.current);
     };
+    
+    this.set_max = function(value) {
+        this.max = value;
+        this.bar.setValue(this.current);
+    };
 
     this.close = function() {
         Ti.UI.currentWindow.remove(this.progressView);
