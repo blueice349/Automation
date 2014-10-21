@@ -1,0 +1,396 @@
+/* jshint globalstrict:true */
+'use strict';
+
+var RouteLocation = require('objects/RouteLocation');
+var RouteListener = require('objects/RouteListener');
+var Node = require('objects/Node');
+var Utils = require('lib/Utils');
+var NFCEventDispatcher = require('services/NFCEventDispatcher');
+var NFCListener = require('services/NFCListener');
+
+var commonDialog;
+function showDialog(dialog) {
+	if (commonDialog) {
+		commonDialog.hide();
+	}
+	commonDialog = dialog;
+	commonDialog.show();
+}
+
+
+function hideDialog() {
+	if (commonDialog) {
+		commonDialog.hide();
+	}
+}
+
+
+var Route = function(route) {
+	this.nid = route.nid;
+	this.node = null;
+	this.title = route.title;
+	this.locationNids = JSON.parse(route.locationNids);
+	this.index = null;
+	this.repeat = null;
+	this.tagScannedCallback = null;
+	this.nfcEventDispatcher = null;
+	this.locations = [];
+	
+	this.locationNameLabel = null;
+	this.locationDescriptionLabel = null;
+	this.routeProgressLabel = null;
+	
+	this._drawInitialElements();
+	this._initNFCEventDispatcher();
+	this._startRoute();
+};
+
+Route.prototype._initNFCEventDispatcher = function() {
+	if (Ti.App.isAndroid) {
+		this.tagScannedCallback = this._handleTagScanned.bind(this);
+		this.nfcEventDispatcher = new NFCEventDispatcher(Titanium.Android.currentActivity);
+		this.nfcEventDispatcher.addNFCListener(this.tagScannedCallback);
+	}
+};
+
+Route.prototype._cleanUpNFCEventDispatcher = function() {
+	if (Ti.App.isAndroid) {
+		this.nfcEventDispatcher.removeNFCListener(this.tagScannedCallback);
+	}
+};
+
+Route.prototype._handleTagScanned = function(tag) {
+	var index = this._getIndex();
+	var tagIndex = this._getTagIndex(tag, this._getIndex());
+	
+	if (tagIndex == index) {
+		this._currentLocationScanned(tag);
+	} else if (tagIndex != -1) {
+		this._futureLocationScanned(tag, tagIndex);
+	} else {
+		tagIndex = this._getTagIndex(tag);
+		if (tagIndex != -1) {
+			this._previousLocationScanned(tag, tagIndex);
+		}
+	}
+};
+
+Route.prototype._getTagIndex = function(tag, start) {
+	for (var i = start || 0; i < this.locationNids.length; i++) {
+		if (tag.getData() == this._getLocation(i).getData()) {
+			return i;
+		}
+	}
+	return -1;
+};
+
+Route.prototype._currentLocationScanned = function(tag) {
+	this._setIndex(this._getIndex() + 1);
+	if (this._getIndex() == this.locationNids.length) {
+		this._completeRoute();
+	} else {
+		this._calloutNextCheckpoint();
+	}
+};
+
+Route.prototype._futureLocationScanned = function(tag, tagIndex) {
+	var skippedLocations = [];
+	for (var i = this._getIndex(); i < tagIndex; i++) {
+		skippedLocations.push(this._getLocation(i).getName());
+	}
+	
+	var dialog = Ti.UI.createAlertDialog({
+		title: skippedLocations.length + ' skipped location' + (skippedLocations.length > 1 ? 's' : ''),
+		message: 'You forgot to scan the following locations. Either go back and scan them or skip them and move on to the next location.\n' + skippedLocations.join('\n'),
+		buttonNames: ['Go Back', 'Skip']
+    });
+    
+    dialog.addEventListener('click', function(event) {
+    	if (event.index == 1) { // skip
+    		this._setIndex(tagIndex);
+    		this._currentLocationScanned(tag);
+    	}
+    }.bind(this));
+    
+    showDialog(dialog);
+};
+
+Route.prototype._previousLocationScanned = function(tag, tagIndex) {
+	var dialog = Ti.UI.createAlertDialog({
+       title: 'You have already scanned this location.',
+       buttonNames: ['Ok']
+    });
+    
+    dialog.addEventListener('click', this._calloutNextCheckpoint.bind(this));
+    
+    showDialog(dialog);
+};
+
+Route.prototype._getLocation = function(index) {
+	if (typeof this.locations[index] == 'undefined') {
+		if (!this.locationNids[index]) {
+			this._setIndex(0); // It got broken somehow. Fix the cache and return the first location.
+			index = 0;
+		}
+		this.locations[index] = new RouteLocation(this.locationNids[index]);
+	}
+	return this.locations[index];
+};
+
+Route.prototype._getIndex = function() {
+	if (this.index === null) {
+		var routeProgress = Titanium.App.Properties.getObject('routeProgress', {});
+		if (typeof routeProgress[this.nid] == 'undefined') {
+			routeProgress[this.nid] = 0;
+			Titanium.App.Properties.setObject('routeProgress', routeProgress);
+		}
+		this.index = routeProgress[this.nid];
+	}
+	return this.index;
+};
+
+Route.prototype._setIndex = function(index) {
+	if (this.index != index) {
+		this.index = index;
+		var routeProgress = Titanium.App.Properties.getObject('routeProgress', {});
+		routeProgress[this.nid] = this.index;
+		Titanium.App.Properties.setObject('routeProgress', routeProgress);
+	}
+};
+
+Route.prototype._startRoute = function() {
+	var status = this._getStatus();
+	if (status != 'started') {
+		this._setStatus('started');
+		this._setStartTime();
+		this._setIndex(0);
+	}
+};
+
+Route.prototype._calloutNextCheckpoint = function() {
+	hideDialog();
+	this._redraw();
+};
+
+Route.prototype._completeRoute = function() {
+	if (this._getStatus() != 'complete') {
+		this._setIndex(0);
+		this._setCompletedTime();
+		this._cleanUpNFCEventDispatcher();
+		this._incrementNumberCompleted();
+		
+		if (this._getRepeat() != -1 && this._getNumberCompleted() > this._getRepeat()) {
+			this._setStatus('complete');
+		} else {
+			this._setStatus('not_started');
+		}
+		
+		var dialog = Ti.UI.createAlertDialog({
+	       title: 'Route completed.',
+	       buttonNames: ['Ok']
+	    });
+	    
+	    dialog.addEventListener('click', function() {
+	    	instance = null;
+	    	currentWindow.close();
+	    	RouteListener.askToStartRoute();
+	    });
+	    
+	    showDialog(dialog);
+	}
+};
+
+Route.prototype._setStatus = function(status) {
+	var dbValue = status;
+	var textValue = status.replace('_', ' ').replace(/\w\S*/g, function(word){
+		return word.charAt(0).toUpperCase() + word.substr(1).toLowerCase();
+	});
+	
+	var node  = this._getNode();
+	node.assignment_status = {
+		dbValues: [dbValue],
+		textValues: [textValue]
+	};
+	Node.save(node);
+	this.status = status;
+};
+
+Route.prototype._getStatus = function() {
+	return this._getNode().assignment_status.dbValues[0];
+};
+
+Route.prototype._getRepeat = function() {
+	return this._getNode().repeat_0.dbValues[0];
+};
+
+Route.prototype._getNumberCompleted = function() {
+	return this._getNode().number_completed.dbValues[0] || 0;
+};
+
+Route.prototype._incrementNumberCompleted = function() {
+	var numberCompleted = this._getNumberCompleted() + 1;
+	
+	var node  = this._getNode();
+	node.number_completed = {
+		dbValues: [numberCompleted],
+		textValues: [numberCompleted]
+	};
+	Node.save(node);
+};
+
+Route.prototype._setStartTime = function() {
+	var now = Utils.getUTCTimestampServerCorrected();
+	var node  = this._getNode();
+	node.actual_time_started.dbValues[this._getNumberCompleted()] = now;
+	node.actual_time_started.textValues[this._getNumberCompleted()] = now;
+	Node.save(node);
+};
+
+Route.prototype._setCompletedTime = function() {
+	var now = Utils.getUTCTimestampServerCorrected();
+	var node  = this._getNode();
+	node.actual_time_completed.dbValues[this._getNumberCompleted()] = now;
+	node.actual_time_completed.textValues[this._getNumberCompleted()] = now;
+	Node.save(node);
+};
+
+Route.prototype._getNode = function() {
+	if (this.node === null) {
+		this.node = Node.load(this.nid);
+	}
+	return this.node;
+};
+
+Route.prototype._drawInitialElements = function() {
+	var wrapper = Ti.UI.createView({
+		layout: 'vertical',
+		width: '80%'
+	});
+	
+	var headerView = Ti.UI.createView({
+		layout: 'absolute',
+		left: 0,
+		top: 15,
+		width: '100%',
+		height: Ti.UI.SIZE
+	});
+	var routeTitleLabel = Ti.UI.createLabel({
+		text: this.title,
+		color: '#fff',
+		font: {
+			fontSize: 12
+		},
+		left: 0,
+		height: Ti.UI.SIZE,
+		width: Ti.UI.SIZE
+	});
+	
+	var bodyView = Ti.UI.createView({
+		layout: 'vertical',
+		left: 0,
+		top: 15,
+		width: '100%',
+		height: Ti.UI.SIZE
+	});
+	var nextCheckpointLabel = Ti.UI.createLabel({
+		text: 'Next Checkpoint:',
+		color: '#fff',
+		font: {
+			fontSize: 16,
+			fontWeight: 'bold'
+		},
+		left: 0,
+		top: 15,
+		bottom: 15,
+		height: Ti.UI.SIZE
+	});
+	var descriptionLabel = Ti.UI.createLabel({
+		text: 'Description:',
+		color: '#fff',
+		font: {
+			fontSize: 16,
+			fontWeight: 'bold'
+		},
+		left: 0,
+		top: 15,
+		bottom: 15,
+		height: Ti.UI.SIZE
+	});
+	
+	
+	
+	headerView.add(routeTitleLabel);
+	headerView.add(this._getRouteProgressLabel());
+	
+	bodyView.add(nextCheckpointLabel);
+	bodyView.add(this._getLocationNameLabel());
+	bodyView.add(descriptionLabel);
+	bodyView.add(this._getLocationDescriptionLabel());
+	
+	wrapper.add(headerView);
+	wrapper.add(bodyView);
+	
+	currentWindow.add(wrapper);
+};
+
+Route.prototype._redraw = function() {
+	var location = this._getLocation(this._getIndex());
+	
+	this._getRouteProgressLabel().text = 'Location ' + (this._getIndex() + 1) + ' of ' + this.locationNids.length;
+	this._getLocationNameLabel().text = location.getName();
+	this._getLocationDescriptionLabel().text = location.getDescription();
+};
+
+Route.prototype._getRouteProgressLabel = function() {
+	if (this.routeProgressLabel === null) {
+		this.routeProgressLabel = Ti.UI.createLabel({
+			text: 'Location ' + (this._getIndex() + 1) + ' of ' + this.locationNids.length,
+			color: '#fff',
+			font: {
+				fontSize: 12
+			},
+			right: 0,
+			height: Ti.UI.SIZE,
+			width: Ti.UI.SIZE
+		});
+	}
+	return this.routeProgressLabel;
+};
+
+Route.prototype._getLocationNameLabel = function() {
+	if (this.locationNameLabel === null) {
+		this.locationNameLabel = Ti.UI.createLabel({
+			text: this._getLocation(this._getIndex()).getName(),
+			color: '#fff',
+			font: {
+				fontSize: 32,
+				fontWeight: 'bold'
+			}
+		});
+	}
+	return this.locationNameLabel;
+};
+
+Route.prototype._getLocationDescriptionLabel = function() {
+	if (this.locationDescriptionLabel === null) {
+		this.locationDescriptionLabel = Ti.UI.createLabel({
+			text: this._getLocation(this._getIndex()).getDescription(),
+			color: '#fff',
+			font: {
+				fontSize: 16
+			},
+			left: 15
+		});
+	}
+	return this.locationDescriptionLabel;
+};
+
+var instance = null;
+var currentWindow = Ti.UI.currentWindow;
+
+(function() {'use strict';
+	if (Ti.App.isAndroid) {
+		new NFCListener(Titanium.Android.currentActivity);
+	}
+    instance = new Route(currentWindow.route);
+})();

@@ -1024,7 +1024,9 @@ function openFormWindow(e){"use strict";
     // Make sure the field cache is reset if the user is logging into a separate account
     Node.resetFieldCache();
 	var NFCListener = require('services/NFCListener');
-	
+	if (Ti.App.isAndroid) {
+		new NFCListener(Titanium.Android.currentActivity);
+	}
 	
 	var RouteListener = require('objects/RouteListener');
 	RouteListener.askToStartRoute();

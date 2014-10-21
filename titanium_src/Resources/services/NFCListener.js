@@ -7,12 +7,13 @@ var Utils = require('lib/Utils');
 
 Ti.include('/lib/vendor/CryptoJS/hmac-sha1.js');
 
-var NFCListener = function() {
+var NFCListener = function(activity) {
 	this.nfc = null;
 	this.tagScannedCallback = null;
 	this.networkChangedCallback = null;
 	this.backlog = [];
 	this.sending = {};
+	this.activity = activity;
 	
 	this._initListeners();
 	
@@ -36,7 +37,7 @@ NFCListener.prototype._initNetworkListener = function() {
 NFCListener.prototype._initNFCEventDispatcher = function() {
 	if (Ti.App.isAndroid) {
 		this.tagScannedCallback = this._handleTagScanned.bind(this);
-		this.nfc = new NFCEventDispatcher(Titanium.Android.currentActivity);
+		this.nfc = new NFCEventDispatcher(this.activity);
 		this.nfc.addNFCListener(this.tagScannedCallback);
 	}
 };
@@ -279,9 +280,5 @@ NFCListener.prototype._getUnsentData = function() {
 	return this._getBacklog().concat(Utils.getValues(this._getSending()));
 };
 
-var nfcListener = new NFCListener();
-
-exports.getInstance = function() {
-	return nfcListener;
-};
+module.exports = NFCListener;
 

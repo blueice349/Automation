@@ -79,11 +79,11 @@ function addSeparator(){"use strict";
 }
 
 function addStartRouteButton() {"use strict";
-	if (RouteListener.getPossibleRoutes().length == 0) {
+	if (!RouteListener.hasRoutes()) {
 		return;
 	}
 	
-	    var wrapper, button, dialog, image, textButton;
+	var wrapper, button, dialog, image, textButton;
    
     wrapper = Ti.UI.createView({
        height: Ti.UI.SIZE,
@@ -137,10 +137,7 @@ function addStartRouteButton() {"use strict";
     });
     
     button.addEventListener('click', function(e) {
-    	curWin.addEventListener('close', function() {
-    		RouteListener.askToStartRoute();
-    	});
-    	curWin.close();
+    	RouteListener.askToStartRoute();
     });
     
     // image = Ti.UI.createImageView({

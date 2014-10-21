@@ -16,6 +16,10 @@ RouteLocation.prototype.getName = function() {
 	return this._getNode().name_0.textValues[0];
 };
 
+RouteLocation.prototype.getDescription = function() {
+	return this._getNode().description.textValues[0];
+};
+
 RouteLocation.prototype._getNode = function() {
 	if (this.node === null) {
 		this.node = Node.load(this.nid);
