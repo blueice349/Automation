@@ -223,7 +223,7 @@ TextWidget.prototype.getNewElementWrapper = function(index){"use strict";
                 
             }
             catch(ex){
-                Utils.sendErrorReport("Exception in duplicate warning timeout: " + ex);
+                Utils.sendErrorReport("Exception in duplicate warning timeout 3: " + ex);
             }
         });
         
@@ -309,7 +309,7 @@ TextWidget.prototype.onChangeListener = function(e) {"use strict";
                     }
                 }
                 catch(ex){
-                    Utils.sendErrorReport("Exception in duplicate warning timeout: " + ex);
+                    Utils.sendErrorReport("Exception in duplicate warning timeout 4: " + ex);
                 }
                 
             }, 4000);
@@ -347,7 +347,7 @@ TextWidget.prototype.setDuplicateWarnings = function(fieldName, value, saveType)
                 
                 self.duplicateWarnings[value] = json;
                 
-                if(typeof self.formObj !== 'undefined'){
+                if(self.formObj){
                     self.formObj.win.fireEvent('duplicateWarningComplete', {
                         json: json,
                         fieldName: fieldName,

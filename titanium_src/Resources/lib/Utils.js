@@ -1096,7 +1096,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                                             if(typeof node[field_name] !== 'undefined'){
                                                 if(typeof node[field_name].textValues !== 'undefined'){
                                                     for(i = 0; i < node[field_name].textValues.length; i ++){
-                                                        jsonValues.push(JSON.parse(node[field_name].textValues[i]));
+                                                        jsonValues.push(exports.getParsedJSON(node[field_name].textValues[i]));
                                                     }
                                                 }
                                             }
@@ -1814,4 +1814,41 @@ exports.getRealname = function(uid){
     Database.close();
     
     return realname;
+};
+
+exports.getBundle = function(type, reset) {"use strict";
+	exports.getBundle = exports.getBundle || {};
+    var bundle = null;
+    
+    if(typeof reset === 'undefined'){
+        reset = false;
+    }
+    
+    if(typeof exports.getBundle[type] === 'undefined' || reset){
+
+        var result = Database.query('SELECT _data, display_name, can_create, can_view, child_forms FROM bundles WHERE bundle_name="' + type + '"');
+    
+        if (result.isValidRow()) {
+            bundle = {
+                type : type,
+                data : JSON.parse(result.fieldByName('_data')),
+                child_forms : JSON.parse(result.fieldByName('child_forms')),
+                label : result.fieldByName('display_name'),
+                can_create : result.fieldByName('can_create', Ti.Database.FIELD_TYPE_INT),
+                can_view : result.fieldByName('can_view', Ti.Database.FIELD_TYPE_INT)
+            };
+            
+            exports.getBundle[type] = bundle;
+        }
+        else{
+            exports.getBundle[type] = null;
+        }
+    
+        result.close();
+        Database.close();
+    }
+    
+    bundle = exports.getBundle[type];
+
+    return bundle;
 };

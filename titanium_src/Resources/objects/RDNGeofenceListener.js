@@ -9,8 +9,13 @@ var Utils = require('lib/Utils');
 var Database = require('lib/Database');
 
 var RDNGeofenceListener = function() {
-	Ti.App.addEventListener('geofenceEntered', this._handleGeofenceEntered.bind(this));
-	Ti.App.addEventListener('geofenceExited', this._handleGeofenceExited.bind(this));
+	var self = this;
+	Ti.App.addEventListener('geofenceEntered', function(event) {
+		self._handleGeofenceEntered(event);
+	});
+	Ti.App.addEventListener('geofenceExited', function(event) {
+		self._handleGeofenceExited(event);
+	});
 };
 
 /* CONSTANTS */

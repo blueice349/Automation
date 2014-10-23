@@ -39,10 +39,14 @@ NFCEventDispatcher.prototype._getActivity = function() {
 
 NFCEventDispatcher.prototype._getAdapter = function() {
 	if (!this.adapter && nfc) {
+		var self = this;
+		function tagDiscoveredCallback(event) {
+			self._handleTagDiscovered(event);
+		}
 		this.adapter = nfc.createNfcAdapter({
-			onNdefDiscovered: this._handleTagDiscovered.bind(this),
-			onTagDiscovered: this._handleTagDiscovered.bind(this),
-			onTechDiscovered: this._handleTagDiscovered.bind(this)
+			onNdefDiscovered: tagDiscoveredCallback,
+			onTagDiscovered: tagDiscoveredCallback,
+			onTechDiscovered: tagDiscoveredCallback
 		});
 	}
 	return this.adapter;

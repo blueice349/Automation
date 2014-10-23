@@ -10,7 +10,9 @@ var GeofenceServices = function() {
 	this.currentLocation = {};
 	
 	var self = this;
-	Ti.Geolocation.addEventListener('location', this._handleLocationChange.bind(this));
+	Ti.Geolocation.addEventListener('location', function(event) {
+		self._handleLocationChange(event);
+	});
 	
 	this._restoreState();
 };
