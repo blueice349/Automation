@@ -1188,17 +1188,16 @@ function openFormWindow(e){"use strict";
     Ti.App.syncInterval = setInterval(backgroundCheckForUpdates, 300000);
     Ti.App.photoUploadCheck = setInterval(Omadi.service.uploadFile, 60000);
 
-	var callback;
     if ( typeof curWin.fromSavedCookie !== 'undefined' && !curWin.fromSavedCookie) {
         
         // The option dialog should go after clock in, but some of the options
         // are blocked because of the alert dialog being show in askclockin
         
-        callback = Omadi.bundles.timecard.askClockIn;
         Omadi.bundles.companyVehicle.askAboutVehicle();
+        Omadi.location.isLocationEnabled(Omadi.bundles.timecard.askClockIn);
     }
     
-    Omadi.location.isLocationEnabled(callback);
+    
     
     Ti.API.debug("before init");
     Omadi.push_notifications.init();
