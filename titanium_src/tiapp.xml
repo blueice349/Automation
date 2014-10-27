@@ -20,7 +20,7 @@
     <property name="ti.android.httpclient.maxbuffersize" type="int">2097152</property>
     <!-- We need to use the useLegacyWindow to make sure the dispatch windows work correctly for now -->
     <property name="ti.android.useLegacyWindow" type="bool">true</property>
-    <sdk-version>3.2.1.GA</sdk-version>
+    <sdk-version>3.4.0.GA</sdk-version>
     <deployment-targets>
         <target device="tizen">false</target>
         <target device="mobileweb">false</target>
@@ -31,7 +31,7 @@
     </deployment-targets>
     <id>com.omadi.crm</id>
     <name>Omadi</name>
-    <version>2.10.15</version>
+    <version>2.10.16</version>
     <publisher>Omadi</publisher>
     <url>http://www.omadi.com</url>
     <description>Mobile CRM From Omadi</description>
@@ -47,12 +47,22 @@
     <!--<guid>499c0629-a0d0-4306-a779-84c90b949759</guid>-->
     <guid>5127c4b7-1a9d-4a54-8071-b44d9b5e1689</guid>
     <iphone/>
+    <ios>
+        <plist>
+            <dict>
+                <key>NSLocationAlwaysUsageDescription</key>
+                <string>
+                    Allows detection of geofence breaches while the device is locked.
+                </string>
+            </dict>
+        </plist>
+    </ios>
     <android xmlns:android="http://schemas.android.com/apk/res/android">
         <services>
             <service url="android_gps_event.js"/>
         </services>
         <manifest android:installLocation="preferExternal"
-            android:versionCode="108" android:versionName="2.10.15">
+            android:versionCode="109" android:versionName="2.10.16">
             <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="19"/>
             <uses-permission android:name="android.permission.READ_LOGS"/>
             <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>

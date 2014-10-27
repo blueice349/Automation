@@ -26,4 +26,4 @@
 // IMPORTANT NOTE: always use $(inherited) in your overrides
 // 
 
-OTHER_LDFLAGS=$(inherited) -F"${HOME}/Projects/sdks/ios" -framework StarIO -framework ExternalAccessory -framework UIKit
+OTHER_LDFLAGS=$(inherited) -F"${HOME}/Projects/omadi_mobile/ios_src" -framework StarIO -framework ExternalAccessory -framework UIKit

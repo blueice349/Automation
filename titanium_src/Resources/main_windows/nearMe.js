@@ -85,7 +85,6 @@ var calculateDistance = function(lat1, lng1, lat2, lng2, lat1Rad, lng1Rad, lat2R
 };
 
 var calculateDistances = function(data, currentLocation) {'use strict';
-
 	var lat1 = currentLocation.lat;
 	var lng1 = currentLocation.lng;
 	var lat1Rad = currentLocation.lat * Math.PI / 180;
@@ -138,7 +137,6 @@ var getRowTitleParts = function(title) {'use strict';
 };
 
 var createRowTitleLabel = function(data) {'use strict';
-	
 	var parts = getRowTitleParts(data.title);
 
 	var title = Ti.UI.createView({
@@ -198,7 +196,6 @@ var createTableRow = function(data) {'use strict';
 var createTableRows = function() {'use strict';
 	var tableData = [];
 	var i;
-	//for (i = numPagesLoaded * itemsPerPage + (numPagesLoaded ? 20 : 0); i < cachedData.length && i < (numPagesLoaded + 1) * itemsPerPage + 20; i++) {
 	for (i = numPagesLoaded * itemsPerPage; i < cachedData.length && i < (numPagesLoaded + 1) * itemsPerPage; i++) {
 		tableData.push(createTableRow(cachedData[i]));
 	}
@@ -256,7 +253,7 @@ var handleTableScroll = function(event) {
             settingTableData = false;
         }
     } else {
-        if (!settingTableData && event.contentOffset.y + (tallestDeviceHeight * 3) > event.contentSize.height) {
+        if (!settingTableData && event.contentOffset.y + (tallestDeviceHeight * 6) > event.contentSize.height) {
             settingTableData = true;
             getTable().appendRow(createTableRows());
             setTimeout(function() {
