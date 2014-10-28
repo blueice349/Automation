@@ -7,13 +7,14 @@ var Utils = require('lib/Utils');
 
 Ti.include('/lib/vendor/CryptoJS/hmac-sha1.js');
 
-var NFCListener = function(activity) {
+var NFCListener = function(activity, manualScan) {
 	this.nfc = null;
 	this.tagScannedCallback = null;
 	this.networkChangedCallback = null;
 	this.backlog = [];
 	this.sending = {};
 	this.activity = activity;
+	this.manualScan = manualScan || false;
 	
 	this._initListeners();
 	
@@ -21,6 +22,13 @@ var NFCListener = function(activity) {
 };
 
 NFCListener.ENCRYPTION_KEY = CryptoJS.enc.Utf8.parse('OYDnEbi5GXUGj1NqsrHTNfqQFtCIg1YQ');
+
+NFCListener.prototype.scanTag = function(tag) {
+	if (this.manualScan) {
+		return this._handleTagScanned(tag);
+	}
+	return false;
+};
 
 /* PRIVATE METHODS */
 
@@ -35,7 +43,7 @@ NFCListener.prototype._initNetworkListener = function() {
 };
 
 NFCListener.prototype._initNFCEventDispatcher = function() {
-	if (Ti.App.isAndroid) {
+	if (Ti.App.isAndroid && !this.manualScan) {
 		this.tagScannedCallback = this._handleTagScanned.bind(this);
 		this.nfc = new NFCEventDispatcher(this.activity);
 		this.nfc.addNFCListener(this.tagScannedCallback);
@@ -48,7 +56,8 @@ NFCListener.prototype._getSignature = function(data) {
 
 NFCListener.prototype._handleTagScanned = function(tag) {
 	if (!tag.isValidOmadiTag()) {
-		return;
+		tag.playErrorFeedback();
+		return false;
 	}
 	
 	var validTags = this._getValidTags();
@@ -56,10 +65,11 @@ NFCListener.prototype._handleTagScanned = function(tag) {
 	if (data) {
 		this._processTag(tag, data.nid, data.field);
 		tag.playSuccessFeedback();
-	} else {
-		alert('There was an error reading the NFC tag. It may not be a valid Omadi tag.');
-		tag.playErrorFeedback();
+		return true;
 	}
+	alert('There was an error reading the NFC tag. It may not be a valid Omadi tag.');
+	tag.playErrorFeedback();
+	return false;
 };
 
 NFCListener.prototype._getValidTags = function() {

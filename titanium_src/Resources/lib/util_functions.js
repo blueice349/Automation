@@ -11,33 +11,8 @@ var Utils = require('lib/Utils');
 Omadi.DB_VERSION = "DB1725";
 // IMPORTANT, IMPORTANT, IMPORTANT, IMPORTANT!!!!!
 
-Omadi.utils.closeAppWaitingDialogShown = false;
-
 Omadi.utils.closeApp = function(){"use strict";
-    var dialog;
-    
-    if(Ti.App.isAndroid){
-        
-        Ti.App.closingApp = true;
-        
-        if(Omadi.service.getLastUploadStartTimestamp() === null && !Omadi.data.isUpdating()){
-            Ti.Android.currentActivity.finish();
-            Ti.App.fireEvent('closeApp');
-        }
-        else{
-            setTimeout(Omadi.utils.closeApp, 200);
-            
-            if(!Omadi.utils.closeAppWaitingDialogShown){
-                dialog = Ti.UI.createAlertDialog({
-                   message: "Waiting for current sync or upload to finish..."
-                });
-                
-                dialog.show();
-                
-                Omadi.utils.closeAppWaitingDialogShown = true;
-            }
-        }
-    }
+	Utils.closeApp();
 };
 
 Omadi.utils.openListDatabase = function() {"use strict";
@@ -128,19 +103,7 @@ Omadi.utils.getRealname = function(uid){"use strict";
 };
 
 Omadi.utils.getUsername = function(uid){"use strict";
-    var db, result, username;
-    
-    username = "Anonymous";
-    
-    db = Omadi.utils.openMainDatabase();
-    result = db.execute("SELECT username FROM user WHERE uid = " + uid);
-    if(result.isValidRow()){
-        username = result.fieldByName('username');
-    }
-    result.close();
-    db.close();
-    
-    return username;
+    return Utils.getUsername(uid);
 };
 
 Omadi.utils.formatCurrency = function(amount){"use strict";
@@ -226,34 +189,7 @@ Omadi.utils.getCookie = function(fullCookie){"use strict";
  */
 
 Omadi.utils.isLoggedIn = function() {"use strict";
-    var mainDB, result, lastLoggedTimestamp, timestamp, is_logged_in, now;
-    
-    mainDB = Omadi.utils.openListDatabase();
-
-    result = mainDB.execute('SELECT * FROM login WHERE "id_log"=1');
-    is_logged_in = result.fieldByName('is_logged', Ti.Database.FIELD_TYPE_STRING);
-    timestamp = result.fieldByName('logged_time');
-
-    now = Omadi.utils.getUTCTimestamp();
-    if (timestamp == "null" || timestamp == null || timestamp == "0") {
-        timestamp = 0;
-    }
-
-    lastLoggedTimestamp = now - timestamp;
-
-    result.close();
-    mainDB.close();
-    
-    if (is_logged_in === "false") {
-        return false;
-    }
-    
-    if (lastLoggedTimestamp >= (60 * 60 * 24 * 7)) {//Seven days
-        Ti.App.Properties.setString('logStatus', "Please login");
-        return false;
-    }
-    
-    return true;
+    return Utils.isLoggedIn();
 };
 
 Omadi.utils.formatDate = function(timestamp, showTime){"use strict";

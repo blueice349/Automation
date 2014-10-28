@@ -5,7 +5,6 @@ Omadi.location = Omadi.location || {};
 var Utils = require('lib/Utils');
 
 Omadi.location.isLocationEnabled = function(callback){"use strict";
-    /*global alertQueue */
     var dialog = null, locAuth, retval = true;
     
     if(Ti.App.isAndroid && !Ti.Geolocation.getLocationServicesEnabled()){

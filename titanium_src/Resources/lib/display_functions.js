@@ -4,6 +4,7 @@ Omadi.display = Omadi.display || {};
 
 var Utils = require('lib/Utils');
 var Display = require('lib/Display');
+var AlertQueue = require('lib/AlertQueue');
 
 Omadi.display.backgroundGradientBlue = Display.backgroundGradientBlue;
 Omadi.display.backgroundGradientGray = Display.backgroundGradientGray;
@@ -139,24 +140,6 @@ Omadi.display.getFileViewType = function(filename){"use strict";
 	return Display.getFileViewType(filename);
 };
 
-Omadi.display.newAppAvailable = function(message) {"use strict";
-    var dialog, now, sixHours;
-    
-    now = Omadi.utils.getUTCTimestamp();
-    sixHours = now + (3600 * 12);
-    
-    // Only allow new app update dialog boxes to popup every 6 hours
-    if (now - Ti.App.Properties.getDouble("lastAppUpdateNotification", 0) > sixHours) {
-        dialog = Ti.UI.createAlertDialog({
-            message : message,
-            ok : 'OK',
-            title : 'Updated App'
-        }).show();
-
-        Ti.App.Properties.setDouble("lastAppUpdateNotification", now);
-    }
-};
-
 Omadi.display.openNearMeWindow = function(formType, filterQuery) {'use strict';
 	var win = Titanium.UI.createWindow({
         navBarHidden : true,
@@ -174,22 +157,7 @@ Omadi.display.openNearMeWindow = function(formType, filterQuery) {'use strict';
 };
 
 Omadi.display.openListWindow = function(type, show_plus, filterValues, nestedWindows, showFinalResults) {"use strict";
-    var listWindow = Titanium.UI.createWindow({
-        navBarHidden : true,
-        url : '/main_windows/objects.js',
-        type : type,
-        show_plus : show_plus,
-        filterValues : filterValues,
-        nestedWindows : nestedWindows,
-        showFinalResults : showFinalResults,
-        orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
-    });
-
-    Omadi.display.loading();
-    listWindow.addEventListener('open', Omadi.display.doneLoading);
-    listWindow.open();
-
-    return listWindow;
+    return Display.openListWindow(type, show_plus, filterValues, nestedWindows, showFinalResults);
 };
 
 Omadi.display.openActionsWindow = function() {"use strict";
@@ -223,20 +191,7 @@ Omadi.display.openAboutWindow = function() {"use strict";
 };
 
 Omadi.display.openDraftsWindow = function() {"use strict";
-    var draftsWindow = Titanium.UI.createWindow({
-        title : 'Drafts',
-        navBarHidden : true,
-        url : '/main_windows/drafts.js',
-        orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
-    });
-
-    Omadi.display.loading();
-    
-    draftsWindow.addEventListener('open', Omadi.display.doneLoading);
-
-    draftsWindow.open();
-
-    return draftsWindow;
+    return Display.openDraftsWindow();
 };
 
 Omadi.display.openSettingsWindow = function() {"use strict";
@@ -339,28 +294,7 @@ Omadi.display.openWebViewInBrowser = function(nid) {"use strict";
 };
 
 Omadi.display.openViewWindow = function(type, nid, allowActions) {"use strict";
-    var isDispatch, viewWindow, NodeViewTabs;
-    
-    if (typeof allowActions == 'undefined') {
-        allowActions = true;
-    }
-    
-    Omadi.display.loading();
-            
-    NodeViewTabs = require('ui/NodeViewTabs');
-    viewWindow = NodeViewTabs.getTabs(Omadi, type, nid, allowActions);
-    
-    if(viewWindow){
-        viewWindow.addEventListener('open', Omadi.display.doneLoading);
-        viewWindow.open();
-    }
-    else{
-        Utils.sendErrorReport("Could not open dispatch view window");
-        alert("Could not open the view.");
-        Omadi.display.doneLoading();
-    }
-
-    return viewWindow;
+    return Display.openViewWindow(type, nid, allowActions);
 };
 
 Omadi.display.FormTabs = null;
@@ -474,20 +408,7 @@ Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
 };
 
 Omadi.display.openLocalPhotosWindow = function() {"use strict";
-
-    var localPhotosWindow = Ti.UI.createWindow({
-        navBarHidden : true,
-        url : '/main_windows/localPhotos.js',
-        orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
-    });
-    
-    localPhotosWindow.addEventListener('close', Omadi.display.showNewNotificationDialog);
-    localPhotosWindow.addEventListener('open', Omadi.display.doneLoading);
-    Omadi.display.loading();
-
-    localPhotosWindow.open();
-
-    return localPhotosWindow;
+	return Display.openLocalPhotosWindow();
 };
 
 Omadi.display.openMainMenuWindow = function(options) {"use strict";
@@ -516,99 +437,7 @@ Omadi.display.openMainMenuWindow = function(options) {"use strict";
 };
 
 Omadi.display.showNewNotificationDialog = function(){"use strict";
-    var newNotifications, dialog, inspectionAlertShowing, newWin;
-    
-    /*global alertQueue, useAlertQueue*/
-    
-    newNotifications = Ti.App.Properties.getObject('newNotifications', {
-        count : 0,
-        nid : 0
-    });
-    
-    if(typeof newNotifications !== 'undefined'){
-        
-        if (newNotifications.count > 0 && !inspectionAlertShowing) {
-            
-            // Clear the newNotifications object 
-            Ti.App.Properties.setObject('newNotifications', {
-                count : 0,
-                nid : 0
-            });
-    
-            if (newNotifications.count > 1) {
-                dialog = Titanium.UI.createAlertDialog({
-                    title : '(' + newNotifications.count + ') New Notifications',
-                    message : 'View the notification list?',
-                    buttonNames : ['Take Me There', 'View Later'],
-                    cancel : 1
-                });
-    
-                dialog.addEventListener('click', function(e) {
-                    try{
-                        if (e.index !== dialog.cancel) {
-                            newWin = Omadi.display.openListWindow('notification', false, [], [], true);
-                            if(typeof alertQueue !== 'undefined'){
-                                newWin.addEventListener('close', function(){
-                                    Ti.App.fireEvent('showNextAlertInQueue');
-                                });
-                           }
-                        }
-                        else{
-                            if(typeof alertQueue !== 'undefined'){
-                                Ti.App.fireEvent('showNextAlertInQueue');
-                            }
-                        }
-                    }
-                    catch(ex){
-                        Utils.sendErrorReport("exception view the notification list?: " + ex);
-                    }
-                });
-                
-                if(typeof alertQueue !== 'undefined' && useAlertQueue){
-                    alertQueue.push(dialog);
-                }
-                else{
-                    dialog.show();
-                }
-            }
-            else {
-                dialog = Titanium.UI.createAlertDialog({
-                    title : 'New Notification',
-                    message : 'Read the notification now?',
-                    buttonNames : ['Read Now', 'Read Later'],
-                    cancel : 1
-                });
-    
-                dialog.addEventListener('click', function(e) {
-                    try{
-                        if (e.index !== dialog.cancel) {
-                            newWin = Omadi.display.openViewWindow('notification', newNotifications.nid);
-                            if(typeof alertQueue !== 'undefined'){
-                                newWin.addEventListener('close', function(){
-                                    Ti.App.fireEvent('showNextAlertInQueue');
-                                });
-                            }
-                        }
-                        else{
-                            if(typeof alertQueue !== 'undefined'){
-                                Ti.App.fireEvent('showNextAlertInQueue');
-                            }
-                        }
-                    }
-                    catch(ex){
-                        Utils.sendErrorReport("exception read the notification now?: " + ex);
-                    }
-                });
-                
-                if(typeof alertQueue !== 'undefined' && useAlertQueue){
-                    alertQueue.push(dialog);
-                }
-                else{
-                    dialog.show();
-                }
-            }
-        }
-    }
+	Display.showNewNotificationDialog();
 };
 
 /** Dispaly an option dialog to select view, edit, next_part, etc.
@@ -893,42 +722,7 @@ Omadi.display.insertBundleIcon = function(type, imageView){"use strict";
 };
 
 Omadi.display.getDrivingDirectionsTo = function(addressString){"use strict";
-    try{
-        if(addressString){
-            
-            Titanium.Geolocation.accuracy = Titanium.Geolocation.ACCURACY_BEST;
-            Titanium.Geolocation.distanceFilter = 10;
-            Titanium.Geolocation.getCurrentPosition(function(e){
-                var url, longitude, latitude, intent;
-                
-                if (e.error){
-                    alert("There was a problem getting directions: " + e.error);
-                    return;
-                }
-                
-                longitude = e.coords.longitude;
-                latitude = e.coords.latitude;
-               
-                addressString = addressString.replace(/ /g, '+');
-                
-                if(Ti.App.isAndroid){
-                    url = "http://maps.google.com/maps?mode=driving&t=m&saddr="; 
-                    url += latitude + "," + longitude;
-                    url += "&daddr=" + addressString;
-                }
-                else{
-                    url = "http://maps.apple.com/maps?mode=driving&t=m&saddr="; 
-                    url += latitude + "," + longitude;
-                    url += "&daddr=" + addressString;
-                }
-                  
-                Ti.Platform.openURL(url);
-            });
-        }
-    }
-    catch(ex){
-        Utils.sendErrorReport("Exception getting driving directions: " + ex);
-    }
+    Display.getDrivingDirectionsTo(addressString);
 };
 
 Omadi.display.getNodeTypeImagePath = function(type) {"use strict";
@@ -1122,15 +916,7 @@ Omadi.display.setImageViewVideoThumbnail = function(imageView, nid, file_id, fie
 };
 
 Omadi.display.removeNotifications = function() {"use strict";
-
-    if (Ti.App.isAndroid) {
-        try {
-            Ti.Android.NotificationManager.cancel(42);
-        }
-        catch(nothing) {
-
-        }
-    }
+	Display.removeNotifications();
 };
 
 var loadingIndicatorWindow, loadingActivityIndicator;

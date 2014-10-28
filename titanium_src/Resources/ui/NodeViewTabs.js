@@ -1,9 +1,12 @@
 /*jslint eqeq:true,plusplus:true,nomen:true,bitwise:true*/
 
-var Omadi, _instance = null;
+var _instance = null;
 
 var NodeView = require('ui/NodeView');
 var Utils = require('lib/Utils');
+var Database = require('lib/Database');
+var Print = require('lib/Print');
+var Node = require('objects/Node');
 
 var CommentList = null;
 
@@ -82,7 +85,7 @@ NodeViewTabs.prototype.addActions = function(){"use strict";
                 node = getInstance().workNode;
                 
                 order = 0;
-                bundle = Omadi.data.getBundle(node.type);
+                bundle = Node.getBundle(node.type);
                     
                 if(node.perm_edit == true){
                     
@@ -104,7 +107,7 @@ NodeViewTabs.prototype.addActions = function(){"use strict";
                     order++;
                 }
                 
-                if(Omadi.print.canPrintReceipt(node.nid)){
+                if(Print.canPrintReceipt(node.nid)){
                     menu_print = e.menu.add({
                         title : 'Print',
                         order : order,
@@ -113,7 +116,7 @@ NodeViewTabs.prototype.addActions = function(){"use strict";
                     });
                     
                     menu_print.addEventListener('click', function(){
-                        Omadi.print.printReceipt(node.nid);
+                        Print.printReceipt(node.nid);
                     });
                     
                     order ++;
@@ -122,7 +125,7 @@ NodeViewTabs.prototype.addActions = function(){"use strict";
                 if(typeof bundle.data.custom_copy !== 'undefined'){
                     for(to_type in bundle.data.custom_copy){
                         if(bundle.data.custom_copy.hasOwnProperty(to_type)){
-                            to_bundle = Omadi.data.getBundle(to_type);
+                            to_bundle = Node.getBundle(to_type);
                             if(to_bundle && to_bundle.can_create == 1){
                                 
                                 
@@ -185,7 +188,7 @@ NodeViewTabs.prototype.getTabs = function(allowActions){"use strict";
             navBarHidden: true     // IMPORTANT!!!: regardless of what the docs say, if this property does not exist, our autocompletes crash in 2.3.x
         });
         
-        this.workNode = Omadi.data.nodeLoad(this.nid);
+        this.workNode = Node.load(this.nid);
         
         this.dispatchNode = null;
         
@@ -195,7 +198,7 @@ NodeViewTabs.prototype.getTabs = function(allowActions){"use strict";
         
             if (this.workNode.type == 'dispatch') {
                 this.dispatchNode = this.workNode;
-                this.workNode = Omadi.data.nodeLoad(this.dispatchNode.dispatch_nid);
+                this.workNode = Node.load(this.dispatchNode.dispatch_nid);
                 
                 if(this.workNode){
                     this.currentWorkFormPart = this.workNode.form_part;
@@ -214,21 +217,20 @@ NodeViewTabs.prototype.getTabs = function(allowActions){"use strict";
                     Ti.API.debug("Loading the corresponding negative id for the dispatch: " + JSON.stringify(this.workNode));
                     
                     try{
-                        db = Omadi.utils.openMainDatabase();
                         // This is used only for recovering from a dispatch that was continuously saved and a crash happened
                         // This will bring up the correctly saved dispatch node
                         // The continuous_nid is the original nid of the already server-saved node, which will match up 
                         //  with the dispatch_nid of the node, which will never change - and it may be duplicated since there is 
                         //  a regular copy for the server-saved node, and a temporary copy for the continuous node
-                        result = db.execute("SELECT nid FROM node WHERE continuous_nid = " + this.workNode.dispatch_nid);
+                        result = Database.query("SELECT nid FROM node WHERE continuous_nid = " + this.workNode.dispatch_nid);
                         tempDispatchNid = 0;
                         if(result.isValidRow()){
                             tempDispatchNid = result.field(0);
                         }
                         result.close();
-                        db.close();
+                        Database.close();
                         
-                        this.dispatchNode = Omadi.data.nodeLoad(tempDispatchNid);
+                        this.dispatchNode = Node.load(tempDispatchNid);
                         openDispatch = false;
                     }
                     catch(exDB){
@@ -236,7 +238,7 @@ NodeViewTabs.prototype.getTabs = function(allowActions){"use strict";
                     }
                 }
                 else{
-                    this.dispatchNode = Omadi.data.nodeLoad(this.workNode.dispatch_nid);
+                    this.dispatchNode = Node.load(this.workNode.dispatch_nid);
                     openDispatch = false;
                 }
             }
@@ -254,7 +256,7 @@ NodeViewTabs.prototype.getTabs = function(allowActions){"use strict";
         }
 
         if(this.dispatchNode){
-            this.dispatchWindow = NodeView.getWindow(Omadi, this, 'dispatch', this.dispatchNode.nid, allowActions);
+            this.dispatchWindow = NodeView.getWindow(this, 'dispatch', this.dispatchNode.nid, allowActions);
             this.dispatchTab = Ti.UI.createTab({
                 title: 'Dispatch',
                 window: this.dispatchWindow,
@@ -269,9 +271,9 @@ NodeViewTabs.prototype.getTabs = function(allowActions){"use strict";
         
         if(this.workNode && this.workNode.type !== null){
             
-            workBundle = Omadi.data.getBundle(this.workNode.type);
+            workBundle = Node.getBundle(this.workNode.type);
             
-            this.workWindow = NodeView.getWindow(Omadi, this, this.workNode.type, this.workNode.nid, allowActions);
+            this.workWindow = NodeView.getWindow(this, this.workNode.type, this.workNode.nid, allowActions);
             
             this.workTab = Ti.UI.createTab({
                 title: workBundle.label,
@@ -394,8 +396,7 @@ NodeViewTabs.prototype.close = function(){"use strict";
 };
 
 
-exports.getTabs = function(OmadiObj, type, nid, allowActions){"use strict";
-    Omadi = OmadiObj;
+exports.getTabs = function(type, nid, allowActions){"use strict";
     
     if (typeof allowActions == 'undefined') {
         allowActions = true;

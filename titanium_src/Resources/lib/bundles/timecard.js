@@ -2,6 +2,7 @@
 Omadi.bundles.timecard = {};
 
 var Utils = require('lib/Utils');
+var AlertQueue = require('lib/AlertQueue');
 var TimecardGeofenceVerifier = require('objects/TimecardGeofenceVerifier');
 
 Omadi.bundles.timecard.askClockOutLogout = function(){"use strict";
@@ -60,7 +61,6 @@ Omadi.bundles.timecard.askClockOutLogout = function(){"use strict";
 
 Omadi.bundles.timecard.askClockIn = function(){"use strict";
     var dialog;
-    /*global alertQueue*/
     
     if(Omadi.bundles.timecard.userShouldClockInOut()){
 
@@ -82,21 +82,14 @@ Omadi.bundles.timecard.askClockIn = function(){"use strict";
 						}
 					}
 					
-					if (typeof alertQueue !== 'undefined') {
-						Ti.App.fireEvent('showNextAlertInQueue');
-					}
+					AlertQueue.showNextAlertInQueue();
                 }
                 catch(ex){
                     Utils.sendErrorReport("exception in clock in now?: " + ex);
                 }
             });
             
-            if(typeof alertQueue !== 'undefined'){
-                alertQueue.push(dialog);
-            }
-            else{
-                dialog.show(); 
-            }
+            AlertQueue.enqueue(dialog);
         }
     }
     

@@ -119,7 +119,7 @@ TimecardGeofenceVerifier.prototype._handleLocationChanged = function() {
 TimecardGeofenceVerifier.prototype._isEnabled = function() {
 	//if (this.enabled === null) {
 		var bundle = Node.getBundle('timecard');
-		this.enabled = bundle.data.timecard.allow_geofence_verification == 1;
+		this.enabled = bundle.data.timecard && bundle.data.timecard.allow_geofence_verification == 1;
 	//}
 	return this.enabled;
 };

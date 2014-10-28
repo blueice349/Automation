@@ -10,6 +10,10 @@ var Node = function() {
 	
 };
 
+Node.cache = {};
+Node.cache.fakeFields = {};
+Node.cache.regions = {};
+
 Node.getNodeType = function(nid){
     var type, result;
     type = null;
@@ -556,11 +560,16 @@ Node.load = function(nid) {
     return node;
 };
 
-Node.cache = {};
-Node.cache.fields = {};
-
 Node.resetFieldCache = function(){
   Node.cache.fields = {};  
+};
+
+Node.resetFakeFieldCache = function(){
+  Node.cache.fakeFields = {};  
+};
+
+Node.resetRegionsCache = function(){
+  Node.cache.regions = {};  
 };
 
 Node.getFields = function(type) {
@@ -1253,6 +1262,86 @@ Node.getNewNid = function() {
     }
 
     return smallestNid;
+};
+
+Node.getFakeFields = function(type) {
+    var db, result, fakeFields, field_name, nameParts;
+    
+    if ( typeof Node.cache.fakeFields[type] !== 'undefined') {
+        fakeFields = Node.cache.fakeFields[type];
+    } else {
+        fakeFields = {};
+        result = Database.query("SELECT field_name FROM fake_fields WHERE bundle = '" + type + "'");
+
+        while (result.isValidRow()) {
+            field_name = result.fieldByName('field_name');
+            
+            fakeFields[field_name] = field_name;
+
+            result.next();
+        }
+        result.close();
+        Database.close();
+
+        Node.cache.fakeFields[type] = fakeFields;
+    }
+
+    return fakeFields;
+};
+
+Node.getRegions = function(type) {
+    var db, result, regions, region_name, region_settings;
+    
+    if ( typeof Node.cache.regions[type] !== 'undefined') {
+        regions = Node.cache.regions[type];
+    }
+    else {
+        regions = {};
+        result = Database.query("SELECT rid, node_type, label, region_name, weight, settings FROM regions WHERE node_type = '" + type + "' ORDER BY weight ASC");
+        
+        while (result.isValidRow()) {
+            region_name = result.fieldByName('region_name');
+            
+            region_settings = result.fieldByName('settings');
+            regions[region_name] = {
+                rid : result.fieldByName('rid'),
+                node_type : result.fieldByName('node_type'),
+                label : result.fieldByName('label'),
+                region_name : result.fieldByName('region_name'),
+                weight : result.fieldByName('weight'),
+                settings : JSON.parse(result.fieldByName('settings'))
+            };
+            result.next();
+        }
+        result.close();
+        Database.close();
+        
+        Node.cache.regions[type] = regions;
+    }
+
+    return regions;
+};
+
+Node.setViewed = function(nid) {
+
+    /** UPDATE the mobile mainDB **/
+    /** SEND THE VIEWED TIMESTAMP TO THE SERVER FOR EVERY VIEW, EVEN IF IT WAS VIEWED BEFORE **/
+    Database.query("UPDATE node SET viewed = '" + Utils.getUTCTimestamp() + "' WHERE nid = " + nid);
+    Database.close();
+
+    /** UPDATE the web server mainDB **/
+    var http = Ti.Network.createHTTPClient({
+        enableKeepAlive: false,
+        validatesSecureCertificate: false,
+        timeout: 10000
+    });
+    
+    http.open('POST', Ti.App.DOMAIN_NAME + '/js-forms/custom_forms/viewed.json?nid=' + nid);
+
+    Utils.setCookieHeader(http);
+    http.setRequestHeader("Content-Type", "application/json");
+    http.send();
+    // We don't care about the response, as this is a very trivial thing
 };
 
 module.exports = Node;

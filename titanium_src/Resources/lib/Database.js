@@ -1,8 +1,11 @@
-/*jslint nomen:true*/
+/* jshint globalstrict:true */
+'use strict';
 
 var _instance = null;
+var GeofenceServices = require('services/GeofenceServices');
+var Data = require('lib/Data');
 
-function Database(){"use strict";
+function Database() {
     this.mainDBConn = null;
     this.listDBConn = null;
     // IMPORTANT, IMPORTANT, IMPORTANT, IMPORTANT!!!!!
@@ -11,7 +14,7 @@ function Database(){"use strict";
     this.mainDBName = null;
 }
 
-function getInstance(){"use strict";
+function getInstance() {
     if(_instance === null){
         _instance = new Database();
     }
@@ -19,7 +22,7 @@ function getInstance(){"use strict";
     return _instance;
 }
 
-Database.prototype.getListDBConn = function(){"use strict";
+Database.prototype.getListDBConn = function() {
     if(this.listDBConn === null){
         this.listDBConn = Ti.Database.install('/database/db_list.sqlite', this.dbVersion + "_list");
     
@@ -31,7 +34,7 @@ Database.prototype.getListDBConn = function(){"use strict";
     return this.listDBConn;
 };
 
-Database.prototype.getMainDBConn = function(){"use strict";
+Database.prototype.getMainDBConn = function() {
     if(this.mainDBConn === null){
         this.mainDBConn = Ti.Database.install('/database/db.sqlite', this.dbVersion + "_" + this.getMainDBName());
     
@@ -43,7 +46,7 @@ Database.prototype.getMainDBConn = function(){"use strict";
     return this.mainDBConn;
 };
 
-Database.prototype.getGPSDBConn = function(){"use strict";
+Database.prototype.getGPSDBConn = function() {
     if(this.gpsDBConn === null){
 		this.gpsDBConn = Ti.Database.install('/database/gps_coordinates.sqlite', this.dbVersion + "_" + this.getMainDBName() + '_GPS');
     
@@ -55,7 +58,7 @@ Database.prototype.getGPSDBConn = function(){"use strict";
     return this.gpsDBConn;
 };
 
-Database.prototype.getMainDBName = function(){"use strict";
+Database.prototype.getMainDBName = function() {
     var listDB, result;
     
     if(this.mainDBName === null){
@@ -70,7 +73,7 @@ Database.prototype.getMainDBName = function(){"use strict";
     return this.mainDBName;
 };
 
-Database.prototype.closeDatabases = function(){"use strict";
+Database.prototype.closeDatabases = function() {
     
     if(this.mainDBConn !== null){
         try{
@@ -103,7 +106,7 @@ Database.prototype.closeDatabases = function(){"use strict";
     }
 };
 
-Database.prototype.escape = function(string){"use strict";
+Database.prototype.escape = function(string) {
     if (typeof string === 'undefined' || string === null || string === false) {
         return '';
     }
@@ -120,7 +123,7 @@ Database.prototype.escape = function(string){"use strict";
 
 // Publicly exposed methods
 
-exports.reset = function(){"use strict";
+exports.reset = function() {
     if(_instance !== null){
         _instance.closeDatabases();
     }
@@ -128,28 +131,28 @@ exports.reset = function(){"use strict";
     _instance = new Database();
 };
 
-exports.query = function(sql){"use strict"; 
+exports.query = function(sql) { 
     var db = getInstance().getMainDBConn();
     return db.execute(sql);
 };
 
-exports.queryList = function(sql){"use strict"; 
+exports.queryList = function(sql) { 
     var db = getInstance().getListDBConn();
     return db.execute(sql);
 };
 
-exports.queryGPS = function(sql){"use strict";
+exports.queryGPS = function(sql) {
     var db = getInstance().getGPSDBConn();
     return db.execute(sql);
 };
 
-exports.close = function(){"use strict";
+exports.close = function() {
     if(_instance !== null){
         _instance.closeDatabases();
     }
 };
 
-exports.escape = function(string){"use strict";
+exports.escape = function(string) {
     return getInstance().escape(string);
 };
 
@@ -168,3 +171,43 @@ exports.resultToObjectArray = function(result) {
 	
 	return data;
 };
+
+exports.removeAllData = function() {
+    GeofenceServices.getInstance().unregisterAllGeofences();
+    
+    Ti.App.Properties.setDouble('omadi:fullResetLastSync', Data.getLastUpdateTimestamp());
+    
+    exports.queryList('UPDATE _files SET nid = -1000000 WHERE nid <= 0');
+    exports.queryGPS('DELETE FROM alerts');
+    if (Ti.App.isAndroid) {
+    	_instance.getMainDBConn().remove();
+    } else {
+    	_instance.getMainDBConn().file.deleteFile();
+    }
+    exports.close();
+};
+
+var openListDatabase = function() {
+    var db = Ti.Database.install('/database/db_list.sqlite', getInstance().DB_VERSION + "_list");
+    if (Ti.App.isIOS) {
+        db.file.setRemoteBackup(false);
+    }
+    return db;
+};
+
+var openMainDatabase = function() {
+    var db = Ti.Database.install('/database/db.sqlite', getInstance().DB_VERSION + "_" + getInstance().getMainDBName());
+    if (Ti.App.isIOS) {
+        db.file.setRemoteBackup(false);
+    }
+    return db;
+};
+
+var openGPSDatabase = function() {
+    var db = Ti.Database.install('/database/gps_coordinates.sqlite', getInstance().DB_VERSION + "_" + getInstance().getMainDBName() + "_GPS");
+    if (Ti.App.isIOS) {
+        db.file.setRemoteBackup(false);
+    }
+    return db;
+};
+

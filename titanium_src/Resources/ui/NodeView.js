@@ -1,9 +1,11 @@
 /*jslint nomen:true,eqeq:true,plusplus:true*/
 
+var Print = require('lib/Print');
 var Utils = require('lib/Utils');
+var Node = require('objects/Node');
+var Display = require('lib/Display');
 var ImageWidget = require('ui/widget/Image');
 var _instances = {};
-var Omadi;
 var ActiveObj = null;
 
 var ROLE_ID_ADMIN = 3;
@@ -14,7 +16,7 @@ var ROLE_ID_CLIENT = 7;
 var ROLE_ID_OMADI_AGENT = 8;
 
 function displayLargeImage(e){"use strict";
-    Omadi.display.displayLargeImage(e.source, e.source.nid, e.source.fid);
+    Display.displayLargeImage(e.source, e.source.nid, e.source.fid);
 }
 
 function openTelephone(e){"use strict";
@@ -33,20 +35,20 @@ function openEmailDialog(e){"use strict";
 }
 
 function openOmadiReferenceWindow(e){"use strict";
-    Omadi.display.openViewWindow(e.source.type, e.source.nid);
+    Display.openViewWindow(e.source.type, e.source.nid);
 }
 
 function openFileViewer(e){"use strict";
-    Omadi.display.displayFile(e.source.nid, e.source.dbValue, e.source.textValue);
+    Display.displayFile(e.source.nid, e.source.dbValue, e.source.textValue);
 }
 
 function getDrivingDirectionsView(e){"use strict";
     var address = e.source.text.replace("\n", ' ');
-    Omadi.display.getDrivingDirectionsTo(address);                                   
+    Display.getDrivingDirectionsTo(address);                                   
 }
 
 function displayFullImage(e){"use strict";
-    Omadi.display.displayFullImage(e.source);
+    Display.displayFullImage(e.source);
 }
 
 
@@ -55,7 +57,7 @@ function NodeView(type, nid){"use strict";
     this.nid = nid;
     this.type = type;
     
-    this.node = Omadi.data.nodeLoad(nid);
+    this.node = Node.load(nid);
     
     this.win = null;
     this.scrollView = null;
@@ -70,7 +72,7 @@ function NodeView(type, nid){"use strict";
 
 NodeView.prototype.getActionOptions = function() {"use strict";
 	var node = ActiveObj.nodeViewTabsObj.workNode;
-	var bundle = Omadi.data.getBundle(node.type);
+	var bundle = Node.getBundle(node.type);
 	var options = [];
 	
 	try {
@@ -85,7 +87,7 @@ NodeView.prototype.getActionOptions = function() {"use strict";
 		}
 		
 		// print
-		if(Omadi.print.canPrintReceipt(node.nid)){
+		if(Print.canPrintReceipt(node.nid)){
 			options.push('Print');
 	    }
 		
@@ -93,7 +95,7 @@ NodeView.prototype.getActionOptions = function() {"use strict";
 		var toType;
 		for (toType in bundle.data.custom_copy) {
             if(bundle.data.custom_copy.hasOwnProperty(toType)){
-                var toBundle = Omadi.data.getBundle(toType);
+                var toBundle = Node.getBundle(toType);
                 if (toBundle && toBundle.can_create == 1) {
                     options.push((bundle.data.custom_copy[toType].conversion_type == 'change' ? 'Change to ' : 'Copy to ') + toBundle.label);
                 }
@@ -115,7 +117,7 @@ NodeView.prototype.actionsEventHandler = function(e) {"use strict";
     try{
         nodeViewTabsObj = ActiveObj.nodeViewTabsObj;
         
-        bundle = Omadi.data.getBundle(nodeViewTabsObj.workNode.type);
+        bundle = Node.getBundle(nodeViewTabsObj.workNode.type);
         
         form_part = nodeViewTabsObj.workNode.form_part;
         
@@ -139,7 +141,7 @@ NodeView.prototype.actionsEventHandler = function(e) {"use strict";
 	        btn_id.push(form_part);
         }
         
-        if(Omadi.print.canPrintReceipt(nodeViewTabsObj.workNode.nid)){
+        if(Print.canPrintReceipt(nodeViewTabsObj.workNode.nid)){
             
             btn_tt.push('Print');
             btn_id.push('_print');
@@ -148,7 +150,7 @@ NodeView.prototype.actionsEventHandler = function(e) {"use strict";
         if(typeof bundle.data.custom_copy !== 'undefined'){
             for(to_type in bundle.data.custom_copy){
                 if(bundle.data.custom_copy.hasOwnProperty(to_type)){
-                    to_bundle = Omadi.data.getBundle(to_type);
+                    to_bundle = Node.getBundle(to_type);
                     if(to_bundle && to_bundle.can_create == 1){
                         
                         if(typeof bundle.data.custom_copy[to_type] !== 'undefined' && 
@@ -188,7 +190,7 @@ NodeView.prototype.actionsEventHandler = function(e) {"use strict";
                     formPart = btn_id[ev.index];
                     
                     if(formPart == '_print'){
-                        Omadi.print.printReceipt(nodeViewTabsObj.workNode.nid);
+                        Print.printReceipt(nodeViewTabsObj.workNode.nid);
                     }
                     else{
                         
@@ -267,10 +269,8 @@ NodeView.prototype.init = function(){"use strict";
     
     unsorted_res = [];
     
-    db = Omadi.utils.openMainDatabase();
-    
     try{
-        result = db.execute('SELECT * FROM regions WHERE node_type = "' + this.node.type + '" ORDER BY weight ASC');
+        result = Database.query('SELECT * FROM regions WHERE node_type = "' + this.node.type + '" ORDER BY weight ASC');
     
         while (result.isValidRow()) {
             reg_settings = result.fieldByName('settings');
@@ -295,7 +295,7 @@ NodeView.prototype.init = function(){"use strict";
         
         result.close();
         
-        result = db.execute('SELECT label, weight, type, field_name, widget, settings, required FROM fields WHERE bundle = "' + this.node.type + '" AND disabled = 0 ORDER BY weight ASC, id ASC');
+        result = Database.query('SELECT label, weight, type, field_name, widget, settings, required FROM fields WHERE bundle = "' + this.node.type + '" AND disabled = 0 ORDER BY weight ASC, id ASC');
         savedValues = [];
         
         omadi_session_details = Utils.getParsedJSON(Ti.App.Properties.getString('Omadi_session_details'));
@@ -376,7 +376,7 @@ NodeView.prototype.init = function(){"use strict";
     }
     finally{
         try{
-            db.close();
+            Database.close();
         }
         catch(ex1){}
     }
@@ -652,7 +652,7 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
                             });
                             
                             valueView.add(contentImage);
-                            Omadi.display.setImageViewVideoThumbnail(contentImage, this.node.nid, fileId, fieldObj.field_name);
+                            Display.setImageViewVideoThumbnail(contentImage, this.node.nid, fileId, fieldObj.field_name);
                             contentWidth += 110;
                         }
                     }
@@ -747,7 +747,7 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
                                 valueLabel.nid = this.node.nid;
                                 valueLabel.textValue = this.node[fieldObj.field_name].textValues[i];
                                 
-                                if(Omadi.display.getFileViewType(valueLabel.textValue) !== null){
+                                if(Display.getFileViewType(valueLabel.textValue) !== null){
                                     valueLabel.addEventListener('click', openFileViewer);
                                     valueLabel.color = '#369';
                                 }
@@ -875,7 +875,7 @@ NodeView.prototype.getWindow = function(allowActions){"use strict";
             color : '#fff',
 	        width : Ti.UI.FILL,
 	        height : 35,
-            backgroundGradient : Omadi.display.backgroundGradientBlue,
+            backgroundGradient : Display.backgroundGradientBlue,
             borderRadius : 5,
             top: 5,
             left: 5,
@@ -935,8 +935,7 @@ NodeView.prototype.getWindow = function(allowActions){"use strict";
         wordWrap : false
     }));
 
-    db = Omadi.utils.openMainDatabase();
-    result = db.execute("SELECT realname, uid FROM user WHERE uid IN (" + this.node.author_uid + "," + this.node.changed_uid + ")");
+    result = Database.query("SELECT realname, uid FROM user WHERE uid IN (" + this.node.author_uid + "," + this.node.changed_uid + ")");
     usernames = [];
 
     while (result.isValidRow()) {
@@ -944,7 +943,7 @@ NodeView.prototype.getWindow = function(allowActions){"use strict";
         result.next();
     }
     result.close();
-    db.close();
+    database.close();
 
     metaDataFields = [];
 
@@ -959,7 +958,7 @@ NodeView.prototype.getWindow = function(allowActions){"use strict";
         type : 'metadata',
         label : 'Created Time',
         field_name : 'created',
-        textValue : Omadi.utils.formatDate(this.node.created, true),
+        textValue : Utils.formatDate(this.node.created, true),
         can_view: true
     });
 
@@ -975,7 +974,7 @@ NodeView.prototype.getWindow = function(allowActions){"use strict";
             type : 'metadata',
             label : 'Last Updated Time',
             field_name : 'changed',
-            textValue : Omadi.utils.formatDate(this.node.changed, true),
+            textValue : Utils.formatDate(this.node.changed, true),
             can_view: true
         });
     }
@@ -985,16 +984,14 @@ NodeView.prototype.getWindow = function(allowActions){"use strict";
     }
     
     // Send a ping to the server that this node was viewed
-    Omadi.service.setNodeViewed(this.nid);
+    Node.setViewed(this.nid);
     
     this.win.add(this.scrollView);
     
     return this.win;
 };
 
-exports.getWindow = function(OmadiObj, nodeViewTabsObj, type, nid, allowActions){"use strict";
-    Omadi = OmadiObj;
-    
+exports.getWindow = function(nodeViewTabsObj, type, nid, allowActions){"use strict";
     if (typeof allowActions == 'undefined') {
         allowActions = true;
     }

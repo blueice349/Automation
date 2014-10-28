@@ -16,6 +16,8 @@ var NFCTag = function(tag) {
 	this.writable = null;
 	this.scanCount = null;
 	this.hasScanCounter_ = null;
+	
+	this._populateCache();
 };
 
 NFCTag.ENCRYPTION_KEY = CryptoJS.enc.Utf8.parse('6p30BYV1p00eADpKPRfZ8wsqSViW8nAm');
@@ -215,6 +217,11 @@ NFCTag.prototype.isWritable = function() {
 };
 
 /* PRIVATE METHODS */
+
+NFCTag.prototype._populateCache = function() {
+	this.getData();
+	this.isValidOmadiTag();
+};
 
 NFCTag.prototype._idsMatch = function() {
 	try {

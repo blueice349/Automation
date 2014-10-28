@@ -3,10 +3,11 @@ Omadi.bundles.companyVehicle = {};
 /*jslint eqeq: true, plusplus: true*/
 
 var Utils = require('lib/Utils');
+var AlertQueue = require('lib/AlertQueue');
 
 Omadi.bundles.companyVehicle.askAboutVehicle = function() {"use strict";
     var dialog, bundle, newWin, vehicles, options, i;
-    /*global roles, ROLE_ID_FIELD, alertQueue*/
+    /*global roles, ROLE_ID_FIELD*/
 
     bundle = Omadi.data.getBundle('company_vehicle');
 
@@ -41,21 +42,14 @@ Omadi.bundles.companyVehicle.askAboutVehicle = function() {"use strict";
                     Omadi.bundles.inspection.askToReviewLastInspection();
                 }
                 
-                if ( typeof alertQueue !== 'undefined') {
-                    Ti.App.fireEvent('showNextAlertInQueue');
-                }
+                AlertQueue.showNextAlertInQueue();
             }
             catch(ex){
                 Utils.sendErrorReport("exception selecting vehicle: " + ex);
             }
         });
 
-        if ( typeof alertQueue !== 'undefined') {
-            alertQueue.push(dialog);
-        }
-        else {
-            dialog.show();
-        }
+		AlertQueue.enqueue(dialog);
     }
 };
 
@@ -67,12 +61,7 @@ Omadi.bundles.companyVehicle.setUserVehicle = function(vehicle_nid) {"use strict
             message : 'Your vehicle was not selected. Please try again once you are connected to the Internet.'
         });
         
-        if ( typeof alertQueue !== 'undefined') {
-            alertQueue.push(dialog);
-        }
-        else {
-            dialog.show();
-        }
+        AlertQueue.enqueue(dialog);
     }
     else{
         Omadi.display.loading();
@@ -114,12 +103,7 @@ Omadi.bundles.companyVehicle.setUserVehicle = function(vehicle_nid) {"use strict
                 buttonNames: ['OK']
             });
             
-            if ( typeof alertQueue !== 'undefined') {
-                alertQueue.push(dialog);
-            }
-            else {
-                dialog.show();
-            }
+            AlertQueue.enqueue(dialog);
             
             Utils.sendErrorReport('Could not select vehicle' + JSON.stringify(e));
         };
@@ -146,12 +130,7 @@ Omadi.bundles.companyVehicle.exitVehicle = function(){"use strict";
                 buttonNames: ['OK']
             });
             
-            if ( typeof alertQueue !== 'undefined') {
-                alertQueue.push(dialog);
-            }
-            else {
-                dialog.show();
-            }
+            AlertQueue.enqueue(dialog);
         }
         else{
             Omadi.display.loading();
@@ -193,12 +172,7 @@ Omadi.bundles.companyVehicle.exitVehicle = function(){"use strict";
                         buttonNames: ['OK']
                     });
                     
-                    if ( typeof alertQueue !== 'undefined') {
-                        alertQueue.push(dialog);
-                    }
-                    else {
-                        dialog.show();
-                    }
+                    AlertQueue.enqueue(dialog);
                     
                     Utils.sendErrorReport('Could not exit vehicle' + JSON.stringify(e));
                 }

@@ -1,45 +1,15 @@
 /*jslint eqeq:true,plusplus:true,nomen:true*/
-/*global alertQueue,isJsonString*/
+/*global isJsonString*/
 
 
 Omadi.bundles.dispatch = {};
 
 var Utils = require('lib/Utils');
+var DispatchBundle = require('lib/bundles/DispatchBundle');
+var AlertQueue = require('lib/AlertQueue');
 
 Omadi.bundles.dispatch.showJobsScreen = function(){"use strict";
-    var bundle, retval, instances;
-    
-    retval = false;
-    bundle = Omadi.data.getBundle('dispatch');
-    
-    if(bundle){
-        instances = Omadi.data.getFields('dispatch');
-        
-        if(typeof instances.field_dispatching_status !== 'undefined'){
-            retval = true;
-        }
-    }
-    
-    return retval;
-};
-
-Omadi.bundles.dispatch.showNewDispatchJobs = function(){"use strict";
-      var newJobs, currentUserJobs;
-      
-      if(Ti.App.Properties.getBool('newDispatchJob', false)){
-            Ti.App.Properties.setBool('newDispatchJob', false);
-            
-            newJobs = Omadi.bundles.dispatch.getNewJobs();
-            if(newJobs.length > 0){
-                Omadi.display.openJobsWindow();
-            }
-            else{
-                currentUserJobs = Omadi.bundles.dispatch.getCurrentUserJobs();
-                if(currentUserJobs.length > 0){
-                    Omadi.display.openJobsWindow();
-                }
-            }
-      }
+    return DispatchBundle.showJobsScreen();
 };
 
 Omadi.bundles.dispatch.getDrivingDirections = function(args){"use strict";
@@ -57,12 +27,7 @@ Omadi.bundles.dispatch.getDrivingDirections = function(args){"use strict";
                 message : 'Your Internet connection was lost. Please try again after you get an Internet connection.'
             });
             
-            if ( typeof alertQueue !== 'undefined') {
-                alertQueue.push(dialog);
-            }
-            else {
-                dialog.show();
-            }
+            AlertQueue.enqueue(dialog);
         } 
         else{
             node = Omadi.data.nodeLoad(nid);
@@ -178,12 +143,7 @@ Omadi.bundles.dispatch.acceptJob = function(args){"use strict";
                 message : 'Your Internet connection was lost. Please try again after you get an Internet connection.'
             });
             
-            if ( typeof alertQueue !== 'undefined') {
-                alertQueue.push(dialog);
-            }
-            else {
-                dialog.show();
-            }
+            AlertQueue.enqueue(dialog);
         }
         else{
             
@@ -208,11 +168,11 @@ Omadi.bundles.dispatch.acceptJob = function(args){"use strict";
                 
                 if (this.responseText !== null && isJsonString(this.responseText) === true) {
             
-                    Omadi.service.fetchedJSON = JSON.parse(this.responseText);            
-                    Omadi.data.processFetchedJson();
+                    json = JSON.parse(this.responseText);            
+                    Omadi.data.processFetchedJson(json);
                     
-                    if(!Omadi.service.fetchedJSON.dispatch_accept_job.success){
-                        alert(Omadi.service.fetchedJSON.dispatch_accept_job.text);
+                    if(!json.dispatch_accept_job.success){
+                        alert(json.dispatch_accept_job.text);
                     }
                 }
                 else {
@@ -234,12 +194,7 @@ Omadi.bundles.dispatch.acceptJob = function(args){"use strict";
                     buttonNames: ['OK']
                 });
                 
-                if ( typeof alertQueue !== 'undefined') {
-                    alertQueue.push(dialog);
-                }
-                else {
-                    dialog.show();
-                }
+                AlertQueue.enqueue(dialog);
                 
                 Utils.sendErrorReport('Could not accept job' + JSON.stringify(e));
             };
@@ -285,70 +240,6 @@ Omadi.bundles.dispatch.compareStatuses = function(status1, status2){"use strict"
     }
    
     return false;
-};
-
-Omadi.bundles.dispatch.checkInsertNode = function(insert){"use strict";
-    /*jslint nomen:true*/
-     var userUID, uidIndex, showNewDispatch;
-     showNewDispatch = false;
-     
-     Ti.API.info("Inserting a dispatch node");
-     
-     if(typeof insert._no_dispatch_popup !== 'undefined'){
-         if(insert._no_dispatch_popup){
-             // Do not add this to the list for a popup since the server says no
-             return;
-         }
-     }
-     
-     userUID = Omadi.utils.getUid();
-     
-     // Show if assigned
-     if(insert.send_dispatch_requests_to !== 'undefined'){
-         if(Utils.isArray(insert.send_dispatch_requests_to)){
-             for(uidIndex in insert.send_dispatch_requests_to){
-                 if(insert.send_dispatch_requests_to.hasOwnProperty(uidIndex)){
-                    if(userUID == insert.send_dispatch_requests_to[uidIndex]){
-                        showNewDispatch = true;
-                    }
-                 }
-             }
-         }
-         else if(userUID == insert.send_dispatch_requests_to){
-             showNewDispatch = true;
-         }
-     }
-     
-     // Show if it's the driver
-     if(insert.dispatched_to_driver !== 'undefined'){
-         if(Utils.isArray(insert.dispatched_to_driver)){
-             for(uidIndex in insert.dispatched_to_driver){
-                 if(insert.dispatched_to_driver.hasOwnProperty(uidIndex)){
-                    if(userUID == insert.dispatched_to_driver[uidIndex]){
-                        showNewDispatch = true;
-                    }
-                 }
-             }
-         }
-         else if(userUID == insert.send_dispatch_requests_to){
-             showNewDispatch = true;
-         }
-     }
-     
-     if(showNewDispatch){
-         // The user is part of this dispatch, so possibly dispatch if the below is true
-         showNewDispatch = false;
-         
-         if(typeof insert.field_dispatching_status !== 'undefined' && insert.field_dispatching_status == 'dispatching_call'){
-             // The job is being dispatched or re-dispatched, so show the jobs dialog
-             // the job has been re-dispatched
-             showNewDispatch = true;
-         }
-     }
-     
-     if(showNewDispatch){
-        Ti.App.Properties.setBool('newDispatchJob', true);
-     }
 };
 
 Omadi.bundles.dispatch.hasStatusOption = function(fieldOptions, status){"use strict";
@@ -680,7 +571,7 @@ Omadi.bundles.dispatch.updateStatusOffline = function(nid, status){"use strict";
 };
 
 Omadi.bundles.dispatch.updateStatus = function(nid, status, background){"use strict";
-    var dialog, http, savedLocally;
+    var dialog, http, savedLocally, json;
     
     if(typeof background === 'undefined'){
         background = false;
@@ -716,11 +607,11 @@ Omadi.bundles.dispatch.updateStatus = function(nid, status, background){"use str
             http.onload = function(e) {
                 if (this.responseText !== null && isJsonString(this.responseText) === true) {
             
-                    Omadi.service.fetchedJSON = JSON.parse(this.responseText);            
-                    Omadi.data.processFetchedJson();
+                    json = JSON.parse(this.responseText);            
+                    Omadi.data.processFetchedJson(json);
                     
-                    if(!background && !Omadi.service.fetchedJSON.dispatch_update_status.success){
-                        alert(Omadi.service.fetchedJSON.dispatch_update_status.text);
+                    if(!background && !json.dispatch_update_status.success){
+                        alert(json.dispatch_update_status.text);
                     }
                 }
                 else{
@@ -736,11 +627,11 @@ Omadi.bundles.dispatch.updateStatus = function(nid, status, background){"use str
                 try{
                     if (this.responseText !== null && isJsonString(this.responseText) === true) {
                 
-                        Omadi.service.fetchedJSON = JSON.parse(this.responseText);            
-                        Omadi.data.processFetchedJson();
+                        json = JSON.parse(this.responseText);            
+                        Omadi.data.processFetchedJson(json);
                         
-                        if(!background && !Omadi.service.fetchedJSON.dispatch_update_status.success){
-                            alert(Omadi.service.fetchedJSON.dispatch_update_status.text);
+                        if(!background && !json.dispatch_update_status.success){
+                            alert(json.dispatch_update_status.text);
                         }
                     }
                     else{
@@ -867,11 +758,11 @@ Omadi.bundles.dispatch.discontinueJob = function(nid, status, background){"use s
                 try{
                     if (this.responseText !== null && isJsonString(this.responseText) === true) {
                 
-                        Omadi.service.fetchedJSON = JSON.parse(this.responseText);            
-                        Omadi.data.processFetchedJson();
+                        var json = JSON.parse(this.responseText);            
+                        Omadi.data.processFetchedJson(json);
                         
-                        if(!background && !Omadi.service.fetchedJSON.dispatch_update_status.success){
-                            alert(Omadi.service.fetchedJSON.dispatch_update_status.text);
+                        if(!background && !json.dispatch_update_status.success){
+                            alert(json.dispatch_update_status.text);
                         }
                     }
                     else{
@@ -1085,124 +976,10 @@ Omadi.bundles.dispatch.showDiscontinueJobDialog = function(args){"use strict";
 };
 
 Omadi.bundles.dispatch.getNewJobs = function(){"use strict";
-    var newJobs, db, result, sql, nowTimestamp, dispatchBundle, newDispatchNids, i, 
-        jobDiscontinued, nid, title, viewed, type, changed;
-    
-    nowTimestamp = Omadi.utils.getUTCTimestamp();
-    newJobs = [];
-    dispatchBundle = Omadi.data.getBundle('dispatch');
-    
-    if(dispatchBundle){
-        db = Omadi.utils.openMainDatabase();
-        
-        sql = "SELECT n.nid, n.title, n.viewed, n.table_name, dispatch.job_discontinued, n.changed FROM dispatch ";
-        sql += "INNER JOIN node n ON n.dispatch_nid = dispatch.nid ";
-        sql += "WHERE n.dispatch_nid > 0 ";
-        sql += "AND n.flag_is_updated != 4 ";
-        sql += "AND dispatch.dispatched_to_driver IS NULL "; 
-        sql += "AND dispatch.field_dispatching_status != 'job_complete'";
-        result = db.execute(sql);
-        
-        newDispatchNids = [];
-        while(result.isValidRow()){
-            jobDiscontinued = result.fieldByName('job_discontinued');
-            nid = result.fieldByName('nid');
-            title = result.fieldByName('title');
-            viewed = result.fieldByName('viewed');
-            type = result.fieldByName('table_name');
-            
-            if(jobDiscontinued != null && jobDiscontinued > ""){
-                // This job has been discontinued
-                // We never want a discontinued job to show up in the new jobs list
-            }
-            else{
-                newJobs.push({
-                   nid: nid,
-                   title: title,
-                   viewed: viewed,
-                   type: type,
-                   isDiscontinued: false
-                });
-            }
-            
-            result.next();
-        }
-        result.close();
-        db.close();
-    }
-    
-    return newJobs;
+    return DispatchBundle.getNewJobs();
 };
 
 Omadi.bundles.dispatch.getCurrentUserJobs = function(){"use strict";
-    var newJobs, db, result, sql, nowTimestamp, currentUserUid, 
-        i, nid, title, viewed, type, dispatchBundle, jobDiscontinued, 
-        changed, isDiscontinued, dispatchChanged;
-    
-    nowTimestamp = Omadi.utils.getUTCTimestamp();
-    newJobs = [];
-    dispatchBundle = Omadi.data.getBundle('dispatch');
-    
-    if(dispatchBundle){
-        
-        currentUserUid = Omadi.utils.getUid();
-        db = Omadi.utils.openMainDatabase();
-        
-        sql = "SELECT n.nid, n.title, n.viewed, n.table_name, dispatch.job_discontinued, n.changed, n_dispatch.changed AS dispatch_changed FROM dispatch ";
-        sql += "INNER JOIN node n ON n.dispatch_nid = dispatch.nid ";
-        sql += "LEFT JOIN node n_dispatch ON n_dispatch.nid = dispatch.nid ";
-        sql += "WHERE n.dispatch_nid > 0 ";
-        sql += "AND n.flag_is_updated != 4 ";
-        sql += "AND dispatch.dispatched_to_driver = " + currentUserUid + " "; 
-        sql += "AND (dispatch.field_dispatching_status IS NULL OR dispatch.field_dispatching_status <> 'job_complete') ";
-        
-        result = db.execute(sql);
-        
-        while(result.isValidRow()){
-            try{
-                jobDiscontinued = result.fieldByName('job_discontinued');
-                nid = result.fieldByName('nid');
-                title = result.fieldByName('title');
-                viewed = result.fieldByName('viewed');
-                type = result.fieldByName('table_name');
-                
-                if(jobDiscontinued != null && jobDiscontinued > ""){
-                    // This job has been discontinued
-                    changed = result.fieldByName('changed', Ti.Database.FIELD_TYPE_INT);
-                    dispatchChanged = result.fieldByName('dispatch_changed', Ti.Database.FIELD_TYPE_INT);
-                    
-                    if(nowTimestamp - changed < 900 || nowTimestamp - dispatchChanged < 900){
-                        // Only show the job if it was changed in the last 15 minutes
-                        newJobs.push({
-                           nid: nid,
-                           title: title,
-                           viewed: viewed,
-                           type: type,
-                           isDiscontinued: true
-                        });
-                    }
-                }
-                else{
-                    newJobs.push({
-                       nid: nid,
-                       title: title,
-                       viewed: viewed,
-                       type: type,
-                       isDiscontinued: false
-                    });
-                }
-            }
-            catch(ex){
-                Utils.sendErrorReport("Could not load dispatch job: " + ex);
-            }
-            
-            result.next();
-        }
-        result.close();
-        db.close();
-        
-    }
-    
-    return newJobs;
+	return DispatchBundle.getCurrentUserJobs();
 };
 

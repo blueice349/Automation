@@ -7,6 +7,7 @@ popupWin = null;
 
 var Utils = require('lib/Utils');
 var TimecardGeofenceVerifier = require('objects/TimecardGeofenceVerifier');
+var AlertQueue = require('lib/AlertQueue');
 
 function rules_field_passed_time_check(time_rule, timestamp) {"use strict";
     var retval, timestamp_day, timestamp_midnight, days, day_rule, values, start_time, end_time, i;
@@ -238,7 +239,6 @@ function FormModule(type, nid, form_part, usingDispatch) {"use strict";
     
     this.win = null;
     
-    this.alertQueue = [];
     this.node = {};
     this.nid = nid;
     this.origNid = 0;
@@ -2829,6 +2829,8 @@ FormModule.prototype.getWindow = function(){"use strict";
         
         this.instances = Omadi.data.getFields(this.type);
         this.regions = Omadi.data.getRegions(this.type);
+        
+        
         
         // Reset the conditionally required selection that might have been set previously as this.instances could be cached
         for(field_name in this.instances){

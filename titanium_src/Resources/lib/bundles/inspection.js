@@ -3,6 +3,7 @@
 Omadi.bundles.inspection = {};
 
 var Utils = require('lib/Utils');
+var AlertQueue = require('lib/AlertQueue');
 
 Omadi.bundles.inspection.getLastInspectionReportNid = function(vehicleNid){"use strict";
     var db, result, lastNid;
@@ -30,7 +31,7 @@ Omadi.bundles.inspection.getLastInspectionReportNid = function(vehicleNid){"use 
 Omadi.bundles.inspection.askToReviewLastInspection = function(){"use strict";
     var dialog, bundle, showNextAlert, currentVehicleNid, lastInspectionReportNid, 
         lastNode, noInspectionDialog, showNoInspectionDialog;
-    /*global roles, ROLE_ID_FIELD, alertQueue*/
+    /*global roles, ROLE_ID_FIELD*/
     
     showNextAlert = false;
     
@@ -79,16 +80,12 @@ Omadi.bundles.inspection.askToReviewLastInspection = function(){"use strict";
                                    
                                        newWin = Omadi.display.openFormWindow('inspection', lastInspectionReportNid, 1);
                                        
-                                       if(typeof alertQueue !== 'undefined'){
-                                           newWin.addEventListener('close', function(){
-                                                Ti.App.fireEvent('showNextAlertInQueue'); 
-                                           });
-                                       }
+                                       newWin.addEventListener('close', function(){
+                                            AlertQueue.showNextAlertInQueue();
+                                       });
                                     }
                                     else{
-                                        if(typeof alertQueue !== 'undefined'){
-                                            Ti.App.fireEvent('showNextAlertInQueue');
-                                        }
+                                        AlertQueue.showNextAlertInQueue();
                                     }
                                 }
                                 catch(ex){
@@ -96,12 +93,7 @@ Omadi.bundles.inspection.askToReviewLastInspection = function(){"use strict";
                                 }
                             });
                             
-                            if(typeof alertQueue !== 'undefined'){
-                                alertQueue.push(dialog);
-                            }
-                            else{
-                                dialog.show();
-                            }
+                            AlertQueue.enqueue(dialog);
                         }
                     }
                     else{
@@ -125,19 +117,11 @@ Omadi.bundles.inspection.askToReviewLastInspection = function(){"use strict";
     }
     
     if(showNoInspectionDialog){
-        
-        if(typeof alertQueue !== 'undefined'){
-            alertQueue.push(noInspectionDialog);
-            Ti.App.fireEvent('showNextAlertInQueue');
-        }
-        else{
-            noInspectionDialog.show();
-        }
+        AlertQueue.enqueue(noInspectionDialog);
+        AlertQueue.showNextAlertInQueue();
     }
     else if(showNextAlert){
-        if(typeof alertQueue !== 'undefined'){
-            Ti.App.fireEvent('showNextAlertInQueue');
-        }
+    	AlertQueue.showNextAlertInQueue();
     }
 };
 
@@ -194,7 +178,7 @@ Omadi.bundles.inspection.userShouldDoInspection = function(){"use strict";
 
 Omadi.bundles.inspection.askToCreateInspection = function(showLogout){"use strict";
     var dialog, bundle;
-    /*global roles, ROLE_ID_FIELD, alertQueue*/
+    /*global roles, ROLE_ID_FIELD*/
 
     dialog = Ti.UI.createAlertDialog({
        title: 'Do Post-Shift Inspection?',

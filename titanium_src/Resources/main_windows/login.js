@@ -2,6 +2,7 @@
 /* global Omadi, dbEsc */
 
 var Display = require('lib/Display');
+var Service = require('lib/Service');
 Display.setCurrentWindow(Ti.UI.currentWindow, 'login');
 
 // this sets the background color of every
@@ -192,7 +193,7 @@ function hideUploadStatusHandler(){"use strict";
 }
 
 function setFilesLeftLabel(filesLeft){"use strict";
-    if(Omadi.service.doBackgroundUploads){
+    if(Service.doBackgroundUploads){
         uploadLabel.setText("Uploading files. " + filesLeft + " to go...");
     }
     else{
@@ -202,7 +203,7 @@ function setFilesLeftLabel(filesLeft){"use strict";
 
 function setBytesLeftLabel(bytesLeft){"use strict";
     
-    if(Omadi.service.doBackgroundUploads){
+    if(Service.doBackgroundUploads){
         uploadLabel.setText("Uploading files. " + Omadi.utils.formatMegaBytes(bytesLeft) + "MB to go.");
     }
     else{
@@ -314,10 +315,7 @@ function updateUploadBytes(){"use strict";
 
 function startBackgroundUploads(){"use strict";
     updateUploadBytes();
-    Omadi.service.doBackgroundUploads = true;
-    
-    Ti.UI.currentWindow.appStartMillis = (new Date()).getTime();
-    Ti.App.Properties.setDouble('omadi:appStartMillis', Ti.UI.currentWindow.appStartMillis);
+    Service.doBackgroundUploads = true;
     
     // Make sure we don't have multiple photoupload checks
     if(typeof Ti.App.backgroundPhotoUploadCheck !== 'undefined'){

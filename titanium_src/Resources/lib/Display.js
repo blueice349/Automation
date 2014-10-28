@@ -2,10 +2,10 @@
 'use strict';
 
 var Utils = require('lib/Utils');
+var AlertQueue = require('lib/AlertQueue');
+var DispatchBundle = require('lib/bundles/DispatchBundle');
 
-var Display = function() {};
-
-Display.backgroundGradientBlue = {
+exports.backgroundGradientBlue = {
     type : 'linear',
     startPoint : {
         x : '50%',
@@ -27,7 +27,7 @@ Display.backgroundGradientBlue = {
     }]
 };
 
-Display.backgroundGradientGray = {
+exports.backgroundGradientGray = {
     type : 'linear',
     startPoint : {
         x : '50%',
@@ -49,12 +49,12 @@ Display.backgroundGradientGray = {
     }]
 };
 
-Display.setCurrentWindow = function(currentWindow, name) {
-	Display.currentWindow = currentWindow;
-	Display.currentWindow.name = name;
+exports.setCurrentWindow = function(currentWindow, name) {
+	exports.currentWindow = currentWindow;
+	exports.currentWindow.name = name;
 };
 
-Display.getFileViewType = function(filename){
+exports.getFileViewType = function(filename){
 
     var iOSWebviewExtensions = [], extension, htmlExtensions = [], dotIndex,
         imageExtensions = [], androidDownloadExtensions = [], textExtensions = [], viewType = null;
@@ -134,15 +134,15 @@ Display.getFileViewType = function(filename){
     return viewType;
 };
 
-Display.displayFile = function(nid, fid, title) {
+exports.displayFile = function(nid, fid, title) {
     var http, webview, newWin;
     try{
         if(Ti.Network.online){
             if (nid > 0 && fid > 0) {
                 if (Ti.App.isIOS) {
-                    Display.openWebViewInBrowser(nid);
+                    exports.openWebViewInBrowser(nid);
                 } else {
-	                Display.loading();
+	                exports.loading();
 	        
 	                newWin = Titanium.UI.createWindow({
 	                    navBarHidden: true,
@@ -154,7 +154,7 @@ Display.displayFile = function(nid, fid, title) {
 	                });
 	                
 	                newWin.addEventListener('open', function(){
-	                   Display.doneLoading(); 
+	                   exports.doneLoading(); 
 	                });
 	                
 	                newWin.open();
@@ -170,14 +170,14 @@ Display.displayFile = function(nid, fid, title) {
     }
 };
 
-Display.openWebViewInBrowser = function(nid) {
+exports.openWebViewInBrowser = function(nid) {
 	Ti.Platform.openURL(Ti.App.DOMAIN_NAME + '/node/' + nid);
 };
 
-Display.loading = function(message, win) {
+exports.loading = function(message, win) {
     var height, width;
     
-    if (Display.indicator) {
+    if (exports.indicator) {
 		return;
     }
     
@@ -187,15 +187,15 @@ Display.loading = function(message, win) {
         }
         
         if(typeof win === 'undefined'){
-            win = Display.currentWindow;
+            win = exports.currentWindow;
             
-            if(!Display.currentWindow) {
+            if(!exports.currentWindow) {
 				Utils.sendErrorReport('Error in Display.loading: Current window not set');
 				return;
 		    }
         }
     
-        Display.indicator = Ti.UI.createLabel({
+        exports.indicator = Ti.UI.createLabel({
             top : 0,
             bottom : 0,
             left : 0,
@@ -213,22 +213,22 @@ Display.loading = function(message, win) {
             win : win
         });
         
-        Display.indicator.addEventListener('click', Display.doneLoading);
-        Display.currentWindow.addEventListener('close', Display.doneLoading);
+        exports.indicator.addEventListener('click', exports.doneLoading);
+        exports.currentWindow.addEventListener('close', exports.doneLoading);
         
-        if(Display.indicator){
-            win.add(Display.indicator);
+        if(exports.indicator){
+            win.add(exports.indicator);
         }
     }
     catch(nothing2){}
 };
 
-Display.doneLoading = function() {
+exports.doneLoading = function() {
     try{
-        if (Display.indicator) {
-            Display.indicator.hide();
-            Display.indicator.win.remove(Display.indicator);
-            Display.indicator = null;
+        if (exports.indicator) {
+            exports.indicator.hide();
+            exports.indicator.win.remove(exports.indicator);
+            exports.indicator = null;
         }
     }
     catch(ex){
@@ -236,7 +236,7 @@ Display.doneLoading = function() {
     }
 };
 
-Display.setImageViewThumbnail = function(imageView, nid, file_id) {
+exports.setImageViewThumbnail = function(imageView, nid, file_id) {
 
     var http, tempImg;
 
@@ -282,19 +282,19 @@ Display.setImageViewThumbnail = function(imageView, nid, file_id) {
     }
 };
 
-Display.displayFullImage = function(imageView) {
+exports.displayFullImage = function(imageView) {
     try{
         var http, db, result;
         
         if (imageView.bigImg !== null || (typeof imageView.filePath !== 'undefined' && imageView.filePath !== null)) {
             Ti.API.debug("Displaying big image");
             
-            Display.loading();
-            Display.showBigImage(imageView);
-            Display.doneLoading();
+            exports.loading();
+            exports.showBigImage(imageView);
+            exports.doneLoading();
         }
         else if (imageView.nid > 0 && imageView.fid > 0) {
-            Display.loading();
+            exports.loading();
             
             try {
                 http = Ti.Network.createHTTPClient({
@@ -312,25 +312,25 @@ Display.displayFullImage = function(imageView) {
                         
                         imageView.bigImg = this.responseData;
                        
-                        Display.showBigImage(imageView);
+                        exports.showBigImage(imageView);
                     }
                     else{
                         alert("There was a problem downloading the photo.");
                     }
                     
-                    Display.doneLoading();
+                    exports.doneLoading();
                 };
     
                 http.onerror = function(e) {
                     Ti.API.error("Error in download Image 2");
-                    Display.doneLoading();
+                    exports.doneLoading();
                     alert("There was an error retrieving the file.");
                 };
     
                 http.send();
             }
             catch(e) {
-                Display.doneLoading();
+                exports.doneLoading();
                 alert("There was an error retrieving the file.");
                 Utils.sendErrorReport("Exception showing full photo file: " + e);
             }
@@ -345,16 +345,16 @@ Display.displayFullImage = function(imageView) {
     }
 };
 
-Display.showBigImage = function(imageView) {
+exports.showBigImage = function(imageView) {
     var fullImage, background, transform, rotateDegrees, 
         orientation, screenWidth, screenHeight, picWidth, picHeight, 
         scrollView, picBlob, toolbar, isRotated, back, space, label, 
         timestamp, webView, imageData, imageFile;
     
-    if(!Display.largePhotoWindow){
+    if(!exports.largePhotoWindow){
         
         try{
-            Display.largePhotoWindow = Ti.UI.createWindow({
+            exports.largePhotoWindow = Ti.UI.createWindow({
                 backgroundColor : Ti.App.isIOS7 ? '#fff' : '#000',
                 top : 0,
                 bottom : 0,
@@ -369,9 +369,9 @@ Display.showBigImage = function(imageView) {
             });
             
             if(Ti.App.isAndroid){
-                Display.largePhotoWindow.addEventListener("android:back", function(e){
-                    Display.largePhotoWindow.close(); 
-                    Display.largePhotoWindow = null;
+                exports.largePhotoWindow.addEventListener("android:back", function(e){
+                    exports.largePhotoWindow.close(); 
+                    exports.largePhotoWindow = null;
                 });
             }
             else{
@@ -383,8 +383,8 @@ Display.showBigImage = function(imageView) {
                 
                 back.addEventListener('click', function() {
                     try{
-                        Display.largePhotoWindow.close();
-                        Display.largePhotoWindow = null;
+                        exports.largePhotoWindow.close();
+                        exports.largePhotoWindow = null;
                     }
                     catch(ex){
                         Utils.sendErrorReport("exception on back button with show big image: " + ex);
@@ -414,7 +414,7 @@ Display.showBigImage = function(imageView) {
                     zIndex: 100
                 });
                 
-                Display.largePhotoWindow.add(toolbar);
+                exports.largePhotoWindow.add(toolbar);
             }
             
             imageData = null;
@@ -461,9 +461,9 @@ Display.showBigImage = function(imageView) {
 	                });
                 }
                     
-                Display.largePhotoWindow.add(webView);
+                exports.largePhotoWindow.add(webView);
                 
-                Display.largePhotoWindow.open();
+                exports.largePhotoWindow.open();
                 
                 Ti.API.debug("large photo window showing...");
             }
@@ -474,7 +474,7 @@ Display.showBigImage = function(imageView) {
     }
 };
 
-Display.displayLargeImage = function(imageView, nid, file_id, showInImageView) {
+exports.displayLargeImage = function(imageView, nid, file_id, showInImageView) {
     try{
         var http, url;
         
@@ -484,14 +484,14 @@ Display.displayLargeImage = function(imageView, nid, file_id, showInImageView) {
     
         if (imageView.bigImg !== null) {
             Ti.API.debug("Displaying big image - already loaded.");
-            Display.showBigImage(imageView);
+            exports.showBigImage(imageView);
             return;
         }
     
         if (nid > 0 && file_id > 0) {
             
             if(!showInImageView){
-                Display.loading();
+                exports.loading();
             }
             
             try {
@@ -520,8 +520,8 @@ Display.displayLargeImage = function(imageView, nid, file_id, showInImageView) {
                             imageView.image = this.responseData;
                         }
                         else{
-                            Display.showBigImage(imageView);
-                            Display.doneLoading();
+                            exports.showBigImage(imageView);
+                            exports.doneLoading();
                         }
                         
                         imageView.fullImageLoaded = true;
@@ -533,14 +533,14 @@ Display.displayLargeImage = function(imageView, nid, file_id, showInImageView) {
     
                 http.onerror = function(e) {
                     Ti.API.error("Error in download Image 2");
-                    Display.doneLoading();
+                    exports.doneLoading();
                     alert("There was an error retrieving the file.");
                 };
     
                 http.send();
             }
             catch(e) {
-                Display.doneLoading();
+                exports.doneLoading();
                 alert("There was an error retrieving the file.");
                 Utils.sendErrorReport("exception in retrieving large image file: " + e);
             }
@@ -551,7 +551,7 @@ Display.displayLargeImage = function(imageView, nid, file_id, showInImageView) {
     }
 };
 
-Display.setImageViewVideoThumbnail = function(imageView, nid, file_id, field_name) {
+exports.setImageViewVideoThumbnail = function(imageView, nid, file_id, field_name) {
 
     var http, tempImg, url;
 
@@ -598,4 +598,254 @@ Display.setImageViewVideoThumbnail = function(imageView, nid, file_id, field_nam
     }
 };
 
-module.exports = Display;
+exports.removeNotifications = function() {
+
+    if (Ti.App.isAndroid) {
+        try {
+            Ti.Android.NotificationManager.cancel(42);
+        }
+        catch(nothing) {
+
+        }
+    }
+};
+
+exports.openLocalPhotosWindow = function() {
+
+    var localPhotosWindow = Ti.UI.createWindow({
+        navBarHidden : true,
+        url : '/main_windows/localPhotos.js',
+        orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
+    });
+    
+    localPhotosWindow.addEventListener('close', exports.showNewNotificationDialog);
+    localPhotosWindow.addEventListener('open', exports.doneLoading);
+    exports.loading();
+
+    localPhotosWindow.open();
+
+    return localPhotosWindow;
+};
+
+exports.showNewNotificationDialog = function() {
+    var newNotifications, dialog, inspectionAlertShowing, newWin;
+    
+    newNotifications = Ti.App.Properties.getObject('newNotifications', {
+        count : 0,
+        nid : 0
+    });
+    
+    if(typeof newNotifications !== 'undefined'){
+        
+        if (newNotifications.count > 0 && !inspectionAlertShowing) {
+            
+            // Clear the newNotifications object 
+            Ti.App.Properties.setObject('newNotifications', {
+                count : 0,
+                nid : 0
+            });
+    
+            if (newNotifications.count > 1) {
+                dialog = Titanium.UI.createAlertDialog({
+                    title : '(' + newNotifications.count + ') New Notifications',
+                    message : 'View the notification list?',
+                    buttonNames : ['Take Me There', 'View Later'],
+                    cancel : 1
+                });
+    
+                dialog.addEventListener('click', function(e) {
+                    try{
+                        if (e.index !== dialog.cancel) {
+                            newWin = exports.openListWindow('notification', false, [], [], true);
+                            newWin.addEventListener('close', function(){
+                                AlertQueue.showNextAlertInQueue();
+                            });
+                        }
+                        else{
+                            AlertQueue.showNextAlertInQueue();
+                        }
+                    }
+                    catch(ex){
+                        Utils.sendErrorReport("exception view the notification list?: " + ex);
+                    }
+                });
+                
+                AlertQueue.enqueue(dialog);
+            }
+            else {
+                dialog = Titanium.UI.createAlertDialog({
+                    title : 'New Notification',
+                    message : 'Read the notification now?',
+                    buttonNames : ['Read Now', 'Read Later'],
+                    cancel : 1
+                });
+    
+                dialog.addEventListener('click', function(e) {
+                    try{
+                        if (e.index !== dialog.cancel) {
+                            newWin = exports.openViewWindow('notification', newNotifications.nid);
+                            newWin.addEventListener('close', function(){
+                                AlertQueue.showNextAlertInQueue();
+                            });
+                        }
+                        else{
+                            AlertQueue.showNextAlertInQueue();
+                        }
+                    }
+                    catch(ex){
+                        Utils.sendErrorReport("exception read the notification now?: " + ex);
+                    }
+                });
+                
+                AlertQueue.enqueue(dialog);
+            }
+        }
+    }
+};
+
+exports.openViewWindow = function(type, nid, allowActions) {
+    var isDispatch, viewWindow, NodeViewTabs;
+    
+    if (typeof allowActions == 'undefined') {
+        allowActions = true;
+    }
+    
+    exports.loading();
+            
+    NodeViewTabs = require('ui/NodeViewTabs');
+    viewWindow = NodeViewTabs.getTabs(type, nid, allowActions);
+    
+    if(viewWindow){
+        viewWindow.addEventListener('open', exports.doneLoading);
+        viewWindow.open();
+    }
+    else{
+        Utils.sendErrorReport("Could not open dispatch view window");
+        alert("Could not open the view.");
+        exports.doneLoading();
+    }
+
+    return viewWindow;
+};
+
+exports.openListWindow = function(type, show_plus, filterValues, nestedWindows, showFinalResults) {
+    var listWindow = Titanium.UI.createWindow({
+        navBarHidden : true,
+        url : '/main_windows/objects.js',
+        type : type,
+        show_plus : show_plus,
+        filterValues : filterValues,
+        nestedWindows : nestedWindows,
+        showFinalResults : showFinalResults,
+        orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
+    });
+
+    exports.loading();
+    listWindow.addEventListener('open', exports.doneLoading);
+    listWindow.open();
+
+    return listWindow;
+};
+
+exports.openDraftsWindow = function() {
+    var draftsWindow = Titanium.UI.createWindow({
+        title : 'Drafts',
+        navBarHidden : true,
+        url : '/main_windows/drafts.js',
+        orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
+    });
+
+    exports.loading();
+    
+    draftsWindow.addEventListener('open', exports.doneLoading);
+
+    draftsWindow.open();
+
+    return draftsWindow;
+};
+
+exports.newAppAvailable = function(message) {
+    var dialog, now, sixHours;
+    
+    now = Utils.getUTCTimestamp();
+    sixHours = now + (3600 * 12);
+    
+    // Only allow new app update dialog boxes to popup every 6 hours
+    if (now - Ti.App.Properties.getDouble("lastAppUpdateNotification", 0) > sixHours) {
+        dialog = Ti.UI.createAlertDialog({
+            message : message,
+            ok : 'OK',
+            title : 'Updated App'
+        }).show();
+
+        Ti.App.Properties.setDouble("lastAppUpdateNotification", now);
+    }
+};
+
+exports.getDrivingDirectionsTo = function(addressString) {
+    try{
+        if(addressString){
+            
+            Titanium.Geolocation.accuracy = Titanium.Geolocation.ACCURACY_BEST;
+            Titanium.Geolocation.distanceFilter = 10;
+            Titanium.Geolocation.getCurrentPosition(function(e){
+                var url, longitude, latitude, intent;
+                
+                if (e.error){
+                    alert("There was a problem getting directions: " + e.error);
+                    return;
+                }
+                
+                longitude = e.coords.longitude;
+                latitude = e.coords.latitude;
+               
+                addressString = addressString.replace(/ /g, '+');
+                
+                if(Ti.App.isAndroid){
+                    url = "http://maps.google.com/maps?mode=driving&t=m&saddr="; 
+                    url += latitude + "," + longitude;
+                    url += "&daddr=" + addressString;
+                }
+                else{
+                    url = "http://maps.apple.com/maps?mode=driving&t=m&saddr="; 
+                    url += latitude + "," + longitude;
+                    url += "&daddr=" + addressString;
+                }
+                  
+                Ti.Platform.openURL(url);
+            });
+        }
+    }
+    catch(ex){
+        Utils.sendErrorReport("Exception getting driving directions: " + ex);
+    }
+};
+
+exports.currentJobsWindow = null;
+exports.openJobsWindow = function() {
+
+    if(DispatchBundle.showJobsScreen()){
+        
+        if(exports.currentJobsWindow === null){
+            exports.currentJobsWindow = Titanium.UI.createWindow({
+                title : 'Jobs',
+                navBarHidden : true,
+                url : '/main_windows/jobs.js',
+                orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
+            });
+        
+            exports.loading();
+            
+            exports.currentJobsWindow.addEventListener('open', exports.doneLoading);
+            exports.currentJobsWindow.addEventListener('close', function(){
+                exports.currentJobsWindow = null;
+            });
+        
+            exports.currentJobsWindow.open();
+        }
+    
+        return exports.currentJobsWindow;
+    }
+    
+    return null;
+};

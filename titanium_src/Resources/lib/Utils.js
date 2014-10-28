@@ -3,6 +3,8 @@
 
 
 var Database = require('lib/Database');
+var Service = require('lib/Service');
+var Data = require('lib/Data');
 
 function getUid(){
     var loginJson = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
@@ -1845,4 +1847,124 @@ exports.joinAsSentence = function(arr){
 	
 	arr[arr.length - 1] = 'and ' + arr[arr.length - 1];
 	return arr.join(', ');
+};
+
+exports.createNotification = function(message) {
+    var mainIntent, pending, notification;
+    /*jslint bitwise: true*/
+    try {
+        if (exports.isLoggedIn() && !Ti.App.Properties.getBool('stopGPS', false)) {
+            if (Ti.App.isAndroid) {
+                mainIntent = Titanium.Android.createIntent({
+                    className : 'org.appcelerator.titanium.TiActivity',
+                    packageName : 'com.omadi.crm',
+                    flags : Titanium.Android.FLAG_ACTIVITY_CLEAR_TOP | Titanium.Android.FLAG_ACTIVITY_SINGLE_TOP
+                });
+
+                pending = Titanium.Android.createPendingIntent({
+                    activity : Titanium.Android.currentActivity,
+                    intent : mainIntent,
+                    type : Titanium.Android.PENDING_INTENT_FOR_ACTIVITY,
+                    flags : Titanium.Android.FLAG_UPDATE_CURRENT
+                });
+
+                notification = Titanium.Android.createNotification({
+                    icon : 0x7f020000,
+                    contentTitle : 'Omadi CRM',
+                    contentText : message,
+                    tickerText : 'Omadi GPS Service',
+                    contentIntent : pending,
+                    flags : Titanium.Android.FLAG_ONGOING_EVENT | Titanium.Android.FLAG_NO_CLEAR
+                });
+                Titanium.Android.NotificationManager.notify(42, notification);
+            }
+        }
+    }
+    catch(nothing) {
+
+    }
+};
+
+exports.isLoggedIn = function() {
+    var mainDB, result, lastLoggedTimestamp, timestamp, is_logged_in, now;
+    
+    result = Database.queryList('SELECT * FROM login WHERE "id_log"=1');
+    is_logged_in = result.fieldByName('is_logged', Ti.Database.FIELD_TYPE_STRING);
+    timestamp = result.fieldByName('logged_time');
+
+    now = exports.getUTCTimestamp();
+    if (timestamp == "null" || timestamp == null || timestamp == "0") {
+        timestamp = 0;
+    }
+
+    lastLoggedTimestamp = now - timestamp;
+
+    result.close();
+    Database.close();
+    
+    if (is_logged_in === "false") {
+        return false;
+    }
+    
+    if (lastLoggedTimestamp >= (60 * 60 * 24 * 7)) {//Seven days
+        Ti.App.Properties.setString('logStatus', "Please login");
+        return false;
+    }
+    
+    return true;
+};
+
+exports.getUsername = function(uid) {
+    var username = "Anonymous";
+    
+    var result = Database.query("SELECT username FROM user WHERE uid = " + uid);
+    if(result.isValidRow()){
+        username = result.fieldByName('username');
+    }
+    result.close();
+    Database.close();
+    
+    return username;
+};
+
+exports.closeApp = function() {
+	exports.closeApp.dialogShown = exports.closeApp.dialogShown || false;
+	
+    if(Ti.App.isAndroid){
+        
+        Ti.App.closingApp = true;
+        
+        if(Service.getLastUploadStartTimestamp() === null && !Data.isUpdating()){
+            Ti.Android.currentActivity.finish();
+            Ti.App.fireEvent('closeApp');
+        }
+        else{
+            setTimeout(exports.closeApp, 200);
+            
+            if(!exports.closeApp.dialogShown){
+                var dialog = Ti.UI.createAlertDialog({
+                   message: "Waiting for current sync or upload to finish..."
+                });
+                
+                dialog.show();
+                
+               exports.closeApp.dialogShown = true;
+            }
+        }
+    }
+};
+
+exports.isJsonString = function(str) {
+    if (str == "" || str == null) {
+        return false;
+    }
+
+    try {
+        JSON.parse(str);
+    }
+    catch (e) {
+        return false;
+    }
+
+    return true;
 };

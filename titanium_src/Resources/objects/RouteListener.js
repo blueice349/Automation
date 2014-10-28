@@ -2,6 +2,7 @@
 'use strict';
 
 var Database = require('lib/Database');
+var Display = require('lib/Display');
 var Utils = require('lib/Utils');
 
 exports.askToStartRoute = function() {
@@ -24,6 +25,17 @@ exports.askToStartRoute = function() {
     dialog.show();
 };
 
+exports.Status = {
+	NOT_STARTED: 'not_started',
+	STARTED: 'started',
+	FINISHED: 'finished'
+};
+
+
+exports.Repeat = {
+	INFINITE: 0
+};
+
 exports.hasRoutes = function() {
 	if (!hasRouteAssignment()) {
 		return false;
@@ -37,7 +49,7 @@ exports.hasRoutes = function() {
 				'WHERE ' +
 					'driver_1 = ' + Utils.getUid() + ' AND ' +
 					'nid > 0 AND ' +
-					'assignment_status != "complete" AND ' +
+					'assignment_status != "' + exports.Status.FINISHED + '" AND ' +
 					'assignment_date < ' + now + ' AND ' +
 					'(assignment_date___end IS NULL OR assignment_date = assignment_date___end OR assignment_date___end > ' + now + ')';
 	var result = Database.query(query);
@@ -65,7 +77,7 @@ function getPossibleRoutes() {
 				'WHERE ' +
 					'driver_1 = ' + Utils.getUid() + ' AND ' +
 					'route_assignment.nid > 0 AND ' +
-					'assignment_status != "complete" AND ' +
+					'assignment_status != "' + exports.Status.FINISHED + '" AND ' +
 					'assignment_date < ' + now + ' AND ' +
 					'(assignment_date___end IS NULL OR assignment_date = assignment_date___end OR assignment_date___end > ' + now + ')';
 	var result = Database.query(query);
@@ -90,7 +102,7 @@ function askSelectRoute(routes) {
 		options[i] = routes[i].title;
 		
 		if (routes[i].repeat != 0) {
-			options[i] += ' (' + (parseInt(routes[i].number_completed || 0, 10) + 1) + (routes[i].repeat == -1 ? '' : '/' + (parseInt(routes[i].repeat, 10) + 1)) + ')';
+			options[i] += ' (' + (parseInt(routes[i].number_completed || 0, 10) + 1) + (routes[i].repeat == exports.Repeat.INFINITE ? '' : '/' + parseInt(routes[i].repeat, 10)) + ')';
 		}
 		
 		if (routes[i].status == 'started') {
@@ -112,8 +124,8 @@ function askSelectRoute(routes) {
 		        orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
 		    });
 		    
-		    Omadi.display.loading();
-		    win.addEventListener('open', Omadi.display.doneLoading);
+		    Display.loading();
+		    win.addEventListener('open', Display.doneLoading);
 		    win.open();
     	}
     });
@@ -126,7 +138,3 @@ function dbValueToTextValue(dbValue) {
 		return word.charAt(0).toUpperCase() + word.substr(1).toLowerCase();
 	});
 }
-
-exports.getInstance = function() {
-	return instance;
-};

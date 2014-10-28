@@ -5,6 +5,7 @@ var RouteLocation = require('objects/RouteLocation');
 var RouteListener = require('objects/RouteListener');
 var Node = require('objects/Node');
 var Utils = require('lib/Utils');
+var Service = require('lib/Service');
 var NFCEventDispatcher = require('services/NFCEventDispatcher');
 var NFCListener = require('services/NFCListener');
 
@@ -60,6 +61,10 @@ Route.prototype._cleanUpNFCEventDispatcher = function() {
 };
 
 Route.prototype._handleTagScanned = function(tag) {
+	if (nfcScanner) {
+		nfcScanner.scanTag(tag);
+	}
+	
 	var index = this._getIndex();
 	var tagIndex = this._getTagIndex(tag, this._getIndex());
 	
@@ -160,8 +165,8 @@ Route.prototype._setIndex = function(index) {
 
 Route.prototype._startRoute = function() {
 	var status = this._getStatus();
-	if (status != 'started') {
-		this._setStatus('started');
+	if (status != RouteListener.Status.STARTED) {
+		this._setStatus(RouteListener.Status.STARTED);
 		this._setStartTime();
 		this._setIndex(0);
 	}
@@ -173,17 +178,19 @@ Route.prototype._calloutNextCheckpoint = function() {
 };
 
 Route.prototype._completeRoute = function() {
-	if (this._getStatus() != 'complete') {
+	if (this._getStatus() != RouteListener.Status.FINISHED) {
 		this._setIndex(0);
 		this._setCompletedTime();
 		this._cleanUpNFCEventDispatcher();
 		this._incrementNumberCompleted();
 		
-		if (this._getRepeat() != -1 && this._getNumberCompleted() > this._getRepeat()) {
-			this._setStatus('complete');
+		if (this._getRepeat() != RouteListener.Repeat.INFINITE && this._getNumberCompleted() == this._getRepeat()) {
+			this._setStatus(RouteListener.Status.FINISHED);
 		} else {
-			this._setStatus('not_started');
+			this._setStatus(RouteListener.Status.NOT_STARTED);
 		}
+		
+		Service.sendUpdates();
 		
 		var dialog = Ti.UI.createAlertDialog({
 	       title: 'Route completed.',
@@ -386,11 +393,12 @@ Route.prototype._getLocationDescriptionLabel = function() {
 };
 
 var instance = null;
+var nfcScanner = null;
 var currentWindow = Ti.UI.currentWindow;
 
-(function() {'use strict';
+(function() {
 	if (Ti.App.isAndroid) {
-		new NFCListener(Titanium.Android.currentActivity);
+		nfcScanner = new NFCListener(Titanium.Android.currentActivity, true);
 	}
     instance = new Route(currentWindow.route);
 })();
