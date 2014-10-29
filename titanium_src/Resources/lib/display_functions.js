@@ -4,6 +4,7 @@ Omadi.display = Omadi.display || {};
 
 var Utils = require('lib/Utils');
 var Display = require('lib/Display');
+var Print = require('lib/Print');
 var AlertQueue = require('lib/AlertQueue');
 
 Omadi.display.backgroundGradientBlue = Display.backgroundGradientBlue;
@@ -518,7 +519,7 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
             dispatch_nid : dispatchNid
         });
         
-        if(Omadi.print.canPrintReceipt(e.row.nid)){
+        if(Print.canPrintReceipt(e.row.nid)){
             options.push('Print');
             buttonData.push({
                 form_part: '_print' 
@@ -593,10 +594,10 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
                                 Omadi.display.openWebView(e.row.nid);
                             }
                             else if(form_part == '_print'){
-                                Omadi.print.printReceipt(e.row.nid);
+                                Print.printReceipt(e.row.nid);
                             }
                             else if(form_part == '_charge'){
-                                Omadi.print.chargeCard(e.row.nid);
+                                Print.chargeCard(e.row.nid);
                             }
                             else if(form_part.toString().indexOf('_extra_') == 0){
                                 extraOptionIndex = parseInt(form_part.substring(7), 10);

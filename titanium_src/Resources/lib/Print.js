@@ -4,7 +4,9 @@
 var Node = require('objects/Node');
 var Utils = require('lib/Utils');
 var Data = require('lib/Data');
+var Display = require('lib/Display');
 var StarMicronics = require('com.omadi.starmicronics');
+var CreditCard = require('lib/CreditCard');
 
 exports.printImages = [];
 exports.printNid = null;
@@ -645,6 +647,148 @@ exports.getSpaces = function(numSpaces) {
     return spaces;
 };
 
+exports.doCharge = function(e) {
+    alert("Successful card read.");
+    Ti.API.debug(e.cardData);
+    
+    var trackData;
+    
+    try{
+        trackData = new CreditCard.TrackData(e.cardData);
+        
+        Ti.API.debug(JSON.stringify(trackData));
+        
+        if(trackData.is_card_valid()){
+            alert("Now send to CMS");
+        }
+        else{
+            alert("Card is not valid");
+        }
+    }
+    catch(ex){
+        Ti.API.error("Problem with card: " + ex);
+        alert("A problem occurred with the card: " + ex);
+    }
+};
+
+exports.cancelCharge = function(e) {
+    
+    Display.loading("Cancelling...");
+    StarMicronics.mcrCancel({
+        success: function(e){
+            Display.doneLoading();
+            Ti.API.debug("Charge successfully cancelled.");
+        },
+        error: function(e){
+            Display.doneLoading();
+            Ti.API.debug("Error cancelling: " + e.error);
+        }
+    });  
+};
+
+exports.startMCRMode = function(portName) {
+    
+    Display.loading("Connecting...");
+    
+    StarMicronics.mcrMode({
+        success: function(e){
+            
+            Display.doneLoading();
+            
+            var dialog = Ti.UI.createAlertDialog({
+                title: 'Swipe Card',
+                message: 'Press done after card was read successfully.',
+                buttonNames: ['Done', 'Cancel'],
+                cancel: 1
+            });
+            
+            dialog.addEventListener('click', function(e){
+                try{
+                     if(e.index === 0){
+                         StarMicronics.readPort({
+                            success: exports.doCharge,
+                            error: function(e){
+                                alert("Error reading card data: " + e.error);
+                            }
+                         });
+                     }
+                     else{
+                         exports.cancelCharge();
+                     }
+                }
+                catch(ex){
+                    Utils.sendErrorReport("exception with swipe card click: " + ex);
+                }
+            });
+            dialog.show();
+        },
+        error: function(e){
+            Display.doneLoading();
+            
+            alert("Error enabling Card Reader: " + e.error);
+        },
+        portName: portName
+    });  
+};
+
+exports.chargeCard = function(nid) {
+    var portName, commands;
+    
+    exports.printNid = nid;
+    
+    if(Ti.App.isAndroid){
+        
+        portName = Ti.App.Properties.getString("omadi:printerPortName", "");
+        
+        if(portName == ""){
+        
+            StarMicronics.getBluetoothDeviceList({
+               success: function(e){
+                   var i, dialog, portNames;
+                  
+                   portNames = [];
+                   for(i = 0; i < e.portNames.length; i ++){
+                       portNames.push(e.portNames[i].replace("BT:", ""));
+                   }
+                   portNames.push("- Cancel -");
+                   
+                   dialog = Ti.UI.createOptionDialog({
+                      options: portNames,
+                      title: 'Select Printer',
+                      cancel: portNames.length - 1,
+                      origPortNames: e.portNames
+                   });
+                   
+                   dialog.addEventListener('click', function(e){
+                       var portName, commands;
+                       try{
+                           if(e.index >= 0 && e.index != dialog.cancel){
+                                portName = dialog.origPortNames[e.index];
+                                
+                                Ti.App.Properties.setString("omadi:printerPortName", portName);
+                                
+                                exports.startMCRMode(portName);
+                            }
+                        }
+                        catch(ex){
+                            Utils.sendErrorReport("exception selecting a printer for mcr: " + ex);
+                        }
+                   });
+                   
+                   dialog.show();
+               },
+               error: function(e){
+                   Ti.API.error("Error selecting a printer: " + e.error);
+                   alert("Error selecting a printer: " + e.error);
+               }
+            });  
+        }
+        else{                  
+            exports.startMCRMode(portName);
+        }
+    }
+};
+
 exports.commands.textAlignment = function(align) {
     var buffer = Ti.createBuffer({
        type: Ti.Codec.TYPE_BYTE,
@@ -654,11 +798,11 @@ exports.commands.textAlignment = function(align) {
     buffer[0] = 0x1b;
     buffer[1] = 0x61;
     
-    if(align == 'center'){
+    if(align == 'center') {
         
         buffer[2] = 0x1;
     }
-    else if(align == 'right'){
+    else if(align == 'right') {
         buffer[2] = 0x2;
     }
     else{// Default to left
@@ -677,7 +821,7 @@ exports.commands.bold = function(bold) {
     buffer[0] = 0x1b;
     buffer[1] = 0x45;
     
-    if(bold == 1){
+    if(bold == 1) {
         buffer[2] = 0x1;
     }
     else{// Default to off
@@ -708,7 +852,7 @@ exports.commands.size = function(size) {
     
     buffer[0] = 0x1d;
     buffer[1] = 0x21;
-    switch(size){
+    switch(size) {
         case 1:
             hex = 0x11; break;
         case 2:
@@ -741,7 +885,7 @@ exports.commands.invertColor = function(invert) {
     buffer[0] = 0x1d;
     buffer[1] = 0x42;
     
-    if(invert == 1){
+    if(invert == 1) {
         buffer[2] = 0x1;
     }
     else{// Default to off
@@ -760,7 +904,7 @@ exports.commands.upsideDown = function(upsideDown) {
     buffer[0] = 0x1b;
     buffer[1] = 0x7b;
     
-    if(upsideDown == 1){
+    if(upsideDown == 1) {
         buffer[2] = 0x1;
     }
     else{// Default to off

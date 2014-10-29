@@ -15,19 +15,19 @@
  *   errors.count() // -> 2
  *   errors.messages() // -> { 'foo' : ['is broken'], 'bar' : ['is also broken', 'and looks funny'] }
  */
-function TrackErrors() {"use strict";
+function TrackErrors() {
   this.errors = {};
 } 
 
 TrackErrors.prototype = {
-  add : function(field, message) {"use strict";
+  add : function(field, message) {
     if (typeof this.errors[field] === 'undefined') {
       this.errors[field] = [];
     }
     this.errors[field].push(message);
   },
  
-  count : function() {"use strict";
+  count : function() {
     var count = 0, field;
     for (field in this.errors) {
         if(this.errors.hasOwnProperty(field)){
@@ -37,7 +37,7 @@ TrackErrors.prototype = {
     return count;
   },
 
-  messages : function() {"use strict";
+  messages : function() {
     return this.errors;
   }
 };
@@ -63,7 +63,7 @@ exports.TrackErrors = TrackErrors;
  * expiration date.
  *  
  */
-function CreditCardTrackData(track_data) {"use strict";
+function CreditCardTrackData(track_data) {
   this.fields = ['format_code', 'number', 'expiration', 'last_name', 'first_name', 'service_code'];
   this.track_data = track_data;
   this.parse();
@@ -71,7 +71,7 @@ function CreditCardTrackData(track_data) {"use strict";
 }
 
 CreditCardTrackData.prototype = {
-  parse : function() {"use strict";
+  parse : function() {
     var track1_raw, track2_raw, track1_match_data, track2_match_data;
     
     this.tracks_match_data = this.track_data.match(/^.*B(\d+)\^(.+)\/(.+)\^(.{4})(.{3})(.*)$/);
@@ -97,19 +97,19 @@ CreditCardTrackData.prototype = {
     this.service_code = this.track1.service_code;
   },
 
-  year : function() {"use strict";
+  year : function() {
     if (this.expiration) {
       return this.CENTURY + this.expiration.slice(0,2);
     }
   },
 
-  month : function() {"use strict";
+  month : function() {
     if (this.expiration) {
       return this.expiration.slice(2,4);
     }
   },
   
-  is_expired : function(){"use strict";
+  is_expired : function() {
       var nowYear, ccYear, nowMonth, ccMonth, now = new Date(), isExpired = false;
       
       nowMonth = now.getMonth() + 1;
@@ -130,7 +130,7 @@ CreditCardTrackData.prototype = {
       return isExpired;
   },
   
-  is_card_valid : function() {"use strict";
+  is_card_valid : function() {
     var isValid = true;
     
     if(typeof this.number === 'undefined'){
@@ -153,7 +153,7 @@ CreditCardTrackData.prototype = {
     return isValid;
   },
   
-  passes_luhn : function(){"use strict";
+  passes_luhn : function() {
     var value = this.number, n, cDigit, nCheck = 0, nDigit = 0, bEven = false;
  
     for (n = value.length - 1; n >= 0; n--) {
