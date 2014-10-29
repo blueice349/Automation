@@ -1,10 +1,8 @@
 /*jslint eqeq:true,plusplus:true*/
-/*global CreditCardTrackData*/
-
-Ti.include('/lib/CC_functions.js');
 
 var Utils = require('lib/Utils');
 var Print = require('lib/Print');
+var CreditCard = require('lib/CreditCard');
 
 Omadi.print = {};
 Omadi.print.StarMicronics = null;
@@ -41,7 +39,7 @@ Omadi.print.doCharge = function(e){"use strict";
     var trackData;
     
     try{
-        trackData = new CreditCardTrackData(e.cardData);
+        trackData = new CreditCard.TrackData(e.cardData);
         
         Ti.API.debug(JSON.stringify(trackData));
         
@@ -182,37 +180,5 @@ Omadi.print.printImages = [];
 
 Omadi.print.printReceipt = function(nid){"use strict";
 	Print.printReceipt(nid);
-};
-
-Omadi.print.openConnection = function(portName){"use strict";
-
-    Ti.API.info("Connecting to Printer: " + portName);
-    
-    Omadi.print.StarMicronics.openPort({
-       portName: portName,
-       success: function(e){
-           alert("success opening port");
-           
-           
-           Omadi.print.sendPrintCommands();
-       },
-       error: function(e){
-           alert("Could not connect to printer: " + e.error);
-       }
-    });
-};
-
-Omadi.print.closeConnection = function(){"use strict";
-
-    Ti.API.info("Closing connection to Printer");
-    
-    Omadi.print.StarMicronics.releasePort({
-       success: function(e){
-           alert("success closing port");
-       },
-       error: function(e){
-           alert("Could not disconnect from printer: " + e.error);
-       }
-    });  
 };
 
