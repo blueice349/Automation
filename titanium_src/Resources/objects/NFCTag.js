@@ -20,6 +20,17 @@ var NFCTag = function(tag) {
 	this._populateCache();
 };
 
+NFCTag.Sound = {
+	success: Titanium.Media.createSound({
+        url : Titanium.Filesystem.getFile(Titanium.Filesystem.resourcesDirectory, "sounds/NFC-positive-sound.mp3"),
+        volume : 1.0
+    }),
+    error: Titanium.Media.createSound({
+        url : Titanium.Filesystem.getFile(Titanium.Filesystem.resourcesDirectory, "sounds/NFC-negative-sound.mp3"),
+        volume : 1.0
+    }),
+};
+
 NFCTag.ENCRYPTION_KEY = CryptoJS.enc.Utf8.parse('6p30BYV1p00eADpKPRfZ8wsqSViW8nAm');
 
 NFCTag.NXP = {
@@ -194,10 +205,12 @@ NFCTag.prototype.isValidOmadiTag = function() {
 };
 
 NFCTag.prototype.playSuccessFeedback = function() {
+	NFCTag.Sound.success.play();
 	Titanium.Media.vibrate([0, 250, 125, 250]);
 };
 
 NFCTag.prototype.playErrorFeedback = function() {
+	NFCTag.Sound.error.play();
 	Titanium.Media.vibrate([0, 1000, 500, 1000]);
 };
 
