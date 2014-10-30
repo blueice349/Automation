@@ -1,3 +1,6 @@
+/* jshint globalstrict:true */
+'use strict';
+
 var _instance = null;
 
 var NodeView = require('ui/NodeView');
@@ -5,13 +8,12 @@ var Utils = require('lib/Utils');
 var Database = require('lib/Database');
 var Print = require('lib/Print');
 var Node = require('objects/Node');
-
-var CommentList = null;
+var CommentList = require('ui/CommentList');
 
 var androidMenuItemData = [];
 
 
-function NodeViewTabs(type, nid){"use strict";
+function NodeViewTabs(type, nid) {
     this.type = type;
     this.nid = nid;
     
@@ -30,7 +32,7 @@ function NodeViewTabs(type, nid){"use strict";
     this.currentWorkFormPart = 0;
 }
 
-function getInstance(){"use strict";
+function getInstance() {
     if(_instance === null){
         _instance = new NodeViewTabs();
     }   
@@ -38,7 +40,7 @@ function getInstance(){"use strict";
     return _instance;
 }
 
-function incrementCommentTab(){"use strict";
+function incrementCommentTab() {
     var count, title;
     try{
         count = _instance.commentsTab.commentCount + 1;
@@ -51,7 +53,7 @@ function incrementCommentTab(){"use strict";
     } 
 }
 
-function openAndroidMenuItemNodeView(e){"use strict";
+function openAndroidMenuItemNodeView(e) {
     var itemIndex, itemData;
     
     itemIndex = e.source.getOrder();
@@ -64,7 +66,7 @@ function openAndroidMenuItemNodeView(e){"use strict";
     });
 }
 
-NodeViewTabs.prototype.addActions = function(){"use strict";
+NodeViewTabs.prototype.addActions = function() {
     if(this.workNode !== null){
             
         if (Ti.App.isAndroid) {
@@ -158,7 +160,7 @@ NodeViewTabs.prototype.addActions = function(){"use strict";
 
 
 
-NodeViewTabs.prototype.getTabs = function(allowActions){"use strict";
+NodeViewTabs.prototype.getTabs = function(allowActions) {
     var openDispatch, workBundle, result, 
         tempDispatchNid, commentsCount;
     
@@ -304,9 +306,7 @@ NodeViewTabs.prototype.getTabs = function(allowActions){"use strict";
         if(this.workTab && this.workNode && this.workNode.nid && this.workNode.nid > 0){
             // The node is already saved and on the server
             try{
-                CommentList = require('ui/CommentList');
-                
-                CommentList.init(Omadi, this.workNode.nid);
+                CommentList.init(this.workNode.nid);
                 commentsCount = CommentList.getCommentCount();
                 
                 this.commentsTab = Ti.UI.createTab({
@@ -352,17 +352,17 @@ NodeViewTabs.prototype.getTabs = function(allowActions){"use strict";
     return this.tabGroup;
 };
 
-NodeViewTabs.prototype.savedNode = function(e){"use strict";
+NodeViewTabs.prototype.savedNode = function(e) {
 	if (e.saveType != 'continuous') {
         _instance.close();
     }
 };
 
-NodeViewTabs.prototype.loggingOut = function(){"use strict";
+NodeViewTabs.prototype.loggingOut = function() {
     _instance.close();
 };
 
-NodeViewTabs.prototype.close = function(){"use strict";
+NodeViewTabs.prototype.close = function() {
     try{
         if(this.dispatchWindow !== null){
             this.dispatchWindow.close();
@@ -386,7 +386,7 @@ NodeViewTabs.prototype.close = function(){"use strict";
 };
 
 
-exports.getTabs = function(type, nid, allowActions){"use strict";
+exports.getTabs = function(type, nid, allowActions) {
     
     if (typeof allowActions == 'undefined') {
         allowActions = true;

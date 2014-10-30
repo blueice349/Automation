@@ -1,10 +1,14 @@
-/*jslint eqeq:true,plusplus:true*/
+/* jshint globalstrict:true */
+'use strict';
 
-var Omadi, commentList;
+var commentList;
 
 var Utils = require('lib/Utils');
+var Node = require('objects/Node');
+var Database = require('lib/Database');
+var Display = require('lib/Display');
 
-function CommentList(nid){"use strict";
+function CommentList(nid) {
     //create module instance
     
     this.nid = nid;
@@ -17,26 +21,24 @@ function CommentList(nid){"use strict";
     this.tabObj = null;
 }
 
-CommentList.prototype.back = function(){"use strict";
+CommentList.prototype.back = function() {
     Ti.API.debug("Pressed back button from comments...");
 };
 
-CommentList.prototype.initComments = function(){"use strict";
-    var db, result, comment, instances, commentTableName, fieldName, i, textValue, 
-        origDBValue, tempDBValues, subValue, subResult, allowedValues, listDB;
+CommentList.prototype.initComments = function() {
+    var result, comment, instances, commentTableName, fieldName, i, textValue, 
+        origDBValue, tempDBValues, subValue, subResult, allowedValues;
     
     this.comments = [];
     try{
         if(this.nid > 0){
             
-            this.node = Omadi.data.nodeLoad(this.nid);
+            this.node = Node.load(this.nid);
             commentTableName = 'comment_node_' + this.node.type;
             
-            instances = Omadi.data.getFields(commentTableName);
+            instances = Node.getFields(commentTableName);
             
-            db = Omadi.utils.openMainDatabase();
-            
-            result = db.execute("SELECT c.cid, c.created, c.changed, c.uid, d.* FROM comment c INNER JOIN " + commentTableName + " d ON d.cid = c.cid WHERE c.nid = " + this.nid + " ORDER BY c.created DESC");
+            result = Database.query("SELECT c.cid, c.created, c.changed, c.uid, d.* FROM comment c INNER JOIN " + commentTableName + " d ON d.cid = c.cid WHERE c.nid = " + this.nid + " ORDER BY c.created DESC");
             
             while(result.isValidRow()){
                 
@@ -131,7 +133,7 @@ CommentList.prototype.initComments = function(){"use strict";
 
                             case 'user_reference':
 
-                                subResult = db.execute('SELECT uid, realname FROM user WHERE uid IN(' + comment[fieldName].dbValues.join(',') + ')');
+                                subResult = Database.query('SELECT uid, realname FROM user WHERE uid IN(' + comment[fieldName].dbValues.join(',') + ')');
                                 while (subResult.isValidRow()) {
                                     textValue = subResult.fieldByName("realname");
                                     subValue = subResult.fieldByName("uid");
@@ -150,7 +152,7 @@ CommentList.prototype.initComments = function(){"use strict";
 
                             case 'taxonomy_term_reference':
 
-                                subResult = db.execute('SELECT name, tid FROM term_data WHERE tid IN(' + comment[fieldName].dbValues.join(',') + ')');
+                                subResult = Database.query('SELECT name, tid FROM term_data WHERE tid IN(' + comment[fieldName].dbValues.join(',') + ')');
                                 while (subResult.isValidRow()) {
                                     textValue = subResult.fieldByName("name");
                                     subValue = subResult.fieldByName("tid");
@@ -190,7 +192,7 @@ CommentList.prototype.initComments = function(){"use strict";
                                 break;
                                 
                             case 'omadi_reference':
-                                subResult = db.execute('SELECT title, node_type, nid FROM comment WHERE nid IN (' + comment[fieldName].dbValues.join(',') + ')');
+                                subResult = Database.query('SELECT title, node_type, nid FROM comment WHERE nid IN (' + comment[fieldName].dbValues.join(',') + ')');
                                 comment[fieldName].commentTypes = [];
 
                                 while (subResult.isValidRow()) {
@@ -213,15 +215,15 @@ CommentList.prototype.initComments = function(){"use strict";
                             case 'omadi_time':
 
                                 for ( i = 0; i < comment[fieldName].dbValues.length; i++) {
-                                    comment[fieldName].textValues[i] = Omadi.utils.secondsToString(comment[fieldName].dbValues[i]);
+                                    comment[fieldName].textValues[i] = Utils.secondsToString(comment[fieldName].dbValues[i]);
                                 }
                                 break;
 
                             case 'datestamp':
                                 for ( i = 0; i < comment[fieldName].dbValues.length; i++) {
-                                    if (!Omadi.utils.isEmpty(comment[fieldName].dbValues[i])) {
+                                    if (!Utils.isEmpty(comment[fieldName].dbValues[i])) {
                                         comment[fieldName].dbValues[i] = parseInt(comment[fieldName].dbValues[i], 10);
-                                        comment[fieldName].textValues[i] = Omadi.utils.formatDate(comment[fieldName].dbValues[i], 
+                                        comment[fieldName].textValues[i] = Utils.formatDate(comment[fieldName].dbValues[i], 
                                             (instances[fieldName].settings.time == 1 || 
                                                 (typeof instances[fieldName].settings.granularity !== 'undefined' && typeof instances[fieldName].settings.granularity.hour !== 'undefined')));
                                     }
@@ -263,8 +265,7 @@ CommentList.prototype.initComments = function(){"use strict";
                             case 'image':
                             case 'file':
                                 // This includes signature and video fields
-                                listDB = Omadi.utils.openListDatabase();
-                                subResult = listDB.execute('SELECT * FROM _files WHERE finished = 0 AND nid IN(' + comment.nid + ',0) AND fieldName ="' + fieldName + '" ORDER BY delta ASC');
+                                subResult = Database.queryList('SELECT * FROM _files WHERE finished = 0 AND nid IN(' + comment.nid + ',0) AND fieldName ="' + fieldName + '" ORDER BY delta ASC');
 
                                 comment[fieldName].imageData = [];
                                 comment[fieldName].degrees = [];
@@ -283,16 +284,16 @@ CommentList.prototype.initComments = function(){"use strict";
                                     }
                                 }
                                 subResult.close();
-                                listDB.close();
+                                Database.close();
                                 
                                 // Special case for only file-type fields
                                 if(instances[fieldName].type == 'file'){
                                     
-                                    subResult = db.execute("SELECT " + fieldName + "___filename AS filename FROM " + comment.type + " WHERE nid=" + comment.nid);
+                                    subResult = Database.query("SELECT " + fieldName + "___filename AS filename FROM " + comment.type + " WHERE nid=" + comment.nid);
                                     if (subResult.rowCount > 0) {
                                         textValue = [];
                                         origDBValue = subResult.fieldByName("filename");
-                                        tempDBValues = Omadi.utils.getParsedJSON(origDBValue);
+                                        tempDBValues = Utils.getParsedJSON(origDBValue);
                                         if(Utils.isArray(tempDBValues)){
                                             textValue = tempDBValues;
                                         }
@@ -301,7 +302,7 @@ CommentList.prototype.initComments = function(){"use strict";
                                         }
                                         
                                         for ( i = 0; i < comment[fieldName].dbValues.length; i++) {
-                                            if (!Omadi.utils.isEmpty(comment[fieldName].dbValues[i])) {
+                                            if (!Utils.isEmpty(comment[fieldName].dbValues[i])) {
                                                 
                                                 if(typeof textValue[i] !== 'undefined'){
                                                     comment[fieldName].textValues[i] = textValue[i];
@@ -335,7 +336,7 @@ CommentList.prototype.initComments = function(){"use strict";
             }
             
             result.close();
-            db.close();  
+            Database.close();  
         }
     }
     catch(ex){
@@ -343,7 +344,7 @@ CommentList.prototype.initComments = function(){"use strict";
     }
 };
 
-CommentList.prototype.getCommentCount = function(){"use strict";
+CommentList.prototype.getCommentCount = function() {
     if(this.comments === null){
         this.initComments();
     }
@@ -351,11 +352,11 @@ CommentList.prototype.getCommentCount = function(){"use strict";
     return this.comments.length;
 };
 
-CommentList.prototype.setNumCommentsLabel = function(){"use strict";
+CommentList.prototype.setNumCommentsLabel = function() {
     this.numCommentsLabel.setText(this.comments.length + " comment" + (this.comments.length == 1 ? '' : 's'));
 };
 
-CommentList.prototype.setupIOSToolbar = function(){"use strict";
+CommentList.prototype.setupIOSToolbar = function() {
     var back, space, label, toolbar;
     
     back = Ti.UI.createButton({
@@ -397,7 +398,7 @@ CommentList.prototype.setupIOSToolbar = function(){"use strict";
     this.listWin.add(toolbar);
 };
 
-CommentList.prototype.getListWindow = function(){"use strict";
+CommentList.prototype.getListWindow = function() {
     var headerView, newCommentButton;
     
     this.listWin = Ti.UI.createWindow({
@@ -447,7 +448,7 @@ CommentList.prototype.getListWindow = function(){"use strict";
     this.setNumCommentsLabel();
     
     newCommentButton = Ti.UI.createLabel({
-        backgroundGradient: Omadi.display.backgroundGradientBlue,
+        backgroundGradient: Display.backgroundGradientBlue,
         height: 35,
         top: 5,
         text: 'New Comment',
@@ -467,7 +468,7 @@ CommentList.prototype.getListWindow = function(){"use strict";
         var commentForm = require('ui/CommentForm');
         
         try{
-            commentForm.showFormWindow(Omadi, commentList.nid, commentList.listWin);
+            commentForm.showFormWindow(commentList.nid, commentList.listWin);
         }
         catch(ex){
             Ti.API.error("Exception showing comment form: " + ex);
@@ -486,7 +487,7 @@ CommentList.prototype.getListWindow = function(){"use strict";
     return this.listWin;
 };
 
-CommentList.prototype.setScrollView = function(){"use strict";
+CommentList.prototype.setScrollView = function() {
     var commentView, comment, i, fieldName, fieldWrapper, fieldNameLabel,
         commentHeaderView, commentDateLabel, bodyView, bodyLabel, nameLabel, instances;
     
@@ -514,7 +515,7 @@ CommentList.prototype.setScrollView = function(){"use strict";
     
     if(this.comments.length > 0){
         
-        instances = Omadi.data.getFields(this.comments[0].node_type);
+        instances = Node.getFields(this.comments[0].node_type);
         
         for(i = 0; i < this.comments.length; i ++){
             
@@ -538,7 +539,7 @@ CommentList.prototype.setScrollView = function(){"use strict";
             });
             
             commentDateLabel = Ti.UI.createLabel({
-                text: Omadi.utils.formatDate(comment.created, true),
+                text: Utils.formatDate(comment.created, true),
                 color: '#eee',
                 font: {
                     fontSize: 14,
@@ -549,7 +550,7 @@ CommentList.prototype.setScrollView = function(){"use strict";
             });
             
             nameLabel = Ti.UI.createLabel({
-                text: Omadi.utils.getRealname(comment.uid),
+                text: Utils.getRealname(comment.uid),
                 color: '#eee',
                 font: {
                     fontSize: 14,
@@ -646,7 +647,7 @@ CommentList.prototype.setScrollView = function(){"use strict";
     this.listWin.add(this.scrollView);
 };
 
-CommentList.prototype.updateView = function(){"use strict";
+CommentList.prototype.updateView = function() {
     Ti.API.debug("Updating the comment list view");
     
     // Reinitialize the comments so the scroll view can have the updated list
@@ -657,16 +658,15 @@ CommentList.prototype.updateView = function(){"use strict";
     Ti.API.debug("Updated the comment list view");
 };
 
-exports.init = function(OmadiObj, nid){"use strict";
-    Omadi = OmadiObj;
+exports.init = function(nid) {
     commentList = new CommentList(nid);
 };
 
-exports.getCommentCount = function(){"use strict";
+exports.getCommentCount = function() {
     return commentList.getCommentCount();
 };
 
-exports.getListWindow = function(tabObject){"use strict";
+exports.getListWindow = function(tabObject) {
     commentList.tabObj = tabObject;
     
     return commentList.getListWindow();

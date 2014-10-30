@@ -1,4 +1,3 @@
-/*jslint eqeq:true,plusplus:true*/
 var FormObj;
 
 var Utils = require('lib/Utils');
@@ -1420,7 +1419,7 @@ CommentForm.prototype.showFormWindow = function(parent){"use strict";
     }
 };
 
-CommentForm.showFormWindow = function(OmadiObj, nid, parent){"use strict";
+CommentForm.showFormWindow = function(nid, parent){"use strict";
     // Currently only creating new comments
     // TODO: pass in a null or new cid to create or edit
     FormObj = new CommentForm(nid);
