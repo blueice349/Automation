@@ -1,9 +1,9 @@
-/*jslint nomen:true,eqeq:true,plusplus:true*/
 
 var Print = require('lib/Print');
 var Utils = require('lib/Utils');
 var Node = require('objects/Node');
 var Display = require('lib/Display');
+var Database = require('lib/Database');
 var ImageWidget = require('ui/widget/Image');
 var _instances = {};
 var ActiveObj = null;
@@ -933,7 +933,7 @@ NodeView.prototype.getWindow = function(allowActions){"use strict";
         result.next();
     }
     result.close();
-    database.close();
+    Database.close();
 
     metaDataFields = [];
 

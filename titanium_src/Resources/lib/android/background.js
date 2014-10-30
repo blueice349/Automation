@@ -1,3 +1,4 @@
+/*global Omadi*/
 var AndroidBackground = require('lib/android/AndroidBackground');
 
 Omadi.background = Omadi.background || {};

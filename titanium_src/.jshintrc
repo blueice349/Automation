@@ -1,8 +1,9 @@
 {
+	"undef": true,
 	"strict": true,
 	"unused": true, // throw warning on unused variables
 	"loopfunc": true, // allow functions in loops
 	"-W086": true, // allow switch statement cases that contain code to fall through to the next case.
 	"-W041": true, // allow '==' when camparing with null, undefined, 0 or ''
-	"predef": ["Ti", "Titanium", "alert", "CryptoJS", "require", "exports", "module"] // define globals
+	"predef": ["Ti", "Titanium", "alert", "CryptoJS", "require", "exports", "module", "setTimeout", "setInterval", "clearInterval"] // define globals
 }

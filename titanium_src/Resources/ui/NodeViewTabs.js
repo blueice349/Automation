@@ -1,5 +1,3 @@
-/*jslint eqeq:true,plusplus:true,nomen:true,bitwise:true*/
-
 var _instance = null;
 
 var NodeView = require('ui/NodeView');

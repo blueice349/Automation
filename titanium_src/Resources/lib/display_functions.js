@@ -1,4 +1,4 @@
-/*jslint eqeq:true,plusplus:true*/
+/*global Omadi*/
 
 Omadi.display = Omadi.display || {};
 

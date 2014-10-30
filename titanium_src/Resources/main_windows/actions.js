@@ -6,6 +6,7 @@ Ti.include('/lib/functions.js');
 
 var Display = require('lib/Display');
 var RouteListener = require('objects/RouteListener');
+var TimecardGeofenceVerifier = require('objects/TimecardGeofenceVerifier');
 Display.setCurrentWindow(Ti.UI.currentWindow, 'actions');
 
 var curWin;

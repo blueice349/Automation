@@ -3,6 +3,7 @@
 
 var Utils = require('lib/Utils');
 var Service = require('lib/Service');
+var Node = require('objects/Node');
 
 Omadi.service = Omadi.service || {};
 

@@ -1,4 +1,4 @@
-/*jslint eqeq:true*/
+/*global Omadi*/
 Omadi.bundles.timecard = {};
 
 var Utils = require('lib/Utils');

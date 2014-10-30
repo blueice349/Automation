@@ -512,7 +512,7 @@ TaxonomyTermReferenceWidget.prototype.cleanUp = function(){"use strict";
         
         this.descriptionLabel = null;
         
-        for(j = 0; j < this.elementWrappers.length; j ++){
+        for(var j = 0; j < this.elementWrappers.length; j ++){
             this.fieldView.remove(this.elementWrappers[j]);
             this.elementWrappers[j] = null;
         }

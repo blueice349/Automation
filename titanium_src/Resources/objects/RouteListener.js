@@ -36,6 +36,31 @@ exports.Repeat = {
 	INFINITE: 0
 };
 
+exports.getRoute = function(nid) {
+	var routes = getPossibleRoutes();
+	
+	for (var i = 0; i < routes.length; i++) {
+		if (routes[i].nid == nid) {
+			return routes[i];
+		}
+	}
+	
+	return null;
+};
+
+exports.startRoute = function(route) {
+	var win = Titanium.UI.createWindow({
+        navBarHidden : true,
+        route: route,
+        url : '/main_windows/routeListener.js',
+        orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
+    });
+    
+    Display.loading();
+    win.addEventListener('open', Display.doneLoading);
+    win.open();
+};
+
 exports.hasRoutes = function() {
 	if (!hasRouteAssignment()) {
 		return false;
@@ -117,16 +142,7 @@ function askSelectRoute(routes) {
     
     dialog.addEventListener('click', function(event) {
     	if (routes[event.index]) {
-			var win = Titanium.UI.createWindow({
-		        navBarHidden : true,
-		        route: routes[event.index],
-		        url : '/main_windows/routeListener.js',
-		        orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
-		    });
-		    
-		    Display.loading();
-		    win.addEventListener('open', Display.doneLoading);
-		    win.open();
+			exports.startRoute(routes[event.index]);
     	}
     });
     

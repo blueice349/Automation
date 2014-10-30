@@ -1,3 +1,5 @@
+/*global Omadi*/
+
 Omadi.data = Omadi.data || {};
 
 Omadi.data.cache = {};
@@ -6,6 +8,7 @@ Omadi.data.cache.fakeFields = {};
 
 var Utils = require('lib/Utils');
 var Data = require('lib/Data');
+var Database = require('lib/Database');
 var Node = require('objects/Node');
 var ImageWidget = require('ui/widget/Image');
 

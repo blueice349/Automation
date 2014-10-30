@@ -1,6 +1,4 @@
-/*jslint eqeq:true,plusplus:true,nomen:true*/
-
-
+/*global Omadi*/
 Omadi.bundles.dispatch = {};
 
 var Utils = require('lib/Utils');

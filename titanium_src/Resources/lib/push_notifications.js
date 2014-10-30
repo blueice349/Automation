@@ -1,4 +1,4 @@
-/*jslint eqeq:true*/
+/*global Omadi*/
 
 Omadi.push_notifications = {};
 

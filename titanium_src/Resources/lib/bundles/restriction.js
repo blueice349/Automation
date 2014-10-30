@@ -1,6 +1,4 @@
-
-/*jslint eqeq:true, plusplus: true*/
-
+/*global Omadi*/
 Omadi.bundles.restriction = {};
 
 var Utils = require('lib/Utils');

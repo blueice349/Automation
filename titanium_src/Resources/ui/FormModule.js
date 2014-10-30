@@ -3801,7 +3801,7 @@ FormModule.prototype.getTextField = function(instance){"use strict";
 FormModule.prototype.affectsAnotherConditionalField = function(check_instance){"use strict";
     var search_criteria, field_name, i, instance;
     
-    affectedFields = [];
+    var affectedFields = [];
     
     for(field_name in this.instances){
         if(this.instances.hasOwnProperty(field_name)){

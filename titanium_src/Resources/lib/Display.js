@@ -7,6 +7,7 @@ var Database = require('lib/Database');
 var Node = require('objects/Node');
 var Print = require('lib/Print');
 var DispatchBundle = require('lib/bundles/DispatchBundle');
+var RouteListener = require('objects/RouteListener');
 
 exports.backgroundGradientBlue = {
     type : 'linear',
@@ -854,175 +855,177 @@ exports.showDialogFormOptions = function(e, extraOptions) {
         extraOptions = [];
     }
     
-    if(e.row.nid){
-        try{
-            result = Database.query('SELECT table_name, form_part, perm_edit, dispatch_nid FROM node WHERE nid=' + e.row.nid);
-            
-            isEditEnabled = false;
-            hasCustomCopy = false;
-            options = [];
-            buttonData = [];
-            
-            if(extraOptions.length){
-                for(i = 0; i < extraOptions.length; i ++){
-                    options.push(extraOptions[i].text);
-                    buttonData.push({
-                        form_part : '_extra_' + i
-                    });
-                }
-            }
-        
-            if (result.fieldByName('perm_edit', Ti.Database.FIELD_TYPE_INT) === 1) {
-                isEditEnabled = true;
-            }
-        
-            form_part = result.fieldByName('form_part', Ti.Database.FIELD_TYPE_INT);
-            node_type = result.fieldByName('table_name');
-            dispatchNid = result.fieldByName('dispatch_nid', Ti.Database.FIELD_TYPE_INT);
-        
-            result.close();
-        }
-        catch(ex){
-            alert("The form entry has moved. Please reload this screen.");
-            return;
-        }
-        finally{
-            Database.close();
+    if (!e.row.nid) {
+    	return;
+    }
+    
+    try{
+	    isEditEnabled = false;
+	    hasCustomCopy = false;
+	    options = [];
+	    buttonData = [];
+	    
+        result = Database.query('SELECT table_name, form_part, perm_edit, dispatch_nid FROM node WHERE nid=' + e.row.nid);
+    
+        if (result.fieldByName('perm_edit', Ti.Database.FIELD_TYPE_INT) === 1) {
+            isEditEnabled = true;
         }
     
-        bundle = Node.getBundle(node_type);
+        form_part = result.fieldByName('form_part', Ti.Database.FIELD_TYPE_INT);
+        node_type = result.fieldByName('table_name');
+        dispatchNid = result.fieldByName('dispatch_nid', Ti.Database.FIELD_TYPE_INT);
     
-        if (isEditEnabled) {
-            if (bundle.data.form_parts != null && bundle.data.form_parts != "") {
-                if (bundle.data.form_parts.parts.length >= form_part + 2) {
+        result.close();
+    }
+    catch(ex){
+        alert("The form entry has moved. Please reload this screen.");
+        return;
+    }
+    finally{
+        Database.close();
+    }
+      
+    console.log('------ node_type: ' + node_type);
     
-                    options.push(bundle.data.form_parts.parts[form_part + 1].label);
-                    buttonData.push({
-                        form_part: (form_part + 1),
-                        dispatch_nid : dispatchNid
-                    });
-                }
-            }
+    if (node_type == 'route_assignment') {
+    	var route = RouteListener.getRoute(e.row.nid);
+    	if (route) {
+	    	extraOptions.push({
+	    		text: 'Start Route',
+	    		callback: RouteListener.startRoute,
+	    		callbackArgs: [route]
+	    	});
+	    }
+    }
     
-            options.push('Edit');
+    if(extraOptions.length){
+        for(i = 0; i < extraOptions.length; i ++){
+            options.push(extraOptions[i].text);
             buttonData.push({
-                form_part: form_part,
-                dispatch_nid : dispatchNid
+                form_part : '_extra_' + i
             });
         }
-    
-        options.push('View');
+    }
+
+    bundle = Node.getBundle(node_type);
+
+    if (isEditEnabled) {
+        if (bundle.data.form_parts != null && bundle.data.form_parts != "") {
+            if (bundle.data.form_parts.parts.length >= form_part + 2) {
+
+                options.push(bundle.data.form_parts.parts[form_part + 1].label);
+                buttonData.push({
+                    form_part: (form_part + 1),
+                    dispatch_nid : dispatchNid
+                });
+            }
+        }
+
+        options.push('Edit');
         buttonData.push({
-            form_part: '_view',
+            form_part: form_part,
             dispatch_nid : dispatchNid
         });
-        
-        if(Print.canPrintReceipt(e.row.nid)){
-            options.push('Print');
-            buttonData.push({
-                form_part: '_print' 
-            });
-        }
+    }
+
+    options.push('View');
+    buttonData.push({
+        form_part: '_view',
+        dispatch_nid : dispatchNid
+    });
     
-        if ( typeof bundle.data.custom_copy !== 'undefined') {
-            for (to_type in bundle.data.custom_copy) {
-                if (bundle.data.custom_copy.hasOwnProperty(to_type)) {
-                    to_bundle = Node.getBundle(to_type);
-                    if (to_bundle && to_bundle.can_create == 1) {
-                        if(typeof bundle.data.custom_copy[to_type] !== 'undefined' && 
-                            typeof bundle.data.custom_copy[to_type].conversion_type !== 'undefined' &&
-                            bundle.data.custom_copy[to_type].conversion_type == 'change'){
-                            
-                                options.push("Change to " + to_bundle.label);
-                                buttonData.push({
-                                    form_part : to_type
-                                }); 
-                        }
-                        else{
-                            options.push("Copy to " + to_bundle.label);
+    if(Print.canPrintReceipt(e.row.nid)){
+        options.push('Print');
+        buttonData.push({
+            form_part: '_print' 
+        });
+    }
+
+    if ( typeof bundle.data.custom_copy !== 'undefined') {
+        for (to_type in bundle.data.custom_copy) {
+            if (bundle.data.custom_copy.hasOwnProperty(to_type)) {
+                to_bundle = Node.getBundle(to_type);
+                if (to_bundle && to_bundle.can_create == 1) {
+                    if(typeof bundle.data.custom_copy[to_type] !== 'undefined' && 
+                        typeof bundle.data.custom_copy[to_type].conversion_type !== 'undefined' &&
+                        bundle.data.custom_copy[to_type].conversion_type == 'change'){
+                        
+                            options.push("Change to " + to_bundle.label);
                             buttonData.push({
                                 form_part : to_type
-                            });
-                        }
-                        hasCustomCopy = true;
+                            }); 
                     }
+                    else{
+                        options.push("Copy to " + to_bundle.label);
+                        buttonData.push({
+                            form_part : to_type
+                        });
+                    }
+                    hasCustomCopy = true;
                 }
             }
         }
-    
-        if (!isEditEnabled && !hasCustomCopy) {
-            e.row.setBackgroundColor('#fff');
-            exports.openViewWindow(node_type, e.row.nid);
-        }
-        else {
+    }
+
+    if (!isEditEnabled && !hasCustomCopy) {
+        e.row.setBackgroundColor('#fff');
+        exports.openViewWindow(node_type, e.row.nid);
+    }
+    else {
+        
+        options.push('View Online');
+        buttonData.push({
+            form_part : '_view_online'
+        });
+        
+        options.push('Cancel');
+        buttonData.push({
+            form_part : '_cancel'
+        });
+
+        postDialog = Titanium.UI.createOptionDialog();
+        postDialog.options = options;
+        postDialog.eventRow = e.row;
+        postDialog.cancel = options.length - 1;
+
+        postDialog.addEventListener('click', function(ev) {
+            var buttonInfo, form_part;
             
-            options.push('View Online');
-            buttonData.push({
-                form_part : '_view_online'
-            });
-            
-            options.push('Cancel');
-            buttonData.push({
-                form_part : '_cancel'
-            });
-    
-            postDialog = Titanium.UI.createOptionDialog();
-            postDialog.options = options;
-            postDialog.eventRow = e.row;
-            postDialog.cancel = options.length - 1;
-    
-            postDialog.addEventListener('click', function(ev) {
-                var buttonInfo, form_part;
-                
-                try{
-                    if(ev.index >= 0){
-                        buttonInfo = buttonData[ev.index];
-                        form_part = buttonInfo.form_part;
-                        
-                        if(typeof form_part !== 'undefined'){
-                            if (form_part == '_cancel') {
-                                Ti.API.info("Cancelled");
-                            }
-                            else if(form_part == '_view') {
-                                ev.source.eventRow.setBackgroundColor('#fff');
-                                exports.openViewWindow(node_type, e.row.nid);
-                            }
-                            else if(form_part == '_view_online') {
-                                ev.source.eventRow.setBackgroundColor('#fff');
-                                exports.openWebView(e.row.nid);
-                            }
-                            else if(form_part == '_print'){
-                                Print.printReceipt(e.row.nid);
-                            }
-                            else if(form_part == '_charge'){
-                                Print.chargeCard(e.row.nid);
-                            }
-                            else if(form_part.toString().indexOf('_extra_') == 0){
-                                extraOptionIndex = parseInt(form_part.substring(7), 10);
-                                extraOptionCallback = extraOptions[extraOptionIndex].callback;
-                                extraOptionCallback(extraOptions[extraOptionIndex].callbackArgs);
-                            }
-                            else if (!isNaN(parseInt(form_part, 10))){
-                                // form+_part is a number, so it is editing the current node
-                                if(isEditEnabled === true) {
-                                    
-                                    exports.loading();
-                                    
-                                    ev.source.eventRow.setBackgroundColor('#fff');
-                                    Ti.App.fireEvent('openFormWindow', {
-                                       node_type: node_type,
-                                       nid: e.row.nid,
-                                       form_part: form_part
-                                    });
-                                    
-                                    setTimeout(exports.doneLoading, 5000);
-                                }
-                            }
-                            else{
+            try{
+                if(ev.index >= 0){
+                    buttonInfo = buttonData[ev.index];
+                    form_part = buttonInfo.form_part;
+                    
+                    if(typeof form_part !== 'undefined'){
+                        if (form_part == '_cancel') {
+                            Ti.API.info("Cancelled");
+                        }
+                        else if(form_part == '_view') {
+                            ev.source.eventRow.setBackgroundColor('#fff');
+                            exports.openViewWindow(node_type, e.row.nid);
+                        }
+                        else if(form_part == '_view_online') {
+                            ev.source.eventRow.setBackgroundColor('#fff');
+                            exports.openWebView(e.row.nid);
+                        }
+                        else if(form_part == '_print'){
+                            Print.printReceipt(e.row.nid);
+                        }
+                        else if(form_part == '_charge'){
+                            Print.chargeCard(e.row.nid);
+                        }
+                        else if(form_part.toString().indexOf('_extra_') == 0){
+                            extraOptionIndex = parseInt(form_part.substring(7), 10);
+                            extraOptionCallback = extraOptions[extraOptionIndex].callback;
+                            extraOptionCallback(extraOptions[extraOptionIndex].callbackArgs);
+                        }
+                        else if (!isNaN(parseInt(form_part, 10))){
+                            // form+_part is a number, so it is editing the current node
+                            if(isEditEnabled === true) {
+                                
                                 exports.loading();
                                 
-                                // The form part is a string, so it is a copy to function
-                                // exports.openFormWindow(node_type, e.row.nid, form_part);
+                                ev.source.eventRow.setBackgroundColor('#fff');
                                 Ti.App.fireEvent('openFormWindow', {
                                    node_type: node_type,
                                    nid: e.row.nid,
@@ -1032,15 +1035,28 @@ exports.showDialogFormOptions = function(e, extraOptions) {
                                 setTimeout(exports.doneLoading, 5000);
                             }
                         }
+                        else{
+                            exports.loading();
+                            
+                            // The form part is a string, so it is a copy to function
+                            // exports.openFormWindow(node_type, e.row.nid, form_part);
+                            Ti.App.fireEvent('openFormWindow', {
+                               node_type: node_type,
+                               nid: e.row.nid,
+                               form_part: form_part
+                            });
+                            
+                            setTimeout(exports.doneLoading, 5000);
+                        }
                     }
                 }
-                catch(ex){
-                    Utils.sendErrorReport("exception dialog form options: " + ex);
-                }
-            });
-            
-            postDialog.show();
-        }
+            }
+            catch(ex){
+                Utils.sendErrorReport("exception dialog form options: " + ex);
+            }
+        });
+        
+        postDialog.show();
     }
 };
 

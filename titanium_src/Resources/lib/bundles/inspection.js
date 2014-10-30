@@ -1,5 +1,4 @@
-/*jslint eqeq:true*/
-
+/*global Omadi*/
 Omadi.bundles.inspection = {};
 
 var Utils = require('lib/Utils');

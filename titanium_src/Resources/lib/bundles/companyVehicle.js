@@ -1,6 +1,5 @@
+/*global Omadi*/
 Omadi.bundles.companyVehicle = {};
-
-/*jslint eqeq: true, plusplus: true*/
 
 var Utils = require('lib/Utils');
 var AlertQueue = require('lib/AlertQueue');

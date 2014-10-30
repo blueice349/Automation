@@ -1,4 +1,4 @@
-
+/*global Omadi*/
 Ti.include("/lib/functions.js");
 
 if((Ti.App.Properties.getBool('stopGPS', false) || !Omadi.utils.isLoggedIn())){
