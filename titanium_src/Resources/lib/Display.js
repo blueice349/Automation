@@ -884,8 +884,6 @@ exports.showDialogFormOptions = function(e, extraOptions) {
     finally{
         Database.close();
     }
-      
-    console.log('------ node_type: ' + node_type);
     
     if (node_type == 'route_assignment') {
     	var route = RouteListener.getRoute(e.row.nid);
@@ -893,7 +891,7 @@ exports.showDialogFormOptions = function(e, extraOptions) {
 	    	extraOptions.push({
 	    		text: 'Start Route',
 	    		callback: RouteListener.startRoute,
-	    		callbackArgs: [route]
+	    		callbackArgs: route
 	    	});
 	    }
     }
