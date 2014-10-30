@@ -25,8 +25,8 @@ function getInstance(){"use strict";
 
 // The success callback for sending comments
 // The this in this callback is the http object
-var sendOnLoad = function(e){"use strict";
-    var dialog, json, nameTable, dir, file, string, commentsInstance;
+var sendOnLoad = function(){"use strict";
+    var dialog, dir, file, string, commentsInstance;
     
     commentsInstance = getInstance();
    
@@ -106,7 +106,7 @@ var sendOnLoad = function(e){"use strict";
     
             dialog.show();
     
-            dialog.addEventListener('click', function(e) {
+            dialog.addEventListener('click', function() {
                 try{
                     Ti.App.Properties.setString('logStatus', "The server logged you out");
                     
@@ -316,7 +316,7 @@ Comments.prototype.getNextCidToUpload = function(){"use strict";
 
 Comments.prototype.getUpdatedCommentJSON = function(cid) {"use strict";
     /*jslint eqeq:true,plusplus:true*/
-    var db, result, obj, nid, tid, nids, comment, instances, field_name, i, v_result, output, hasComment, nodeType;
+    var result, obj, comment, instances, field_name, output, hasComment, nodeType;
     
     hasComment = false;
     

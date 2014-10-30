@@ -132,9 +132,3 @@ function askSelectRoute(routes) {
     
     dialog.show();
 }
-
-function dbValueToTextValue(dbValue) {
-	return dbValue.replace('_', ' ').replace(/\w\S*/g, function(word){
-		return word.charAt(0).toUpperCase() + word.substr(1).toLowerCase();
-	});
-}

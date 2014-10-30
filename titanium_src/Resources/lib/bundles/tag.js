@@ -22,10 +22,10 @@ Omadi.bundles.tag.hasSavedTags = function(){"use strict";
 };
 
 Omadi.bundles.tag.getExpiredTags = function(){"use strict";
-    var expired, db, result, sql, nowTimestamp, nids, restricted, i, j, ready, isReady, nodes, node, 
-    tagBundle, searchFieldName, criteriaRow, finalReady, communityViolations, v_idx, 
+    var expired, db, result, sql, nowTimestamp, nids, i, ready, node, 
+    tagBundle, finalReady, communityViolations, v_idx, 
     community_idx, foundCommunity, userUid, restrictions, accountNid, restriction, accountNids, 
-    accountSQL, accountORs, searchSQL, filtered, nid, conditions, conditionSQL, foundDriver;
+    accountSQL, accountORs, searchSQL, nid, conditions, conditionSQL, foundDriver;
     
     nowTimestamp = Omadi.utils.getUTCTimestamp();
     expired = [];

@@ -10,6 +10,7 @@ var Node = require('objects/Node');
 var AlertQueue = require('lib/AlertQueue');
 var Service = require('lib/Service');
 var ProgressBar = require('objects/ProgressBar');
+var Comments = require('services/Comments');
 
 
 var Database = require('lib/Database');
@@ -36,8 +37,6 @@ var curWin = Ti.UI.currentWindow;
 curWin.isTopWindow = true;
 curWin.backgroundColor = '#eee';
 
-var version = 'Omadi Inc';
-var currentAlertIndex = 0;
 var isInitialized = false;
 
 var databaseStatusView = Titanium.UI.createView({
@@ -236,10 +235,9 @@ function displayWatermark(){"use strict";
 }
 
 function displayBundleList() {"use strict";
-    var db, result, dataRows, name_table, i, j, k, display, 
+    var db, result, dataRows, i, j, 
         description, row_t, icon, titleLabel, plusButton, 
-        can_view, can_create, data, colorGroups, item, 
-        colors, iconFile, numBundles;
+        colorGroups, item, colors, iconFile, numBundles;
 
     db = Omadi.utils.openMainDatabase();
     result = db.execute('SELECT * FROM bundles ORDER BY display_name ASC');
@@ -378,7 +376,7 @@ function setupAndroidMenu() {"use strict";
 
     Ti.Android.currentActivity.onCreateOptionsMenu = function(e) {
 
-        var menu, menuItem, menu_draft, menu_about, menu_settings;
+        var menu, menu_draft, menu_about, menu_settings;
 
         menu = e.menu;
         
@@ -400,7 +398,7 @@ function setupAndroidMenu() {"use strict";
         });
         menu_settings.setIcon("/images/gear.png");
 
-        menu_about.addEventListener("click", function(e) {
+        menu_about.addEventListener("click", function() {
             Omadi.display.openAboutWindow();
         });
 
@@ -408,7 +406,7 @@ function setupAndroidMenu() {"use strict";
             Omadi.display.openDraftsWindow();
         });
         
-        menu_settings.addEventListener("click", function(e) {
+        menu_settings.addEventListener("click", function() {
             Omadi.display.openSettingsWindow();
         });
     };
@@ -416,11 +414,9 @@ function setupAndroidMenu() {"use strict";
 
 function setupBottomButtons() {"use strict";
     var alertsView, alertsImg, alertsLabel, 
-        draftsView, draftsImg, draftsLabel, 
-        actionsView, actionsImg, actionsLabel, 
-        jobsView, jobsImg, jobsLabel, dispatchBundle, 
+        jobsView, jobsImg, jobsLabel, 
         recentView, recentLabel, recentImg,
-        tagsReadyView, tagsReadyImg, tagsReadyLabel, tagBundle,
+        tagsReadyView, tagsReadyImg, tagsReadyLabel,
         numButtons, widthPercent;
     
     numButtons = 0;
@@ -797,7 +793,7 @@ function checkAndroidMemory(){"use strict";
     }
 }
 
-function doneSendingDataMainMenu(e){"use strict";
+function doneSendingDataMainMenu(){"use strict";
     Ti.API.debug("Done Sending data event received");
     
     // Allow background updates again
@@ -814,13 +810,8 @@ function doneSendingDataMainMenu(e){"use strict";
 
 
 
-function sendCommentsMainMenu(e){"use strict";
-    var Comments;
-    
+function sendCommentsMainMenu(){"use strict";
     hideNetworkStatus();
-    
-    Comments = require('services/Comments');
-    
     Comments.sendComments();
 }
 
@@ -828,7 +819,7 @@ function openViewWindowMainMenu(e) {'use strict';
 	Omadi.display.openViewWindow(e.type, e.nid, e.allowActions);
 }
 
-function doneSendingPhotosMainMenu(e){"use strict";
+function doneSendingPhotosMainMenu(){"use strict";
     hideNetworkStatus();
 }
 
@@ -856,9 +847,7 @@ function sendingDataMainMenu(e){"use strict";
     showNetworkStatus();
 }
 
-function loggingOutMainMenu(e){"use strict";
-    var lastUploadStartTimestamp, db;
-    
+function loggingOutMainMenu(){"use strict";
     if(typeof Omadi.display.FormTabs !== 'undefined' && Omadi.display.FormTabs !== null){
         Omadi.display.FormTabs.loggingOut();
     }
@@ -877,13 +866,11 @@ function networkChangedMainMenu(e){"use strict";
     }
 }
 
-function normalUpdateFromMenu(e){"use strict";
+function normalUpdateFromMenu(){"use strict";
     Omadi.service.checkUpdate('from_menu');
 }
 
-function fullUpdateFromMenu(e){"use strict";
-    var dbFile, db, result, fileIds, i, listDB;
-    
+function fullUpdateFromMenu(){"use strict";
     Omadi.data.setUpdating(true);
 
     if (!Ti.Network.online) {
@@ -915,7 +902,7 @@ function backgroundCheckForUpdates(){"use strict";
 }
 
 function showContinuousSavedNode(){"use strict";
-    var db, result, continuousSave, listDB, dialog;
+    var db, result, continuousSave, listDB;
     try{
         db = Omadi.utils.openMainDatabase();
         result = db.execute("SELECT nid, table_name, form_part FROM node WHERE flag_is_updated = 4 AND table_name != 'dispatch' ORDER BY changed DESC");
@@ -992,14 +979,6 @@ function addNewFilesMainMenu(e) {"use strict";
     }
 }
 
-function photoUploadedMainMenu(e){"use strict";
-    Ti.API.info("Photo Uploaded main menu: " + JSON.stringify(e));
-    
-    if(Omadi.display.FormTabs !== null){
-        Omadi.display.FormTabs.photoUploaded(e);
-    }
-}
-
 function openFormWindow(e){"use strict";
     Omadi.display.openFormWindow(e.node_type, e.nid, e.form_part);
 }
@@ -1014,8 +993,6 @@ function openFormWindow(e){"use strict";
 	
 	var RouteListener = require('objects/RouteListener');
 	RouteListener.askToStartRoute();
-    
-    var db, result, formWindow, time_format, askAboutInspection, dialog, i, showingAlert, nowTimestamp;
     
     // Initialize the global scope variable to map deleted nids to saved positive nids
     Ti.App.deletedNegatives = {};
@@ -1041,7 +1018,7 @@ function openFormWindow(e){"use strict";
     displayWatermark();
     
     // Don't show an alert immediately after the user logs in
-    nowTimestamp = Omadi.utils.getUTCTimestamp();
+    var nowTimestamp = Omadi.utils.getUTCTimestamp();
     Ti.App.Properties.setString("last_alert_popup", nowTimestamp);
 
     networkStatusView.add(networkStatusLabel);
@@ -1070,7 +1047,7 @@ function openFormWindow(e){"use strict";
     curWin.add(headerListView);
 
     if (lastSyncTimestamp == 0) {
-        db = Omadi.utils.openMainDatabase();
+        var db = Omadi.utils.openMainDatabase();
         db.execute("INSERT INTO updated (timestamp, updating) VALUES (0, 0)");
         db.close();
     }
@@ -1134,11 +1111,10 @@ function openFormWindow(e){"use strict";
     Ti.Network.addEventListener('change', networkChangedMainMenu);
 
     listView.addEventListener('click', function(e) {
-        var nextWindow, bundle;
         try{
             Omadi.data.setUpdating(true);
             
-            bundle = Omadi.data.getBundle(e.row.name_table);
+            var bundle = Omadi.data.getBundle(e.row.name_table);
             
             if (e.source.is_plus || !bundle.can_view) {
                 // A click anywhere when only create permissions are available will go to the new form
@@ -1157,7 +1133,7 @@ function openFormWindow(e){"use strict";
     
     refresh_image.addEventListener('click', userInitiatedUpdateCheck);
     
-    offImage.addEventListener('click', function(e) {
+    offImage.addEventListener('click', function() {
         Omadi.display.logoutButtonPressed();
     });
 

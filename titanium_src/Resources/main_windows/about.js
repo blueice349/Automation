@@ -19,10 +19,6 @@ Display.setCurrentWindow(Ti.UI.currentWindow, 'about');
 	lastSyncTimestamp, 
 	lastSyncText, 
 	syncLabel,
-	buttonView,
-	updateButton,
-	reinitializeBtn,
-	dialog,
 	scrollView,
 	termsOfServiceLabel,
 	portalLabel;

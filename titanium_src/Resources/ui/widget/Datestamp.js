@@ -55,7 +55,6 @@ DatestampWidget.prototype.isEndDate = function(){'use strict';
 };
 
 DatestampWidget.prototype.getFieldView = function(){"use strict";
-    var i, element, addButton;
     var self = this;
     
     this.fieldView = Ti.UI.createView({
@@ -67,7 +66,7 @@ DatestampWidget.prototype.getFieldView = function(){"use strict";
     this.fieldView.add(this.formObj.getRegularLabelView(this.instance));
     
     // Add the actual fields
-    for(i = 0; i < this.numVisibleFields; i ++){
+    for(var i = 0; i < this.numVisibleFields; i ++){
         this.elements[i] = this.getNewElement(i);
         this.fieldView.add(this.elements[i]);
         this.fieldView.add(this.formObj.getSpacerView());
@@ -75,7 +74,7 @@ DatestampWidget.prototype.getFieldView = function(){"use strict";
     
     if(this.instance.settings.cardinality == -1){
         
-        addButton = Ti.UI.createButton({
+        var addButton = Ti.UI.createButton({
             title: ' Add another item ',
             right: 15,
             style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
@@ -91,7 +90,7 @@ DatestampWidget.prototype.getFieldView = function(){"use strict";
             fieldName: this.instance.field_name
         });
         
-        addButton.addEventListener('click', function(e){
+        addButton.addEventListener('click', function(){
             try{
                 self.numVisibleFields ++;
                 self.formObj.unfocusField();
@@ -140,7 +139,7 @@ DatestampWidget.prototype.redraw = function(){"use strict";
 };
 
 DatestampWidget.prototype.getNewElement = function(index){"use strict";
-    var dbValue, textValue, element, i, showTime, jsDate, dateText, timeText, timeView, dateView;
+    var dbValue, textValue, element, showTime, jsDate, dateText, timeText, timeView, dateView;
 	var self = this;
     
     dbValue = this.dbValues[index] || null;
@@ -249,8 +248,8 @@ DatestampWidget.prototype.getNewElement = function(index){"use strict";
 DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime, origDBValue) {"use strict";
 
     var titleLabel, minDate, opacView, maxDate, 
-        okButton, clearButton, buttonView, topButtonsView, 
-        widgetYear, doneButton, cancelButton;
+        okButton, clearButton, topButtonsView, 
+        widgetYear, cancelButton;
     var self = this;
     
     Ti.API.debug("in display picker");
@@ -460,7 +459,7 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
         topButtonsView.add(cancelButton);
     
         topButtonsView.add(clearButton);
-        cancelButton.addEventListener('click', function(e) {
+        cancelButton.addEventListener('click', function() {
             try{
                 dateWindow.close();
             }
@@ -503,7 +502,7 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
             
             // This sounds really stupid - and it is! If this onchange listener isn't in place, 
             // then the date won't actually be recorded
-            date_picker.addEventListener('change', function(e){
+            date_picker.addEventListener('change', function(){
               // Empty, but necessary
               // do not remove this change listener
             });
@@ -533,13 +532,13 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
     
             // This sounds really stupid - and it is! If this onchange listener isn't in place, 
             // then the date won't actually be recorded
-            time_picker.addEventListener('change', function(e){ 
+            time_picker.addEventListener('change', function(){ 
                // Empty, but necessary
             });
         }
         
         okButton.addEventListener('click', function(e) {
-            var year, month, date, hour, minute, second, newDate, i, callback, pickerValue, datePickerValue, dbValue, textValue, now, widget;
+            var newDate, i, callback, pickerValue, dbValue, textValue, now, widget;
             
             try{
                 newDate = null;
@@ -711,7 +710,7 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
             }
         });
     
-        cancelButton.addEventListener('click', function(e) {
+        cancelButton.addEventListener('click', function() {
     
             try{
                 dateWindow.close();
@@ -739,7 +738,7 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
         wrapperView.add(innerWrapperView);
         dateWindow.add(wrapperView);
         
-        dateWindow.addEventListener('android:back', function(e){
+        dateWindow.addEventListener('android:back', function(){
             try{
                 dateWindow.close();
                 
@@ -768,7 +767,7 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
 };
 
 DatestampWidget.prototype.cleanUp = function(){"use strict";
-    var i, j;
+    var j;
     Ti.API.debug("in datestamp widget cleanup");
     
     try{

@@ -29,9 +29,6 @@ function LicensePlateWidget(formObj, instance, fieldViewWrapper){"use strict";
 }
 
 LicensePlateWidget.prototype.getFieldView = function(){"use strict";
-    
-    var i, element, addButton;
-    
     this.fieldView = Ti.UI.createView({
        width: '100%',
        layout: 'vertical',
@@ -41,7 +38,7 @@ LicensePlateWidget.prototype.getFieldView = function(){"use strict";
     this.fieldView.add(this.formObj.getRegularLabelView(this.instance));
     
     // Add the actual fields
-    this.elementWrappers[0] = this.getNewElementWrapper(0);
+    this.elementWrappers[0] = this.getNewElementWrapper();
     this.fieldView.add(this.elementWrappers[0]);
     this.fieldView.add(this.formObj.getSpacerView());
     
@@ -77,9 +74,9 @@ LicensePlateWidget.prototype.redraw = function(){"use strict";
     this.fieldViewWrapper.remove(origFieldView);
 };
 
-LicensePlateWidget.prototype.getNewElementWrapper = function(index){"use strict";
-    var settings, widgetView, wrapper, dbValue, textValue, part, nameParts, real_field_name, i, 
-        options, states, duplicateWarningButtonWrapper, duplicateWarningButton;
+LicensePlateWidget.prototype.getNewElementWrapper = function(){"use strict";
+    var widgetView, wrapper, dbValue, textValue, part, nameParts, real_field_name, i, 
+        options, states, duplicateWarningButton;
 	var self = this;
 	
     nameParts = this.instance.field_name.split('___');
@@ -290,12 +287,9 @@ LicensePlateWidget.prototype.getNewElementWrapper = function(index){"use strict"
                 duplicateWarningButton.style = Ti.UI.iPhone.SystemButtonStyle.PLAIN;
             }
             
-            duplicateWarningButton.addEventListener('click', function(e){
-                var fieldName, value, origLastChange, actualLastChange, widget, formPart;
+            duplicateWarningButton.addEventListener('click', function(){
                 try{
-                    fieldName = e.source.instance.field_name;
-                    
-                    widget = self;
+                    var widget = self;
                     // Make sure the node object is populated correctly since this is not a regular save
                     widget.formObj.formToNode();
                     widget.formObj.showDuplicateWarnings(null);
@@ -343,7 +337,6 @@ LicensePlateWidget.prototype.getNewElementWrapper = function(index){"use strict"
                 postDialog.show();
     
                 postDialog.addEventListener('click', function(ev) {
-                    var stateIndex;
                     try{
                         if (ev.index >= 0 && ev.index != ev.source.cancel) {
                             ev.source.widgetView.textValue = ev.source.options[ev.index];
@@ -387,7 +380,7 @@ LicensePlateWidget.prototype.setDuplicateWarnings = function(fieldName, value, s
         Utils.setCookieHeader(http);
         http.setRequestHeader("Content-Type", "application/json");
         
-        http.onload = function(e) {
+        http.onload = function() {
             var json;
             
             try{
@@ -643,7 +636,7 @@ LicensePlateWidget.prototype.getStates = function() {"use strict";
 };
 
 LicensePlateWidget.prototype.cleanUp = function(){"use strict";
-    var i, j;
+    var j;
     Ti.API.debug("in license plate widget cleanup");
     
     try{

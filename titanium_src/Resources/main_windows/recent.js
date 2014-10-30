@@ -9,7 +9,6 @@ Ti.include('/lib/functions.js');
 var Utils = require('lib/Utils');
 
 var curWin = Ti.UI.currentWindow;
-var tabGroup;
 var tableView;
 var tableData = {};
 var currentOrderField = 'changed';
@@ -64,7 +63,7 @@ function getRecentNodeData(orderField){"use strict";
 
 
 function getTableViewData(orderField){"use strict";
-    var i, nodeData, row, titleLabel, rowImg, imageView, timeLabel, backgroundColor, textView;
+    var i, nodeData, row, titleLabel, rowImg, timeLabel, backgroundColor, textView;
     
     if(typeof tableData[orderField] === 'undefined'){
         
@@ -222,7 +221,7 @@ function createAndroidTabs(){"use strict";
            top: 0
         });
         
-        savedTab.addEventListener('click', function(e){
+        savedTab.addEventListener('click', function(){
             try{
                 if(currentOrderField != 'changed'){
                     currentOrderField = 'changed';
@@ -257,7 +256,7 @@ function createAndroidTabs(){"use strict";
            top: 0
         });
         
-        viewedTab.addEventListener('click', function(e){
+        viewedTab.addEventListener('click', function(){
             try{
                 if(currentOrderField != 'viewed'){
                     currentOrderField = 'viewed';
@@ -295,17 +294,7 @@ function savedNodeRecent(){"use strict";
     Ti.UI.currentWindow.close();
 }
 
-function searchAndroidFocusHandler(){"use strict";
-    
-    search.setSoftKeyboardOnFocus(Ti.UI.Android.SOFT_KEYBOARD_SHOW_ON_FOCUS);
-    search.removeEventListener('click', searchAndroidFocusHandler);
-    
-    search.focus();
-}
-
 (function(){"use strict";
-    var recentlySavedTab, recentlySavedWindow, recentlyViewedTab, recentlyViewedWindow;
-    
     curWin.addEventListener("android:back", function(){
        if(curWin){
           curWin.close();
@@ -384,7 +373,7 @@ function searchAndroidFocusHandler(){"use strict";
         search.blur(); 
     });
     
-    tableView.addEventListener('scroll', function(e) {
+    tableView.addEventListener('scroll', function() {
         search.blur();
     });
     

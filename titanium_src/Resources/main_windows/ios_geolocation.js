@@ -1,9 +1,8 @@
+/* jshint ignore:start */
 Ti.include('/lib/util_functions.js');
 
-/*jslint eqeq:true, plusplus: true*/
-/*global Omadi*/
-
 var Display = require('lib/Display');
+var Utils = require('lib/Utils');
 Display.setCurrentWindow(Ti.UI.currentWindow, 'ios_geolocation');
 
 Ti.App.Properties.setString("last_alert_popup", 0);
@@ -11,10 +10,6 @@ var time_interval_for_alerts = 120;
 
 // state vars used by resume/pause
 
-var location_obj = [];
-var dist_filter = 50;
-var last_db_timestamp = 0;
-var uploading = false;
 var gpsInterval;
 var uploadInterval;
 
@@ -25,7 +20,6 @@ if (Ti.App.isIOS) {
 }
 
 function updateCurrentLocationiOS(e) {"use strict";
-    /*global notifyIOS*/
     var timestamp, longitude, latitude, accuracy, speed, altitude, timePassed, db;
 
     longitude = e.location.longitude;
@@ -40,7 +34,7 @@ function updateCurrentLocationiOS(e) {"use strict";
         if (accuracy > 200) {
             timePassed = timestamp - Ti.App.Properties.getString("last_alert_popup");
             if (timePassed > time_interval_for_alerts) {
-                notifyIOS('Your GPS is getting inaccurate data. Please make sure the sky is visible. Current GPS accuracy is ' + accuracy + ' meters.', true);
+                Utils.notifyIOS('Your GPS is getting inaccurate data. Please make sure the sky is visible. Current GPS accuracy is ' + accuracy + ' meters.', true);
             }
             else {
                 Ti.API.info('NOT SHOWN - Omadi GPS Tracking is not working, please make sure the sky is visible. Current GPS accuracy is ' + accuracy + ' meters');
@@ -67,7 +61,6 @@ function getGPSCoordinateiOS() {"use strict";
 }
 
 function iOSStartGPS() {"use strict";
-
     if (Ti.App.isIOS) {
         movement.startMovementUpdates({
             location : true,
@@ -76,7 +69,7 @@ function iOSStartGPS() {"use strict";
 
         gpsInterval = setInterval(getGPSCoordinateiOS, 25000);
 
-        Ti.App.addEventListener('stop_gps', function(e) {
+        Ti.App.addEventListener('stop_gps', function() {
             Ti.API.info("STOPPING IOS GPS INTERVALS");
             clearInterval(gpsInterval);
             clearInterval(uploadInterval);
@@ -84,4 +77,4 @@ function iOSStartGPS() {"use strict";
         });
     }
 }
-
+/* jshint ignore:end */

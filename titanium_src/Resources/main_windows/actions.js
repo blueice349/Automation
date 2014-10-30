@@ -83,7 +83,7 @@ function addStartRouteButton() {"use strict";
 		return;
 	}
 	
-	var wrapper, button, dialog, image, textButton;
+	var wrapper, button, textButton;
    
     wrapper = Ti.UI.createView({
        height: Ti.UI.SIZE,
@@ -136,7 +136,7 @@ function addStartRouteButton() {"use strict";
         textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
     });
     
-    button.addEventListener('click', function(e) {
+    button.addEventListener('click', function() {
     	RouteListener.askToStartRoute();
     });
     
@@ -235,7 +235,7 @@ function addClockInClockOut() {"use strict";
             button.setText("Clock In");
         }
 
-        button.addEventListener('click', function(e) {
+        button.addEventListener('click', function() {
             if (Omadi.bundles.timecard.isUserClockedIn()) {
                 dialog = Ti.UI.createAlertDialog({
                     title : "Verify Clock Out",
@@ -295,7 +295,7 @@ function addClockInClockOut() {"use strict";
     }
 }
 
-function companyVehicleSelectedDraft(e){"use strict";
+function companyVehicleSelectedDraft(){"use strict";
           
      var vehicle_name = Omadi.bundles.companyVehicle.getCurrentVehicleName();
      if(vehicle_name !== null){
@@ -305,7 +305,7 @@ function companyVehicleSelectedDraft(e){"use strict";
 }
 
 function addCompanyVehicle(){"use strict";
-    var wrapper, dialog, image, textButton, currentVehicle, companyVehicleBundle;
+    var wrapper, image, textButton, currentVehicle, companyVehicleBundle;
     
     companyVehicleBundle = Omadi.data.getBundle('company_vehicle');
     
@@ -381,7 +381,7 @@ function addCompanyVehicle(){"use strict";
             vehicleButton.setText("Done With Vehicle");
         }
 
-        vehicleButton.addEventListener('click', function(e) {
+        vehicleButton.addEventListener('click', function() {
             var inVehicle = Omadi.bundles.companyVehicle.getCurrentVehicleName();
             
             if (inVehicle === null) {
@@ -420,7 +420,7 @@ function addCompanyVehicle(){"use strict";
 }
 
 function addDrafts(){"use strict";
-    var wrapper, button, dialog, image, text, textButton, currentVehicle, companyVehicleBundle;
+    var wrapper, button, image, text, textButton;
     
     
         wrapper = Ti.UI.createView({
@@ -483,7 +483,7 @@ function addDrafts(){"use strict";
             textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
         });
 
-        button.addEventListener('click', function(e) {
+        button.addEventListener('click', function() {
             Omadi.display.openDraftsWindow();
         });
         
@@ -506,7 +506,7 @@ function addDrafts(){"use strict";
 }
 
 function addLocalPhotos(){"use strict";
-    var wrapper, button, dialog, image, text, textButton, currentVehicle, companyVehicleBundle;
+    var wrapper, button, image, text, textButton;
     
     
         wrapper = Ti.UI.createView({
@@ -569,7 +569,7 @@ function addLocalPhotos(){"use strict";
             textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
         });
 
-        button.addEventListener('click', function(e) {
+        button.addEventListener('click', function() {
             Omadi.display.openLocalPhotosWindow();
         });
         
@@ -645,7 +645,7 @@ function addDeleteAll(){"use strict";
         textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
     });
     
-    button.addEventListener('click', function(e) {
+    button.addEventListener('click', function() {
         dialog = Ti.UI.createAlertDialog({
             cancel : 1,
             buttonNames : ['Delete It', 'Cancel'],
@@ -654,8 +654,6 @@ function addDeleteAll(){"use strict";
         });
     
         dialog.addEventListener('click', function(e) {
-            var db, result;
-            
             if(e.index === 0) {
                 if (!Omadi.data.isUpdating()){
                     
@@ -742,7 +740,7 @@ function addDebug(){"use strict";
         textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
     });
     
-    button.addEventListener('click', function(e) {
+    button.addEventListener('click', function() {
         dialog = Ti.UI.createAlertDialog({
             cancel : 1,
             buttonNames : ['Send Data', 'Cancel'],
@@ -750,8 +748,6 @@ function addDebug(){"use strict";
         });
     
         dialog.addEventListener('click', function(e) {
-            var db, result;
-            
             if(e.index === 0) {
                 Omadi.data.sendDebugData(true);
             }
@@ -792,7 +788,7 @@ function refreshCallbackDraft(){"use strict";
 }
 
 function addRefresh(){"use strict";
-    var wrapper, button, dialog, image, textButton, lastSyncTimestamp;
+    var wrapper, button, image, textButton, lastSyncTimestamp;
     
   
     wrapper = Ti.UI.createView({
@@ -864,7 +860,7 @@ function addRefresh(){"use strict";
         textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
     });
     
-    button.addEventListener('click', function(e) {
+    button.addEventListener('click', function() {
         Omadi.display.loading('Refreshing...');
         Omadi.service.checkUpdate();
         
@@ -895,7 +891,7 @@ function addRefresh(){"use strict";
 
 
 function addLogout(){"use strict";
-    var wrapper, button, dialog, image, textButton;
+    var wrapper, button, image, textButton;
     
     wrapper = Ti.UI.createView({
        height: Ti.UI.SIZE,
@@ -948,7 +944,7 @@ function addLogout(){"use strict";
         textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
     });
     
-    button.addEventListener('click', function(e) {
+    button.addEventListener('click', function() {
         Omadi.display.logoutButtonPressed();
     });
     
@@ -970,7 +966,7 @@ function addLogout(){"use strict";
 }
 
 function addAbout(){"use strict";
-    var wrapper, button, dialog, image, textButton;
+    var wrapper, button, image, textButton;
     
    
     wrapper = Ti.UI.createView({
@@ -1024,7 +1020,7 @@ function addAbout(){"use strict";
         textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
     });
     
-    button.addEventListener('click', function(e) {
+    button.addEventListener('click', function() {
         Omadi.display.openAboutWindow();
     });
     
@@ -1047,7 +1043,7 @@ function addAbout(){"use strict";
 }
 
 function addSettings(){"use strict";
-    var wrapper, button, dialog, image, textButton;
+    var wrapper, button, image, textButton;
    
     wrapper = Ti.UI.createView({
        height: Ti.UI.SIZE,
@@ -1100,7 +1096,7 @@ function addSettings(){"use strict";
         textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
     });
     
-    button.addEventListener('click', function(e) {
+    button.addEventListener('click', function() {
         Omadi.display.openSettingsWindow();
     });
     

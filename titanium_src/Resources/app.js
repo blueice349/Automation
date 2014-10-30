@@ -1,11 +1,9 @@
 
 (function(){"use strict";
-   var loginWindow, startMillis;
-   
    // To disable going to sleep in iOS
    Ti.App.idleTimerDisabled = true;
    
-   loginWindow = Ti.UI.createWindow({
+   var loginWindow = Ti.UI.createWindow({
       url: '/main_windows/login.js',
       navBarHidden: true,
       fullScreen: false,

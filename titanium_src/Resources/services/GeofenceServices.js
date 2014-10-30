@@ -1,7 +1,6 @@
 /*jslint node:true */
 'use strict';
 
-var PointGeofence = require('objects/PointGeofence');
 var Utils = require('lib/Utils');
 
 var GeofenceServices = function() {
@@ -9,7 +8,6 @@ var GeofenceServices = function() {
 	this.breached = {};
 	this.currentLocation = {};
 	
-	var self = this;
 	Ti.Geolocation.addEventListener('location', this._handleLocationChange.bind(this));
 	
 	this._restoreState();
@@ -44,7 +42,7 @@ GeofenceServices.prototype.getCurrentLocation = function() {
 
 /* PIVATE METHODS */
 
-GeofenceServices.prototype._handleLocationChange = function(event) {
+GeofenceServices.prototype._handleLocationChange = function() {
 	var currentLocation = JSON.parse(Ti.Geolocation.getLastGeolocation() || '{}');
 	this._updateCurrentLocation(currentLocation.latitude, currentLocation.longitude);
 	this._updateBreached(currentLocation.latitude, currentLocation.longitude);

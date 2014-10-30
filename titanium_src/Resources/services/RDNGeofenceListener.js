@@ -3,7 +3,6 @@
 
 var GeofenceServices = require('services/GeofenceServices');
 var PointGeofence = require('objects/PointGeofence');
-var Node = require('objects/Node');
 var Comment = require('objects/Comment');
 var Utils = require('lib/Utils');
 var Database = require('lib/Database');

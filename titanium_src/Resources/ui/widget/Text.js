@@ -42,8 +42,6 @@ function TextWidget(formObj, instance, fieldViewWrapper){"use strict";
 }
 
 TextWidget.prototype.getFieldView = function(){"use strict";
-    
-    var i, element, addButton;
     var self = this;
     
     this.fieldView = Ti.UI.createView({
@@ -55,7 +53,7 @@ TextWidget.prototype.getFieldView = function(){"use strict";
     this.fieldView.add(this.formObj.getRegularLabelView(this.instance));
     
     // Add the actual fields
-    for(i = 0; i < this.numVisibleFields; i ++){
+    for(var i = 0; i < this.numVisibleFields; i ++){
         this.elementWrappers[i] = this.getNewElementWrapper(i);
         this.fieldView.add(this.elementWrappers[i]);
         this.fieldView.add(this.formObj.getSpacerView());
@@ -63,7 +61,7 @@ TextWidget.prototype.getFieldView = function(){"use strict";
     
     if(this.instance.settings.cardinality == -1){
         
-        addButton = Ti.UI.createButton({
+        var addButton = Ti.UI.createButton({
             title: ' Add another item ',
             right: 15,
             style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
@@ -78,7 +76,7 @@ TextWidget.prototype.getFieldView = function(){"use strict";
             fieldName: this.instance.field_name
         });
         
-        addButton.addEventListener('click', function(e){
+        addButton.addEventListener('click', function(){
 		    try{
 		        self.numVisibleFields ++;
 		        self.formObj.unfocusField();
@@ -211,12 +209,8 @@ TextWidget.prototype.getNewElementWrapper = function(index){"use strict";
             duplicateWarningButton.style = Ti.UI.iPhone.SystemButtonStyle.PLAIN;
         }
         
-        duplicateWarningButton.addEventListener('click', function(e){
-            var fieldName, value, origLastChange, actualLastChange, formPart;
-            
+        duplicateWarningButton.addEventListener('click', function(){
             try{
-                fieldName = e.source.instance.field_name;
-                
                 // Make sure the node object is populated correctly since this is not a regular save
                 self.formObj.formToNode();
                 self.formObj.showDuplicateWarnings(null);
@@ -336,7 +330,7 @@ TextWidget.prototype.setDuplicateWarnings = function(fieldName, value, saveType)
         Utils.setCookieHeader(http);
         http.setRequestHeader("Content-Type", "application/json");
         
-        http.onload = function(e) {
+        http.onload = function() {
             var json;
             
             try{
@@ -377,17 +371,16 @@ TextWidget.prototype.setDuplicateWarnings = function(fieldName, value, saveType)
 };
 
 TextWidget.prototype.cleanUp = function(){"use strict";
-    var i, j;
     Ti.API.debug("in text widget cleanup");
     
     try{
         
-        for(j = 0; j < this.elementWrappers.length; j ++){
-            this.elementWrappers[j].remove(this.elements[j]);
-            this.elements[j] = null;
+        for(var i = 0; i < this.elementWrappers.length; i++){
+            this.elementWrappers[i].remove(this.elements[i]);
+            this.elements[i] = null;
             
-            this.fieldView.remove(this.elementWrappers[j]);
-            this.elementWrappers[j] = null;
+            this.fieldView.remove(this.elementWrappers[i]);
+            this.elementWrappers[i] = null;
         }
         
         this.fieldView = null;

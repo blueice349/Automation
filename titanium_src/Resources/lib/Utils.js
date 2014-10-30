@@ -17,16 +17,13 @@ function getUid(){
 exports.getUid = getUid;
 
 function getCookie(fullCookie){
-    var db, result, cookie = null;
-    
+    var cookie = null;
     try{
-        cookie = null;
-        
         if(typeof fullCookie === 'undefined'){
             fullCookie = false;
         }
         
-        result = Database.queryList('SELECT * FROM login WHERE rowid=1');
+        var result = Database.queryList('SELECT * FROM login WHERE rowid=1');
         if(result.isValidRow()){
             cookie = result.fieldByName("cookie", Ti.Database.FIELD_TYPE_STRING);
         }
@@ -652,10 +649,10 @@ exports.inArray = inArray;
 
 
 exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
-    var user, row_matches, instances, i, j, criteria_index, criteria_row, field_name, 
+    var row_matches, instances, i, j, criteria_index, criteria_row, field_name, 
     search_field, search_value, search_operator, search_time_value, compare_times, 
-    value_index, nodeDBValues, nodeTextValues, search_time_value2, compare_times2, 
-    node_value, weekdays, reference_types, db, result, query, possibleValues, 
+    nodeDBValues, nodeTextValues, search_time_value2, compare_times2, 
+    node_value, weekdays, reference_types, result, query, possibleValues, 
     searchValues, chosen_value, retval, and_groups, and_group, and_group_index, 
     and_group_match, useNids, jsonValues, nodeDescNames, tids, search_datestamp_value, 
     search_datestamp_operator, search_value2, search_datestamp_operator2, search_datestamp_value2;
@@ -1736,8 +1733,6 @@ exports.fileSortByModified = function (a, b){
 };
 
 exports.getTimeAgoStr = function(unixTimestamp) {
-	var now = new Date().getTime();
-	
 	return formatApproximateDuration(new Date(), new Date(parseInt(unixTimestamp + '000', 10))) + ' ago';
 };
 
@@ -1798,15 +1793,13 @@ exports.getCurrentVehicleName = function(){
 };
 
 exports.getRealname = function(uid){
-    var db, result, realname;
-    
     if (typeof uid == 'undefined') {
 		uid = getUid();
     }
     
-    realname = '';
+    var realname = '';
     
-    result = Database.query("SELECT username, realname FROM user WHERE uid = " + uid);
+    var result = Database.query("SELECT username, realname FROM user WHERE uid = " + uid);
     if(result.isValidRow()){
         realname = result.fieldByName('realname');
         if(realname.length == 0){
@@ -1886,7 +1879,7 @@ exports.createNotification = function(message) {
 };
 
 exports.isLoggedIn = function() {
-    var mainDB, result, lastLoggedTimestamp, timestamp, is_logged_in, now;
+    var result, lastLoggedTimestamp, timestamp, is_logged_in, now;
     
     result = Database.queryList('SELECT * FROM login WHERE "id_log"=1');
     is_logged_in = result.fieldByName('is_logged', Ti.Database.FIELD_TYPE_STRING);
@@ -1967,4 +1960,56 @@ exports.isJsonString = function(str) {
     }
 
     return true;
+};
+
+exports.notifyIOS = function(msg, update_time) {
+    var time, slide_it_top, win, view, label, slide_it_out;
+
+    if (update_time === true) {
+        time = exports.getUTCTimestamp();
+        Ti.App.Properties.setString("last_alert_popup", time);
+    }
+
+    slide_it_top = Titanium.UI.createAnimation();
+    slide_it_top.top = 0;
+    // to put it back to the left side of the window
+    slide_it_top.duration = 400;
+    win = Titanium.UI.createWindow({
+        height : 50,
+        width : "100%",
+        top : -50,
+        navBarHidden : true,
+        zIndex : -1000,
+        orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
+    });
+
+    view = Titanium.UI.createView({
+        backgroundColor : '#000',
+        opacity : 0.8,
+        height : "100%",
+        zIndex : -1000
+    });
+
+    label = Titanium.UI.createLabel({
+        color : '#fff',
+        font : {
+            fontSize : 13
+        },
+        textAlign : 'center',
+        width : '100%',
+        height : '100%'
+    });
+    win.add(view);
+    win.add(label);
+
+    label.text = msg;
+    win.open(slide_it_top);
+
+    setTimeout(function() {
+        slide_it_out = Titanium.UI.createAnimation();
+        slide_it_out.top = -50;
+        // to put it back to the left side of the window
+        slide_it_out.duration = 400;
+        win.close(slide_it_out);
+    }, 2000);
 };

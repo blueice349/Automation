@@ -144,9 +144,6 @@ function RulesFieldWidget(formObj, instance, fieldViewWrapper){"use strict";
 }
 
 RulesFieldWidget.prototype.getFieldView = function(){"use strict";
-    
-    var i, element, addButton;
-    
     this.fieldView = Ti.UI.createView({
        width: '100%',
        layout: 'vertical',
@@ -193,7 +190,7 @@ RulesFieldWidget.prototype.redraw = function(){"use strict";
 };
 
 RulesFieldWidget.prototype.getNewElement = function(index){"use strict";
-    var widget, nodeValue, i, key, violation_name, db, result, formTypes, row, view, hasRules;
+    var widget, nodeValue, i, key, violation_name, result, formTypes, row, view, hasRules;
     var self = this;
     Ti.API.debug("Creating rules_field field: " + this.instance.label);
     
@@ -588,12 +585,10 @@ RulesFieldWidget.prototype.showDetail = function(e) {"use strict";
 };
 
 RulesFieldWidget.prototype.cleanUp = function(){"use strict";
-    var i, j;
-    
     try{
-        for(j = 0; j < this.elements.length; j ++){
-            this.fieldView.remove(this.elements[j]);
-            this.elements[j] = null;
+        for(var i = 0; i < this.elements.length; i++){
+            this.fieldView.remove(this.elements[i]);
+            this.elements[i] = null;
         }
         
         this.fieldView = null;

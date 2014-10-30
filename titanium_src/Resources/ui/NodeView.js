@@ -8,16 +8,14 @@ var ImageWidget = require('ui/widget/Image');
 var _instances = {};
 var ActiveObj = null;
 
-var ROLE_ID_ADMIN = 3;
-var ROLE_ID_MANAGER = 4;
-var ROLE_ID_SALES = 5;
-var ROLE_ID_FIELD = 6;
-var ROLE_ID_CLIENT = 7;
-var ROLE_ID_OMADI_AGENT = 8;
-
-function displayLargeImage(e){"use strict";
-    Display.displayLargeImage(e.source, e.source.nid, e.source.fid);
-}
+var RoleId = {
+	ADMIN: 3,
+	MANAGER: 4,
+	SALES: 5,
+	FIELD: 6,
+	CLIENT: 7,
+	OMADI_AGENT: 8
+};
 
 function openTelephone(e){"use strict";
     Ti.Platform.openURL('tel:' + e.source.number);                       
@@ -46,11 +44,6 @@ function getDrivingDirectionsView(e){"use strict";
     var address = e.source.text.replace("\n", ' ');
     Display.getDrivingDirectionsTo(address);                                   
 }
-
-function displayFullImage(e){"use strict";
-    Display.displayFullImage(e.source);
-}
-
 
 function NodeView(type, nid){"use strict";
     
@@ -111,8 +104,8 @@ NodeView.prototype.getActionOptions = function() {"use strict";
 	return options;
 };
 
-NodeView.prototype.actionsEventHandler = function(e) {"use strict";
-	var db, result, bundle, btn_tt, btn_id, form_part, postDialog, to_type, to_bundle, nodeViewTabsObj;
+NodeView.prototype.actionsEventHandler = function() {"use strict";
+	var bundle, btn_tt, btn_id, form_part, postDialog, to_type, to_bundle, nodeViewTabsObj;
         
     try{
         nodeViewTabsObj = ActiveObj.nodeViewTabsObj;
@@ -213,7 +206,7 @@ NodeView.prototype.actionsEventHandler = function(e) {"use strict";
 };
 
 NodeView.prototype.addIOSToolbar = function(allowActions){"use strict";
-    var back, space, label, edit, arr, toolbar, canEdit;
+    var back, space, label, edit, arr, toolbar;
     
     back = Ti.UI.createButton({
         title : 'Back',
@@ -264,7 +257,7 @@ NodeView.prototype.addIOSToolbar = function(allowActions){"use strict";
 };
 
 NodeView.prototype.init = function(){"use strict";
-    var db, result, reg_settings, region_name, field_desc, unsorted_res, 
+    var result, reg_settings, region_name, field_desc, unsorted_res, 
         savedValues, settings, i, j, roles, stringifyObj, omadi_session_details;
     
     unsorted_res = [];
@@ -329,7 +322,7 @@ NodeView.prototype.init = function(){"use strict";
             field_desc.can_view = false;
             field_desc.can_edit = false;
                 
-            if(roles.hasOwnProperty(ROLE_ID_ADMIN) || roles.hasOwnProperty(ROLE_ID_OMADI_AGENT)){
+            if(roles.hasOwnProperty(RoleId.ADMIN) || roles.hasOwnProperty(RoleId.OMADI_AGENT)){
                 // Give all admin accounts permissions
                 field_desc.can_view = field_desc.can_edit = true;
             }
@@ -443,11 +436,8 @@ NodeView.prototype.addRegion = function(regionObj) {"use strict";
 };
 
 NodeView.prototype.addField = function(fieldObj) {"use strict";
-    /*global getCalculationTableView*/
-   
     var i, rowView, valueView, valueLabel, labelView, labelLabel, fieldIsHidden, tableView, fileId, 
-        contentImage, field_parts, part, contentWidth, dotIndex, extension, imagePath, degrees, transform,
-        animation, rotateDegrees, widget;
+        contentImage, field_parts, contentWidth, imagePath, degrees, widget;
     
     fieldObj.can_edit = false;
     if ( typeof this.node[fieldObj.field_name] !== 'undefined') {
@@ -839,7 +829,7 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
 };
 
 NodeView.prototype.getWindow = function(allowActions){"use strict";
-    var regionName, i, db, result, usernames, metaDataFields;
+    var regionName, i, result, usernames, metaDataFields;
     
     if (typeof allowActions == 'undefined') {
         allowActions = true;

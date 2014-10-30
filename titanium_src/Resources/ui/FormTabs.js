@@ -37,10 +37,6 @@ function processNewFilesForObjectInsertion(files) {"use strict";
 }
 
 function FormTabs(type, nid, form_part){"use strict";
-    var tempFormPart, origNid;
-    
-    //create module instance
-    
     this.type = type;
     this.nid = nid;
     this.form_part = form_part;
@@ -71,8 +67,8 @@ function FormTabs(type, nid, form_part){"use strict";
     this.lastSaveTime = 0;
 }
 
-FormTabs.prototype.showActionsOptions = function(e){"use strict";
-    var bundle, btn_tt, btn_id, postDialog, windowFormPart;
+FormTabs.prototype.showActionsOptions = function(){"use strict";
+    var bundle, btn_tt, btn_id, postDialog;
     
     bundle = Omadi.data.getBundle(Dispatch.workObj.type);
     btn_tt = [];
@@ -275,7 +271,7 @@ FormTabs.prototype.getIdsOfMissingFiles = function(node) {"use strict";
 	return missingFiles;
 };
 
-function incrementCommentTab(e){"use strict";
+function incrementCommentTab(){"use strict";
     var count, title;
     try{
         count = Dispatch.commentsTab.commentCount + 1;
@@ -352,8 +348,8 @@ FormTabs.prototype.loadCustomCopyNode = function(originalNode, from_type, to_typ
 };
 
 FormTabs.prototype.getWindow = function(initNewDispatch){"use strict";
-    var dispatchWin, workWin, allowRecover, openDispatch, workBundle, db, result, 
-        tempDispatchNid, iconFile, tempFormPart, origNid, copyToBundle, commentsCount, usingDispatch, title;
+    var allowRecover, openDispatch, workBundle, db, result, 
+        tempDispatchNid, tempFormPart, copyToBundle, commentsCount, usingDispatch, title;
     
     usingDispatch = false;
     openDispatch = false;
@@ -726,9 +722,8 @@ FormTabs.prototype.setupMenu = function(){"use strict";
             this.tabGroup.addEventListener('open', function(){
             
                 Dispatch.tabGroup.activity.onCreateOptionsMenu = function(e) {
-                    var db, result, menu_zero, 
-                        menu_first, menu_second, menu_third, menu_save_new, 
-                        iconFile, windowFormPart, bundle;
+                    var menu_zero, menu_first, menu_second, menu_save_new, 
+                        windowFormPart, bundle;
                     
                     Ti.API.debug("Creating options menu");
                     
@@ -756,7 +751,7 @@ FormTabs.prototype.setupMenu = function(){"use strict";
                                             showAsAction: Ti.Android.SHOW_AS_ACTION_NEVER
                                         });
                                         
-                                        menu_zero.addEventListener("click", function(ev) {
+                                        menu_zero.addEventListener("click", function() {
                                             Dispatch.doDispatchSave('next_part');      
                                         });
                                     }
@@ -770,7 +765,7 @@ FormTabs.prototype.setupMenu = function(){"use strict";
                                 showAsAction: (Ti.Android.SHOW_AS_ACTION_ALWAYS | Ti.Android.SHOW_AS_ACTION_WITH_TEXT)
                             });
                             
-                            menu_first.addEventListener("click", function(e) {
+                            menu_first.addEventListener("click", function() {
                                 Dispatch.doDispatchSave('normal');   
                             });
                             
@@ -783,7 +778,7 @@ FormTabs.prototype.setupMenu = function(){"use strict";
                                     showAsAction: Ti.Android.SHOW_AS_ACTION_NEVER
                                 });
                                 
-                                menu_save_new.addEventListener("click", function(e) {
+                                menu_save_new.addEventListener("click", function() {
                                     Ti.API.debug("SAVING + NEW");
                                     Dispatch.doDispatchSave('new');
                                 });
@@ -796,7 +791,7 @@ FormTabs.prototype.setupMenu = function(){"use strict";
                                     showAsAction: Ti.Android.SHOW_AS_ACTION_NEVER
                                 });
                                 
-                                menu_second.addEventListener("click", function(e) {
+                                menu_second.addEventListener("click", function() {
                                     Dispatch.doDispatchSave('draft');
                                 });
                             }    
@@ -814,7 +809,7 @@ FormTabs.prototype.setupMenu = function(){"use strict";
     }
 };
 
-FormTabs.prototype.close = function(callback){"use strict";
+FormTabs.prototype.close = function(){"use strict";
     var self = this;
 
     var dialog = Ti.UI.createAlertDialog({
@@ -872,8 +867,6 @@ FormTabs.prototype.handleUnsavedAttachments = function(callback){"use strict";
     var db;
     
     try {
-        var attachmentNids = [0, parseInt(this.workObj.continuous_nid, 10) || 0];
-        
         if (Omadi.utils.getPhotoWidget() == 'choose') {
             // This is not a draft, and we don't care about the taken photos
             // Nothing to delete with the choose widget
@@ -1128,8 +1121,6 @@ FormTabs.prototype.updateDispatchStatus = function(){"use strict";
 };
 
 FormTabs.prototype.savedDispatchNode = function(e){"use strict";
-    var workNid, dispatchNid, sendUpdates, db, singleSaveNid, isFinalSave, setFlag;
-
     if (e.saveType != 'continuous' && e.saveType != 'draft') {
         Dispatch.setSendingData = true;
         // Don't allow a background job to send data before everything is ready
@@ -1183,7 +1174,7 @@ FormTabs.prototype.savedDispatchNode = function(e){"use strict";
 };
 
 FormTabs.prototype.towTypeChanged = function(e) {"use strict";
-    var newNodeType, newBundle, windowTop, workNode;
+    var newNodeType, newBundle;
     
     try{
         newNodeType = e.dbValue;
@@ -1301,7 +1292,7 @@ exports.addNewFiles = function(e) {"use strict";
 
 
 exports.photoUploaded = function(e){"use strict";
-    var i, nid, delta, fid, field_name, dbValues;
+    var nid, delta, fid, field_name;
     Ti.API.info("In photo Uploaded: " + JSON.stringify(e));
     
     // Currently, only supporting images in the work node, so nothing should be done in the dispatch form until it's supported

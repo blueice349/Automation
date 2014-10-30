@@ -93,7 +93,7 @@ exports.printReceipt = function(nid) {
                                 if(commands.length > 0){
                                     
                                     StarMicronics.print({
-                                        success: function(e){},
+                                        success: function(){},
                                         error: function(e){
                                             alert("Error Printing: " + e.error);
                                         },
@@ -127,7 +127,7 @@ exports.printReceipt = function(nid) {
             if(commands.length > 0){
                 
                 StarMicronics.print({
-                    success: function(e){},
+                    success: function(){},
                     error: function(e){
                         alert("Error Printing: " + e.error + ".");
                     },
@@ -148,7 +148,7 @@ exports.printReceipt = function(nid) {
 
 exports.getPrintCommands = function() {
     var node, bundle, i, item, buffer, items, instances, fieldNames, 
-        fieldName, isImage, imageData, nativePath, imageFile, imagePath, isSignature;
+        fieldName, isImage, imageData, imageFile, imagePath, isSignature;
     
     node = Node.load(exports.printNid);
     bundle = Node.getBundle(node.type);
@@ -489,8 +489,8 @@ exports.getPrintCommand = function(node, item) {
 };
 
 exports.getValue = function(fieldOption, node, itemType) {
-    var fieldNames, fieldName, stringValue, referenceField, i,
-        referenceNode, instances, instance, parts, partFieldName;
+    var fieldNames, fieldName, stringValue, referenceField,
+        referenceNode, instances, instance;
     
     fieldNames = fieldOption.split('|');
     fieldName = fieldNames[1];
@@ -529,7 +529,7 @@ exports.getValue = function(fieldOption, node, itemType) {
 };
 
 exports.getTextValue = function(node, instance, itemType) {
-    var dbValue, textValue, value, fieldName, i;
+    var value, fieldName;
     
     value = "";
     fieldName = instance.field_name;
@@ -570,7 +570,7 @@ exports.getTextValue = function(node, instance, itemType) {
 };
 
 exports.getExtraPriceTextValue = function(node, instance, itemType) {
-    var value, fieldName, i, json, labelValue, maxLenDesc, numSpaces, maxLenQty, useQuantity, qtyLabel;
+    var value, fieldName, i, json, labelValue, maxLenDesc, maxLenQty, useQuantity, qtyLabel;
     
     value = "";
     fieldName = instance.field_name;
@@ -671,11 +671,11 @@ exports.doCharge = function(e) {
     }
 };
 
-exports.cancelCharge = function(e) {
+exports.cancelCharge = function() {
     
     Display.loading("Cancelling...");
     StarMicronics.mcrCancel({
-        success: function(e){
+        success: function(){
             Display.doneLoading();
             Ti.API.debug("Charge successfully cancelled.");
         },
@@ -691,8 +691,7 @@ exports.startMCRMode = function(portName) {
     Display.loading("Connecting...");
     
     StarMicronics.mcrMode({
-        success: function(e){
-            
+        success: function(){
             Display.doneLoading();
             
             var dialog = Ti.UI.createAlertDialog({
@@ -732,7 +731,7 @@ exports.startMCRMode = function(portName) {
 };
 
 exports.chargeCard = function(nid) {
-    var portName, commands;
+    var portName;
     
     exports.printNid = nid;
     
@@ -760,13 +759,11 @@ exports.chargeCard = function(nid) {
                    });
                    
                    dialog.addEventListener('click', function(e){
-                       var portName, commands;
                        try{
                            if(e.index >= 0 && e.index != dialog.cancel){
-                                portName = dialog.origPortNames[e.index];
+                                var portName = dialog.origPortNames[e.index];
                                 
                                 Ti.App.Properties.setString("omadi:printerPortName", portName);
-                                
                                 exports.startMCRMode(portName);
                             }
                         }

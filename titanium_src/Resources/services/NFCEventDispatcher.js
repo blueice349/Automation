@@ -78,10 +78,10 @@ NFCEventDispatcher.prototype._initListeners = function() {
 	activity.addEventListener('newintent', function(e) {
 	    adapter.onNewIntent(e.intent);
 	});
-	activity.addEventListener('resume', function(e) {
+	activity.addEventListener('resume', function() {
 		adapter.enableForegroundDispatch(filter);
 	});
-	activity.addEventListener('pause', function(e) {
+	activity.addEventListener('pause', function() {
 		adapter.disableForegroundDispatch();
 	});
 };

@@ -61,7 +61,7 @@ var getDataFromDB = function() {'use strict';
 	return data;
 };
 
-var calculateDistance = function(lat1, lng1, lat2, lng2, lat1Rad, lng1Rad, lat2Rad, lng2Rad) {'use strict';
+var calculateDistance = function(lat1, lng1, lat2, lng2, lat1Rad, lng1Rad, lat2Rad) {'use strict';
 	var distance = Infinity;
 	
 	if (lat1 + lng1 && lat2 + lng2) {
@@ -92,9 +92,8 @@ var calculateDistances = function(data, currentLocation) {'use strict';
 		var lat2 = data[i].lat;
 		var lng2 = data[i].lng;
 		var lat2Rad = lat2 * Math.PI / 180;
-		var lng2Rad = lng2 * Math.PI / 180;
 		
-		data[i].distance = calculateDistance(lat1, lng1, lat2, lng2, lat1Rad, lng1Rad, lat2Rad, lng2Rad);
+		data[i].distance = calculateDistance(lat1, lng1, lat2, lng2, lat1Rad, lng1Rad, lat2Rad);
 	}
 	
 	return data;

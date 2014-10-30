@@ -1,5 +1,4 @@
 /*jslint eqeq:true*/
-/*global dbEsc*/
 
 Omadi.push_notifications = {};
 
@@ -18,7 +17,7 @@ if(Ti.App.isAndroid){
 
 Omadi.push_notifications.setUserDeviceToken = function(token){"use strict";
     var db = Omadi.utils.openListDatabase();
-    db.execute("UPDATE history SET device_token='" + dbEsc(token) + "' WHERE id_hist=1");
+    db.execute("UPDATE history SET device_token='" + Utils.dbEsc(token) + "' WHERE id_hist=1");
     db.close();
 };
 
@@ -321,9 +320,7 @@ Omadi.push_notifications.sendACSUserId = function(acsUserID) {"use strict";
     http.setRequestHeader("Content-Type", "application/json");
     Omadi.utils.setCookieHeader(http);
 
-    http.onload = function(e) {
-
-    };
+    http.onload = function() {};
 
     http.onerror = function(e) {
         try{

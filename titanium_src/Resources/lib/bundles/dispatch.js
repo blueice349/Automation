@@ -1,5 +1,4 @@
 /*jslint eqeq:true,plusplus:true,nomen:true*/
-/*global isJsonString*/
 
 
 Omadi.bundles.dispatch = {};
@@ -13,7 +12,7 @@ Omadi.bundles.dispatch.showJobsScreen = function(){"use strict";
 };
 
 Omadi.bundles.dispatch.getDrivingDirections = function(args){"use strict";
-    var http, dialog, nid = 0, address, node, accountNid, bundle;
+    var dialog, nid = 0, address, node;
     
     if(typeof args[0] !== 'undefined'){
         nid = args[0];
@@ -48,7 +47,7 @@ Omadi.bundles.dispatch.getDrivingDirections = function(args){"use strict";
 };
 
 Omadi.bundles.dispatch.openDispatchDirections = function(node){"use strict";
-    var locationFieldName, bundle, index, fieldName, street, city, state, 
+    var locationFieldName, bundle, fieldName, street, city, state, 
         zip, address, locationFieldParts, locationFieldBundle, 
         locationFieldOmadiReference, referenceNid;
     
@@ -161,12 +160,12 @@ Omadi.bundles.dispatch.acceptJob = function(args){"use strict";
             http.setRequestHeader("Content-Type", "application/json");
             Omadi.utils.setCookieHeader(http);
             
-            http.onload = function(e) {
+            http.onload = function() {
                 var json;
                 
                 Omadi.display.doneLoading();
                 
-                if (this.responseText !== null && isJsonString(this.responseText) === true) {
+                if (this.responseText !== null && Utils.isJsonString(this.responseText) === true) {
             
                     json = JSON.parse(this.responseText);            
                     Omadi.data.processFetchedJson(json);
@@ -255,9 +254,7 @@ Omadi.bundles.dispatch.hasStatusOption = function(fieldOptions, status){"use str
 };
 
 Omadi.bundles.dispatch.getStatusOptions = function(nid){"use strict";
-    var options, db, result, termResult, vid, dispatchBundle, node, i, j,
-        excludeKeys, excludeStatuses, 
-        currentStatusKey, currentStatus, status, useKey, dispatchNode, dispatchNid,
+    var options, node, currentStatusKey, dispatchNode, dispatchNid,
         dispatchInstances, statusInstance, fieldOptions, maxStatusToShow, 
         currentFormPart, workNodeTypeInfo, formPartStatus, formPartIndex, statusCompare, statusTitle;
     
@@ -453,7 +450,7 @@ Omadi.bundles.dispatch.getStatusOptions = function(nid){"use strict";
 };
 
 Omadi.bundles.dispatch.isDispatch = function(type, nid){"use strict";
-    var db, result, formWindow, intNid, isDispatch, dispatchNid, bundle;
+    var db, result, intNid, isDispatch, dispatchNid, bundle;
     
     isDispatch = false;
    
@@ -604,8 +601,8 @@ Omadi.bundles.dispatch.updateStatus = function(nid, status, background){"use str
             http.setRequestHeader("Content-Type", "application/json");
             Omadi.utils.setCookieHeader(http);
             
-            http.onload = function(e) {
-                if (this.responseText !== null && isJsonString(this.responseText) === true) {
+            http.onload = function() {
+                if (this.responseText !== null && Utils.isJsonString(this.responseText) === true) {
             
                     json = JSON.parse(this.responseText);            
                     Omadi.data.processFetchedJson(json);
@@ -622,10 +619,10 @@ Omadi.bundles.dispatch.updateStatus = function(nid, status, background){"use str
                 }  
             };
             
-            http.onload = function(e) {
+            http.onload = function() {
                 
                 try{
-                    if (this.responseText !== null && isJsonString(this.responseText) === true) {
+                    if (this.responseText !== null && Utils.isJsonString(this.responseText) === true) {
                 
                         json = JSON.parse(this.responseText);            
                         Omadi.data.processFetchedJson(json);
@@ -754,9 +751,9 @@ Omadi.bundles.dispatch.discontinueJob = function(nid, status, background){"use s
             http.setRequestHeader("Content-Type", "application/json");
             Omadi.utils.setCookieHeader(http);
         
-            http.onload = function(e) {
+            http.onload = function() {
                 try{
-                    if (this.responseText !== null && isJsonString(this.responseText) === true) {
+                    if (this.responseText !== null && Utils.isJsonString(this.responseText) === true) {
                 
                         var json = JSON.parse(this.responseText);            
                         Omadi.data.processFetchedJson(json);
@@ -813,8 +810,7 @@ Omadi.bundles.dispatch.discontinueJob = function(nid, status, background){"use s
 };
 
 Omadi.bundles.dispatch.showUpdateStatusDialog = function(args){"use strict";
-    
-    var http, dialog, nid = 0, node, statusDialog, statusOptions, options;
+    var nid = 0, node, statusDialog, statusOptions, options;
     
     if(typeof args[0] !== 'undefined'){
         nid = args[0];
@@ -912,8 +908,7 @@ Omadi.bundles.dispatch.showUpdateStatusDialog = function(args){"use strict";
 };
 
 Omadi.bundles.dispatch.showDiscontinueJobDialog = function(args){"use strict";
-    
-    var http, dialog, nid = 0, node, discontinueDialog, discontinueOptions, options, i, discontinueInstances;
+    var nid = 0, discontinueDialog, discontinueOptions, options, i, discontinueInstances;
     
     if(typeof args[0] !== 'undefined'){
         nid = args[0];

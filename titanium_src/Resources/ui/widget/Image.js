@@ -11,8 +11,6 @@ if(Ti.App.isIOS){
     ImageFactory = require('ti.imagefactory');
 }
 
-var IMAGE_MAX_BYTES = 524258;
-
 function ImageWidget(formObj, instance, fieldViewWrapper){
     this.formObj = formObj || {};
     this.instance = instance;
@@ -62,7 +60,7 @@ ImageWidget.prototype.getFieldView = function(){
     this.fieldView.add(this.formObj.getRegularLabelView(this.instance));
     
     // Add the actual fields
-    this.elements[0] = this.getNewElement(0);
+    this.elements[0] = this.getNewElement();
     this.fieldView.add(this.elements[0]);
     this.fieldView.add(this.formObj.getSpacerView());
   
@@ -106,8 +104,8 @@ ImageWidget.prototype.getImageNid = function() {
     return imageNid;
 };
 
-ImageWidget.prototype.getNewElement = function(index){
-    var widgetView, dbValues, imageData, degreeData, i, j, localDelta, imageNid, deltaData, imageDataAdded, thumbData;
+ImageWidget.prototype.getNewElement = function(){
+    var widgetView, dbValues, imageData, degreeData, deltaData, imageDataAdded, thumbData;
 
     dbValues = [];
     imageData = [];
@@ -166,21 +164,6 @@ ImageWidget.prototype.getNewElement = function(index){
 	
     return widgetView;
 };
-
-function processAllFilesDebug(allFiles) {
-	var files = [], i, file;
-	
-	for (i = 0; i < allFiles.length; i++) {
-		file = {
-			field_name: allFiles[i].field_name,
-			nid: allFiles[i].nid,
-			fid: allFiles[i].fid,
-			id: allFiles[i].id
-		};
-		files.push(file);
-	}
-	return files;
-}
 
 ImageWidget.prototype.addImageViewsToWidgetView = function(fids, widgetView) {
 	try {
@@ -398,7 +381,7 @@ ImageWidget.prototype.updateFidsOfNewFiles = function(newFids) {
 };
 
 ImageWidget.prototype.getImageView = function(widgetView, index, nid, fid, filePath, thumbPath, degrees) {
-    var imageView, transform, rotateDegrees, image, widgetType;
+    var imageView, image, widgetType;
     var self = this;
     
     widgetType = Ti.App.Properties.getString("photoWidget", 'take');
@@ -469,8 +452,6 @@ ImageWidget.prototype.getImageView = function(widgetView, index, nid, fid, fileP
     
     if(widgetType == 'choose'){
         imageView.addEventListener('click', function(e) {
-            var dialog;
-            
             Ti.API.debug("In choose click");
             try{
                 if(e.source.fid === null && e.source.filePath === null){
@@ -645,8 +626,8 @@ ImageWidget.prototype.getPhotoChooserDir = function(){
 
 ImageWidget.prototype.openPictureChooser = function(imageView){
     var pictureWindow, table, photoDir, imageStrings, i, recentFiles, tempFile, now,
-        earliestTimestamp, rows, modified, row, image, extension, checkbox, refreshButton, 
-        topBar, titleLabel, buttons, useButton, cancelButton, parentView, allImageViews, 
+        earliestTimestamp, rows, modified, row, extension, checkbox, 
+        topBar, buttons, useButton, cancelButton, parentView, allImageViews, 
         filename, allUsedFileNames;
     var self = this;
     
@@ -717,7 +698,7 @@ ImageWidget.prototype.openPictureChooser = function(imageView){
                 });
                 
                 useButton.addEventListener('click', function(e){
-                    var i, file, localImageView, newImageView, chooseNextImageView, copiedFile, dbPath, parentView;
+                    var i, file, localImageView, newImageView, chooseNextImageView, dbPath, parentView;
                     try{
                         localImageView = e.source.imageView;
                         parentView = self.elements[0];
@@ -963,7 +944,7 @@ ImageWidget.prototype.openCamera = function(imageView) {
             }
             
             var close = function() {
-                var startIndex, newImageView, i, addedPhoto, takeNextPhotoView, lastIndex, cardinality, parentView;
+                var newImageView, i, addedPhoto, takeNextPhotoView, lastIndex, cardinality, parentView;
                  try{
                      if(typeof imageView.addedPhotos !== 'undefined'){
                         
@@ -1048,9 +1029,8 @@ ImageWidget.prototype.openCamera = function(imageView) {
                 },
                 addedPhoto : function(event){
                     
-                   var newImageView, tmpImageView, blob, maxDiff, newHeight, newWidth,
-                        uploadImageView, filePath, file, degrees, transform, animation, 
-                        rotateDegrees, takeNextPhotoView, thumbPath, startIndex, index, photoIndex;
+                   var filePath, file, degrees, 
+                        thumbPath, startIndex, index, photoIndex;
                     
                     filePath = event.filePath;
                     thumbPath = '';
@@ -1088,7 +1068,7 @@ ImageWidget.prototype.openCamera = function(imageView) {
                     self.saveAndroidFileInfo(imageView.instance.field_name, index, filePath, thumbPath, degrees, file.getSize(), 'image');
                     
                 },
-                success : function(event) {
+                success : function() {
                     Ti.API.info('Photo complete success in JS');
                     close();
                 },
@@ -1154,7 +1134,7 @@ ImageWidget.prototype.openCamera = function(imageView) {
             });
             overlayView.add(navBar);
 
-            captureButton.addEventListener('click', function(evt) {
+            captureButton.addEventListener('click', function() {
                 try{
                     Ti.Media.takePicture();
                 }
@@ -1162,7 +1142,7 @@ ImageWidget.prototype.openCamera = function(imageView) {
                     Utils.sendErrorReport("Exception in capture button click: " + ex);
                 }
             });
-            doneButton.addEventListener('click', function(evt) {
+            doneButton.addEventListener('click', function() {
                 try{
                     Ti.Media.hideCamera();
                 }
@@ -1192,8 +1172,7 @@ ImageWidget.prototype.openCamera = function(imageView) {
             Ti.Media.showCamera({
 
                 success : function(event) {
-                    var newImageView, tmpImageView, blob, maxDiff, newHeight, newWidth, 
-                        imageFile, filePath, thumbPath, thumbFile, thumbBlob, takeNextPhotoView, parentView;
+                    var newImageView, imageFile, filePath, thumbPath, thumbFile, thumbBlob, takeNextPhotoView, parentView;
                     
                     try{
                         Display.loading("Saving Photo...", self.formObj.win);
@@ -1304,7 +1283,7 @@ ImageWidget.prototype.openCamera = function(imageView) {
 };
 
 ImageWidget.prototype.saveFileInfo = function(imageView, filePath, thumbPath, degrees, filesize, type) {
-    var nid, db, encodedImage, mime, imageName, timestamp, fieldName, 
+    var nid, mime, imageName, timestamp, fieldName, 
         imageIndex, location, uid, clientAccount;
 
     try {
@@ -1367,7 +1346,7 @@ ImageWidget.prototype.saveAndroidFileInfo = function(fieldName, imageIndex, file
 };
 
 ImageWidget.prototype.cleanUp = function(){
-    var i, j;
+    var j;
     Ti.API.debug("in image widget cleanup");
     
     try{

@@ -41,8 +41,8 @@ Node.getNodeType = function(nid){
 
 Node.load = function(nid) {
     var node, result, subResult, field_name, dbValue, tempDBValues, textValue, 
-        subValue, decoded, i, real_field_name, part, field_parts, widget, instances, 
-        tempValue, origDBValue, jsonValue, allowedValues, allowedKey, filePath, newNid,
+        subValue, i, real_field_name, part, field_parts, instances, 
+        origDBValue, jsonValue, allowedValues, newNid,
         intNid;
 
     node = null;
@@ -654,9 +654,9 @@ Node.getFirstStreetAddress = function(node) {
 
 var savingNode = false;
 Node.save = function(node) {
-    var query, field_name, fieldNames, instances, result, smallestNid, insertValues, j, k, 
-        instance, value_to_insert, has_data, content_s, saveNid, continuousNid, photoNids, origNid,
-        continuousId, tempNid, trueWindowNid, priceIdx, priceTotal, priceData, 
+    var query, field_name, fieldNames, instances, result, insertValues, j, k, 
+        instance, value_to_insert, has_data, saveNid, photoNids, origNid,
+        continuousId, trueWindowNid, priceIdx, priceTotal, priceData, 
         jsonValue, nodeHasData, lastLocation;
    
     // Only one save at a time
@@ -1170,7 +1170,7 @@ Node.insertNewTerm = function(machine_name, name){
 };
 
 Node.getTitle = function(node) {
-    var title, bundle, index, field_name, titleValues = [], spacer = ' - ', realname, result;
+    var title, bundle, index, field_name, titleValues = [], spacer = ' - ';
 
     title = "- No Title -";
 
@@ -1265,7 +1265,7 @@ Node.getNewNid = function() {
 };
 
 Node.getFakeFields = function(type) {
-    var db, result, fakeFields, field_name, nameParts;
+    var result, fakeFields, field_name;
     
     if ( typeof Node.cache.fakeFields[type] !== 'undefined') {
         fakeFields = Node.cache.fakeFields[type];
@@ -1290,7 +1290,7 @@ Node.getFakeFields = function(type) {
 };
 
 Node.getRegions = function(type) {
-    var db, result, regions, region_name, region_settings;
+    var result, regions, region_name, region_settings;
     
     if ( typeof Node.cache.regions[type] !== 'undefined') {
         regions = Node.cache.regions[type];

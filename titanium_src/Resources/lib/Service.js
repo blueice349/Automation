@@ -59,7 +59,7 @@ exports.checkUpdate = function(useProgressBar, userInitiated){
 exports.sendUpdates = function() {
 	exports.sendUpdates.sendUpdateRetries = exports.sendUpdates.sendUpdateRetries || 0;
 	exports.sendUpdates.lastSendUpdates = exports.sendUpdates.lastSendUpdates || 0;
-    var isSendingData, http, secondsLeft, windowURL, timestamp;
+    var isSendingData, http, secondsLeft, timestamp;
     
     if (exports.isDuplicateActivity()) {
     	console.error('Rejecting duplicate ' + (Ti.App.isAndroid ? 'Android' : 'iOS') + ' activity in Service.sendUpdates');
@@ -145,13 +145,13 @@ exports.isSendingData = function() {
     return isSendingData;
 };
 
-exports.sendDataOnLoad = function(e) {
-    var subDB, dialog, json, nameTable, dir, file, string;
+exports.sendDataOnLoad = function() {
+    var dialog, dir, file, string;
                 
     Display.doneLoading();
     
     try{
-        if (this.responseText !== null && this.responseText !== "null" && this.responseText !== "" && this.responseText !== "" && isJsonString(this.responseText) === true) {
+        if (this.responseText !== null && this.responseText !== "null" && this.responseText !== "" && this.responseText !== "" && Utils.isJsonString(this.responseText) === true) {
             Data.processFetchedJson(JSON.parse(this.responseText));
         }
         else if(this.responseData !== null){
@@ -172,7 +172,7 @@ exports.sendDataOnLoad = function(e) {
                    
                    string = file.read();
                    
-                   if(isJsonString(string.text)){
+                   if(Utils.isJsonString(string.text)){
                         Data.processFetchedJson(JSON.parse(string.text));
                     }
                     else{
@@ -209,7 +209,7 @@ exports.sendDataOnLoad = function(e) {
     
             dialog.show();
     
-            dialog.addEventListener('click', function(e) {
+            dialog.addEventListener('click', function() {
                 try{
                     Ti.App.Properties.setString('logStatus', "The server logged you out");
                     exports.logout();
@@ -230,7 +230,7 @@ exports.sendDataOnLoad = function(e) {
 };
 
 exports.sendDataOnError = function(e) {
-    var dialog, db;
+    var dialog;
     try{
         
         Display.doneLoading();
@@ -339,7 +339,7 @@ exports.logout = function() {
 };
 
 exports.sendLogoutRequest = function() {
-    var http, numFilesLeft, doRequest, listDB, uid, username, clientAccount, token, timestamp;
+    var http, numFilesLeft, doRequest, uid, username, clientAccount, token, timestamp;
     
     Ti.App.fireEvent('loggingOut');
     
@@ -379,12 +379,12 @@ exports.sendLogoutRequest = function() {
         http.setRequestHeader("Content-Type", "application/json");
         Utils.setCookieHeader(http);
     
-        http.onload = function(e) {
+        http.onload = function() {
             Ti.App.Properties.setString('logStatus', "You have successfully logged out");
             exports.doPostLogoutOperations();
         };
     
-        http.onerror = function(e) {
+        http.onerror = function() {
     
             if (this.status == 403 || this.status == 401) {
                 Ti.App.Properties.setString('logStatus', "You are logged out");
@@ -417,9 +417,7 @@ exports.doPostLogoutOperations = function() {
 };
 
 exports.fetchUpdates = function(useProgressBar, userInitiated) {
-    var http, progress = null, lastSyncTimestamp, timeout, syncURL, progressBar;
-    /*global isJsonString*/
-    /*jslint eqeq:true*/
+    var http, lastSyncTimestamp, timeout, syncURL, progressBar;
     try {
         
         if(typeof useProgressBar === 'undefined'){
@@ -463,7 +461,7 @@ exports.fetchUpdates = function(useProgressBar, userInitiated) {
                 	progressBar.setValue(e.progress * 100);
                 };
                 
-                http.onreadystatechange = function(e){
+                http.onreadystatechange = function(){
                     if (this.readyState == this.LOADING) {
                     	progressBar.setMessage('Downloading...');
                     }
@@ -484,7 +482,7 @@ exports.fetchUpdates = function(useProgressBar, userInitiated) {
                 Utils.setCookieHeader(http);
 
                 //When connected
-                http.onload = function(e) {
+                http.onload = function() {
                     var dir, file, string;
                     progressBar.hide();
                     
@@ -493,7 +491,7 @@ exports.fetchUpdates = function(useProgressBar, userInitiated) {
                         
                         Ti.API.debug("another sync message");
                         //Parses response into strings
-                        if (typeof this.responseText !== 'undefined' && this.responseText !== null && isJsonString(this.responseText) === true) {
+                        if (typeof this.responseText !== 'undefined' && this.responseText !== null && Utils.isJsonString(this.responseText) === true) {
                             Data.processFetchedJson(JSON.parse(this.responseText));
                         }
                         else if(typeof this.responseData !== 'undefined' && this.responseData !== null){
@@ -518,7 +516,7 @@ exports.fetchUpdates = function(useProgressBar, userInitiated) {
                                    Ti.API.debug("Got here 2");
                                    string = file.read();
                                    
-                                   if(isJsonString(string.text)){
+                                   if(Utils.isJsonString(string.text)){
                                         Data.processFetchedJson(JSON.parse(string.text));
                                     }
                                     else{
@@ -581,7 +579,7 @@ exports.fetchUpdates = function(useProgressBar, userInitiated) {
                                 message : "You have been logged out. Please log back in."
                             });
     
-                            dialog.addEventListener('click', function(e) {
+                            dialog.addEventListener('click', function() {
                                 try{
                                     Database.queryList('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
                                     Database.close();
@@ -605,7 +603,7 @@ exports.fetchUpdates = function(useProgressBar, userInitiated) {
                                 message : "Your session is no longer valid. Please log back in."
                             });
     
-                            dialog.addEventListener('click', function(e) {
+                            dialog.addEventListener('click', function() {
                                 try{
                                     Database.queryList('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
                                     Database.close();
@@ -875,12 +873,10 @@ exports.photoUploadStream = function(event) {
     });
 };
 
-exports.photoUploadSuccess = function(event) {
-    var json, subDB, subResult, uploadMore = false, fieldSettings, tableName, 
-        decoded_values, decoded, content, multipleValue, dbValue, jsonArray, 
-        imageFile, filePath, resizedFilePath, deleteFile, photoWidget, 
-        photoDeleteOption, thumbPath, thumbFile, numFilesReadyToUpload, 
-        filesize, bytesUploaded, photoId, uploadFinished, listDB,
+exports.photoUploadSuccess = function() {
+    var json, subResult, fieldSettings, tableName, filePath, 
+        thumbPath, numFilesReadyToUpload, 
+        filesize, bytesUploaded, photoId, uploadFinished,
         nid, delta, field_name, numTries, isBackground, message;
     
     // Get back the memory used for the photo upload
@@ -1021,10 +1017,8 @@ exports.photoUploadSuccess = function(event) {
 };
 
 exports.photoUploadError = function(event) {
-    var subDB, dialog, message, subResult, numTries, blob, 
-        photoId, nid, uploadMore, imageView, delta, field_name, 
-        filename, imageFile, imageDir, incrementTries, 
-        saveFailedUpload, isBackground;
+    var subResult, numTries, photoId, nid, uploadMore, delta, field_name, 
+        incrementTries, saveFailedUpload, isBackground;
     
     // Get back the memory used for the photo upload
     exports.uploadFile.currentFile = null;

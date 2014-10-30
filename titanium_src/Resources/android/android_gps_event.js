@@ -2,6 +2,8 @@
 
 Ti.include("/lib/functions.js");
 
+var Utils = require('lib/Utils');
+
 Ti.API.info("STARTING android GPS Service");
 
 Ti.Geolocation.Android.manualMode = true;
@@ -57,7 +59,7 @@ function updateCurrentLocation(e) {"use strict";
 
     var timestamp, time_passed, db;
 
-    /*global notifyIOS, Omadi*/
+    /*global Omadi*/
     
     Ti.API.debug(JSON.stringify(e));
     
@@ -67,7 +69,7 @@ function updateCurrentLocation(e) {"use strict";
         if (e.coords.accuracy > 200) {
             time_passed = timestamp - Ti.App.Properties.getString("last_alert_popup");
             if (time_passed > 300) {
-                notifyIOS('Your GPS is getting inaccurate data. Please make sure the sky is visible. Current GPS accuracy is ' + Math.round(e.coords.accuracy) + ' meters.', true);
+                Utils.notifyIOS('Your GPS is getting inaccurate data. Please make sure the sky is visible. Current GPS accuracy is ' + Math.round(e.coords.accuracy) + ' meters.', true);
             }
         }
 

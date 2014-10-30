@@ -14,10 +14,6 @@ var androidMenuItemData = [];
 
 
 function NodeViewTabs(type, nid){"use strict";
-    var tempFormPart, origNid;
-    
-    //create module instance
-    
     this.type = type;
     this.nid = nid;
     
@@ -44,7 +40,7 @@ function getInstance(){"use strict";
     return _instance;
 }
 
-function incrementCommentTab(e){"use strict";
+function incrementCommentTab(){"use strict";
     var count, title;
     try{
         count = _instance.commentsTab.commentCount + 1;
@@ -71,16 +67,12 @@ function openAndroidMenuItemNodeView(e){"use strict";
 }
 
 NodeViewTabs.prototype.addActions = function(){"use strict";
-    var isEditEnabled, db1, result, actionBar;
-    
     if(this.workNode !== null){
             
         if (Ti.App.isAndroid) {
             
             this.tabGroup.activity.onCreateOptionsMenu = function(e) {
-                var db, result, bundle, menu_zero, menu_edit, 
-                    customCopy, to_type, to_bundle, order, iconFile, menu_print, 
-                    menu_charge, node;
+                var bundle, menu_edit, customCopy, to_type, to_bundle, order, menu_print, node;
                 
                 node = getInstance().workNode;
                 
@@ -169,8 +161,8 @@ NodeViewTabs.prototype.addActions = function(){"use strict";
 
 
 NodeViewTabs.prototype.getTabs = function(allowActions){"use strict";
-    var dispatchWin, workWin, allowRecover, openDispatch, workBundle, db, result, 
-        tempDispatchNid, iconFile, tempFormPart, origNid, copyToBundle, commentsCount;
+    var openDispatch, workBundle, result, 
+        tempDispatchNid, commentsCount;
     
     if (typeof allowActions == 'undefined') {
         allowActions = true;

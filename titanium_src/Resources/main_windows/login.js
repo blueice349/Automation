@@ -1,5 +1,5 @@
 /* jslint eqeq: true, plusplus: true */
-/* global Omadi, dbEsc */
+/* global Omadi */
 
 var Display = require('lib/Display');
 var Service = require('lib/Service');
@@ -9,7 +9,6 @@ Display.setCurrentWindow(Ti.UI.currentWindow, 'login');
 Ti.UI.currentWindow.setBackgroundColor('#eee');
 
 //Common used functions
-Ti.include('/lib/encoder_base_64.js');
 Ti.include('/lib/functions.js');
 Ti.include('/main_windows/ios_geolocation.js');
 
@@ -19,11 +18,11 @@ var RDNGeofenceListener = require('services/RDNGeofenceListener');
 
 Ti.API.info("Starting App.");
 
-var iOSGPS, scrollView, scrollPositionY = 0, portal, sound;
+var iOSGPS, scrollView, scrollPositionY = 0, portal;
 
 var uploadBytesLeft = 0;
 var mainMenuWindow;
-var uploadView, uploadProgress, uploadLabel;
+var uploadView, uploadLabel;
 
 var uploadAnimation = Ti.UI.createAnimation();
 
@@ -34,6 +33,17 @@ if (Ti.App.isIOS) {
     ImageFactory = require('ti.imagefactory');
 }
 
+function clearCache() {"use strict";
+    var path, cookies;
+
+    path = Ti.Filesystem.getFile(Titanium.Filesystem.applicationDirectory).getParent();
+    cookies = Ti.Filesystem.getFile(path + '/Library/Cookies', 'Cookies.binarycookies');
+    if (cookies.exists()) {
+        cookies.deleteFile();
+    }
+
+}
+
 function setProperties(domainName, jsonString) {"use strict";
     /*jslint regexp:true*/
     
@@ -41,29 +51,9 @@ function setProperties(domainName, jsonString) {"use strict";
     Ti.App.Properties.setString('Omadi_session_details', jsonString);
 }
 
-function is_first_time() {"use strict";
-    var db, result, retval;
-
-    db = Omadi.utils.openMainDatabase();
-
-    result = db.execute('SELECT timestamp FROM updated WHERE rowid=1');
-
-    if (result.fieldByName('timestamp') != 0) {
-        retval = false;
-    }
-    else {
-        retval = true;
-    }
-
-    result.close();
-    db.close();
-
-    return retval;
-}
-
 function startGPSService() {"use strict";
     var start, loginJson;
-    /*global iOSStartGPS, createNotification*/
+    /*global iOSStartGPS*/
     
     try{
         start = true;
@@ -167,7 +157,7 @@ function setClientAccount(domainName, db){"use strict";
         clientAccount = matches[1];
     }
     
-    db.execute("UPDATE history SET client_account='" + dbEsc(clientAccount) + "' WHERE id_hist=1");
+    db.execute("UPDATE history SET client_account='" + Utils.dbEsc(clientAccount) + "' WHERE id_hist=1");
 }
 
 function showUploadStatusHandler(){"use strict";
@@ -340,8 +330,6 @@ var termsView;
 
 
 function openMainScreen(loggedIn){"use strict";
-    var db, result, domainName;
-    
     try{
         
         // Don't allow the upload checks anymore on the login screen
@@ -377,14 +365,13 @@ function openMainScreen(loggedIn){"use strict";
 		var loadNFCCollectionGame = Ti.App.Properties.getBool('loadNFCCollectionGame', true);
 		if (loadNFCCollectionGame) {
 			Ti.App.Properties.setBool('loadNFCCollectionGame', false);
-			var NFCCollectionGame = require('services/NFCCollectionGame');
+			require('services/NFCCollectionGame');
 			Ti.App.Properties.setBool('loadNFCCollectionGame', true);
 		}
 
         var termsIAgreeLabel, termsOfServiceLabel, termsWrapper, loginButton, 
             block_i, db, result, passwordField, usernameField, version_label, 
-            logo, savedPortal, domainName, elements, i;
-        /*global clearCache*/
+            logo, savedPortal, domainName;
 
         Omadi.location.unset_GPS_uploading();
         Omadi.data.setNoFilesUploading();
@@ -404,7 +391,7 @@ function openMainScreen(loggedIn){"use strict";
         Ti.App.removeEventListener('upload_gps_locations', Omadi.location.uploadGPSCoordinates);
         Ti.App.addEventListener('upload_gps_locations', Omadi.location.uploadGPSCoordinates);
 
-        Ti.App.addEventListener('stop_gps', function(e) {
+        Ti.App.addEventListener('stop_gps', function() {
 
             Ti.App.Properties.setBool('stopGPS', true);
 
@@ -577,12 +564,8 @@ function openMainScreen(loggedIn){"use strict";
         });
         
         portal.addEventListener('change', function(e) {
-            var tempValue;
-            /*jslint regexp: true*/
-            /*global setConditionallyRequiredLabels*/
-
             if (e.source.lastValue != e.source.value) {
-                tempValue = "";
+                var tempValue = "";
                 if(e.source.value !== null){
                     tempValue = (e.source.value + "".toString()).replace(/[^0-9a-zA-Z_]/g, '');
                     tempValue = tempValue.toLowerCase();
@@ -647,30 +630,30 @@ function openMainScreen(loggedIn){"use strict";
             passwordField.focus();
         });
 
-        portal.addEventListener('focus', function(e) {
+        portal.addEventListener('focus', function() {
             scrollBoxesToTop();
             portal.backgroundColor = '#def';
         });
         
-        portal.addEventListener('blur', function(e) {
+        portal.addEventListener('blur', function() {
             portal.backgroundColor = '#fff';
         });
 
-        usernameField.addEventListener('focus', function(e) {
+        usernameField.addEventListener('focus', function() {
             scrollBoxesToTop();
             usernameField.backgroundColor = '#def';
         });
         
-        usernameField.addEventListener('blur', function(e) {
+        usernameField.addEventListener('blur', function() {
             usernameField.backgroundColor = '#fff';
         });
 
-        passwordField.addEventListener('focus', function(e) {
+        passwordField.addEventListener('focus', function() {
             scrollBoxesToTop();
             passwordField.backgroundColor = '#def';
         });
         
-        passwordField.addEventListener('blur', function(e) {
+        passwordField.addEventListener('blur', function() {
             passwordField.backgroundColor = '#fff';
         });
 
@@ -749,7 +732,7 @@ function openMainScreen(loggedIn){"use strict";
             }
         });
 
-        termsIAgreeLabel.addEventListener('click', function(e) {
+        termsIAgreeLabel.addEventListener('click', function() {
             if (termsView.selected === false) {
                 termsView.selected = true;
                 termsView.backgroundImage = '/images/selected_test.png';
@@ -854,12 +837,12 @@ function openMainScreen(loggedIn){"use strict";
                     xhr.setRequestHeader("Content-Type", "application/json");
     
                     // When infos are retrieved:
-                    xhr.onload = function(e) {
-                        var db_list, list_result, cookie, dialog, loginJSON;
+                    xhr.onload = function() {
+                        var db_list, list_result, cookie;
                         try{
                             db_list = Omadi.utils.openListDatabase();
         
-                            list_result = db_list.execute("SELECT domain FROM domains WHERE domain='" + dbEsc(portal.value) + "'");
+                            list_result = db_list.execute("SELECT domain FROM domains WHERE domain='" + Utils.dbEsc(portal.value) + "'");
         
                             if (list_result.rowCount > 0) {
                                 //Exists
@@ -868,12 +851,12 @@ function openMainScreen(loggedIn){"use strict";
                             else {
                                 //Create another database
                                 Ti.API.info('database does not exist, creating a new one');
-                                db_list.execute("INSERT INTO domains (domain, db_name) VALUES ('" + dbEsc(portal.value) + "','" + dbEsc(Omadi.utils.getUserDBName(portal.value, usernameField.value)) + "')");
+                                db_list.execute("INSERT INTO domains (domain, db_name) VALUES ('" + Utils.dbEsc(portal.value) + "','" + Utils.dbEsc(Omadi.utils.getUserDBName(portal.value, usernameField.value)) + "')");
                             }
         
                             list_result.close();
         
-                            db_list.execute("UPDATE history SET domain = '" + dbEsc(portal.value) + "', username = '" + dbEsc(usernameField.value) + "', db_name='" + dbEsc("db_" + portal.value + '_' + usernameField.value) + "' WHERE id_hist=1");
+                            db_list.execute("UPDATE history SET domain = '" + Utils.dbEsc(portal.value) + "', username = '" + Utils.dbEsc(usernameField.value) + "', db_name='" + Utils.dbEsc("db_" + portal.value + '_' + usernameField.value) + "' WHERE id_hist=1");
         
                             //Passes parameter to the second window:
                             domainName = 'https://' + portal.value + '.omadi.com';
@@ -888,13 +871,13 @@ function openMainScreen(loggedIn){"use strict";
         
                             list_result = db_list.execute('SELECT COUNT(*) AS count FROM login WHERE id_log=1');
                             if (list_result.fieldByName('count') > 0) {
-                                db_list.execute("UPDATE login SET picked = '" + dbEsc(domainName) + "', login_json = '" + dbEsc(Ti.Utils.base64encode(this.responseText)) + "', is_logged = 'true', cookie = '" + dbEsc(cookie) + "', logged_time = '" + Omadi.utils.getUTCTimestamp() + "' WHERE id_log=1");
+                                db_list.execute("UPDATE login SET picked = '" + Utils.dbEsc(domainName) + "', login_json = '" + Utils.dbEsc(Ti.Utils.base64encode(this.responseText)) + "', is_logged = 'true', cookie = '" + Utils.dbEsc(cookie) + "', logged_time = '" + Omadi.utils.getUTCTimestamp() + "' WHERE id_log=1");
                             } else {
-                                db_list.execute("INSERT INTO login SET picked = '" + dbEsc(domainName) + "', login_json = '" + dbEsc(Ti.Utils.base64encode(this.responseText)) + "', is_logged = 'true', cookie = '" + dbEsc(cookie) + "', logged_time = '" + Omadi.utils.getUTCTimestamp() + "', id_log=1");
+                                db_list.execute("INSERT INTO login SET picked = '" + Utils.dbEsc(domainName) + "', login_json = '" + Utils.dbEsc(Ti.Utils.base64encode(this.responseText)) + "', is_logged = 'true', cookie = '" + Utils.dbEsc(cookie) + "', logged_time = '" + Omadi.utils.getUTCTimestamp() + "', id_log=1");
                             }
                             
                             // Get rid of any background uploads as the cookie is updated
-                            db_list.execute("DELETE FROM background_files WHERE client_account='" + dbEsc(portal.value) + "' AND username = '" + dbEsc(usernameField.value) + "'");
+                            db_list.execute("DELETE FROM background_files WHERE client_account='" + Utils.dbEsc(portal.value) + "' AND username = '" + Utils.dbEsc(usernameField.value) + "'");
         
                             db_list.close();
                             passwordField.value = "";
@@ -1004,7 +987,7 @@ function openMainScreen(loggedIn){"use strict";
                 setClientAccount(domainName, db);
                 
                 // Get rid of any background uploads as the cookie is updated
-                db.execute("DELETE FROM background_files WHERE client_account='" + dbEsc(portal.value) + "' AND username = '" + dbEsc(usernameField.value) + "'");
+                db.execute("DELETE FROM background_files WHERE client_account='" + Utils.dbEsc(portal.value) + "' AND username = '" + Utils.dbEsc(usernameField.value) + "'");
                 db.close();
                 
                 openMainScreen(true);
@@ -1023,9 +1006,7 @@ function openMainScreen(loggedIn){"use strict";
             Ti.UI.currentWindow.close();
         });
         
-        Ti.App.addEventListener('photoUploaded', function(e){
-            
-            
+        Ti.App.addEventListener('photoUploaded', function(){
             if(!Omadi.utils.isLoggedIn()){
                 Ti.API.debug("Photo was just uploaded: login");
                 

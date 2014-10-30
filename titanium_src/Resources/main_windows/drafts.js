@@ -12,7 +12,6 @@ var Display = require('lib/Display');
 Display.setCurrentWindow(Ti.UI.currentWindow, 'drafts');
 
 var tableView = null;
-var win_new;
 var tableData;
 var wrapperView;
 
@@ -88,7 +87,7 @@ Drafts.deleteDraft = function(nid){"use strict";
 
 Drafts.refreshDrafts = function(){"use strict";
     var db, count, result, row, textView, rowImg, titleLabel, timeLabel, 
-        empty, search, dialog, children, i;
+        empty, search, children, i;
 
     db = Omadi.utils.openMainDatabase();
 
@@ -260,20 +259,20 @@ Drafts.refreshDrafts = function(){"use strict";
             });
         }
         
-        tableView.addEventListener('touchstart', function(e) {
+        tableView.addEventListener('touchstart', function() {
             search.blur();
         });
         
-        tableView.addEventListener('scroll', function(e) {
+        tableView.addEventListener('scroll', function() {
             search.blur();
         });
 
-        search.addEventListener('return', function(e) {
+        search.addEventListener('return', function() {
             search.blur();
             //hides the keyboard
         });
 
-        search.addEventListener('cancel', function(e) {
+        search.addEventListener('cancel', function() {
             search.blur();
             //hides the keyboard
         });
@@ -316,11 +315,7 @@ function closeDraftsWindow(){"use strict";
 }
 
 (function() {"use strict";
-
-    var db, result, i, count, section, fullName, row, 
-        empty, search, formWindow, dialog, textView, titleLabel, rowImg, timeLabel;
     //Current window's instance
- 
     wrapperView = Ti.UI.createView({
        layout: 'vertical',
        bottom: 0,

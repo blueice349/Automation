@@ -4,7 +4,7 @@
 var Utils = require('lib/Utils');
 var AlertQueue = require('lib/AlertQueue');
 var Database = require('lib/Database');
-var Node = require('lib/Node');
+var Node = require('objects/Node');
 var Print = require('lib/Print');
 var DispatchBundle = require('lib/bundles/DispatchBundle');
 
@@ -138,7 +138,6 @@ exports.getFileViewType = function(filename){
 };
 
 exports.displayFile = function(nid, fid, title) {
-    var http, webview, newWin;
     try{
         if(Ti.Network.online){
             if (nid > 0 && fid > 0) {
@@ -147,7 +146,7 @@ exports.displayFile = function(nid, fid, title) {
                 } else {
 	                exports.loading();
 	        
-	                newWin = Titanium.UI.createWindow({
+	                var newWin = Titanium.UI.createWindow({
 	                    navBarHidden: true,
 	                    nid: nid,
 	                    fid: fid,
@@ -178,8 +177,6 @@ exports.openWebViewInBrowser = function(nid) {
 };
 
 exports.loading = function(message, win) {
-    var height, width;
-    
     if (exports.indicator) {
 		return;
     }
@@ -240,12 +237,9 @@ exports.doneLoading = function() {
 };
 
 exports.setImageViewThumbnail = function(imageView, nid, file_id) {
-
-    var http, tempImg;
-
     if (nid > 0 && file_id > 0) {
         try {
-            http = Ti.Network.createHTTPClient({
+            var http = Ti.Network.createHTTPClient({
                 enableKeepAlive: false,
                 validatesSecureCertificate: false,
                 timeout: 30000
@@ -256,7 +250,7 @@ exports.setImageViewThumbnail = function(imageView, nid, file_id) {
 
             Utils.setCookieHeader(http);
 
-            http.onload = function(e) {
+            http.onload = function() {
 
                 try{
                     imageView.setImage(this.responseData);
@@ -287,8 +281,6 @@ exports.setImageViewThumbnail = function(imageView, nid, file_id) {
 
 exports.displayFullImage = function(imageView) {
     try{
-        var http, db, result;
-        
         if (imageView.bigImg !== null || (typeof imageView.filePath !== 'undefined' && imageView.filePath !== null)) {
             Ti.API.debug("Displaying big image");
             
@@ -300,7 +292,7 @@ exports.displayFullImage = function(imageView) {
             exports.loading();
             
             try {
-                http = Ti.Network.createHTTPClient({
+                var http = Ti.Network.createHTTPClient({
                     enableKeepAlive: false,
                     validatesSecureCertificate: false,
                     timeout: 30000
@@ -310,7 +302,7 @@ exports.displayFullImage = function(imageView) {
     
                 Utils.setCookieHeader(http);
     
-                http.onload = function(e) {
+                http.onload = function() {
                     if(this.responseData !== null){
                         
                         imageView.bigImg = this.responseData;
@@ -324,7 +316,7 @@ exports.displayFullImage = function(imageView) {
                     exports.doneLoading();
                 };
     
-                http.onerror = function(e) {
+                http.onerror = function() {
                     Ti.API.error("Error in download Image 2");
                     exports.doneLoading();
                     alert("There was an error retrieving the file.");
@@ -349,10 +341,7 @@ exports.displayFullImage = function(imageView) {
 };
 
 exports.showBigImage = function(imageView) {
-    var fullImage, background, transform, rotateDegrees, 
-        orientation, screenWidth, screenHeight, picWidth, picHeight, 
-        scrollView, picBlob, toolbar, isRotated, back, space, label, 
-        timestamp, webView, imageData, imageFile;
+    var toolbar, back, space, label, webView, imageData, imageFile;
     
     if(!exports.largePhotoWindow){
         
@@ -372,7 +361,7 @@ exports.showBigImage = function(imageView) {
             });
             
             if(Ti.App.isAndroid){
-                exports.largePhotoWindow.addEventListener("android:back", function(e){
+                exports.largePhotoWindow.addEventListener("android:back", function(){
                     exports.largePhotoWindow.close(); 
                     exports.largePhotoWindow = null;
                 });
@@ -511,7 +500,7 @@ exports.displayLargeImage = function(imageView, nid, file_id, showInImageView) {
     
                 Utils.setCookieHeader(http);
     
-                http.onload = function(e) {
+                http.onload = function() {
                     try{
                         Ti.API.info('Download Success');
                         
@@ -534,7 +523,7 @@ exports.displayLargeImage = function(imageView, nid, file_id, showInImageView) {
                     }
                 };
     
-                http.onerror = function(e) {
+                http.onerror = function() {
                     Ti.API.error("Error in download Image 2");
                     exports.doneLoading();
                     alert("There was an error retrieving the file.");
@@ -555,8 +544,7 @@ exports.displayLargeImage = function(imageView, nid, file_id, showInImageView) {
 };
 
 exports.setImageViewVideoThumbnail = function(imageView, nid, file_id, field_name) {
-
-    var http, tempImg, url;
+    var http, url;
 
     if (nid > 0 && file_id > 0) {
         try {
@@ -573,8 +561,7 @@ exports.setImageViewVideoThumbnail = function(imageView, nid, file_id, field_nam
 
             Utils.setCookieHeader(http);
 
-            http.onload = function(e) {
-                
+            http.onload = function() {
                 try{
                     imageView.setImage(this.responseData);
                 }
@@ -707,7 +694,7 @@ exports.showNewNotificationDialog = function() {
 };
 
 exports.openViewWindow = function(type, nid, allowActions) {
-    var isDispatch, viewWindow, NodeViewTabs;
+    var viewWindow, NodeViewTabs;
     
     if (typeof allowActions == 'undefined') {
         allowActions = true;
@@ -792,7 +779,7 @@ exports.getDrivingDirectionsTo = function(addressString) {
             Titanium.Geolocation.accuracy = Titanium.Geolocation.ACCURACY_BEST;
             Titanium.Geolocation.distanceFilter = 10;
             Titanium.Geolocation.getCurrentPosition(function(e){
-                var url, longitude, latitude, intent;
+                var url, longitude, latitude;
                 
                 if (e.error){
                     alert("There was a problem getting directions: " + e.error);

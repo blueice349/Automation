@@ -1,10 +1,8 @@
-/*global Omadi,dbEsc,isJsonString,AndroidSysUtil*/
+/*global Omadi*/
 /*jslint eqeq:true,plusplus:true*/
 
-var Comments = require('services/Comments');
 var Utils = require('lib/Utils');
 var Service = require('lib/Service');
-var GeofenceServices = require('services/GeofenceServices');
 
 Omadi.service = Omadi.service || {};
 
@@ -35,7 +33,7 @@ Omadi.service.refreshSession = function() {"use strict";
                 Omadi.utils.setCookieHeader(http);
                 http.setRequestHeader("Content-Type", "application/json");
 
-                http.onload = function(e) {
+                http.onload = function() {
                     var db_list, cookie, list_result;
 
                     db_list = Omadi.utils.openListDatabase();
@@ -46,7 +44,7 @@ Omadi.service.refreshSession = function() {"use strict";
                     list_result = db_list.execute('SELECT COUNT(*) AS count FROM login WHERE id_log=1');
                     if (list_result.fieldByName('count') > 0) {
                         db_list.execute("BEGIN IMMEDIATE TRANSACTION");
-                        db_list.execute("UPDATE login SET is_logged = 'true', cookie = '" + dbEsc(cookie) + "' WHERE id_log=1");
+                        db_list.execute("UPDATE login SET is_logged = 'true', cookie = '" + Utils.dbEsc(cookie) + "' WHERE id_log=1");
                         db_list.execute("COMMIT TRANSACTION");
                     }
                     
@@ -59,7 +57,7 @@ Omadi.service.refreshSession = function() {"use strict";
                     Ti.App.Properties.setBool("sessionRefreshed", true);
                 };
 
-                http.onerror = function(e) {
+                http.onerror = function() {
                     var dialog;
 
                     Omadi.data.setUpdating(false);
@@ -75,7 +73,7 @@ Omadi.service.refreshSession = function() {"use strict";
                                 message : "You were logged out while refreshing your session. Please log back in."
                             });
     
-                            dialog.addEventListener('click', function(e) {
+                            dialog.addEventListener('click', function() {
                                 try{
                                     var db_func = Omadi.utils.openListDatabase();
                                     db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
@@ -101,7 +99,7 @@ Omadi.service.refreshSession = function() {"use strict";
                                 message : "Your session is no longer valid, and it could not be refreshed. Please log back in."
                             });
     
-                            dialog.addEventListener('click', function(e) {
+                            dialog.addEventListener('click', function() {
                                 try{
                                     var db_func = Omadi.utils.openListDatabase();
                                     db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');

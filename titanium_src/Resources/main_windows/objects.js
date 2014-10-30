@@ -6,14 +6,12 @@ Display.setCurrentWindow(Ti.UI.currentWindow, 'objects');
 Ti.include('/lib/functions.js');
 
 
-var bundle, curWin, searchWrapper, search, instances, filterValues, filterFields, win_new, nearMeButton, filterQuery;
+var bundle, curWin, searchWrapper, search, instances, filterValues, filterFields, nearMeButton, filterQuery;
 
 var filterTableView;
 var itemsPerPage = 40;
 var numPagesLoaded = 0;
 var showFinalResults = false;
-var tableData = [];
-var loadingMoreLabel, loadingMoreView;
 var num_records = -1;
 var titleSearch = "";
 var settingTableData = false;
@@ -62,7 +60,7 @@ function backButtonPressed(e) {"use strict";
     Ti.UI.currentWindow.close();
 }
 
-function homeButtonPressed(e) {"use strict";
+function homeButtonPressed() {"use strict";
     var thisWin = Ti.UI.currentWindow, i;
 
     if ( typeof thisWin.nestedWindows !== 'undefined') {
@@ -175,8 +173,7 @@ function getDataSQL(getCount) {"use strict";
 }
 
 function setTableData() {"use strict";
-
-    var lastFilterField, field_name, sql, i, filterValue, row, titleParts, 
+    var lastFilterField, field_name, sql, i, row, titleParts, 
         label1, label2, db, db_result, title, separator, whiteSpaceTest, 
         backgroundColor, numTitleRows, fullWidth, text_values, text_value, 
         values, safeValues, subResult, tableIndex, resultCount, appendData, 
@@ -457,7 +454,7 @@ function setTableData() {"use strict";
         /*global Omadi*/
         /*jslint vars: true*/
 
-        var i, filterField, field_name, db, db_result, sql, lastFilterField;
+        var i, field_name, lastFilterField;
         
         filterTableView = Titanium.UI.createTableView({
             separatorColor : '#ccc',
@@ -616,7 +613,7 @@ function setTableData() {"use strict";
 	            }
 	        });
 	        
-	        nearMeButton.addEventListener('click', function(e) {
+	        nearMeButton.addEventListener('click', function() {
 				Omadi.display.openNearMeWindow(curWin.type, filterQuery);
 	        });
 	        
@@ -798,7 +795,7 @@ function setTableData() {"use strict";
                 });
 
                 homeItem.setIcon("/images/home_android.png");
-                homeItem.addEventListener("click", function(e) {
+                homeItem.addEventListener("click", function() {
                     homeButtonPressed();
                 });
 
@@ -809,7 +806,7 @@ function setTableData() {"use strict";
                     });
 
                     newItem.setIcon("/images/newiconds/plus_btn_grey.png");
-                    newItem.addEventListener("click", function(e) {
+                    newItem.addEventListener("click", function() {
                         
                         Ti.App.fireEvent('openFormWindow', {
                             node_type: curWin.type,
@@ -917,7 +914,7 @@ function setTableData() {"use strict";
                 listLabel.setText(labelText);
             });
 
-            search.addEventListener('return', function(e) {
+            search.addEventListener('return', function() {
                 search.blur();
                 //hides the keyboard
             });
@@ -928,16 +925,16 @@ function setTableData() {"use strict";
                 //hides the keyboard
             });
 
-            filterTableView.addEventListener('scroll', function(e) {
+            filterTableView.addEventListener('scroll', function() {
                 search.blur();
             });
 
-            filterTableView.addEventListener('touchstart', function(e) {
+            filterTableView.addEventListener('touchstart', function() {
                 search.blur();
             });
         }
         else {
-            showAllButton.addEventListener('click', function(e) {
+            showAllButton.addEventListener('click', function() {
                 Omadi.display.openListWindow(curWin.type, curWin.show_plus, filterValues, [], true);
             });
         }

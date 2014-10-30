@@ -106,8 +106,8 @@ exports.showJobsScreen = function() {
 };
 
 exports.getNewJobs = function() {
-    var newJobs, db, result, sql, nowTimestamp, dispatchBundle, newDispatchNids, i, 
-        jobDiscontinued, nid, title, viewed, type, changed;
+    var newJobs, result, sql, nowTimestamp, dispatchBundle, newDispatchNids,
+        jobDiscontinued, nid, title, viewed, type;
     
     nowTimestamp = Utils.getUTCTimestamp();
     newJobs = [];
@@ -156,8 +156,8 @@ exports.getNewJobs = function() {
 
 exports.getCurrentUserJobs = function() {
     var newJobs, result, sql, nowTimestamp, currentUserUid, 
-        i, nid, title, viewed, type, dispatchBundle, jobDiscontinued, 
-        changed, isDiscontinued, dispatchChanged;
+        nid, title, viewed, type, dispatchBundle, jobDiscontinued, 
+        changed, dispatchChanged;
     
     nowTimestamp = Utils.getUTCTimestamp();
     newJobs = [];

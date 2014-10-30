@@ -1,8 +1,6 @@
 /*jslint node:true */
 'use strict';
 
-var Utils = require('lib/Utils');
-
 var Geofence = function(nid) {
 	this.breached = false;
 	this.nid = nid;
@@ -66,7 +64,7 @@ Geofence.prototype.restoreState = function(state) {
 	this.restored = true;
 };
 
-Geofence.prototype.isInBounds = function(lat, lng) {
+Geofence.prototype.isInBounds = function() {
 	throw new Error('NotImplementedError: Geofence.isInBounds');
 };
 

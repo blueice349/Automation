@@ -75,7 +75,7 @@ Route.prototype._handleTagScanned = function(tag) {
 	} else {
 		tagIndex = this._getTagIndex(tag);
 		if (tagIndex != -1) {
-			this._previousLocationScanned(tag, tagIndex);
+			this._previousLocationScanned();
 		}
 	}
 };
@@ -89,7 +89,7 @@ Route.prototype._getTagIndex = function(tag, start) {
 	return -1;
 };
 
-Route.prototype._currentLocationScanned = function(tag) {
+Route.prototype._currentLocationScanned = function() {
 	this._setIndex(this._getIndex() + 1);
 	if (this._getIndex() == this.locationNids.length) {
 		this._completeRoute();
@@ -120,7 +120,7 @@ Route.prototype._futureLocationScanned = function(tag, tagIndex) {
     showDialog(dialog);
 };
 
-Route.prototype._previousLocationScanned = function(tag, tagIndex) {
+Route.prototype._previousLocationScanned = function() {
 	var dialog = Ti.UI.createAlertDialog({
        title: 'You have already scanned this location.',
        buttonNames: ['Ok']

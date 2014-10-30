@@ -41,9 +41,6 @@ function VehicleFieldsWidget(formObj, instance, fieldViewWrapper){"use strict";
 }
 
 VehicleFieldsWidget.prototype.getFieldView = function(){"use strict";
-    
-    var i, element, addButton;
-    
     this.fieldView = Ti.UI.createView({
        width: '100%',
        layout: 'vertical',
@@ -53,7 +50,7 @@ VehicleFieldsWidget.prototype.getFieldView = function(){"use strict";
     this.fieldView.add(this.formObj.getRegularLabelView(this.instance));
     
     // Add the actual fields
-    this.elementWrapper = this.getNewElement(0);
+    this.elementWrapper = this.getNewElement();
     this.fieldView.add(this.elementWrapper);
     this.fieldView.add(this.formObj.getSpacerView());
     
@@ -89,8 +86,8 @@ VehicleFieldsWidget.prototype.redraw = function(){"use strict";
     this.fieldViewWrapper.remove(origFieldView);
 };
 
-VehicleFieldsWidget.prototype.getNewElement = function(index){"use strict";
-    var settings, dbValue, textValue, part, nameParts, wrapper, autocomplete_table, possibleValues, db, result, makeValue, real_field_name;
+VehicleFieldsWidget.prototype.getNewElement = function(){"use strict";
+    var dbValue, textValue, part, nameParts, wrapper, possibleValues, result, makeValue, real_field_name;
     var self = this;
 
     nameParts = this.instance.field_name.split('___');
@@ -232,7 +229,7 @@ VehicleFieldsWidget.prototype.getNewElement = function(index){"use strict";
        e.source.touched = true; 
     });
 
-    this.element.addEventListener('blur', function(e) {
+    this.element.addEventListener('blur', function() {
         try{
             if (self.autocomplete_table) {
                 self.autocomplete_table.setBorderWidth(0);
@@ -249,7 +246,7 @@ VehicleFieldsWidget.prototype.getNewElement = function(index){"use strict";
     });
 
     this.element.addEventListener('change', function(e) {
-        var possibleValues, tableData, i, regEx, row, db, result, makeValues, widget, sanitized;
+        var possibleValues, tableData, i, regEx, row, result, makeValues, widget, sanitized;
         
         try{
             
@@ -382,7 +379,6 @@ VehicleFieldsWidget.prototype.getNewElement = function(index){"use strict";
 };
 
 VehicleFieldsWidget.prototype.cleanUp = function(){"use strict";
-    var i, j;
     Ti.API.debug("in vehicle widget cleanup");
     
     try{

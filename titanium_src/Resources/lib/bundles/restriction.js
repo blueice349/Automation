@@ -6,7 +6,7 @@ Omadi.bundles.restriction = {};
 var Utils = require('lib/Utils');
 
 Omadi.bundles.restriction.getCurrentRestrictions = function(){"use strict";
-    var restricted, timestamp, query, nid, i, j, nodes, node, accountNids, licensePlate, vin, 
+    var timestamp, query, licensePlate, vin, 
         db, result, restrictionBundle, restrictions, accountNid;
     
     restrictions = {};
@@ -66,7 +66,7 @@ Omadi.bundles.restriction.getCurrentRestrictions = function(){"use strict";
 };
 
 Omadi.bundles.restriction.getRestricted = function(nids){"use strict";
-    var restricted, timestamp, query, nid, i, j, nodes, node, accountNids, licensePlate, vin, 
+    var restricted, timestamp, query, i, j, nodes, node, accountNids, licensePlate, vin, 
         db, result, restrictionBundle, restrictions, accountNid;
     
     restricted = [];

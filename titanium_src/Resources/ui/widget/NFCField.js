@@ -49,7 +49,6 @@ NFCWidget.prototype.getFieldView = function() {
 };
 
 NFCWidget.prototype.cleanUp = function() {
-    var i, j;
     Ti.API.debug("in nfc widget cleanup");
     
     try{

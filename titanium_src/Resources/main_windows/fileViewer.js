@@ -94,7 +94,7 @@ function cookieIsSet(webview) {"use strict";
 }
 
 (function(){"use strict";
-    var http, viewType, dialog, contentType, url;
+    var http, viewType, dialog, url;
     
     curWin.addEventListener("android:back", function(){
         curWin.close(); 
@@ -134,7 +134,7 @@ function cookieIsSet(webview) {"use strict";
     
             Omadi.utils.setCookieHeader(http);
     
-            http.onload = function(e) {
+            http.onload = function() {
                 
                 var scrollView = Ti.UI.createScrollView({
                    top: 0,
@@ -190,7 +190,7 @@ function cookieIsSet(webview) {"use strict";
         
                 Omadi.utils.setCookieHeader(http);
         
-                http.onload = function(e) {
+                http.onload = function() {
                     var filename, fileDir, fileFile, openFileButton, nativePath, contentType, deleteFileButton;
                     
                     filename = curWin.title;
@@ -372,7 +372,7 @@ function cookieIsSet(webview) {"use strict";
                 buttonNames : ['OK']
             });
 
-            dialog.addEventListener('click', function(e) {
+            dialog.addEventListener('click', function() {
                 Ti.UI.currentWindow.close();
             });
             dialog.show();
@@ -389,7 +389,7 @@ function cookieIsSet(webview) {"use strict";
         var cookie = Omadi.utils.getCookie();
         Utils.setCookie(cookie);
         
-        webview.addEventListener("load", function(e){
+        webview.addEventListener("load", function(){
             Omadi.display.doneLoading();
             if (!cookieIsSet(webview)) {
                 alert('Login credentials not found. Please login to view this file.');
@@ -397,7 +397,7 @@ function cookieIsSet(webview) {"use strict";
             }
         });
         
-        webview.addEventListener('error', function(e){
+        webview.addEventListener('error', function(){
             alert("There was a problem loading the file.");
             Omadi.display.doneLoading();
         });

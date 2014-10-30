@@ -22,11 +22,9 @@ function getInstance(){
 }
 
 Comment.prototype.load = function(cid) {
-
-    var db, comment, result, subResult, field_name, dbValue, tempDBValues, textValue, 
-        subValue, decoded, i, real_field_name, part, field_parts, widget, instances, 
-        tempValue, origDBValue, jsonValue, allowedValues, allowedKey, filePath, newCid,
-        listDB, intCid;
+    var result, subResult, field_name, dbValue, tempDBValues, textValue, 
+        subValue, i, real_field_name, part, field_parts, instances, 
+        origDBValue, jsonValue, allowedValues, intCid;
 
     this.comment = null;
     
@@ -716,7 +714,7 @@ exports.remove = function(cid){
 };
 
 exports.getNewCommentCid = function() {
-    var db, result, smallestCid;
+    var result, smallestCid;
     //Get smallest nid
     try{
         result = Database.query("SELECT MIN(cid) FROM comment");

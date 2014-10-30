@@ -109,7 +109,7 @@ NFCTag.prototype.hasScanCounter = function() {
 		
 		try {
 			tech.connect();
-			var data = tech.transceive(buffer);
+			tech.transceive(buffer);
 			tech.close();
 			
 			this.hasScanCounter_ = true;

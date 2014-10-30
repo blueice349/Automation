@@ -4,8 +4,6 @@ Omadi.display = Omadi.display || {};
 
 var Utils = require('lib/Utils');
 var Display = require('lib/Display');
-var Print = require('lib/Print');
-var AlertQueue = require('lib/AlertQueue');
 
 Omadi.display.backgroundGradientBlue = Display.backgroundGradientBlue;
 Omadi.display.backgroundGradientGray = Display.backgroundGradientGray;
@@ -260,8 +258,8 @@ Omadi.display.openViewWindow = function(type, nid, allowActions) {"use strict";
 
 Omadi.display.FormTabs = null;
 Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
-    var db, result, formWindow, intNid, isDispatch, dispatchNid, bundle, Dispatch, formObject, node, 
-        FormModule, tempFormPart, fromBundle, to_type, newIsDispatch, isChangeTo, initNewDispatch;
+    var formWindow, isDispatch, node, 
+        tempFormPart, fromBundle, to_type, newIsDispatch, isChangeTo, initNewDispatch;
     
     try{
         Ti.API.debug("opening form window");
@@ -479,7 +477,7 @@ Omadi.display.insertBundleIcon = function(type, imageView){"use strict";
         }
     };
     
-    http.onerror = function(e){
+    http.onerror = function(){
       Ti.API.error("Error downloading icon image for " + type);  
     };
     
@@ -521,7 +519,6 @@ Omadi.display.getIconFile = function(type){"use strict";
 };
 
 Omadi.display.displayFile = function(nid, fid, title) {"use strict";
-    var http, webview, newWin;
     try{
         if(Ti.Network.online){
             if (nid > 0 && fid > 0) {
@@ -530,7 +527,7 @@ Omadi.display.displayFile = function(nid, fid, title) {"use strict";
                 } else {
 	                Omadi.display.loading();
 	        
-	                newWin = Titanium.UI.createWindow({
+	                var newWin = Titanium.UI.createWindow({
 	                    navBarHidden: true,
 	                    nid: nid,
 	                    fid: fid,
@@ -619,7 +616,7 @@ Omadi.display.openTermsOfService = function(){"use strict";
         });
         
         if(Ti.App.isAndroid){
-            win.addEventListener("android:back", function(e){
+            win.addEventListener("android:back", function(){
                 win.close();
             });
         }

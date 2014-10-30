@@ -31,16 +31,13 @@ function ListBooleanWidget(formObj, instance, fieldViewWrapper){"use strict";
 }
 
 ListBooleanWidget.prototype.getFieldView = function(){"use strict";
-    
-    var element, addButton, wrapper, labelView;
-    
     this.fieldView = Ti.UI.createView({
        width: '100%',
        layout: 'vertical',
        height: Ti.UI.SIZE
     });
     
-    wrapper = Ti.UI.createView({
+    var wrapper = Ti.UI.createView({
         width : '100%',
         layout : 'horizontal',
         height : Ti.UI.SIZE,
@@ -51,7 +48,7 @@ ListBooleanWidget.prototype.getFieldView = function(){"use strict";
     // Add the actual fields
     this.elements[0] = this.getNewElement(0);
     
-    labelView = this.formObj.getRegularLabelView(this.instance);
+    var labelView = this.formObj.getRegularLabelView(this.instance);
     labelView.setWidth('80%');
     
     labelView.setEllipsize(false);
@@ -191,7 +188,7 @@ ListBooleanWidget.prototype.getNewElement = function(index){"use strict";
 };
 
 ListBooleanWidget.prototype.cleanUp = function(){"use strict";
-    var i, j;
+    var j;
     Ti.API.debug("in checkbox widget cleanup");
     
     try{

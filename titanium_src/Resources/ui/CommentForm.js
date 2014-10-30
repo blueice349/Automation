@@ -45,8 +45,7 @@ CommentForm.prototype.cleanup = function(){"use strict";
 };
 
 CommentForm.prototype.affectsAnotherConditionalField = function(check_instance){"use strict";
-    
-    var node, search_criteria, affectedFields, field_name, i, affectsAField, instance;
+    var search_criteria, affectedFields, field_name, i, instance;
     
     affectedFields = [];
     
@@ -76,7 +75,7 @@ CommentForm.prototype.affectsAnotherConditionalField = function(check_instance){
 };
 
 CommentForm.prototype.setConditionallyRequiredLabels = function(check_instance, check_fields){"use strict";
-    var node, search_criteria, affectedFields, field_name, i, instance;
+    var affectedFields, i;
     
     if(typeof check_fields !== 'undefined'){
         affectedFields = check_fields;
@@ -96,7 +95,7 @@ CommentForm.prototype.setConditionallyRequiredLabels = function(check_instance, 
 };
 
 CommentForm.prototype.getTaxonomyOptions = function(instance, useNone) {"use strict";
-    var db, result, vid, options;
+    var result, vid, options;
     
     if(typeof useNone === 'undefined'){
         useNone = true;
@@ -139,7 +138,7 @@ CommentForm.prototype.setConditionallyRequiredLabelForInstance = function(instan
     
     var search_criteria, row_matches, row_idx, criteria_row, field_name, 
         search_operator, search_value, search_values, values, i, makeRequired,
-        and_groups, and_group_index, and_group, and_group_match, j, or_match;
+        and_groups, and_group_index, and_group, and_group_match, j;
     
     try {
     
@@ -389,8 +388,7 @@ CommentForm.prototype.addCheckConditionalFields = function(fieldNames){"use stri
 };
 
 CommentForm.prototype.getFieldView = function(instance, fieldViewWrapper){"use strict";
-    /*jslint nomen:true*/
-    var fieldView, Module, fieldObject;
+    var fieldView, Module;
     
     fieldView = null;
     Module = null;
@@ -520,9 +518,7 @@ CommentForm.prototype.initNewNode = function(){"use strict";
 };
 
 CommentForm.prototype.save = function(){"use strict";
-    var db, sql, saved, cid;
-    
-    saved = false;
+    var saved = false;
     
     this.formToNode();
     this.node.cid = this.getNewCommentCid();
@@ -535,8 +531,7 @@ CommentForm.prototype.save = function(){"use strict";
 };
 
 CommentForm.prototype.formToNode = function(){"use strict";
-   /*global fieldViews*/
-   var field_name, fieldWrapper, instance, origNode;
+   var field_name, fieldWrapper, instance;
    
    this.initNewNode();
    
@@ -752,7 +747,7 @@ CommentForm.prototype.getTextField = function(instance){"use strict";
         catch(ex){}
     });
     
-    textField.addEventListener('blur', function(e){
+    textField.addEventListener('blur', function(){
         textField.setBackgroundColor('#fff');
     });
     
@@ -810,7 +805,7 @@ CommentForm.prototype.getLabelField = function(instance){"use strict";
         labelView.setColor('#666');
     }
     
-    labelView.addEventListener('click', function(e){
+    labelView.addEventListener('click', function(){
         // Unfocus any fields when clicking a non-text field
         try{
             FormObj.unfocusField();
@@ -917,8 +912,7 @@ CommentForm.prototype.validateRequired = function(instance){"use strict";
 };
 
 CommentForm.prototype.validate = function(){"use strict";
-    
-    var field_name, instance, values, isEmpty, i;
+    var field_name, instance;
     
     this.form_errors = [];
     
@@ -987,15 +981,13 @@ CommentForm.prototype.validate = function(){"use strict";
 };
 
 CommentForm.prototype.validateEmail = function(instance){"use strict";
-    
-    var i, regExp;
     try{
         if (typeof this.node[instance.field_name] !== 'undefined' &&
             typeof this.node[instance.field_name].dbValues !== 'undefined' &&
             this.node[instance.field_name].dbValues !== null &&
             this.node[instance.field_name].dbValues.length > 0) {
             
-                for(i = 0; i < this.node[instance.field_name].dbValues.length; i ++){
+                for(var i = 0; i < this.node[instance.field_name].dbValues.length; i ++){
                     if (!Utils.isEmpty(this.node[instance.field_name].dbValues[i]) && !this.node[instance.field_name].dbValues[i].match(/^[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,4}$/i)) {
                         this.form_errors.push(instance.label + " is not a valid email address.");
                     }  
@@ -1008,15 +1000,13 @@ CommentForm.prototype.validateEmail = function(instance){"use strict";
 };
 
 CommentForm.prototype.validatePhone = function(instance){"use strict";
-    var i, regExp;
-    
     try{
         if (typeof this.node[instance.field_name] !== 'undefined' &&
             typeof this.node[instance.field_name].dbValues !== 'undefined' &&
             this.node[instance.field_name].dbValues !== null &&
             this.node[instance.field_name].dbValues.length > 0) {
             
-                for(i = 0; i < this.node[instance.field_name].dbValues.length; i ++){
+                for(var i = 0; i < this.node[instance.field_name].dbValues.length; i ++){
                     if (!Utils.isEmpty(this.node[instance.field_name].dbValues[i]) && !this.node[instance.field_name].dbValues[i].match(/\D*(\d*)\D*[2-9][0-8]\d\D*[2-9]\d{2}\D*\d{4}\D*\d*\D*/g)) {
                         this.form_errors.push(instance.label + " is not a valid North American phone number. 10 digits are required.");
                     }  

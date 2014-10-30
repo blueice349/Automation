@@ -7,7 +7,6 @@ popupWin = null;
 
 var Utils = require('lib/Utils');
 var TimecardGeofenceVerifier = require('objects/TimecardGeofenceVerifier');
-var AlertQueue = require('lib/AlertQueue');
 
 function rules_field_passed_time_check(time_rule, timestamp) {"use strict";
     var retval, timestamp_day, timestamp_midnight, days, day_rule, values, start_time, end_time, i;
@@ -229,7 +228,7 @@ function sort_by_weight(a, b) {"use strict";
 }
 
 function FormModule(type, nid, form_part, usingDispatch) {"use strict";
-    var tempNid, tempFormPart, origNid;
+    var tempFormPart, origNid;
     
     Ti.API.debug("Instantiating new form module");
     
@@ -576,7 +575,7 @@ FormModule.prototype.scrollToField = function(e) {"use strict";
 };
 
 FormModule.prototype.closeWindow = function(){"use strict";
-     var i, j, k;
+     var j, k;
      
      try{
          if(this.saveInterval !== null){
@@ -751,7 +750,7 @@ FormModule.prototype.saveNode = function(saveType) {"use strict";
                     buttonNames : ['OK'],
                     message: 'Alert management of this ' + this.node.type.toUpperCase() + ' immediately. You do not have an Internet connection right now.  Your data was saved and will be synched when you connect to the Internet.'
                 });
-                dialog.addEventListener('click', function(e) {
+                dialog.addEventListener('click', function() {
                 self.win.dispatchTabGroup.fireEvent('omadi:dispatch:savedDispatchNode', eventData);
                     Ti.App.fireEvent('savedNode', eventData);
                 });
@@ -831,9 +830,7 @@ FormModule.prototype.loadCustomCopyNode = function(originalNode, from_type, to_t
 };
 
 FormModule.prototype.formToNode = function(addDispatch){"use strict";
-    /*global fieldViews*/
-   
-   var field_name, fieldWrapper, instance, origNode;
+   var field_name, fieldWrapper, instance;
    
    if(typeof addDispatch === 'undefined'){
        addDispatch = false;
@@ -994,7 +991,7 @@ FormModule.prototype.getTextValues = function(fieldWrapper){"use strict";
 //**************************************************
 FormModule.prototype.getRegionWrappers = function(){"use strict";
     
-    var regions, region, regionName, expanded, regionFormPart, regionView, regionWrapperView, regionWrappers;
+    var region, regionName, expanded, regionFormPart, regionView, regionWrapperView, regionWrappers;
     
     regionFormPart = 0;
     regionView = null;
@@ -1089,7 +1086,7 @@ FormModule.prototype.validateTimecardGeofence = function(){"use strict";
 };
 
 FormModule.prototype.validateRestrictions = function(){"use strict";
-    var instances, query, db = null, result, timestamp, field_name, vin, license_plate, nid, restrictions, i, account;
+    var query, db = null, result, timestamp, vin, license_plate, nid, restrictions, i, account;
     
     restrictions = [];
     
@@ -1402,8 +1399,7 @@ FormModule.prototype.validateMaxValue = function(instance){"use strict";
 
 
 FormModule.prototype.validate_form_data = function(saveType){"use strict";
-    
-    var field_name, instance, values, isEmpty, i, region_name;
+    var field_name, instance, region_name;
     
     this.form_errors = [];
     
@@ -1477,15 +1473,13 @@ FormModule.prototype.validate_form_data = function(saveType){"use strict";
 };
 
 FormModule.prototype.validateEmail = function(instance){"use strict";
-    
-    var i, regExp;
     try{
         if (typeof this.node[instance.field_name] !== 'undefined' &&
             typeof this.node[instance.field_name].dbValues !== 'undefined' &&
             this.node[instance.field_name].dbValues !== null &&
             this.node[instance.field_name].dbValues.length > 0) {
             
-                for(i = 0; i < this.node[instance.field_name].dbValues.length; i ++){
+                for(var i = 0; i < this.node[instance.field_name].dbValues.length; i ++){
                     if (!Omadi.utils.isEmpty(this.node[instance.field_name].dbValues[i]) && !this.node[instance.field_name].dbValues[i].match(/^[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,4}$/i)) {
                         this.form_errors.push(instance.label + " is not a valid email address.");
                     }  
@@ -1498,15 +1492,13 @@ FormModule.prototype.validateEmail = function(instance){"use strict";
 };
 
 FormModule.prototype.validatePhone = function(instance){"use strict";
-    var i, regExp;
-    
     try{
         if (typeof this.node[instance.field_name] !== 'undefined' &&
             typeof this.node[instance.field_name].dbValues !== 'undefined' &&
             this.node[instance.field_name].dbValues !== null &&
             this.node[instance.field_name].dbValues.length > 0) {
             
-                for(i = 0; i < this.node[instance.field_name].dbValues.length; i ++){
+                for(var i = 0; i < this.node[instance.field_name].dbValues.length; i ++){
                     if (!Omadi.utils.isEmpty(this.node[instance.field_name].dbValues[i]) && !this.node[instance.field_name].dbValues[i].match(/\D*(\d*)\D*[2-9][0-8]\d\D*[2-9]\d{2}\D*\d{4}\D*\d*\D*/g)) {
                         this.form_errors.push(instance.label + " is not a valid North American phone number. 10 digits are required.");
                     }  
@@ -1680,7 +1672,7 @@ function duplicateWarningCompleteCallback(e){"use strict";
 }
 
 FormModule.prototype.showDuplicateWarnings = function(saveType){"use strict";
-    var i, fieldObject, nodeValue, showingDuplicates, alertDialog, alertMessage;
+    var i, fieldObject, nodeValue, showingDuplicates, alertDialog;
     // If duplicate warnings are being shown, this function will take care of the node save after the dialog
     // Returns a boolean: true if duplicates were shown, falst otherwise
     
@@ -2006,9 +1998,7 @@ FormModule.prototype.displayDuplicateWarnings = function(warningJSON, value, sav
                     borderRadius: 5
                 });
                 
-                saveButton.addEventListener('click', function(e){
-                    var i;
-                    
+                saveButton.addEventListener('click', function(){
                     // Allow another save to happen immediately
                     ActiveFormObj.duplicateWarningTimestamp = 0;
                     // Hide the window
@@ -2043,7 +2033,7 @@ FormModule.prototype.displayDuplicateWarnings = function(warningJSON, value, sav
                     borderRadius: 5
                 });
                 
-                cancelButton.addEventListener('click', function(e){
+                cancelButton.addEventListener('click', function(){
                     // Allow another save to happen immediately
                     ActiveFormObj.duplicateWarningTimestamp = 0;
                     
@@ -2071,7 +2061,7 @@ FormModule.prototype.displayDuplicateWarnings = function(warningJSON, value, sav
                     borderRadius: 5
                 });
                 
-                cancelButton.addEventListener('click', function(e){
+                cancelButton.addEventListener('click', function(){
                     // Allow another save to happen immediately
                     ActiveFormObj.duplicateWarningTimestamp = 0;
                     
@@ -2186,7 +2176,7 @@ FormModule.prototype.setValues = function(field_name, defaultValues){"use strict
 };
 
 FormModule.prototype.setValueWidgetProperty = function(field_name, property, value, setIndex){"use strict";
-    var i, j, k, m, children, subChildren, subSubChildren, subSubSubChildren;
+    var i, j, k, children, subChildren, subSubChildren;
     
     //TODO: currently, this does not support 4 levels deep, which is required for the signature fields
     
@@ -2300,7 +2290,7 @@ FormModule.prototype.setValueWidgetProperty = function(field_name, property, val
 
 FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValues){"use strict";
     var opacView, numItemsSelected, wrapperView, descriptionView, 
-        i, j, color_set, color_unset, cancelButton, itemLabel, itemRow, topButtonsView, okButton, data, 
+        i, j, color_set, color_unset, cancelButton, itemRow, topButtonsView, okButton, data, 
         descriptionText, selectedIndexes, screenHeight, listHeight, label, labelView, instance, nodeType;
     
     try{
@@ -2597,7 +2587,7 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
                 topButtonsView.add(okButton);
                 
                 okButton.addEventListener('click', function(e) {
-                    var i, aux_ret, valid_return, data, dbValues, textValue, textValues;
+                    var i, aux_ret, valid_return, dbValues, textValue, textValues;
                     aux_ret = [];
                     valid_return = [];
                     dbValues = [];
@@ -2701,7 +2691,7 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
                 wrapperView.add(descriptionView);
                 wrapperView.add(popupWinListView);
                 
-                popupWin.addEventListener('android:back', function(e){
+                popupWin.addEventListener('android:back', function(){
                     popupWinListView = null;
                     popupWinDescriptionLabel = null;
                     popupWinFieldObject = null;
@@ -2790,9 +2780,9 @@ FormModule.prototype.setupIOSToolbar = function(){"use strict";
 
 FormModule.prototype.getWindow = function(){"use strict";
     
-    var i, regionWrappers, field_name, widgetView, 
+    var i, regionWrappers, field_name, 
         fieldWrapper, fieldView, omadi_session_details, roles, showField, instance, 
-        regionName, widget, resetFields, resetRegions, doneButton, doneButtonWrapper, doContSave;
+        regionName, doneButton, doneButtonWrapper, doContSave;
     
     try{
         this.wrapperView = Ti.UI.createView({
@@ -3116,7 +3106,7 @@ FormModule.prototype.recalculateCalculationFields = function(){"use strict";
 };
 
 FormModule.prototype.setupViolationFields = function(field_name){"use strict";
-    var instance, valueWidget, widget, referenceWidget, datestampWidget, i;
+    var instance, widget;
     // NOTE: this will not work with time fields with multiple cardinality
     
     if(typeof this.instances[field_name] !== 'undefined'){
@@ -3149,7 +3139,7 @@ FormModule.prototype.setupViolationFields = function(field_name){"use strict";
 };
 
 FormModule.prototype.setupExtraPriceFields = function(fieldNames){"use strict";
-    var instance, valueWidget, widget, referenceWidget, datestampWidget, i, field_name, 
+    var instance, i, field_name, 
         categoryFieldName, referenceFieldName, modifierFieldName;
     // NOTE: this will not work with time fields with multiple cardinality
     
@@ -3194,9 +3184,7 @@ FormModule.prototype.setupExtraPriceFields = function(fieldNames){"use strict";
 };
 
 FormModule.prototype.changeExtraPriceData = function(args){"use strict";
-    var fieldName, fieldObj;
-    
-    fieldName = args[0];
+    var fieldName = args[0];
     
     if(typeof this.fieldObjects[fieldName] !== 'undefined'){
         this.fieldObjects[fieldName].itemChange();
@@ -3234,11 +3222,10 @@ FormModule.prototype.addChangeCallback = function(fieldName, functionName, args)
 };
 
 FormModule.prototype.changeViolationFieldOptions = function(args){"use strict";
-    var db, result, options, textOptions, i, j, violation_instance, parentNid, parentNidDBValues, reference_field_name, 
+    var db, result, options, i, j, violation_instance, parentNid, parentNidDBValues, reference_field_name, 
         rules_parent_field_name, parentNodeType, rulesData, dataRow, node_type, tids, used_tids, all_others_row,
         rules_violation_time_field_name, violationTimestampValues, violation_timestamp, violationTerms, violation_term, 
-        descriptions, violationDBValues, isViolationValid, textValues, violationTextValues, origRulesData, violation_field_name, found;
-    /*global rules_field_passed_time_check*/
+        descriptions, violationDBValues, isViolationValid, violationTextValues, origRulesData, violation_field_name, found;
     Ti.API.debug("In changeviolationfield options");
     try{
         
@@ -3463,7 +3450,7 @@ FormModule.prototype.changeViolationFieldOptions = function(args){"use strict";
     }
 };
 
-FormModule.prototype.showActionsOptions = function(e){"use strict";
+FormModule.prototype.showActionsOptions = function(){"use strict";
     var bundle, btn_tt, btn_id, postDialog, windowFormPart;
     try{
         ActiveFormObj.unfocusField();
@@ -3551,7 +3538,7 @@ FormModule.prototype.continuousSave = function(){"use strict";
 
 FormModule.prototype.getFieldView = function(instance, fieldViewWrapper){"use strict";
     /*jslint nomen:true*/
-    var fieldView, Module, fieldObject;
+    var fieldView, Module;
     
     fieldView = null;
     Module = null;
@@ -3722,7 +3709,7 @@ FormModule.prototype.getLabelField = function(instance){"use strict";
         labelView.setColor('#666');
     }
     
-    labelView.addEventListener('click', function(e){
+    labelView.addEventListener('click', function(){
         // Unfocus any fields when clicking a non-text field
         try{
             ActiveFormObj.unfocusField();
@@ -3798,13 +3785,13 @@ FormModule.prototype.getTextField = function(instance){"use strict";
     
     textField.addEventListener('focus', function(e){
         try{
-            e.source.setBackgroundColor('#def');
+            textField.setBackgroundColor('#def');
             ActiveFormObj.currentlyFocusedField = e.source;
         }
         catch(ex){}
     });
     
-    textField.addEventListener('blur', function(e){
+    textField.addEventListener('blur', function(){
         textField.setBackgroundColor('#fff');
     });
     
@@ -3812,8 +3799,7 @@ FormModule.prototype.getTextField = function(instance){"use strict";
 };
 
 FormModule.prototype.affectsAnotherConditionalField = function(check_instance){"use strict";
-    
-    var node, search_criteria, affectedFields, field_name, i, affectsAField, instance;
+    var search_criteria, field_name, i, instance;
     
     affectedFields = [];
     
@@ -3843,7 +3829,7 @@ FormModule.prototype.affectsAnotherConditionalField = function(check_instance){"
 };
 
 FormModule.prototype.setConditionallyRequiredLabels = function(check_instance, check_fields){"use strict";
-    var node, search_criteria, affectedFields, field_name, i, instance;
+    var affectedFields, i;
     
     if(typeof check_fields !== 'undefined'){
         affectedFields = check_fields;
@@ -3908,7 +3894,7 @@ FormModule.prototype.setConditionallyRequiredLabelForInstance = function(instanc
     
     var search_criteria, row_matches, row_idx, criteria_row, field_name, 
         search_operator, search_value, search_values, values, i, makeRequired,
-        and_groups, and_group_index, and_group, and_group_match, j, or_match;
+        and_groups, and_group_index, and_group, and_group_match, j;
     
     try {
     

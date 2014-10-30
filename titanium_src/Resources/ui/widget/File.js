@@ -38,9 +38,6 @@ function FileWidget(formObj, instance, fieldViewWrapper){"use strict";
 }
 
 FileWidget.prototype.getFieldView = function(){"use strict";
-    
-    var i, element, addButton;
-    
     this.fieldView = Ti.UI.createView({
        width: '100%',
        layout: 'vertical',
@@ -50,7 +47,7 @@ FileWidget.prototype.getFieldView = function(){"use strict";
     this.fieldView.add(this.formObj.getRegularLabelView(this.instance));
     
     // Add the actual fields
-    for(i = 0; i < this.numVisibleFields; i ++){
+    for(var i = 0; i < this.numVisibleFields; i ++){
         this.elements[i] = this.getNewElement(i);
         if(this.elements[i]){
             this.fieldView.add(this.elements[i]);
@@ -91,7 +88,7 @@ FileWidget.prototype.redraw = function(){"use strict";
 };
 
 FileWidget.prototype.getNewElement = function(index){"use strict";
-    var settings, widgetView, dbValue, textValue;
+    var widgetView, dbValue, textValue;
 
     dbValue = null;
     textValue = "- No file -";
@@ -145,7 +142,7 @@ FileWidget.prototype.getNewElement = function(index){"use strict";
 };
 
 FileWidget.prototype.cleanUp = function(){"use strict";
-    var i, j;
+    var j;
     Ti.API.debug("in file widget cleanup");
     
     try{

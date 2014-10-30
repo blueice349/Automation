@@ -356,7 +356,7 @@ CommentList.prototype.setNumCommentsLabel = function(){"use strict";
 };
 
 CommentList.prototype.setupIOSToolbar = function(){"use strict";
-    var back, space, label, edit, arr, toolbar, canEdit;
+    var back, space, label, toolbar;
     
     back = Ti.UI.createButton({
         title : 'Back',
@@ -398,8 +398,7 @@ CommentList.prototype.setupIOSToolbar = function(){"use strict";
 };
 
 CommentList.prototype.getListWindow = function(){"use strict";
-    
-    var numCommentsLabel, headerView, newCommentButton;
+    var headerView, newCommentButton;
     
     this.listWin = Ti.UI.createWindow({
         navBarHidden: true,
@@ -488,7 +487,7 @@ CommentList.prototype.getListWindow = function(){"use strict";
 };
 
 CommentList.prototype.setScrollView = function(){"use strict";
-    var commentView, comment, comments, i, fieldName, fieldWrapper, fieldNameLabel,
+    var commentView, comment, i, fieldName, fieldWrapper, fieldNameLabel,
         commentHeaderView, commentDateLabel, bodyView, bodyLabel, nameLabel, instances;
     
     try{

@@ -41,9 +41,6 @@ function VideoWidget(formObj, instance, fieldViewWrapper){
 }
 
 VideoWidget.prototype.getFieldView = function(){
-    
-    var i, element, addButton;
-    
     this.fieldView = Ti.UI.createView({
        width: '100%',
        layout: 'vertical',
@@ -53,7 +50,7 @@ VideoWidget.prototype.getFieldView = function(){
     this.fieldView.add(this.formObj.getRegularLabelView(this.instance));
     
     // Add the actual fields
-    this.elements[0] = this.getNewElement(0);
+    this.elements[0] = this.getNewElement();
     this.fieldView.add(this.elements[0]);
     this.fieldView.add(this.formObj.getSpacerView());
     
@@ -89,8 +86,8 @@ VideoWidget.prototype.redraw = function(){
     this.fieldViewWrapper.remove(origFieldView);
 };
 
-VideoWidget.prototype.getNewElement = function(index){
-    var widgetView, dbValues, imageData, degreeData, i, j, localDelta, imageNid, deltaData, thumbData;
+VideoWidget.prototype.getNewElement = function(){
+    var widgetView, dbValues, imageData, degreeData, deltaData, thumbData;
 
     dbValues = [];
     imageData = [];
@@ -349,7 +346,7 @@ VideoWidget.prototype.getNonUploadedVideos = function() {
 };
 
 VideoWidget.prototype.getImageView = function(widgetView, index, nid, fid, degrees) {
-    var imageView, transform, rotateDegrees, image, widgetType, isFilePath, thumbVideo, videoFile;
+    var imageView, image, widgetType, isFilePath, thumbVideo, videoFile;
     var self = this;
     
     isFilePath = false;
@@ -425,7 +422,6 @@ VideoWidget.prototype.getImageView = function(widgetView, index, nid, fid, degre
     }
  
     imageView.addEventListener('click', function(e) {
-        var dialog;
         try{
             if(e.source.fid === null){
                 e.source.setTouchEnabled(false);
@@ -451,7 +447,7 @@ VideoWidget.prototype.getImageView = function(widgetView, index, nid, fid, degre
 };
 
 VideoWidget.prototype.openVideoPlayer = function(imageView){
-    var videoFile, player, toolbar, back, space, label, http, s3URL;
+    var videoFile, toolbar, back, space, label, http, s3URL;
     var self = this;
     
     this.videoWin = Titanium.UI.createWindow({
@@ -469,7 +465,7 @@ VideoWidget.prototype.openVideoPlayer = function(imageView){
             instance : this.instance
         });
         
-        back.addEventListener('click', function(e) {
+        back.addEventListener('click', function() {
             try{
                 self.videoPlayer.stop();
                 self.videoPlayer = null;
@@ -550,12 +546,11 @@ VideoWidget.prototype.openVideoPlayer = function(imageView){
             instance: this.instance,
             timeout: 30000
         });
-        http.onload = function(e){
-            /*global isJsonString*/
+        http.onload = function(){
            
             var json;
             
-            if(this.responseText != null && isJsonString(this.responseText)){
+            if(this.responseText != null && Utils.isJsonString(this.responseText)){
                 json = JSON.parse(this.responseText);
                 
                 if(json.success == true){
@@ -691,7 +686,7 @@ VideoWidget.prototype.openVideoChooser = function(imageView){
             allowEditing: false,
             animated: true,
             autohide: true,
-            cancel: function(e){},
+            cancel: function(){},
             error: function (e){
                 alert("There was a problem inserting the video.");
                 Utils.sendErrorReport("Video insert: " + JSON.stringify(e));
@@ -700,8 +695,7 @@ VideoWidget.prototype.openVideoChooser = function(imageView){
             mediaTypes: [Ti.Media.MEDIA_TYPE_VIDEO],
             popoverView: imageView,
             success: function(event){
-                /*global save_form_data*/
-                var newImageView, takeNextPhotoView, filePath, videoFile, thumbVideo, saved;
+                var takeNextPhotoView, filePath, videoFile, thumbVideo, saved;
                 
                 Ti.API.info("Media length: " + event.media.length + " bytes");
                 Ti.API.info("media type: " + event.mediaType);
@@ -760,7 +754,7 @@ VideoWidget.prototype.openCamera = function(){
 
 VideoWidget.prototype.saveFileInfo = function(imageView, filePath, thumbPath, degrees, filesize, type) {
     /*jslint regexp:true*/
-    var nid, db, encodedImage, mime, imageName, timestamp, fieldName, 
+    var nid, mime, imageName, timestamp, fieldName, 
         imageIndex, location, uid, clientAccount;
 
     try {
@@ -824,13 +818,12 @@ VideoWidget.prototype.updateFidsOfNewFiles = function(newFids) {
 };
 
 VideoWidget.prototype.cleanUp = function(){
-    var i, j;
     Ti.API.debug("in video widget cleanup");
     
     try{
-        for(j = 0; j < this.elements.length; j ++){
-            this.fieldView.remove(this.elements[j]);
-            this.elements[j] = null;
+        for(var i = 0; i < this.elements.length; i++){
+            this.fieldView.remove(this.elements[i]);
+            this.elements[i] = null;
         }
         
         this.fieldView = null;

@@ -40,8 +40,6 @@ CalculationFieldWidget.prototype.resetCache = function(){"use strict";
 };
 
 CalculationFieldWidget.prototype.getFieldView = function(showCalc){"use strict";
-    var i, element, addButton, labelView;
-    
     this.fieldView = Ti.UI.createView({
        width: '100%',
        layout: 'vertical',
@@ -52,7 +50,7 @@ CalculationFieldWidget.prototype.getFieldView = function(showCalc){"use strict";
         showCalc = false;
     }
     
-    labelView = this.formObj.getRegularLabelView(this.instance);
+    var labelView = this.formObj.getRegularLabelView(this.instance);
     
     this.fieldView.add(labelView);
     
@@ -111,7 +109,7 @@ CalculationFieldWidget.prototype.redraw = function(skipFormToNode){"use strict";
 };
 
 CalculationFieldWidget.prototype.getNewElement = function(index, showCalc){"use strict";
-    var widgetView, dbValue, origValue, calculationTableView, recalculateButton;
+    var widgetView, origValue, calculationTableView, recalculateButton;
     var self = this;
     
     Ti.API.debug("Creating calculation_field: " + this.instance.label);
@@ -523,7 +521,7 @@ CalculationFieldWidget.prototype.getTableView = function() {"use strict";
 };
 
 CalculationFieldWidget.prototype.getRowValues = function(instance){"use strict";
-    var entity, final_value, row_values, idx, calculation_row, value, field_1_multiplier,
+    var final_value, row_values, idx, calculation_row, value, field_1_multiplier,
         field_2_multiplier, numeric_multiplier, cached_final_value, instances, required_instance_final_values,
         parent_field, start_timestamp, end_timestamp, difference, at_time, relative_increment_time, day_count, 
         parent_node, zero, criteria_index, field_name, innerFinalValue, priceIdx;
@@ -867,7 +865,7 @@ CalculationFieldWidget.prototype.getRowValues = function(instance){"use strict";
 };
 
 CalculationFieldWidget.prototype.cleanUp = function(){"use strict";
-    var i, j;
+    var j;
     Ti.API.debug("in calculation widget cleanup");
     
     try{

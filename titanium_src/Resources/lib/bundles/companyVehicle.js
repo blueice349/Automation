@@ -6,8 +6,7 @@ var Utils = require('lib/Utils');
 var AlertQueue = require('lib/AlertQueue');
 
 Omadi.bundles.companyVehicle.askAboutVehicle = function() {"use strict";
-    var dialog, bundle, newWin, vehicles, options, i;
-    /*global roles, ROLE_ID_FIELD*/
+    var dialog, bundle, vehicles, options, i;
 
     bundle = Omadi.data.getBundle('company_vehicle');
 
@@ -82,7 +81,7 @@ Omadi.bundles.companyVehicle.setUserVehicle = function(vehicle_nid) {"use strict
         http.setRequestHeader("Content-Type", "application/json");
         Omadi.utils.setCookieHeader(http);
     
-        http.onload = function(e) {
+        http.onload = function() {
             Omadi.display.doneLoading();
             
             Ti.App.fireEvent('companyVehicleSelected');
@@ -146,7 +145,7 @@ Omadi.bundles.companyVehicle.exitVehicle = function(){"use strict";
             http.setRequestHeader("Content-Type", "application/json");
             Omadi.utils.setCookieHeader(http);
         
-            http.onload = function(e) {
+            http.onload = function() {
                 var db;
                 
                 Omadi.display.doneLoading();

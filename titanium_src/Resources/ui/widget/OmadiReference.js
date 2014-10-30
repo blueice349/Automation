@@ -219,8 +219,6 @@ OmadiReferenceWidget.prototype._optionDialogClicked = function(index, event) {
     	if (event.index < 0) {
     		return;
     	}
-    	var addressLabel = this._getAddressLabel(index);
-    	var wrapperView = this._getWrapperView(index);
     	var element = this._getSelectElement(index);
     	
     	var possibleValues = this._getPossibleValues();
@@ -440,10 +438,7 @@ OmadiReferenceWidget.prototype._getAutoCompleteTable = function(index) {
 
 OmadiReferenceWidget.prototype._autoCompleteTableClicked = function(index, event) {
     try{
-    	var wrapper = this._getWrapperView(index);
     	var element = this._getAutoCompleteElement(index);
-    	var autoCompleteTable = this._getAutoCompleteTable(index);
-    	var addressLabel = this._getAddressLabel(index);
 		
 		element.setValue(event.rowData.title);
     	element.setColor(OmadiReferenceWidget.GREEN);

@@ -31,7 +31,6 @@ Omadi.bundles.inspection.getLastInspectionReportNid = function(vehicleNid){"use 
 Omadi.bundles.inspection.askToReviewLastInspection = function(){"use strict";
     var dialog, bundle, showNextAlert, currentVehicleNid, lastInspectionReportNid, 
         lastNode, noInspectionDialog, showNoInspectionDialog;
-    /*global roles, ROLE_ID_FIELD*/
     
     showNextAlert = false;
     
@@ -74,11 +73,10 @@ Omadi.bundles.inspection.askToReviewLastInspection = function(){"use strict";
                             });
                             
                             dialog.addEventListener('click', function(e){
-                               var newWin, vehicle_nid;
                                try{
                                    if(e.index == 0){
                                    
-                                       newWin = Omadi.display.openFormWindow('inspection', lastInspectionReportNid, 1);
+                                       var newWin = Omadi.display.openFormWindow('inspection', lastInspectionReportNid, 1);
                                        
                                        newWin.addEventListener('close', function(){
                                             AlertQueue.showNextAlertInQueue();
@@ -126,9 +124,7 @@ Omadi.bundles.inspection.askToReviewLastInspection = function(){"use strict";
 };
 
 Omadi.bundles.inspection.userDrivesATruck = function(){"use strict";
-    var loginDetails, bundle;
-    
-    loginDetails = JSON.parse(Ti.App.Properties.getString("Omadi_session_details"));
+    var loginDetails = JSON.parse(Ti.App.Properties.getString("Omadi_session_details"));
     
     if(typeof loginDetails.user.user_drives_a_tow_truck !== 'undefined' && 
         typeof loginDetails.user.user_drives_a_tow_truck.und !== 'undefined' && 
@@ -177,10 +173,7 @@ Omadi.bundles.inspection.userShouldDoInspection = function(){"use strict";
 };
 
 Omadi.bundles.inspection.askToCreateInspection = function(showLogout){"use strict";
-    var dialog, bundle;
-    /*global roles, ROLE_ID_FIELD*/
-
-    dialog = Ti.UI.createAlertDialog({
+    var dialog = Ti.UI.createAlertDialog({
        title: 'Do Post-Shift Inspection?',
        buttonNames: ['Do Inspection', 'No'] 
     });

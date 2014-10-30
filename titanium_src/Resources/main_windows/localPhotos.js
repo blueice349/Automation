@@ -10,11 +10,6 @@ Ti.include('/lib/functions.js');
 var Utils = require('lib/Utils');
 
 var currentWinWrapper;
-var buttons;
-var viewButton;
-var emailButton;
-var deleteButton;
-var uploadButton;
 var gallery;
 var galleryWrapper;
 var Gallery = {};
@@ -60,7 +55,7 @@ Gallery.addIOSToolbar = function() {"use strict";
     currentWinWrapper.add(toolbar);
 };
 
-Gallery.savedToPhotoGallery = function(e){"use strict";
+Gallery.savedToPhotoGallery = function(){"use strict";
     var dialog = Ti.UI.createAlertDialog({
        title: "Photo Saved Successfully",
        message: 'The photo was saved to your photo gallery.',
@@ -69,7 +64,7 @@ Gallery.savedToPhotoGallery = function(e){"use strict";
     dialog.show();
 };
 
-Gallery.failedSaveToPhotoGallery = function(e){"use strict";
+Gallery.failedSaveToPhotoGallery = function(){"use strict";
     var dialog = Ti.UI.createAlertDialog({
        title: "Error Saving Photo",
        message: 'An error occurred while saving. Please try again.',
@@ -478,12 +473,6 @@ Gallery.update = function(){"use strict";
 };
 
 (function(){"use strict";
-
-    var tempFile, now,
-        earliestTimestamp, items, modified, image, checkbox, refreshButton, 
-        topBar, titleLabel, buttons, useButton, cancelButton, transform, 
-        rotateDegrees;
-    
     Ti.UI.currentWindow.setBackgroundColor('#eee');
         
     currentWinWrapper = Ti.UI.createView({
@@ -508,7 +497,7 @@ Gallery.update = function(){"use strict";
     Gallery.update();
     
     if(Ti.App.isAndroid){
-        topBar = Ti.UI.createLabel({
+        var topBar = Ti.UI.createLabel({
            top: 0,
            backgroundColor: '#666',
            height: 40,

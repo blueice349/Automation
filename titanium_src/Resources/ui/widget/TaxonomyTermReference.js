@@ -37,9 +37,6 @@ function TaxonomyTermReferenceWidget(formObj, instance, fieldViewWrapper){"use s
 }
 
 TaxonomyTermReferenceWidget.prototype.getFieldView = function(){"use strict";
-    
-    var i, element, addButton;
-    
     this.fieldView = Ti.UI.createView({
        width: '100%',
        layout: 'vertical',
@@ -50,7 +47,7 @@ TaxonomyTermReferenceWidget.prototype.getFieldView = function(){"use strict";
     this.options = this.getOptions();
     
     // Add the actual fields
-    for(i = 0; i < this.numVisibleFields; i ++){
+    for(var i = 0; i < this.numVisibleFields; i ++){
         this.elementWrappers[i] = this.getNewElement(i);
         this.fieldView.add(this.elementWrappers[i]);
         this.fieldView.add(this.formObj.getSpacerView());
@@ -89,7 +86,7 @@ TaxonomyTermReferenceWidget.prototype.redraw = function(){"use strict";
 };
 
 TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use strict";
-    var dbValue, textValue, element, descriptionText, wrapper, i, 
+    var dbValue, textValue, element, descriptionText, wrapper,
         defaultTerm, isAutocomplete, autocomplete_table;
     var self = this;
     
@@ -274,7 +271,7 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
         });
         
         element.addEventListener('change', function(e) {
-            var possibleValues, tableData, i, regEx, row, upperCaseValue, callback, sanitized;
+            var possibleValues, tableData, i, regEx, row, upperCaseValue, sanitized;
 
             if (e.source.touched === true) {
 
@@ -501,17 +498,16 @@ TaxonomyTermReferenceWidget.prototype.getOptions = function(useNone) {"use stric
 };
 
 TaxonomyTermReferenceWidget.prototype.cleanUp = function(){"use strict";
-    var i, j;
     Ti.API.debug("in taxonomy widget cleanup");
     
     try{
-        for(j = 0; j < this.elementWrappers.length; j ++){
-            this.elementWrappers[j].remove(this.elements[j]);
-            this.elementWrappers[j].remove(this.descriptionLabel);
-            if(typeof this.elements[j].descriptionLabel !== 'undefined'){
-                this.elements[j].descriptionLabel = null;
+        for(var i = 0; i < this.elementWrappers.length; i++){
+            this.elementWrappers[i].remove(this.elements[i]);
+            this.elementWrappers[i].remove(this.descriptionLabel);
+            if(typeof this.elements[i].descriptionLabel !== 'undefined'){
+                this.elements[i].descriptionLabel = null;
             }
-            this.elements[j] = null;
+            this.elements[i] = null;
         }
         
         this.descriptionLabel = null;
@@ -541,10 +537,9 @@ TaxonomyTermReferenceWidget.prototype.cleanUp = function(){"use strict";
 };
 
 TaxonomyTermReferenceWidget.loadTerm = function(tid) {"use strict";
-    var db, result, term;
-    term = {};
+    var term = {};
 
-    result = Database.query("SELECT tid, vid, name, weight FROM term_data WHERE tid = " + tid);
+    var result = Database.query("SELECT tid, vid, name, weight FROM term_data WHERE tid = " + tid);
     if (result.isValidRow()) {
         term.tid = result.fieldByName('tid', Ti.Database.FIELD_TYPE_INT);
         term.vid = result.fieldByName('vid', Ti.Database.FIELD_TYPE_INT);

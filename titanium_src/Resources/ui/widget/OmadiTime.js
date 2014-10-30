@@ -43,7 +43,6 @@ function OmadiTimeWidget(formObj, instance, fieldViewWrapper){"use strict";
 }
 
 OmadiTimeWidget.prototype.getFieldView = function(){"use strict";
-    var i, element, addButton;
     var self = this;
     
     this.fieldView = Ti.UI.createView({
@@ -55,7 +54,7 @@ OmadiTimeWidget.prototype.getFieldView = function(){"use strict";
     this.fieldView.add(this.formObj.getRegularLabelView(this.instance));
     
     // Add the actual fields
-    for(i = 0; i < this.numVisibleFields; i ++){
+    for(var i = 0; i < this.numVisibleFields; i ++){
         this.elements[i] = this.getNewElement(i);
         this.fieldView.add(this.elements[i]);
         this.fieldView.add(this.formObj.getSpacerView());
@@ -63,7 +62,7 @@ OmadiTimeWidget.prototype.getFieldView = function(){"use strict";
     
     if(this.instance.settings.cardinality == -1){
         
-        addButton = Ti.UI.createButton({
+        var addButton = Ti.UI.createButton({
             title: ' Add another item ',
             right: 15,
             style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
@@ -78,7 +77,7 @@ OmadiTimeWidget.prototype.getFieldView = function(){"use strict";
             fieldName: this.instance.field_name
         });
             
-        addButton.addEventListener('click', function(e){
+        addButton.addEventListener('click', function(){
             try{
                 self.numVisibleFields ++;
                 self.formObj.unfocusField();
@@ -126,7 +125,7 @@ OmadiTimeWidget.prototype.redraw = function(){"use strict";
 };
 
 OmadiTimeWidget.prototype.getNewElement = function(index){"use strict";
-    var dbValue, textValue, element, i, showTime, jsDate, dateText, timeText, timeView, dateView, nowTimestamp, midnight;
+    var dbValue, textValue, element, jsDate, dateText, timeText, nowTimestamp, midnight;
     var self = this;
     
     dbValue = null;
@@ -183,8 +182,8 @@ OmadiTimeWidget.prototype.getNewElement = function(index){"use strict";
 
 OmadiTimeWidget.prototype.displayPicker = function(element) {"use strict";
 
-    var titleLabel, minDate, opacView, widgetDate, okButton, clearButton, wrapperView, 
-        buttonView, topButtonsView, time_picker, doneButton, cancelButton;
+    var opacView, widgetDate, okButton, clearButton, wrapperView, 
+        topButtonsView, time_picker, cancelButton;
     var self = this;
     
     try{
@@ -371,7 +370,7 @@ OmadiTimeWidget.prototype.displayPicker = function(element) {"use strict";
     
         // This sounds really stupid - and it is! If this onchange listener isn't in place, 
         // then the date won't actually be recorded
-        time_picker.addEventListener('change', function(e) {
+        time_picker.addEventListener('change', function() {
             // Empty, but necessary
         });
         
@@ -382,9 +381,8 @@ OmadiTimeWidget.prototype.displayPicker = function(element) {"use strict";
         wrapperView.add(time_picker);
     
         okButton.addEventListener('click', function(e) {
-            var newDate, i, callback;
             try{
-                newDate = e.source.time_picker.getValue();
+                var newDate = e.source.time_picker.getValue();
                 e.source.element.jsDate = newDate;
                 e.source.element.textValue = Utils.phpFormatDate('g:i A', Math.ceil(newDate.getTime() / 1000));
                 e.source.element.dbValue = self.dateToSeconds(e.source.element.textValue);
@@ -428,7 +426,7 @@ OmadiTimeWidget.prototype.displayPicker = function(element) {"use strict";
     
         dateWindow.add(wrapperView);
         
-        dateWindow.addEventListener('android:back', function(e){
+        dateWindow.addEventListener('android:back', function(){
             dateWindow.close();
             dateWindow = null;
         });
@@ -467,13 +465,12 @@ OmadiTimeWidget.prototype.dateToSeconds = function(time_text) {"use strict";
 };
 
 OmadiTimeWidget.prototype.cleanUp = function(){"use strict";
-    var i, j;
     Ti.API.debug("in time widget cleanup");
     
     try{
-        for(j = 0; j < this.elements.length; j ++){
-            this.fieldView.remove(this.elements[j]);
-            this.elements[j] = null;
+        for(var i = 0; i < this.elements.length; i++){
+            this.fieldView.remove(this.elements[i]);
+            this.elements[i] = null;
         }
         
         this.fieldView = null;

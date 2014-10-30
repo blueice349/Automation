@@ -59,11 +59,9 @@ Database.prototype.getGPSDBConn = function() {
 };
 
 Database.prototype.getMainDBName = function() {
-    var listDB, result;
-    
     if(this.mainDBName === null){
         this.getListDBConn();
-        result = this.listDBConn.execute('SELECT db_name FROM history WHERE id_hist=1');
+        var result = this.listDBConn.execute('SELECT db_name FROM history WHERE id_hist=1');
         this.mainDBName = result.fieldByName('db_name');
         result.close();
         this.listDBConn.close();
@@ -185,29 +183,5 @@ exports.removeAllData = function() {
     	_instance.getMainDBConn().file.deleteFile();
     }
     exports.close();
-};
-
-var openListDatabase = function() {
-    var db = Ti.Database.install('/database/db_list.sqlite', getInstance().DB_VERSION + "_list");
-    if (Ti.App.isIOS) {
-        db.file.setRemoteBackup(false);
-    }
-    return db;
-};
-
-var openMainDatabase = function() {
-    var db = Ti.Database.install('/database/db.sqlite', getInstance().DB_VERSION + "_" + getInstance().getMainDBName());
-    if (Ti.App.isIOS) {
-        db.file.setRemoteBackup(false);
-    }
-    return db;
-};
-
-var openGPSDatabase = function() {
-    var db = Ti.Database.install('/database/gps_coordinates.sqlite', getInstance().DB_VERSION + "_" + getInstance().getMainDBName() + "_GPS");
-    if (Ti.App.isIOS) {
-        db.file.setRemoteBackup(false);
-    }
-    return db;
 };
 

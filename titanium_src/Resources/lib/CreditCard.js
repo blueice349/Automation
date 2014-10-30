@@ -1,6 +1,6 @@
+/* jshint ignore:start */
+
 // This file is part of credit_card_track_parser.  Copyright 2010 Joshua Partlow.  This program is free software, licensed under the terms of the GNU General Public License.  Please see the LICENSE file in this distribution for more information, or see http://www.gnu.org/copyleft/gpl.html.
-/*jslint node:true */
-'use strict';
 
 /* TrackErrors()
  * 
@@ -175,3 +175,4 @@ CreditCardTrackData.prototype = {
 };
 
 exports.TrackData = CreditCardTrackData;
+/* jshint ignore:end */

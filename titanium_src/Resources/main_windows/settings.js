@@ -11,13 +11,9 @@ var Utils = require('lib/Utils');
 
 var scrollView, wrapperView;
 
-function errorCameraPhoto(){"use strict";
-    alert("Camera action error");
-}
-
 function addPhotoWidgetOptions(){"use strict";
-    var photoOptionLabel, currentPhotoOption, photoOptionButton,photoOptions, photoTakeOption, 
-        photoChooseOption, currentPhotoOptionString, currentPhotoOptionIndex, chooseSettingsView, 
+    var photoOptionLabel, currentPhotoOption, photoOptionButton, 
+        currentPhotoOptionString, currentPhotoOptionIndex, chooseSettingsView, 
         deletePhotoOnUploadLabel, deletePhotoOnUploadButton, currentDeleteOption, 
         currentDeleteOptionString, currentDeleteIndex;
         
@@ -220,14 +216,14 @@ function addPhotoWidgetOptions(){"use strict";
                 cameraDialog.addEventListener('click', function(){
                     Ti.Media.showCamera({
                         autohide: true,
-                        cancel: function(e){
+                        cancel: function(){
                             alert("Camera action cancelled. In-app photos will be used.");
                             Omadi.utils.setPhotoWidget('take');
                             ev.source.button.setText("Take photos in the app");
                             chooseSettingsView.setVisible(false);
                             currentPhotoOptionIndex = 0;
                         },
-                        error: function(e){
+                        error: function(){
                             alert("A camera error occurred. In-app photos will be used.");
                             Omadi.utils.setPhotoWidget('take');
                             ev.source.button.setText("Take photos in the app");

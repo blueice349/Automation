@@ -4,8 +4,6 @@
 var Utils = require('lib/Utils'); 
 
 exports.startGPSService = function() {
-    /*global createNotification*/
-   
     var intent;
 
     Ti.API.info("Starting Android services.");
@@ -28,10 +26,7 @@ exports.startGPSService = function() {
 
 
 exports.stopGPSService = function() {
-    var alarmModule, alarmManager;
-    
     Ti.App.fireEvent("stopGPS"); 
-    
 };
 
 

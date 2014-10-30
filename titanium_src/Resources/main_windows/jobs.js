@@ -49,10 +49,10 @@ function addiOSToolbar() {"use strict";
     wrapperView.add(toolbar);
 }
 
-function refreshJobsTable(firstTimeThrough){"use strict";
+function refreshJobsTable(){"use strict";
     var newJobsSection, currentUserJobsSection, newJobs, backgroundColor, row, textView,
         i, rowImg, titleLabel, currentUserJobs, dispatchBundle, newJobsHeader, 
-        currentJobsHeader, discontinuedView, discontinuedLabel, isDiscontinued;
+        currentJobsHeader, discontinuedView, discontinuedLabel;
     
     dispatchBundle = Omadi.data.getBundle('dispatch');
     newJobs = Omadi.bundles.dispatch.getNewJobs();
@@ -339,8 +339,7 @@ function savedNodeJobs(){"use strict";
 }
 
 function finishedDataSyncJobs(){"use strict";
-    
-     refreshJobsTable(false);
+     refreshJobsTable();
 }
 
 function loggingOutJobs(){"use strict";
@@ -349,10 +348,6 @@ function loggingOutJobs(){"use strict";
     
 
 (function(){"use strict";
-    var newJobs, data, i, row, textView, rowImg, titleLabel, backgroundColor, 
-        newJobsSection, sections, currentUserJobsSection, currentUserJobs, 
-        dispatchBundle, separator, whiteSpaceTest, validJobs;
-    
     Ti.App.removeEventListener("savedNode", savedNodeJobs);
     Ti.App.addEventListener("savedNode", savedNodeJobs);
     
@@ -386,10 +381,10 @@ function loggingOutJobs(){"use strict";
         scrollable: true
     });
     
-    refreshJobsTable(true);
+    refreshJobsTable();
     
     tableView.addEventListener('click', function(e) {
-        var extraOptions, dispatchInstances, hasEditPermissions, discontinuedInstance;
+        var extraOptions, dispatchInstances;
         
         try{
             if(e.row.type == 'newJob'){

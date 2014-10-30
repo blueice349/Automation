@@ -3,7 +3,6 @@
 
 var GeofenceServices = require('services/GeofenceServices');
 var PointGeofence = require('objects/PointGeofence');
-var Database = require('lib/Database');
 var Node = require('objects/Node');
 
 var TimecardGeofenceVerifier = function() {
@@ -91,7 +90,7 @@ TimecardGeofenceVerifier.prototype._isLocationAuthorized = function() {
 	return true;
 };
 
-TimecardGeofenceVerifier.prototype._handleFreshLocationAccuired = function(event) {
+TimecardGeofenceVerifier.prototype._handleFreshLocationAccuired = function() {
 	var currentLocation = JSON.parse(Ti.Geolocation.getLastGeolocation() || '{}');
 	
 	if (this.getCurrentGeofences({lat: currentLocation.latitude, lng: currentLocation.longitude}).length !== 0) {
@@ -101,7 +100,7 @@ TimecardGeofenceVerifier.prototype._handleFreshLocationAccuired = function(event
 	}
 };
 
-TimecardGeofenceVerifier.prototype._handleLoggingOut = function(event) {
+TimecardGeofenceVerifier.prototype._handleLoggingOut = function() {
 	this.verifyClockIn = null;
 	this.verifyClockOut = null;
 	this.userJson = null;

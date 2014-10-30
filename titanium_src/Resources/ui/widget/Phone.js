@@ -41,8 +41,6 @@ function PhoneWidget(formObj, instance, fieldViewWrapper){"use strict";
 }
 
 PhoneWidget.prototype.getFieldView = function(){"use strict";
-    
-    var i, element, addButton;
     var self = this;
     
     this.fieldView = Ti.UI.createView({
@@ -54,7 +52,7 @@ PhoneWidget.prototype.getFieldView = function(){"use strict";
     this.fieldView.add(this.formObj.getRegularLabelView(this.instance));
     
     // Add the actual fields
-    for(i = 0; i < this.numVisibleFields; i ++){
+    for(var i = 0; i < this.numVisibleFields; i ++){
         this.elements[i] = this.getNewElement(i);
         this.fieldView.add(this.elements[i]);
         this.fieldView.add(this.formObj.getSpacerView());
@@ -62,7 +60,7 @@ PhoneWidget.prototype.getFieldView = function(){"use strict";
     
     if(this.instance.settings.cardinality == -1){
         
-        addButton = Ti.UI.createButton({
+        var addButton = Ti.UI.createButton({
             title: ' Add another item ',
             right: 15,
             style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
@@ -77,7 +75,7 @@ PhoneWidget.prototype.getFieldView = function(){"use strict";
             fieldName: this.instance.field_name
         });
             
-        addButton.addEventListener('click', function(e){
+        addButton.addEventListener('click', function(){
             try{
                 self.numVisibleFields ++;
                 self.formObj.unfocusField();
@@ -199,13 +197,12 @@ PhoneWidget.prototype.getNewElement = function(index){"use strict";
 };
 
 PhoneWidget.prototype.cleanUp = function(){"use strict";
-    var i, j;
     Ti.API.debug("in phone widget cleanup");
     
     try{
-        for(j = 0; j < this.elements.length; j ++){
-            this.fieldView.remove(this.elements[j]);
-            this.elements[j] = null;
+        for(var i = 0; i < this.elements.length; i++){
+            this.fieldView.remove(this.elements[i]);
+            this.elements[i] = null;
         }
         
         this.fieldView = null;

@@ -117,8 +117,6 @@ Omadi.location.currentPositionCallback = function(e) {"use strict";
 Omadi.location.uploadGPSCoordinates = function() {"use strict";
     var db, result, json, http, i, locationItems;
 
-    /*global createNotification*/
-
     if (!Omadi.location.is_GPS_uploading() && Omadi.utils.isLoggedIn()) {
 
         if (!Ti.Network.getOnline()) {
@@ -192,7 +190,7 @@ Omadi.location.uploadGPSCoordinates = function() {"use strict";
                 Ti.Geolocation.getCurrentPosition(Omadi.location.currentPositionCallback);
                 Ti.API.debug("FETCHING CURRENT POSITION");
 
-                createNotification("No coordinates saved... " + Utils.phpFormatDate('g:i a', Number(Omadi.utils.getUTCTimestamp())));
+                Utils.createNotification("No coordinates saved... " + Utils.phpFormatDate('g:i a', Number(Omadi.utils.getUTCTimestamp())));
             }
         }
     }
@@ -213,12 +211,10 @@ Omadi.location.unset_GPS_uploading = function() {"use strict";
     Ti.App.Properties.setBool("isGPSUploading", false);
 };
 
-Omadi.location.uploadSuccess = function(e) {"use strict";
-    /*global isJsonString*/
+Omadi.location.uploadSuccess = function() {"use strict";
+    var i, j, responseObj, db, sqlArray, nids, now_timestamp;
 
-    var i, j, responseObj, db, sqlArray, nids, now_timestamp, result;
-
-    if (isJsonString(this.responseText) === true) {
+    if (Utils.isJsonString(this.responseText) === true) {
         now_timestamp = Omadi.utils.getUTCTimestamp();
 
         responseObj = JSON.parse(this.responseText);
@@ -268,7 +264,7 @@ Omadi.location.uploadSuccess = function(e) {"use strict";
         db.execute("COMMIT TRANSACTION");
         db.close();
 
-        createNotification("Uploaded GPS at " + Utils.phpFormatDate('g:i a', Number(Omadi.utils.getUTCTimestamp())));
+        Utils.createNotification("Uploaded GPS at " + Utils.phpFormatDate('g:i a', Number(Omadi.utils.getUTCTimestamp())));
 
     }
 

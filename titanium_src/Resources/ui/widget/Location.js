@@ -38,9 +38,6 @@ function LocationWidget(formObj, instance, fieldViewWrapper){"use strict";
 }
 
 LocationWidget.prototype.getFieldView = function(){"use strict";
-    
-    var i, element, addButton;
-    
     this.fieldView = Ti.UI.createView({
        width: '100%',
        layout: 'vertical',
@@ -50,7 +47,7 @@ LocationWidget.prototype.getFieldView = function(){"use strict";
     this.fieldView.add(this.formObj.getRegularLabelView(this.instance));
     
     // Add the actual fields
-    this.setupNewElement(0);
+    this.setupNewElement();
     this.fieldView.add(this.element);
     this.fieldView.add(this.formObj.getSpacerView());
    
@@ -86,7 +83,7 @@ LocationWidget.prototype.redraw = function(){"use strict";
     this.fieldViewWrapper.remove(origFieldView);
 };
 
-LocationWidget.prototype.setupNewElement = function(index){"use strict";
+LocationWidget.prototype.setupNewElement = function(){"use strict";
     var dbValue, textValue, part, nameParts, real_field_name, i, options, states;
     var self = this;
 
@@ -245,7 +242,6 @@ LocationWidget.prototype.setupNewElement = function(index){"use strict";
         });
 
         this.element.addEventListener('change', function(e) {
-            /*global setConditionallyRequiredLabels*/
             e.source.dbValue = e.source.value;
             e.source.textValue = e.source.value;
 
@@ -477,7 +473,6 @@ LocationWidget.prototype.getStates = function() {"use strict";
 };
 
 LocationWidget.prototype.cleanUp = function(){"use strict";
-    var i, j;
     Ti.API.debug("in location widget cleanup");
     
     try{

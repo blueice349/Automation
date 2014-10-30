@@ -9,8 +9,6 @@ var Utils = require('lib/Utils');
 /*global  Omadi*/
 /*jslint eqeq: true, plusplus: true*/
 
-var domainName = Titanium.App.Properties.getString("domainName");
-var message_center = {};
 var curWin = Ti.UI.currentWindow;
 var wrapperView;
 var empty = null;
@@ -40,8 +38,6 @@ var toolbar;
 
 function loadAccAlertData() {"use strict";
     var db, result, ch_color, ch, n_data, t_lb, n_lb, full_msg, rowWrapper;
-
-    /*global notifyIOS*/
     
     db = Omadi.utils.openGPSDatabase();
 
@@ -117,7 +113,7 @@ function loadAccAlertData() {"use strict";
         //Search bar definition
     }
     else {
-        notifyIOS('There are no messages for this item');
+        Utils.notifyIOS('There are no messages for this item');
 
     }
 
@@ -164,7 +160,7 @@ function alertNavButtons(currentWin, currentWinWrapper, type) {"use strict";
         height : Ti.UI.SIZE
     });
 
-    refreshImg.addEventListener('click', function(e) {
+    refreshImg.addEventListener('click', function() {
         try{
             Omadi.display.loading("Refreshing...");
             Omadi.location.uploadGPSCoordinates();
@@ -253,7 +249,7 @@ function alertNavButtons_android(lv_listTableView, currentWindow, currentWindowW
         height : 32
     });
 
-    refreshImg.addEventListener('click', function(e) {
+    refreshImg.addEventListener('click', function() {
         try{
             Omadi.display.loading("Refreshing...");
             
@@ -409,7 +405,7 @@ function opnAccountAlertsList(e) {"use strict";
         accountWrapperView.add(accountMessage.listView);
         
         accountMessage.listView.addEventListener('click', function(row_e) {
-            var db, result, n_nid, type_vl, region_f, name_s, dialog;
+            var db, result, n_nid, type_vl, region_f, name_s;
             
             try{
                 db = Omadi.utils.openMainDatabase();
@@ -434,7 +430,7 @@ function opnAccountAlertsList(e) {"use strict";
             accountWindow.close();
         });
     
-        accountWindow.addEventListener('close', function(e) {
+        accountWindow.addEventListener('close', function() {
             accountWindow.isOpened = false;
         });
     
@@ -477,8 +473,7 @@ function savedNodeMessageCenter(){"use strict";
     }
 }
 
-function refreshUIAlertsMessageCenter(e){"use strict";
-
+function refreshUIAlertsMessageCenter(){"use strict";
     Omadi.display.doneLoading();      
     loadData();
 }

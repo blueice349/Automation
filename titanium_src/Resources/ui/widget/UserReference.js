@@ -33,9 +33,6 @@ function UserReferenceWidget(formObj, instance, fieldViewWrapper){"use strict";
 }
 
 UserReferenceWidget.prototype.getFieldView = function(){"use strict";
-    
-    var i, element, addButton;
-    
     this.fieldView = Ti.UI.createView({
        width: '100%',
        layout: 'vertical',
@@ -45,7 +42,7 @@ UserReferenceWidget.prototype.getFieldView = function(){"use strict";
     this.fieldView.add(this.formObj.getRegularLabelView(this.instance));
     
     // Add the actual fields
-    for(i = 0; i < this.numVisibleFields; i ++){
+    for(var i = 0; i < this.numVisibleFields; i ++){
         this.elements[i] = this.getNewElement(i);
         this.fieldView.add(this.elements[i]);
         this.fieldView.add(this.formObj.getSpacerView());
@@ -84,7 +81,7 @@ UserReferenceWidget.prototype.redraw = function(){"use strict";
 };
 
 UserReferenceWidget.prototype.getNewElement = function(index){"use strict";
-    var dbValue, textValue, element, options, descriptionText, descriptionLabel, wrapper, i, loginDetails, textOptions;
+    var dbValue, textValue, element, options, i, loginDetails, textOptions;
     var self = this;
     
     Ti.API.debug("Creating user reference field: " + this.instance.label);
@@ -154,7 +151,7 @@ UserReferenceWidget.prototype.getNewElement = function(index){"use strict";
 
     if (this.instance.can_edit) {
         element.addEventListener('click', function(e) {
-            var i, postDialog;
+            var postDialog;
             try{
                 if (e.source.instance.settings.cardinality == -1) {
                     self.formObj.getMultipleSelector(self, e.source.options, e.source.dbValue);
@@ -202,7 +199,7 @@ UserReferenceWidget.prototype.getNewElement = function(index){"use strict";
 };
 
 UserReferenceWidget.prototype.getOptions = function() {"use strict";
-    var db, result, options, name, referenceable_roles, rid;
+    var result, options, name, referenceable_roles, rid;
 
     options = [];
     referenceable_roles = [];
@@ -255,13 +252,12 @@ UserReferenceWidget.prototype.getOptions = function() {"use strict";
 };
 
 UserReferenceWidget.prototype.cleanUp = function(){"use strict";
-    var i, j;
     Ti.API.debug("in user widget cleanup");
     
     try{
-        for(j = 0; j < this.elements.length; j ++){
-            this.fieldView.remove(this.elements[j]);
-            this.elements[j] = null;
+        for(var i = 0; i < this.elements.length; i++){
+            this.fieldView.remove(this.elements[i]);
+            this.elements[i] = null;
         }
         
         this.fieldView = null;

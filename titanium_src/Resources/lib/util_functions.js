@@ -1,4 +1,3 @@
-/*global strpos,dbEsc*/
 /*jslint eqeq:true,plusplus:true*/
 
 var Omadi = Omadi || {};

@@ -1,5 +1,4 @@
 /*jslint eqeq:true, plusplus: true*/
-/*global setConditionallyRequiredLabelForInstance,affectsAnotherConditionalField*/
 
 var Utils = require('lib/Utils');
 
@@ -38,9 +37,6 @@ function AutoIncrementWidget(formObj, instance, fieldViewWrapper){"use strict";
 }
 
 AutoIncrementWidget.prototype.getFieldView = function(){"use strict";
-    
-    var i, element, addButton;
-    
     this.fieldView = Ti.UI.createView({
        width: '100%',
        layout: 'vertical',
@@ -126,7 +122,7 @@ AutoIncrementWidget.prototype.getNewElement = function(index){"use strict";
 };
 
 AutoIncrementWidget.prototype.cleanUp = function(){"use strict";
-    var i, j;
+    var j;
     Ti.API.debug("in auto increment widget cleanup");
     
     try{

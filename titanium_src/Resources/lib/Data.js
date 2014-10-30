@@ -7,7 +7,6 @@ var Display = require('lib/Display');
 var Service = require('lib/Service');
 var Node = require('objects/Node');
 var RDNGeofenceListener = require('services/RDNGeofenceListener');
-var TimecardGeofenceVerifier = require('objects/TimecardGeofenceVerifier');
 var ProgressBar = require('objects/ProgressBar');
 var ImageWidget = require('ui/widget/Image');
 var AndroidCamera = Ti.Platform.name === 'android' ? require('com.omadi.newcamera') : null;
@@ -18,6 +17,15 @@ if(Ti.Platform.name === 'android'){
 }
 
 var MAX_BYTES_PER_UPLOAD = 1000000;
+
+var RoleId = {
+	ADMIN: 3,
+	MANAGER: 4,
+	SALES: 5,
+	FIELD: 6,
+	CLIENT: 7,
+	OMADI_AGENT: 8
+};
 
 exports.getNumFilesReadyToUpload = function(uid) {
     var result, sql, retval = 0;
@@ -98,9 +106,9 @@ exports.setLastUpdateTimestamp = function(sync_timestamp) {
 
 exports.saveFailedUpload = function(photoId, showMessage) {
 
-    var imageDir, imageFile, newFilePath, imageView, oldImageFile, 
+    var imageDir, newFilePath, imageView, oldImageFile, 
         blob, result, dialog, nid, field_name, delta, filePath, 
-        sdCardPath, sdIndex, thumbPath, thumbFile;
+        sdCardPath, sdIndex, thumbPath;
 
     result = Database.queryList("SELECT * FROM _files WHERE id = " + photoId);
     
@@ -207,7 +215,7 @@ exports.saveFailedUpload = function(photoId, showMessage) {
                 
                 if(oldImageFile.exists() && oldImageFile.isFile()){
                     Titanium.Media.saveToPhotoGallery(oldImageFile, {
-                        success : function(e) {
+                        success : function() {
                             
                             if(showMessage){
                                 dialog = Titanium.UI.createAlertDialog({
@@ -222,7 +230,7 @@ exports.saveFailedUpload = function(photoId, showMessage) {
                             
                             ImageWidget.deletePhotoUpload(photoId, true);
                         },
-                        error : function(e) {
+                        error : function() {
                             Utils.sendErrorReport("Did not save to photo gallery iOS: " + photoId);
                             dialog = Titanium.UI.createAlertDialog({
                                 title : 'Corrupted File',
@@ -258,17 +266,14 @@ exports.saveFailedUpload = function(photoId, showMessage) {
 
 exports.getNextPhotoData = function() {
 
-    var result, nextFile, imageFile, imageBlob, maxDiff, 
-        newWidth, newHeight, resizedFile, isResized, resizedFilePath, 
-        resizeRetval, readyForUpload, restartSuggested, dialog, deleteFromDB,
-        fileStream, buffer, numBytesRead, sql, position, 
-        filePart, resizedBlob, maxPhotoPixels, files, i, incrementTries, retryEncode;
+    var imageFile, imageBlob, maxDiff, newWidth, newHeight, 
+        dialog, fileStream, buffer, numBytesRead, position, 
+        filePart, resizedBlob, files, i, incrementTries, retryEncode;
    
-    nextFile = null;
-    readyForUpload = true;
-    restartSuggested = false;
-    deleteFromDB = false;
-    maxPhotoPixels = 1280;
+    var nextFile = null;
+    var readyForUpload = true;
+    var restartSuggested = false;
+    var maxPhotoPixels = 1280;
     
     files = exports.getFileArray();
            
@@ -387,11 +392,11 @@ exports.getNextPhotoData = function() {
                                             newWidth = (maxPhotoPixels / imageBlob.height) * imageBlob.width;
                                         }
         
-                                        /*global ImageFactory*/
                                         resizedBlob = imageBlob.imageAsResized(newWidth, newHeight);
                                         Ti.API.debug("Resized: " + resizedBlob.length);
                                         
                                         if(resizedBlob.length > maxPhotoPixels){
+                                        	var ImageFactory = require('ti.imagefactory');
                                             imageBlob = ImageFactory.compress(resizedBlob, 0.75);
                                             nextFile.filesize = imageBlob.length;
                                             
@@ -792,8 +797,6 @@ exports.getAllFiles = function() {
 };
 
 exports.processFetchedJson = function(json) {
-    var nodeType, gpsDB, dbFile, tableName, GMT_OFFSET, dialog, newNotifications, numItems, secondDifference;
-    
     try {
         if (json.delete_all === true || json.delete_all === "true") {
             
@@ -805,7 +808,7 @@ exports.processFetchedJson = function(json) {
         else{
             
             // Setup the timestamp offset to be used when saving UTC timestamps to the mobile database
-            secondDifference = parseInt(json.current_server_timestamp, 10);
+            var secondDifference = parseInt(json.current_server_timestamp, 10);
             if(!isNaN(secondDifference)){
                 secondDifference -= Utils.getUTCTimestamp();
                 
@@ -815,7 +818,7 @@ exports.processFetchedJson = function(json) {
             }
         }
 
-        numItems = parseInt(json.total_item_count, 10);
+        var numItems = parseInt(json.total_item_count, 10);
         Ti.API.info("Total items to install: " + numItems);
 
         //If mainDB is already last version
@@ -835,7 +838,7 @@ exports.processFetchedJson = function(json) {
 
             if ( typeof json.vehicles !== 'undefined') {
                 Ti.API.debug("Installing vehicles");
-                processVehicleJson(json, progressBar);
+                processVehicleJson(json);
             }
 
             if ( typeof json.node_type !== 'undefined') {
@@ -875,7 +878,7 @@ exports.processFetchedJson = function(json) {
 
             if ( typeof json.node !== 'undefined') {
                 Ti.API.debug("Installing nodes");
-                for (tableName in json.node) {
+                for (var tableName in json.node) {
                     if (json.node.hasOwnProperty(tableName)) {
                         if (json.node.hasOwnProperty(tableName)) {
                             processNodeJson(tableName, json, progressBar);
@@ -941,7 +944,7 @@ exports.processFetchedJson = function(json) {
     }
 };
 
-var processVehicleJson = function(json, progressBar)  {
+var processVehicleJson = function(json)  {
     try {
         if (json.vehicles) {
             var queries = [], i;
@@ -965,7 +968,6 @@ var processVehicleJson = function(json, progressBar)  {
 };
 
 var processNodeTypeJson = function(json, progressBar) {
-    /*global ROLE_ID_ADMIN, ROLE_ID_OMADI_AGENT */
     var queries, roles, i, type, perm_idx, role_idx, bundle_result, 
         app_permissions, title_fields, data, display, description, 
         disabled, is_disabled, permission_string, childForms, resetBundles;
@@ -1035,7 +1037,7 @@ var processNodeTypeJson = function(json, progressBar) {
                         if (!is_disabled) {
                             if ( typeof roles !== 'undefined') {
 
-                                if (roles.hasOwnProperty(ROLE_ID_ADMIN) || roles.hasOwnProperty(ROLE_ID_OMADI_AGENT)) {
+                                if (roles.hasOwnProperty(RoleId.ADMIN) || roles.hasOwnProperty(RoleId.OMADI_AGENT)) {
                                     app_permissions.can_create = 1;
                                     app_permissions.all_permissions = 1;
                                     app_permissions.can_update = 1;
@@ -1132,7 +1134,6 @@ var processNodeTypeJson = function(json, progressBar) {
 };
 
 var processFieldsJson = function(json, progressBar) {
-    /*global ROLE_ID_ADMIN, ROLE_ID_OMADI_AGENT*/
     var result, fid, field_exists, field_type, db_type, field_name, label, widgetString, 
         settingsString, region, part, queries, description, bundle, weight, required, 
         disabled, can_view, can_edit, settings, omadi_session_details, roles, 
@@ -1180,7 +1181,7 @@ var processFieldsJson = function(json, progressBar) {
                     can_view = 0;
                     can_edit = 0;
                     
-                    if (roles.hasOwnProperty(ROLE_ID_ADMIN) || roles.hasOwnProperty(ROLE_ID_OMADI_AGENT)) {
+                    if (roles.hasOwnProperty(RoleId.ADMIN) || roles.hasOwnProperty(RoleId.OMADI_AGENT)) {
                         // Admin users can view/edit any field
                         can_view = can_edit = 1;
                     }
@@ -1380,7 +1381,7 @@ var processFakeFieldsJson = function(json, progressBar) {
             Database.query("COMMIT TRANSACTION");
             
             // Reset the fake field cache
-            Node.resetFakeFieldsCache();
+            Node.resetFakeFieldCache();
         }
     }
     catch(ex){
@@ -1437,7 +1438,7 @@ var processRegionsJson = function(json, progressBar)  {
             Database.query("COMMIT TRANSACTION");
             
             // Reset the region cache
-            Node.resetRegionsCache();
+            Node.resetRegionCache();
         }
     }
     catch(ex) {
@@ -1666,10 +1667,10 @@ var processUsersJson = function(json, progressBar)  {
 var processNodeJson = function(type, json, progressBar)  {
     /*jslint nomen: true*/
 
-    var closeDB, instances, fakeFields, queries, i, j, field_name, query, 
-        fieldNames, no_data, values, value, notifications = {}, numSets, 
-        result, reasonIndex, reason, alertReason, dialog, updateNid, 
-        listDB, fullResetLastSync, nodeChangedTimestamp, real_field_name;
+    var closeDB, instances, fakeFields, queries, i, field_name, query, 
+        fieldNames, values, value, notifications = {}, numSets, 
+        result, reason, dialog, updateNid, 
+        fullResetLastSync, nodeChangedTimestamp, real_field_name;
     
     
     fullResetLastSync = Ti.App.Properties.getDouble('omadi:fullResetLastSync', 0);
@@ -2085,7 +2086,7 @@ var processNodeJson = function(type, json, progressBar)  {
 };
 
 exports.processCommentJson = function(json, progressBar)  {
-    var i, j, queries, query, fieldNames, tableName, instances, field_name, values, value;
+    var i, queries, query, fieldNames, tableName, instances, field_name, values, value;
 
     try {
         queries = [];
@@ -2328,12 +2329,10 @@ exports.initialInstallTotalPages = 0;
 exports.initialSyncProgressBar = null;
 
 exports.syncInitialFormItems = function(nodeCount, commentCount, numPages) {
-    var http, syncURL, i, max, count;
-    
     try{
-        count = nodeCount + commentCount;
+        var count = nodeCount + commentCount;
         
-        max = count + (numPages * 500);
+        var max = count + (numPages * 500);
         
         exports.initialSyncProgressBar = new ProgressBar(max, 'Syncing ' + count + ' form items ...');
         exports.initialSyncProgressBar.show();
@@ -2494,7 +2493,7 @@ exports.syncInitialFormPage = function(page) {
         Utils.setCookieHeader(http);
     
         //When connected
-        http.onload = function(e) {
+        http.onload = function() {
             var dir, file, string;
             
             try{
@@ -2598,7 +2597,7 @@ exports.syncInitialFormPage = function(page) {
                         message : "You have been logged out. Please log back in."
                     });
     
-                    dialog.addEventListener('click', function(e) {
+                    dialog.addEventListener('click', function() {
                         try{
                             Database.queryList('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
                             Database.close();
@@ -2622,7 +2621,7 @@ exports.syncInitialFormPage = function(page) {
                         message : "Your session is no longer valid. Please log back in."
                     });
     
-                    dialog.addEventListener('click', function(e) {
+                    dialog.addEventListener('click', function() {
                         try{
                             Database.queryList('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
                             Database.close();

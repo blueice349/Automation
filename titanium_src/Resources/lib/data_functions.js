@@ -1,5 +1,3 @@
-/*jslint plusplus:true,eqeq:true,nomen:true*/
-
 Omadi.data = Omadi.data || {};
 
 Omadi.data.cache = {};
@@ -8,11 +6,8 @@ Omadi.data.cache.fakeFields = {};
 
 var Utils = require('lib/Utils');
 var Data = require('lib/Data');
-var RDNGeofenceListener = require('services/RDNGeofenceListener');
-var GeofenceServices = require('services/GeofenceServices');
 var Node = require('objects/Node');
 var ImageWidget = require('ui/widget/Image');
-var TimecardGeofenceVerifier = require('objects/TimecardGeofenceVerifier');
 
 // Constants
 Omadi.data.MAX_BYTES_PER_UPLOAD = 1000000; // 1MB
@@ -20,15 +15,6 @@ Omadi.data.MAX_BYTES_PER_UPLOAD = 1000000; // 1MB
 Omadi.data.isUpdating = function() {"use strict";
     return Data.isUpdating();
 };
-
-function dbEsc(string) {"use strict";
-    if (typeof string === 'undefined' || string === null || string === false) {
-        return '';
-    }
-
-    string += "".toString();
-    return string.replace(/[']/g, "''");
-}
 
 Omadi.data.setUpdating = function(updating) {"use strict";
     Data.setUpdating(updating);

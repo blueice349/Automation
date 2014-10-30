@@ -4,7 +4,7 @@
 var available = require('bencoding.basicgeo').createAvailability();
 
 var saveCoordinate = function(e){"use strict";
-    var timestamp, longitude, latitude, accuracy, speed, altitude, timePassed, db, result, 
+    var timestamp, longitude, latitude, accuracy, speed, altitude, db, result, 
         uploadToServer, numCoordinates, lastBackgroundGPSTimestamp, now;
     /*global Omadi*/
     
@@ -111,14 +111,14 @@ var significantChange = {
 };
 
 
-Ti.App.addEventListener('resumed',function(e){"use strict";
+Ti.App.addEventListener('resumed',function(){"use strict";
     //Stop location monitoring
     significantChange.stop();
     
     Omadi.location.uploadGPSCoordinates();
 });
 
-Ti.App.addEventListener('pause',function(e){"use strict";
+Ti.App.addEventListener('pause',function(){"use strict";
     //Does this device support background actions?
     if(available.allowBackgrounding()){
         //Check that the device can use Significant Location Change Monitoring

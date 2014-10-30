@@ -211,8 +211,7 @@ function showSpecificTags(tags, title){"use strict";
 }
 
 (function(){"use strict";
-    var expiredTags, data, i, row, textView, rowImg, titleLabel, backgroundColor, 
-        currentAccountName, tableSection, accountTags, accountTagsArray;
+    var expiredTags, data, i, row, accountTags, accountTagsArray;
     
     Ti.App.removeEventListener("savedNode", savedNodeTagsReady);
     Ti.App.addEventListener("savedNode", savedNodeTagsReady);
