@@ -230,6 +230,8 @@ LicensePlateWidget.prototype.getNewElementWrapper = function(){"use strict";
                             
                             if(value.length > 0){
                                 widget = self;
+                                
+                                if (!widget.formObj) return;
                                 formPart = widget.formObj.form_part;
                                 
                                 if(formPart <= 0){
@@ -242,8 +244,6 @@ LicensePlateWidget.prototype.getNewElementWrapper = function(){"use strict";
                                         // The last change happened 5 seconds ago, so possibly send request if it hasn't been sent before
                                         
                                         if(typeof widget.duplicateWarnings[value] === 'undefined'){
-                                            Ti.API.debug("Send Request baby!");    
-                                            
                                             widget.setDuplicateWarnings(fieldName, value, 'silent');
                                         }
                                         else{
@@ -260,7 +260,7 @@ LicensePlateWidget.prototype.getNewElementWrapper = function(){"use strict";
                             }
                         }
                         catch(ex){
-                            Utils.sendErrorReport("Exception in duplicate warning timeout: " + ex);
+                            Utils.sendErrorReport("Exception in duplicate warning timeout 1: " + ex);
                         }
                         
                     }, 4000);
@@ -295,7 +295,7 @@ LicensePlateWidget.prototype.getNewElementWrapper = function(){"use strict";
                     widget.formObj.showDuplicateWarnings(null);
                 }
                 catch(ex){
-                    Utils.sendErrorReport("Exception in duplicate warning timeout: " + ex);
+                    Utils.sendErrorReport("Exception in duplicate warning timeout 2: " + ex);
                 }
             });
             
@@ -390,7 +390,7 @@ LicensePlateWidget.prototype.setDuplicateWarnings = function(fieldName, value, s
                 
                 self.duplicateWarnings[value] = json;
                 
-                if(typeof self.formObj !== 'undefined'){
+                if(self.formObj){
                     self.formObj.win.fireEvent('duplicateWarningComplete', {
                         json: json,
                         fieldName: fieldName,

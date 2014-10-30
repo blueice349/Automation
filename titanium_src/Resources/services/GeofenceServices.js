@@ -8,7 +8,10 @@ var GeofenceServices = function() {
 	this.breached = {};
 	this.currentLocation = {};
 	
-	Ti.Geolocation.addEventListener('location', this._handleLocationChange.bind(this));
+	var self = this;
+	Ti.Geolocation.addEventListener('location', function(event) {
+		self._handleLocationChange(event);
+	});
 	
 	this._restoreState();
 };

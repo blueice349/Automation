@@ -1,5 +1,3 @@
-/*jslint eqeq:true,plusplus:true */
-
 Ti.App.isAndroid = (Ti.Platform.name === 'android');
 Ti.App.isIOS = !Ti.App.isAndroid;
 Ti.App.isIOS7 = false;

@@ -38,7 +38,10 @@ NFCCollectionGame.Tag = {
 NFCCollectionGame.prototype._initNFCEventDispatcher = function() {
 	try {
 		if (Ti.Platform.name === 'android') {
-			this.tagScannedCallback = this._handleTagScanned.bind(this);
+			var self = this;
+			this.tagScannedCallback = function(tag) {
+				self._handleTagScanned(tag);
+			};
 			this.nfc = new NFCEventDispatcher(Titanium.Android.currentActivity);
 			this.nfc.addNFCListener(this.tagScannedCallback);
 		}

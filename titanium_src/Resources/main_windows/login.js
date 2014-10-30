@@ -2,7 +2,10 @@
 /* global Omadi */
 
 var Display = require('lib/Display');
+var Utils = require('lib/Utils');
+var RDNGeofenceListener = require('services/RDNGeofenceListener');
 var Service = require('lib/Service');
+
 Display.setCurrentWindow(Ti.UI.currentWindow, 'login');
 
 // this sets the background color of every
@@ -11,9 +14,6 @@ Ti.UI.currentWindow.setBackgroundColor('#eee');
 //Common used functions
 Ti.include('/lib/functions.js');
 Ti.include('/main_windows/ios_geolocation.js');
-
-var Utils = require('lib/Utils');
-var RDNGeofenceListener = require('services/RDNGeofenceListener');
 
 
 Ti.API.info("Starting App.");

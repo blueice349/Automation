@@ -10,6 +10,12 @@ Ti.include('/lib/functions.js');
 
 var win;
 
+var numPagesLoaded = 0;
+var itemsPerPage = 40;
+var tallestDeviceHeight = Math.max(Ti.Platform.displayCaps.getPlatformHeight(), Ti.Platform.displayCaps.getPlatformWidth());
+var cachedData = [];
+var settingTableData = false;
+
 var initWin = function() {'use strict';
 	win = Ti.UI.currentWindow;
 	win.bundle = Node.getBundle(win.formType);
@@ -80,7 +86,6 @@ var calculateDistance = function(lat1, lng1, lat2, lng2, lat1Rad, lng1Rad, lat2R
 };
 
 var calculateDistances = function(data, currentLocation) {'use strict';
-
 	var lat1 = currentLocation.lat;
 	var lng1 = currentLocation.lng;
 	var lat1Rad = currentLocation.lat * Math.PI / 180;
@@ -132,7 +137,6 @@ var getRowTitleParts = function(title) {'use strict';
 };
 
 var createRowTitleLabel = function(data) {'use strict';
-	
 	var parts = getRowTitleParts(data.title);
 
 	var title = Ti.UI.createView({
@@ -189,12 +193,13 @@ var createTableRow = function(data) {'use strict';
 	return row;
 };
 
-var createTableRows = function(data) {'use strict';
+var createTableRows = function() {'use strict';
 	var tableData = [];
 	var i;
-	for (i = 0; i < data.length; i++) {
-		tableData.push(createTableRow(data[i]));
+	for (i = numPagesLoaded * itemsPerPage; i < cachedData.length && i < (numPagesLoaded + 1) * itemsPerPage; i++) {
+		tableData.push(createTableRow(cachedData[i]));
 	}
+	numPagesLoaded++;
 	return tableData;
 };
 
@@ -240,6 +245,24 @@ var createSearchBar = function() {'use strict';
     return searchBar;
 };
 
+var handleTableScroll = function(event) {'use strict';
+    if (Ti.App.isAndroid) {
+        if (!settingTableData && event.firstVisibleItem > itemsPerPage * (numPagesLoaded - 1)) {
+            settingTableData = true;
+			getTable().appendRow(createTableRows());
+            settingTableData = false;
+        }
+    } else {
+        if (!settingTableData && event.contentOffset.y + (tallestDeviceHeight * 6) > event.contentSize.height) {
+            settingTableData = true;
+            getTable().appendRow(createTableRows());
+            setTimeout(function() {
+                settingTableData = false;
+            }, 200);
+        }
+    }
+};
+
 var createTable = function() {'use strict';
 	var table = Titanium.UI.createTableView({
         separatorColor: '#ccc',
@@ -252,6 +275,7 @@ var createTable = function() {'use strict';
     });
     
     table.addEventListener('click', handleTableClick);
+    table.addEventListener('scroll', handleTableScroll);
     
     return table;
 };
@@ -260,7 +284,9 @@ var refresh = function(){'use strict';
 	getData(function(data) {
 		var table = getTable();
 		table.data = [];
-		table.appendRow(createTableRows(data));
+		cachedData = data;
+		numPagesLoaded = 0;
+		table.appendRow(createTableRows());
 	});
 };
 

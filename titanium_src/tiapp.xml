@@ -47,6 +47,16 @@
     <!--<guid>499c0629-a0d0-4306-a779-84c90b949759</guid>-->
     <guid>5127c4b7-1a9d-4a54-8071-b44d9b5e1689</guid>
     <iphone/>
+    <ios>
+        <plist>
+            <dict>
+                <key>NSLocationAlwaysUsageDescription</key>
+                <string>
+                    Allows detection of geofence breaches while the device is locked.
+                </string>
+            </dict>
+        </plist>
+    </ios>
     <android xmlns:android="http://schemas.android.com/apk/res/android">
         <services>
             <service url="android_gps_event.js"/>

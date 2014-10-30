@@ -2,7 +2,6 @@
 'use strict';
 
 var Utils = require('lib/Utils');
-var Service = require('lib/Service');
 var Database = require('lib/Database');
 var AlertQueue = require('lib/AlertQueue');
 var Cloud = require('ti.cloud');
@@ -56,6 +55,7 @@ exports.unsubscribeACSPush = function(callback) {
 };
 
 exports.androidPushCallback = function(e) {
+	var Service = require('lib/Service');
     var sound, dialog, payload;
     
     Ti.API.debug(JSON.stringify(e));

@@ -1,5 +1,3 @@
-/*jslint eqeq:true,plusplus:true*/
-
 var Omadi = Omadi || {};
 Omadi.utils = Omadi.utils || {};
 

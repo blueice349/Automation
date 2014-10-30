@@ -2607,10 +2607,13 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
                         if(textValues.length > 0){
                             textValue = textValues.join(', ');
                         }
-                            
-                        popupWinFieldObject.elements[0].dbValue = dbValues;
-                        popupWinFieldObject.elements[0].textValue = textValue;
-                        popupWinFieldObject.elements[0].setText(textValue);
+                        
+                        
+                        if (popupWinFieldObject && popupWinFieldObject.elements && popupWinFieldObject.elements[0]) {
+	                        popupWinFieldObject.elements[0].dbValue = dbValues;
+	                        popupWinFieldObject.elements[0].textValue = textValue;
+	                        popupWinFieldObject.elements[0].setText(textValue);
+                        }
                         
                         if(popupWinDescriptionLabel != null){                
                             popupWinFieldObject.descriptionLabel.setText(popupWinDescriptionLabel.text);

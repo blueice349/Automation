@@ -4,7 +4,6 @@
 var Utils = require('lib/Utils');
 var Database = require('lib/Database');
 var Display = require('lib/Display');
-var Service = require('lib/Service');
 var Node = require('objects/Node');
 var RDNGeofenceListener = require('services/RDNGeofenceListener');
 var ProgressBar = require('objects/ProgressBar');
@@ -2362,6 +2361,7 @@ exports.syncInitialFormItems = function(nodeCount, commentCount, numPages) {
 
 exports.syncInitialInstallRetryCount = 0;
 exports.syncInitialInstallDownloadNextPage = function() {
+	var Service = require('lib/Service');
     exports.initialInstallPage++;
     exports.syncInitialInstallRetryCount = 0;
     
@@ -2463,6 +2463,7 @@ exports.processInitialInstallJSON = function(json) {
 
 exports.syncInitialLastProgress = 0;
 exports.syncInitialFormPage = function(page) {
+	var Service = require('lib/Service');
     var http, syncURL;
     
     Ti.API.info("syncing for page " + page);

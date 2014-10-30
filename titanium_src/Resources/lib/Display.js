@@ -2,12 +2,6 @@
 'use strict';
 
 var Utils = require('lib/Utils');
-var AlertQueue = require('lib/AlertQueue');
-var Database = require('lib/Database');
-var Node = require('objects/Node');
-var Print = require('lib/Print');
-var DispatchBundle = require('lib/bundles/DispatchBundle');
-var RouteListener = require('objects/RouteListener');
 
 exports.backgroundGradientBlue = {
     type : 'linear',
@@ -619,6 +613,7 @@ exports.openLocalPhotosWindow = function() {
 };
 
 exports.showNewNotificationDialog = function() {
+	var AlertQueue = require('lib/AlertQueue');
     var newNotifications, dialog, inspectionAlertShowing, newWin;
     
     newNotifications = Ti.App.Properties.getObject('newNotifications', {
@@ -814,6 +809,7 @@ exports.getDrivingDirectionsTo = function(addressString) {
 
 exports.currentJobsWindow = null;
 exports.openJobsWindow = function() {
+	var DispatchBundle = require('lib/bundles/DispatchBundle');
 
     if(DispatchBundle.showJobsScreen()){
         
@@ -847,6 +843,9 @@ exports.openJobsWindow = function() {
  *  Also, the row is set to a background color of #fff when going to view or form
  */
 exports.showDialogFormOptions = function(e, extraOptions) {
+	var Database = require('lib/Database');
+	var Node = require('objects/Node');
+	var Print = require('lib/Print');
     var result, options, buttonData, to_type, to_bundle, isEditEnabled, 
         form_part, node_type, bundle, hasCustomCopy, postDialog, i,
         extraOptionCallback, extraOptionIndex, dispatchNid;
@@ -886,6 +885,7 @@ exports.showDialogFormOptions = function(e, extraOptions) {
     }
     
     if (node_type == 'route_assignment') {
+    	var RouteListener = require('objects/RouteListener');
     	var route = RouteListener.getRoute(e.row.nid);
     	if (route) {
 	    	extraOptions.push({

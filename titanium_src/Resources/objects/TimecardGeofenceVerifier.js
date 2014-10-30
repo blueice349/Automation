@@ -15,8 +15,13 @@ var TimecardGeofenceVerifier = function() {
 	this.locationReferences = null;
 	this.error = null;
 	
-	Ti.App.addEventListener('loggingOut', this._handleLoggingOut.bind(this));
-	Ti.Geolocation.addEventListener('location', this._handleLocationChanged.bind(this));
+	var self = this;
+	Ti.App.addEventListener('loggingOut', function(event) {
+		self._handleLoggingOut(event);
+	});
+	Ti.App.addEventListener('location', function(event) {
+		self._handleLocationChanged(event);
+	});
 };
 
 /* PUBLIC METHODS */
@@ -59,13 +64,13 @@ TimecardGeofenceVerifier.prototype.getError = function() {
 };
 
 TimecardGeofenceVerifier.prototype.clearCache = function() {
-	var bundle = Node.getBundle('timecard');
-	this.enabled = bundle.data.timecard.allow_geofence_verification == 1;
-	if (JSON.stringify(bundle.data.locations) !== JSON.stringify(this._getLocationReferences())) {
-		this.locationReferences = bundle.data.locations;
-		this.currentGeofences = null;
-		this.geofences = null;
-	}
+	// var bundle = Utils.getBundle('timecard');
+	// this.enabled = bundle.data.timecard && bundle.data.timecard.allow_geofence_verification == 1;
+	// if (JSON.stringify(bundle.data.timecard.locations) !== JSON.stringify(this._getLocationReferences())) {
+		// this.locationReferences = bundle.data.timecard.locations;
+		// this.currentGeofences = null;
+		// this.geofences = null;
+	// }
 };
 
 /* PRIVATE METHODS */
@@ -76,7 +81,10 @@ TimecardGeofenceVerifier.prototype._isLocationFresh = function() {
 	
 	if (now - timestamp > 900000) { // 15 minutes
 		this.error = 'Unable to determine current location. Please make sure GPS is on and has a good signal.';
-		Ti.Geolocation.getCurrentPosition(this._handleFreshLocationAccuired.bind(this));
+		var self = this;
+		Ti.Geolocation.getCurrentPosition(function(event){
+			self._handleFreshLocationAccuired(event);
+		});
 		return false;
 	}
 	return true;
@@ -150,7 +158,7 @@ TimecardGeofenceVerifier.prototype._getUserJson = function() {
 
 TimecardGeofenceVerifier.prototype._getLocationReferences = function() {
 	var bundle = Node.getBundle('timecard');
-	this.locationReferences = bundle.data.timecard.locations || [];
+	this.locationReferences = bundle.data.timecard && bundle.data.timecard.locations ? bundle.data.timecard.locations : [];
 	return this.locationReferences;
 };
 

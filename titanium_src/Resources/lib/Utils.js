@@ -1,10 +1,7 @@
 /*jslint node:true */
 'use strict';
 
-
 var Database = require('lib/Database');
-var Service = require('lib/Service');
-var Data = require('lib/Data');
 
 function getUid(){
     var loginJson = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
@@ -1096,7 +1093,7 @@ exports.listSearchNodeMatchesSearchCriteria = function(node, criteria) {
                                             if(typeof node[field_name] !== 'undefined'){
                                                 if(typeof node[field_name].textValues !== 'undefined'){
                                                     for(i = 0; i < node[field_name].textValues.length; i ++){
-                                                        jsonValues.push(JSON.parse(node[field_name].textValues[i]));
+                                                        jsonValues.push(exports.getParsedJSON(node[field_name].textValues[i]));
                                                     }
                                                 }
                                             }
@@ -1921,6 +1918,9 @@ exports.getUsername = function(uid) {
 };
 
 exports.closeApp = function() {
+	var Data = require('lib/Data');
+	var Service = require('lib/Service');
+	
 	exports.closeApp.dialogShown = exports.closeApp.dialogShown || false;
 	
     if(Ti.App.isAndroid){

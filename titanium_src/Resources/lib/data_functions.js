@@ -453,11 +453,6 @@ Omadi.data.resetDatabases = function(){"use strict";
     Database.removeAllData();
 };
 
-
 Omadi.data.processFetchedJson = function(json){"use strict";
 	Data.processFetchedJson(json);
-};
-
-Omadi.data.processCommentJson = function(json) {"use strict";
-    Data.processCommentJson(json);
 };
