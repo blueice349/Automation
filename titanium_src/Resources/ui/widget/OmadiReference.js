@@ -272,8 +272,8 @@ OmadiReferenceWidget.prototype._getAutoCompleteElement = function(index) {
 		        cache.element.addEventListener('blur', function() {
 		        	self._hideAutoCompleteTable(index);
 		        });
-		        cache.element.addEventListener('change', function() {
-		        	self._autoCompleteElementChanged(index);
+		        cache.element.addEventListener('change', function(event) {
+		        	self._autoCompleteElementChanged(index, event);
 		        });
 			}
 		}
@@ -443,8 +443,8 @@ OmadiReferenceWidget.prototype._getAutoCompleteTable = function(index) {
 	        
 		    if (this.instance.can_edit) {
 		    	var self = this;
-		    	cache.autoCompleteTable.addEventListener('click', function() {
-		    		self._autoCompleteTableClicked(index);
+		    	cache.autoCompleteTable.addEventListener('click', function(event) {
+		    		self._autoCompleteTableClicked(index, event);
 		    	});
 		    }
 		}
@@ -484,7 +484,7 @@ OmadiReferenceWidget.prototype._getAddressLabel = function(index) {
 		        height: 0,
 		        width: Ti.UI.FILL,
 		        textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
-		        color: '#666',
+		        color: '#265089',
 		        font: {
 		            fontSize: 12
 		        },
