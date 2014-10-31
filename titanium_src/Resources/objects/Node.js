@@ -569,7 +569,7 @@ Node.resetFakeFieldCache = function(){
   Node.cache.fakeFields = {};  
 };
 
-Node.resetRegionsCache = function(){
+Node.resetRegionCache = function(){
   Node.cache.regions = {};  
 };
 

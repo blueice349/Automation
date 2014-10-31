@@ -213,9 +213,10 @@ NodeView.prototype.addIOSToolbar = function(allowActions){"use strict";
         style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
     });
     
+    var self = this;
     back.addEventListener('click', function() {
         try{
-            ActiveObj.nodeViewTabsObj.close();
+            self.nodeViewTabsObj.close();
         }
         catch(ex){
             Utils.sendErrorReport("Exception closing iOS back node view: " + ex);

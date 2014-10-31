@@ -1218,7 +1218,7 @@ CommentForm.prototype.saveComment = function(){"use strict";
                     // Let the parent window know that the comments have changed, and that the list should be updated
                     this.formViewParent.fireEvent('updateView');
                     
-                    Ti.App.fireEvent('incrementCommentTab');
+                    Ti.App.fireEvent('incrementCommentTab', {nid: this.nid});
                     
                     // Remove this view from the parent and set this view to null to deallocate memory
                     this.formViewParent.remove(this.formView);

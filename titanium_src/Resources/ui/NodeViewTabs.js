@@ -1,7 +1,7 @@
 /* jshint globalstrict:true */
 'use strict';
 
-var _instance = null;
+var _instance = {};
 
 var NodeView = require('ui/NodeView');
 var Utils = require('lib/Utils');
@@ -32,21 +32,21 @@ function NodeViewTabs(type, nid) {
     this.currentWorkFormPart = 0;
 }
 
-function getInstance() {
-    if(_instance === null){
-        _instance = new NodeViewTabs();
+exports.getInstance = function(type, nid) {
+    if(!_instance[nid]){
+        _instance[nid] = new NodeViewTabs(type, nid);
     }   
     
-    return _instance;
-}
+    return _instance[nid];
+};
 
-function incrementCommentTab() {
+function incrementCommentTab(event) {
     var count, title;
     try{
-        count = _instance.commentsTab.commentCount + 1;
+        count = _instance[event.nid].commentsTab.commentCount + 1;
         title = count + ' Comment' + (count == 1 ? '' : 's');
-        _instance.commentsTab.setTitle(title);
-        _instance.commentsTab.commentCount = count; 
+        _instance[event.nid].commentsTab.setTitle(title);
+        _instance[event.nid].commentsTab.commentCount = count; 
     }
     catch(ex){
         Utils.sendErrorReport("Exception incrementing comment count in view tab: " + ex);
@@ -71,10 +71,11 @@ NodeViewTabs.prototype.addActions = function() {
             
         if (Ti.App.isAndroid) {
             
+            var self = this;
             this.tabGroup.activity.onCreateOptionsMenu = function(e) {
                 var bundle, menu_edit, customCopy, to_type, to_bundle, order, menu_print, node;
                 
-                node = getInstance().workNode;
+                node = exports.getInstance(self.type, self.nid).workNode;
                 
                 order = 0;
                 bundle = Node.getBundle(node.type);
@@ -91,7 +92,7 @@ NodeViewTabs.prototype.addActions = function() {
                     androidMenuItemData[order] = {
                         type: node.type,
                         nid: node.nid,
-                        form_part: getInstance().currentWorkFormPart
+                        form_part: exports.getInstance(self.type, self.nid).currentWorkFormPart
                     };
                     
                     menu_edit.addEventListener("click", openAndroidMenuItemNodeView);
@@ -163,6 +164,7 @@ NodeViewTabs.prototype.addActions = function() {
 NodeViewTabs.prototype.getTabs = function(allowActions) {
     var openDispatch, workBundle, result, 
         tempDispatchNid, commentsCount;
+	var self = this;
     
     if (typeof allowActions == 'undefined') {
         allowActions = true;
@@ -256,7 +258,7 @@ NodeViewTabs.prototype.getTabs = function(allowActions) {
             });
             if(Ti.App.isIOS){
                 this.dispatchWindow.addEventListener('closeNodeView', function(){
-                    getInstance().close();
+                    self.close();
                 });
             }
         }
@@ -275,7 +277,7 @@ NodeViewTabs.prototype.getTabs = function(allowActions) {
             
             if(Ti.App.isIOS){
                 this.workWindow.addEventListener('closeNodeView', function(){
-                    getInstance().close();
+                    self.close();
                 });
             }
         }
@@ -342,7 +344,7 @@ NodeViewTabs.prototype.getTabs = function(allowActions) {
             
             try{
                 // Add actions after the work node has been fully loaded
-                getInstance().addActions();
+                self.addActions();
                 
             }
             catch(ex){}
@@ -354,23 +356,25 @@ NodeViewTabs.prototype.getTabs = function(allowActions) {
 
 NodeViewTabs.prototype.savedNode = function(e) {
 	if (e.saveType != 'continuous') {
-        _instance.close();
+        _instance[e.nodeNid].close();
     }
 };
 
 NodeViewTabs.prototype.loggingOut = function() {
-    _instance.close();
+	for (var nid in _instance) {
+    	_instance[nid].close();
+    }
 };
 
 NodeViewTabs.prototype.close = function() {
     try{
         if(this.dispatchWindow !== null){
-            this.dispatchWindow.close();
+        	this.tabGroup.removeTab(this.dispatchWindow);
             this.dispatchWindow = null;
         }
         
         if(this.workWindow !== null){
-            this.workWindow.close();
+        	this.tabGroup.removeTab(this.workWindow);
             this.workWindow = null;
         }
     }
@@ -392,6 +396,6 @@ exports.getTabs = function(type, nid, allowActions) {
         allowActions = true;
     }
         
-    _instance = new NodeViewTabs(type, nid);
-    return _instance.getTabs(allowActions);
+    var instance = exports.getInstance(type, nid);
+    return instance.getTabs(allowActions);
 };

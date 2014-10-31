@@ -175,7 +175,7 @@ OmadiReferenceWidget.prototype._getSelectElement = function(index) {
 		    if (this.instance.can_edit) {
 		    	var self = this;
 		    	cache.element.addEventListener('click', function() {
-		    		self._selectElementClicked(index)
+		    		self._selectElementClicked(index);
 		    	});
 		    }
 		}
@@ -211,7 +211,7 @@ OmadiReferenceWidget.prototype._getOptionDialog = function(index) {
 		    
 		    var self = this;
 		    cache.optionDialog.addEventListener('click', function() {
-		    	self_optionDialogClicked(index);
+		    	self._optionDialogClicked(index);
 		    });
 		}
 		return cache.optionDialog;

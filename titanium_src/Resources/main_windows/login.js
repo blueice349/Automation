@@ -131,9 +131,7 @@ function createAndroidNotifications() {"use strict";
     }
 }
 
-function scrollBoxesToTop(x) {"use strict";
-    var calculatedTop;
-
+function scrollBoxesToTop() {"use strict";
     if (Ti.Platform.osname !== 'ipad') {
         if (portal && scrollView) {
         	scrollView.scrollTo(0, portal.rect.y + scrollView.rect.y - (Ti.App.isIOS7 ? 30 : 10));
@@ -355,11 +353,11 @@ function openMainScreen(loggedIn){"use strict";
     }
 }
 
-Ti.App.addEventListener("sendUpdates", function() {
+Ti.App.addEventListener("sendUpdates", function() {"use strict";
 	Service.sendUpdatesFromContext();
 });
 
-Ti.App.addEventListener("uploadFile", function(event) {
+Ti.App.addEventListener("uploadFile", function(event) {"use strict";
 	Service.uploadFileFromContext(event.isBackground);
 });
 

@@ -5,10 +5,6 @@ var Utils = require('lib/Utils');
 var Database = require('lib/Database');
 var AlertQueue = require('lib/AlertQueue');
 var Cloud = require('ti.cloud');
-var CloudPush;
-if(Ti.Platform.name === 'android'){
-    CloudPush = require('ti.cloudpush');
-}
 
 exports.logoutUser = function() {
     Ti.App.registeredPushListener = false;
@@ -17,7 +13,7 @@ exports.logoutUser = function() {
 
 exports.unsubscribeACSPush = function(callback) {
     if(Ti.App.isAndroid){
-        CloudPush.removeEventListener('callback', exports.androidPushCallback);
+        require('ti.cloudpush').removeEventListener('callback', exports.androidPushCallback);
     }
     
     if(typeof callback === 'undefined'){
