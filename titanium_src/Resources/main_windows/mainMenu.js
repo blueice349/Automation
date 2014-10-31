@@ -1093,9 +1093,6 @@ function openFormWindow(e){"use strict";
     Ti.App.removeEventListener('openFormWindow', openFormWindow);
     Ti.App.addEventListener('openFormWindow', openFormWindow);
     
-    Ti.App.removeEventListener('sendUpdates', Service.sendUpdates);
-    Ti.App.addEventListener('sendUpdates', Service.sendUpdates);
-    
     Ti.App.removeEventListener('sendComments', sendCommentsMainMenu);
     Ti.App.addEventListener('sendComments', sendCommentsMainMenu);
     
@@ -1177,7 +1174,6 @@ function openFormWindow(e){"use strict";
             Ti.App.removeEventListener("doneSendingPhotos", doneSendingPhotosMainMenu);
             Ti.App.removeEventListener("sendingData", sendingDataMainMenu);
             Ti.App.removeEventListener('loggingOut', loggingOutMainMenu);
-            Ti.App.removeEventListener('sendUpdates', Service.sendUpdates);
             Ti.App.removeEventListener('sendComments', sendCommentsMainMenu);
             Ti.App.removeEventListener('openViewWindow', openViewWindowMainMenu);
             Ti.App.removeEventListener('omadi:finishedDataSync', setupBottomButtons);

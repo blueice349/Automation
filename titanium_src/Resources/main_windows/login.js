@@ -6,6 +6,8 @@ var Utils = require('lib/Utils');
 var RDNGeofenceListener = require('services/RDNGeofenceListener');
 var Service = require('lib/Service');
 
+Service.initActivityId();
+
 Display.setCurrentWindow(Ti.UI.currentWindow, 'login');
 
 // this sets the background color of every
@@ -352,6 +354,14 @@ function openMainScreen(loggedIn){"use strict";
         Utils.sendErrorReport("Exception opening main menu screen: " + ex);
     }
 }
+
+Ti.App.addEventListener("sendUpdates", function() {
+	Service.sendUpdatesFromContext();
+});
+
+Ti.App.addEventListener("uploadFile", function(event) {
+	Service.uploadFileFromContext(event.isBackground);
+});
 
 ( function() {"use strict";
 

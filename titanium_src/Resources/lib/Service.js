@@ -15,9 +15,11 @@ var AndroidBackground = require('lib/android/AndroidBackground');
 
 exports.doBackgroundUploads = null;
 
-var id = new Date().toString();
-exports.activityId = id;
-Titanium.App.Properties.setString('activityId', id);
+exports.initActivityId = function() {
+	var id = new Date().toString();
+	exports.activityId = id;
+	Titanium.App.Properties.setString('activityId', id);
+};
 
 exports.checkUpdate = function(useProgressBar, userInitiated){
     Ti.API.info("Checking for sync updates.");
@@ -57,34 +59,37 @@ exports.checkUpdate = function(useProgressBar, userInitiated){
 };
 
 exports.sendUpdates = function() {
-	exports.sendUpdates.sendUpdateRetries = exports.sendUpdates.sendUpdateRetries || 0;
-	exports.sendUpdates.lastSendUpdates = exports.sendUpdates.lastSendUpdates || 0;
+	Ti.App.fireEvent('sendUpdates');
+};
+
+exports.sendUpdatesFromContext = function() {
+	exports.sendUpdatesFromContext.sendUpdateRetries = exports.sendUpdatesFromContext.sendUpdateRetries || 0;
+	exports.sendUpdatesFromContext.lastSendUpdates = exports.sendUpdatesFromContext.lastSendUpdates || 0;
     var isSendingData, http, secondsLeft, timestamp;
     
     if (exports.isDuplicateActivity()) {
-    	console.error('Rejecting duplicate ' + (Ti.App.isAndroid ? 'Android' : 'iOS') + ' activity in Service.sendUpdates');
-    	//Utils.sendErrorReport('Rejecting duplicate ' + (Ti.App.isAndroid ? 'Android' : 'iOS') + ' activity in Service.sendUpdates');
+    	Utils.sendErrorReport('Rejecting duplicate ' + (Ti.App.isAndroid ? 'Android' : 'iOS') + ' activity in Service.sendUpdates');
     	return;
     }
     
     Ti.API.info("Sending Data Now");
     timestamp = Utils.getUTCTimestamp();
     
-    if ((timestamp - exports.sendUpdates.lastSendUpdates) < 2) {
+    if ((timestamp - exports.sendUpdatesFromContext.lastSendUpdates) < 2) {
         // Do not send updates within 2 seconds of each other
         Ti.API.info("Not allowing data send - too soon after previous send.");
         return;
     }
     
-    exports.sendUpdates.lastSendUpdates = timestamp;
+    exports.sendUpdatesFromContext.lastSendUpdates = timestamp;
 
     if (Ti.Network.online) {
         isSendingData = exports.isSendingData();
         if (isSendingData) {
-            if (exports.sendUpdates.sendUpdateRetries < 10) {
+            if (exports.sendUpdatesFromContext.sendUpdateRetries < 10) {
                 setTimeout(exports.sendUpdates, 1000);
                 
-                secondsLeft = 10 - exports.sendUpdates.sendUpdateRetries;
+                secondsLeft = 10 - exports.sendUpdatesFromContext.sendUpdateRetries;
                 if (secondsLeft < 0) {
                     secondsLeft = 0;
                 }
@@ -93,11 +98,11 @@ exports.sendUpdates = function() {
                     message : 'Waiting to send data... ' + secondsLeft
                 });
             } else {
-                exports.sendUpdates.sendUpdateRetries = 0;
+                exports.sendUpdatesFromContext.sendUpdateRetries = 0;
                 isSendingData = exports.setSendingData(false);
                 exports.sendUpdates();
             }
-            exports.sendUpdates.sendUpdateRetries++;
+            exports.sendUpdatesFromContext.sendUpdateRetries++;
         } else {
             exports.setSendingData(true);
             
@@ -673,11 +678,14 @@ exports.fetchUpdates = function(useProgressBar, userInitiated) {
 };
 
 exports.uploadFile = function(isBackground) {
+	Ti.App.fireEvent('uploadFile', {isBackground: isBackground});
+};
+
+exports.uploadFileFromContext = function(isBackground) {
 	isBackground =  isBackground || false;
 	
 	if (exports.isDuplicateActivity()) {
-    	console.error('Rejecting duplicate ' + (Ti.App.isAndroid ? 'Android' : 'iOS') + ' activity in Service.uploadFile');
-		//Utils.sendErrorReport('Rejecting duplicate ' + (Ti.App.isAndroid ? 'Android' : 'iOS') + ' activity in Service.uploadFile');
+		Utils.sendErrorReport('Rejecting duplicate ' + (Ti.App.isAndroid ? 'Android' : 'iOS') + ' activity in Service.uploadFile');
 		return;
 	}
 
@@ -809,7 +817,9 @@ exports.uploadFile = function(isBackground) {
 };
 
 exports.isDuplicateActivity = function() {
-	return Titanium.App.Properties.getString('activityId', '') !== exports.activityId;
+	var original = Titanium.App.Properties.getString('activityId', '');
+	var current = exports.activityId;
+	return original !== current;
 };
 
 exports.getLastUploadStartTimestamp = function() {
