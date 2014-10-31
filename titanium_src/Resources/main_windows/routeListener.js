@@ -48,7 +48,10 @@ var Route = function(route) {
 
 Route.prototype._initNFCEventDispatcher = function() {
 	if (Ti.App.isAndroid) {
-		this.tagScannedCallback = this._handleTagScanned.bind(this);
+		var self = this;
+		this.tagScannedCallback = function(tag) {
+			self._handleTagScanned(tag);
+		};
 		this.nfcEventDispatcher = new NFCEventDispatcher(Titanium.Android.currentActivity);
 		this.nfcEventDispatcher.addNFCListener(this.tagScannedCallback);
 	}
@@ -110,12 +113,13 @@ Route.prototype._futureLocationScanned = function(tag, tagIndex) {
 		buttonNames: ['Go Back', 'Skip']
     });
     
+    var self = this;
     dialog.addEventListener('click', function(event) {
     	if (event.index == 1) { // skip
-    		this._setIndex(tagIndex);
-    		this._currentLocationScanned(tag);
+    		self._setIndex(tagIndex);
+    		self._currentLocationScanned(tag);
     	}
-    }.bind(this));
+    });
     
     showDialog(dialog);
 };
@@ -126,7 +130,10 @@ Route.prototype._previousLocationScanned = function() {
        buttonNames: ['Ok']
     });
     
-    dialog.addEventListener('click', this._calloutNextCheckpoint.bind(this));
+    var self = this;
+    dialog.addEventListener('click', function() {
+    	self._calloutNextCheckpoint();
+    });
     
     showDialog(dialog);
 };

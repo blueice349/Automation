@@ -26,8 +26,11 @@ NFCScanWindow.prototype._init = function() {
 
 NFCScanWindow.prototype._initNFCEventDispatcher = function() {
 	if (Ti.App.isAndroid) {
+		var self = this;
 		this.nfcListener = new NFCEventDispatcher(Titanium.Android.currentActivity);
-		this.nfcListener.addNFCListener(this._handleTagScanned.bind(this));
+		this.nfcListener.addNFCListener(function(tag) {
+			self._handleTagScanned(tag);
+		});
 	}
 };
 
@@ -115,7 +118,10 @@ NFCScanWindow.prototype._getCancelButton = function() {
 	        }
 	    });
 	    
-    	this.cancelButton.addEventListener('click', this._closeWindow.bind(this));
+	    var self = this;
+    	this.cancelButton.addEventListener('click', function() {
+    		self._closeWindow();
+    	});
 	}
 	
 	return this.cancelButton;

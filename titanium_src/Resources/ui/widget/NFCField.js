@@ -127,7 +127,10 @@ NFCWidget.prototype._getScanButton = function() {
 	    	this.scanButton.text = 'Clear';
 	    }
 	    
-	    this.scanButton.addEventListener('click', this._scanButtonPressed.bind(this));
+	    var self = this;
+	    this.scanButton.addEventListener('click', function() {
+	    	self._scanButtonPressed();
+	    });
 	}
 	return this.scanButton;
 };
@@ -169,7 +172,10 @@ NFCWidget.prototype._getClearNFCConfimationDialog = function() {
 			title: 'Are you sure you want to clear this NFC tag?'
 		});
 		
-		this.clearNFCConfimationDialog.addEventListener('click', this._clearNFCConfimationDialogCallback.bind(this));
+		var self = this;
+		this.clearNFCConfimationDialog.addEventListener('click', function(event) {
+			self._clearNFCConfimationDialogCallback(event);
+		});
 	}
 	return this.clearNFCConfimationDialog;
 };
@@ -202,12 +208,15 @@ NFCWidget.prototype._clearNFC = function() {
 
 NFCWidget.prototype._getScanWindow = function() {
 	if (this.scanWindow === null) {
+		var self = this;
 		this.scanWindow = Ti.UI.createWindow({  
 	        orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT],
 	        modal: true,
 	        navBarHidden: true,
         	url: '/main_windows/nfcScanWindow.js',
-        	callback: this._setNFC.bind(this)
+        	callback: function(data) {
+        		self._setNFC(data);
+        	}
 	    });
 	}
 	

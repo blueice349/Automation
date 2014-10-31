@@ -11,6 +11,7 @@ var Node = function() {
 };
 
 Node.cache = {};
+Node.cache.fields = {};
 Node.cache.fakeFields = {};
 Node.cache.regions = {};
 

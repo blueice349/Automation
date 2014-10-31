@@ -129,19 +129,12 @@ function createAndroidNotifications() {"use strict";
     }
 }
 
-function scrollBoxesToTop() {"use strict";
+function scrollBoxesToTop(x) {"use strict";
     var calculatedTop;
 
     if (Ti.Platform.osname !== 'ipad') {
-        if ( typeof scrollView !== 'undefined' && scrollView !== null) {
-            calculatedTop = portal.convertPointToView({
-                x : 0,
-                y : 0
-            }, scrollView);
-            
-            if(typeof calculatedTop.y !== 'undefined'){
-                scrollView.scrollTo(0, calculatedTop.y + scrollPositionY - 10);
-            }
+        if (portal && scrollView) {
+        	scrollView.scrollTo(0, portal.rect.y + scrollView.rect.y - (Ti.App.isIOS7 ? 30 : 10));
         }
     }
 }

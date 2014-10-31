@@ -173,7 +173,10 @@ OmadiReferenceWidget.prototype._getSelectElement = function(index) {
 		    cache.element.text = this.textValues[index];
 		    
 		    if (this.instance.can_edit) {
-		    	cache.element.addEventListener('click', this._selectElementClicked.bind(this, index));
+		    	var self = this;
+		    	cache.element.addEventListener('click', function() {
+		    		self._selectElementClicked(index)
+		    	});
 		    }
 		}
 		return cache.element;
@@ -206,7 +209,10 @@ OmadiReferenceWidget.prototype._getOptionDialog = function(index) {
 		    	cancel: -1
 		    });
 		    
-		    cache.optionDialog.addEventListener('click', this._optionDialogClicked.bind(this, index));
+		    var self = this;
+		    cache.optionDialog.addEventListener('click', function() {
+		    	self_optionDialogClicked(index);
+		    });
 		}
 		return cache.optionDialog;
 	} catch (error) {
@@ -256,10 +262,19 @@ OmadiReferenceWidget.prototype._getAutoCompleteElement = function(index) {
 		        cache.element.blurred = true;
 		        cache.element.color = this.dbValues[index] > 0 ? OmadiReferenceWidget.GREEN : OmadiReferenceWidget.GREY;
 		        
-		        cache.element.addEventListener('focus', this._autoCompleteElementTouched.bind(this, index));
-		        cache.element.addEventListener('click', this._autoCompleteElementTouched.bind(this, index));
-		        cache.element.addEventListener('blur', this._hideAutoCompleteTable.bind(this, index));
-		        cache.element.addEventListener('change', this._autoCompleteElementChanged.bind(this, index));
+		        var self = this;
+		        cache.element.addEventListener('focus', function() {
+		        	self._autoCompleteElementTouched(index);
+		        });
+		        cache.element.addEventListener('click', function() {
+		        	self._autoCompleteElementTouched(index);
+		        });
+		        cache.element.addEventListener('blur', function() {
+		        	self._hideAutoCompleteTable(index);
+		        });
+		        cache.element.addEventListener('change', function() {
+		        	self._autoCompleteElementChanged(index);
+		        });
 			}
 		}
 		return cache.element;
@@ -427,7 +442,10 @@ OmadiReferenceWidget.prototype._getAutoCompleteTable = function(index) {
 	        });
 	        
 		    if (this.instance.can_edit) {
-		    	cache.autoCompleteTable.addEventListener('click', this._autoCompleteTableClicked.bind(this, index));
+		    	var self = this;
+		    	cache.autoCompleteTable.addEventListener('click', function() {
+		    		self._autoCompleteTableClicked(index);
+		    	});
 		    }
 		}
 		return cache.autoCompleteTable;
@@ -475,7 +493,10 @@ OmadiReferenceWidget.prototype._getAddressLabel = function(index) {
 		    
 		    this._updateAddressLabel(index, this.dbValues[index]);
 		    
-		    cache.addressLabel.addEventListener('click', this._addressLabelClicked.bind(this, index));
+		    var self = this;
+		    cache.addressLabel.addEventListener('click', function() {
+		    	self._addressLabelClicked(index);
+		    });
 		}
 		return cache.addressLabel;
 	} catch (error) {
@@ -547,7 +568,10 @@ OmadiReferenceWidget.prototype._getAddButton = function() {
 	            height: Ti.UI.SIZE
 	        });
 	        
-	        this.addButton.addEventListener('click', this._addButtonClicked.bind(this));
+	        var self = this;
+	        this.addButton.addEventListener('click', function() {
+	        	self._addButtonClicked();
+	        });
 		}
 		return this.addButton;
 	} catch (error) {

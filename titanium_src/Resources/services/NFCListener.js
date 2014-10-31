@@ -38,13 +38,19 @@ NFCListener.prototype._initListeners = function() {
 };
 
 NFCListener.prototype._initNetworkListener = function() {
-	this.networkChangedCallback = this._handleNetworkChanged.bind(this);
+	var self = this;
+	this.networkChangedCallback = function(event) {
+		self._handleNetworkChanged(event);
+	};
 	Ti.Network.addEventListener('change', this.networkChangedCallback);
 };
 
 NFCListener.prototype._initNFCEventDispatcher = function() {
 	if (Ti.App.isAndroid && !this.manualScan) {
-		this.tagScannedCallback = this._handleTagScanned.bind(this);
+		var self = this;
+		this.tagScannedCallback = function(tag) {
+			self._handleTagScanned(tag);
+		};
 		this.nfc = new NFCEventDispatcher(this.activity);
 		this.nfc.addNFCListener(this.tagScannedCallback);
 	}
@@ -179,9 +185,10 @@ NFCListener.prototype._sendData = function(tries) {
 };
 
 NFCListener.prototype._getHTTPSuccessFunction = function(data) {
+	var self = this;
 	return function(event) {
 		try {
-			var sending = this._getSending();
+			var sending = self._getSending();
 			var response = JSON.parse(event.source.responseText);
 			
 			// Add failed uploads to the backlog
@@ -190,34 +197,35 @@ NFCListener.prototype._getHTTPSuccessFunction = function(data) {
 					var nfcData = sending[response.failed[i].id];
 					if (response.failed[i].retry) {
 						nfcData.tries++;
-						this._addToBacklog(nfcData);
+						self._addToBacklog(nfcData);
 					} else {
 						Utils.sendErrorReport('NFC scan upload rejected by server: ' + response.failed[i].message + ', ' + JSON.stringify(nfcData));
 					}
 				}
 			}
 			
-			this._removeFromSending(data);
-			this._saveState();
+			self._removeFromSending(data);
+			self._saveState();
 			
 			if (response.failed) {
-				this._sendData();
+				self._sendData();
 			}
 		} catch (error) {
 			Ti.API.error('Error in NFCListener.prototype._getHTTPSuccessFunction: ' + error);
 		}
-	}.bind(this);
+	};
 };
 
 NFCListener.prototype._getHTTPErrorFunction = function(data, networkData, tries) {
+	var self = this;
 	return function(event) {
-		this._removeFromSending(data);
-		this._addToBacklog(data);
+		self._removeFromSending(data);
+		self._addToBacklog(data);
 		// No need to save state as it will just concatenate sending and backlog.
 		
 		if (Ti.Network.online) {
 			if (tries < 10) {
-				this._sendData(tries + 1);
+				self._sendData(tries + 1);
 			} else {
 				var times = [];
 				for (var i = 0; i < data.length; i++) {
@@ -228,7 +236,7 @@ NFCListener.prototype._getHTTPErrorFunction = function(data, networkData, tries)
 				Utils.sendErrorReport('Error in NFCListener.prototype._getHTTPErrorFunction: Quitting after 10 tries: ' + JSON.stringify(event) + ', ' + networkData);
 			}
 		}
-	}.bind(this);
+	};
 };
 
 NFCListener.prototype._getNetworkData = function(data) {
