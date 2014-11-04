@@ -5,9 +5,10 @@ var RouteLocation = require('objects/RouteLocation');
 var RouteListener = require('objects/RouteListener');
 var Node = require('objects/Node');
 var Utils = require('lib/Utils');
+var Display = require('lib/Display');
 var Service = require('lib/Service');
 var NFCEventDispatcher = require('services/NFCEventDispatcher');
-var NFCListener = require('services/NFCListener');
+var NFC = require('services/NFC');
 
 var commonDialog;
 function showDialog(dialog) {
@@ -64,10 +65,6 @@ Route.prototype._cleanUpNFCEventDispatcher = function() {
 };
 
 Route.prototype._handleTagScanned = function(tag) {
-	if (nfcScanner) {
-		nfcScanner.scanTag(tag);
-	}
-	
 	var index = this._getIndex();
 	var tagIndex = this._getTagIndex(tag, this._getIndex());
 	
@@ -92,7 +89,8 @@ Route.prototype._getTagIndex = function(tag, start) {
 	return -1;
 };
 
-Route.prototype._currentLocationScanned = function() {
+Route.prototype._currentLocationScanned = function(tag) {
+	NFC.sendScan(tag);
 	this._setIndex(this._getIndex() + 1);
 	if (this._getIndex() == this.locationNids.length) {
 		this._completeRoute();
@@ -116,6 +114,9 @@ Route.prototype._futureLocationScanned = function(tag, tagIndex) {
     var self = this;
     dialog.addEventListener('click', function(event) {
     	if (event.index == 1) { // skip
+    		for (var i = self._getIndex(); i <= tagIndex; i++) {
+    			NFC.sendSkip(self.locationNids[i], 'nfc');
+    		}
     		self._setIndex(tagIndex);
     		self._currentLocationScanned(tag);
     	}
@@ -277,7 +278,7 @@ Route.prototype._getNode = function() {
 
 Route.prototype._drawInitialElements = function() {
 	var wrapper = Ti.UI.createView({
-		layout: 'vertical',
+		layout: 'absolute',
 		width: '80%'
 	});
 	
@@ -286,7 +287,7 @@ Route.prototype._drawInitialElements = function() {
 		left: 0,
 		top: 15,
 		width: '100%',
-		height: Ti.UI.SIZE
+		height: 45
 	});
 	var routeTitleLabel = Ti.UI.createLabel({
 		text: this.title,
@@ -302,7 +303,7 @@ Route.prototype._drawInitialElements = function() {
 	var bodyView = Ti.UI.createView({
 		layout: 'vertical',
 		left: 0,
-		top: 15,
+		top: 60,
 		width: '100%',
 		height: Ti.UI.SIZE
 	});
@@ -331,7 +332,45 @@ Route.prototype._drawInitialElements = function() {
 		height: Ti.UI.SIZE
 	});
 	
-	
+	var footerView = Ti.UI.createView({
+		layout: 'absolute',
+		left: 0,
+		bottom: 0,
+		width: '100%',
+		height: 45
+	});
+	var skipButton = Titanium.UI.createLabel({
+	    text : 'Skip',
+	    width : 60,
+	    horizontalAlign : 'right',
+	    textAlign : 'center',
+	    right : 10,
+	    height : 30,
+	    backgroundGradient : Display.backgroundGradientGray,
+	    font : {
+	        fontSize : 14,
+	        fontWeight : 'bold'
+	    },
+	    borderRadius : 5,
+	    color : '#000',
+	    style : Ti.UI.iPhone.SystemButtonStyle.PLAIN
+	});
+	var completeButton = Titanium.UI.createLabel({
+	    text : 'Complete',
+	    width : 70,
+	    horizontalAlign : 'right',
+	    textAlign : 'center',
+	    left : 10,
+	    height : 30,
+	    backgroundGradient : Display.backgroundGradientGray,
+	    font : {
+	        fontSize : 14,
+	        fontWeight : 'bold'
+	    },
+	    borderRadius : 5,
+	    color : '#000',
+	    style : Ti.UI.iPhone.SystemButtonStyle.PLAIN
+	});
 	
 	headerView.add(routeTitleLabel);
 	headerView.add(this._getRouteProgressLabel());
@@ -341,10 +380,39 @@ Route.prototype._drawInitialElements = function() {
 	bodyView.add(descriptionLabel);
 	bodyView.add(this._getLocationDescriptionLabel());
 	
+	footerView.add(skipButton);
+	footerView.add(completeButton);
+	
 	wrapper.add(headerView);
 	wrapper.add(bodyView);
+	wrapper.add(footerView);
 	
 	currentWindow.add(wrapper);
+	
+	var self = this;
+	skipButton.addEventListener('click', function(){
+		NFC.sendSkip(self.locationNids[self._getIndex()], 'nfc', {
+			routeNid: self.nid,
+			index: self._getIndex(),
+			repeat: self._getRepeat()
+		});
+		self._setIndex(self._getIndex() + 1);
+		if (self._getIndex() == self.locationNids.length) {
+			self._completeRoute();
+		} else {
+			self._calloutNextCheckpoint();
+		}
+	});
+	completeButton.addEventListener('click', function(){
+		for (var i = self._getIndex(); i < self.locationNids.length; i++) {
+			NFC.sendSkip(self.locationNids[i], 'nfc', {
+			routeNid: self.nid,
+			index: i,
+			repeat: self._getRepeat()
+		});
+		}
+		self._completeRoute();
+	});
 };
 
 Route.prototype._redraw = function() {
@@ -399,13 +467,8 @@ Route.prototype._getLocationDescriptionLabel = function() {
 	return this.locationDescriptionLabel;
 };
 
-var instance = null;
-var nfcScanner = null;
-var currentWindow = Ti.UI.currentWindow;
+var instance = null;var currentWindow = Ti.UI.currentWindow;
 
 (function() {
-	if (Ti.App.isAndroid) {
-		nfcScanner = new NFCListener(Titanium.Android.currentActivity, true);
-	}
     instance = new Route(currentWindow.route);
 })();

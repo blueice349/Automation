@@ -372,46 +372,6 @@ function displayBundleList() {"use strict";
     }
 }
 
-function setupAndroidMenu() {"use strict";
-
-    Ti.Android.currentActivity.onCreateOptionsMenu = function(e) {
-
-        var menu, menu_draft, menu_about, menu_settings;
-
-        menu = e.menu;
-        
-        menu_draft = menu.add({
-            title : 'Display drafts',
-            order : 1
-        });
-        menu_draft.setIcon("/images/drafts_android.png");
-
-        menu_about = menu.add({
-            title : 'About',
-            order : 2
-        });
-        menu_about.setIcon("/images/about.png");
-        
-        menu_settings = menu.add({
-           title: 'Settings',
-           order: 3 
-        });
-        menu_settings.setIcon("/images/gear.png");
-
-        menu_about.addEventListener("click", function() {
-            Omadi.display.openAboutWindow();
-        });
-
-        menu_draft.addEventListener('click', function() {
-            Omadi.display.openDraftsWindow();
-        });
-        
-        menu_settings.addEventListener("click", function() {
-            Omadi.display.openSettingsWindow();
-        });
-    };
-}
-
 function setupBottomButtons() {"use strict";
     var alertsView, alertsImg, alertsLabel, 
         jobsView, jobsImg, jobsLabel, 
@@ -1050,10 +1010,6 @@ function openFormWindow(e){"use strict";
         var db = Omadi.utils.openMainDatabase();
         db.execute("INSERT INTO updated (timestamp, updating) VALUES (0, 0)");
         db.close();
-    }
-
-    if (Ti.App.isAndroid) {
-        setupAndroidMenu();
     }
 
     setupBottomButtons();

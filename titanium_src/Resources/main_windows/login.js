@@ -990,8 +990,10 @@ Ti.App.addEventListener("uploadFile", function(event) {"use strict";
                 // Get rid of any background uploads as the cookie is updated
                 db.execute("DELETE FROM background_files WHERE client_account='" + Utils.dbEsc(portal.value) + "' AND username = '" + Utils.dbEsc(usernameField.value) + "'");
                 db.close();
+                //setTimeout(function() {
+                	openMainScreen(true);
+                //}, 500);
                 
-                openMainScreen(true);
             }
             catch(ex){
                 Utils.sendErrorReport("Exception getting to main screen already logged in: " + ex);

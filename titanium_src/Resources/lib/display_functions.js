@@ -371,16 +371,16 @@ Omadi.display.openLocalPhotosWindow = function() {"use strict";
 };
 
 Omadi.display.openMainMenuWindow = function(options) {"use strict";
-    var mainMenuWindow, i;
+    Omadi.display.loading();
     
-    mainMenuWindow = Titanium.UI.createWindow({
+    var mainMenuWindow = Titanium.UI.createWindow({
         url : '/main_windows/mainMenu.js',
         navBarHidden : true,
         orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
     });
     
     if(typeof options !== 'undefined'){
-        for(i in options){
+        for(var i in options){
             if(options.hasOwnProperty(i)){
                 mainMenuWindow[i] = options[i];
             }
@@ -389,9 +389,45 @@ Omadi.display.openMainMenuWindow = function(options) {"use strict";
     
     mainMenuWindow.addEventListener('open', Omadi.display.doneLoading);
     
-    Omadi.display.loading();
-
-    mainMenuWindow.open();
+    if (Ti.App.isAndroid) {
+    	// Not sure why but setTimeout is needed to prevent a stupid crash where menu and menuItems don't have addEventListener 
+    	setTimeout(function(){
+		    mainMenuWindow.activity.onCreateOptionsMenu = function(e) {
+		        var menu = e.menu;
+		        
+		        var menu_draft = menu.add({
+		            title : 'Display drafts',
+		            order : 1
+		        });
+		        menu_draft.setIcon("/images/drafts_android.png");
+		        menu_draft.addEventListener('click', function() {
+		            Omadi.display.openDraftsWindow();
+		        });
+		
+		        var menu_about = menu.add({
+		            title : 'About',
+		            order : 2
+		        });
+		        menu_about.setIcon("/images/about.png");
+		        menu_about.addEventListener("click", function() {
+		            Omadi.display.openAboutWindow();
+		        });
+		        
+		        var menu_settings = menu.add({
+		           title: 'Settings',
+		           order: 3 
+		        });
+		        menu_settings.setIcon("/images/gear.png");
+		        menu_settings.addEventListener("click", function() {
+		            Omadi.display.openSettingsWindow();
+		        });
+		    };
+	    	mainMenuWindow.open();
+    	}, 250);
+    } else {
+    	mainMenuWindow.open();
+    }
+    
     return mainMenuWindow;
 };
 

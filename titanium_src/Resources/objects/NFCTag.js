@@ -49,6 +49,27 @@ NFCTag.NXP = {
 	}
 };
 
+NFCTag.getId = function(data) {
+	try {
+		var iv = getInitializationVector(data);
+		var encryptedData = getEncryptedData(data);
+		var decryptedData = CryptoJS.AES.decrypt(encryptedData, NFCTag.ENCRYPTION_KEY, { iv: iv });
+		var parsed = JSON.parse(decryptedData.toString(CryptoJS.enc.Utf8));
+		return parsed.serial;
+	} catch (error) {
+		Ti.API.error('Error in NFCTag.getId: ' + error);
+		return '';
+	}
+};
+
+function getEncryptedData(data) {
+	return data.substring(21, data.length);
+}
+
+function getInitializationVector(data) {
+	return CryptoJS.enc.Utf8.parse(data.substring(5, 21));
+}
+
 /* PUBLIC METHODS */
 
 NFCTag.prototype.getScanCount = function() {
@@ -238,11 +259,7 @@ NFCTag.prototype._populateCache = function() {
 
 NFCTag.prototype._idsMatch = function() {
 	try {
-		var iv = this._getInitializationVector();
-		var encryptedData = this._getEncryptedData();
-		var decryptedData = CryptoJS.AES.decrypt(encryptedData, NFCTag.ENCRYPTION_KEY, { iv: iv });
-		var data = JSON.parse(decryptedData.toString(CryptoJS.enc.Utf8));
-		return this.getId() == data.serial;
+		return this.getId() == NFCTag.getId(this.getData());
 	} catch (error) {
 		Ti.API.error('Error in NFCTag.prototype._idMatches: ' + error);
 		return false;
@@ -380,19 +397,10 @@ NFCTag.prototype._generateData = function() {
 	return generatedData;
 };
 
-NFCTag.prototype._getEncryptedData = function() {
-	var data = this.getData();
-	return data.substring(21, data.length);
-};
-
 NFCTag.prototype._generateInitializationVector = function() {
 	var input = String(Math.random());
 	var hash = CryptoJS.SHA3(input, { outputLength: 128 }).toString(CryptoJS.enc.Base64);
 	return CryptoJS.enc.Utf8.parse(hash.substr(0, 16));
-};
-
-NFCTag.prototype._getInitializationVector = function() {
-	return CryptoJS.enc.Utf8.parse(this.getData().substring(5, 21));
 };
 
 

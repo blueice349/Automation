@@ -1,11 +1,12 @@
 
-(function() {
+(function() {"use strict";
+	var version, major;
 	Ti.App.isAndroid = (Ti.Platform.name === 'android');
 	Ti.App.isIOS = !Ti.App.isAndroid;
 	Ti.App.isIOS7 = false;
 	if(Ti.App.isIOS){
-	    var version = Ti.Platform.version.split(".");
-	    var major = parseInt(version[0], 10);
+	    version = Ti.Platform.version.split(".");
+	    major = parseInt(version[0], 10);
 	    if(major >= 7){
 	        Ti.App.isIOS7 = true;
 	    }
@@ -13,8 +14,8 @@
 	Ti.App.isIPad = Ti.Platform.osname == 'ipad';
 	Ti.App.isAndroid3OrBelow = false;
 	if (Ti.App.isAndroid) {
-		var version = Ti.Platform.version.split(".");
-	    var major = parseInt(version[0], 10);
+		version = Ti.Platform.version.split(".");
+	    major = parseInt(version[0], 10);
 	    if (major <= 3) {
 	        Ti.App.isAndroid3OrBelow = true;
 	    }
