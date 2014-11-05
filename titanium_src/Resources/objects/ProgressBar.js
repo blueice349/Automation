@@ -14,17 +14,15 @@ var ProgressBar = function(max, message) {
 
 ProgressBar.prototype.show = function() {
 	try {
-		var view = this._getWrapperView();
-		ProgressBar.mainMenu.add(view);
-		view.show();
+		ProgressBar.mainMenu.add(this._getWrapperView());
+		this._getProgressBar().show();
 	} catch (e) {}
 };
 
 ProgressBar.prototype.hide = function() {
 	try {
-		var view = this._getWrapperView();
-		view.hide();
-		ProgressBar.mainMenu.remove(view);
+		this._getProgressBar().hide();
+		ProgressBar.mainMenu.remove(this._getWrapperView());
 	} catch (e) {}
 };
 
@@ -65,6 +63,7 @@ ProgressBar.prototype._getProgressBar = function() {
 	if (this.progressBar === null) {
 		this.progressBar = Titanium.UI.createProgressBar({
 	        width : "96%",
+	        height : 50,
 	        min : 0,
 	        max : this.max,
 	        top : 2,
@@ -73,8 +72,7 @@ ProgressBar.prototype._getProgressBar = function() {
 	        message : this.message,
 	        font: {
 	          fontSize: 14  
-	        },
-	        style : Ti.App.isIOS ? Titanium.UI.iPhone.ProgressBarStyle.PLAIN : ''
+	        }
 	    });
 	}
 	return this.progressBar;
