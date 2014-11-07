@@ -668,7 +668,7 @@ FormTabs.prototype.getWindow = function(initNewDispatch){"use strict";
             try{
                 CommentList = require('ui/CommentList');
                 
-                CommentList.init(Omadi, this.workNode.nid);
+                CommentList.init(this.workNode.nid);
                 commentsCount = CommentList.getCommentCount();
                 
                 this.commentsTab = Ti.UI.createTab({
