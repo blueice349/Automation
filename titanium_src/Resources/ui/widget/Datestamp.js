@@ -81,11 +81,11 @@ DatestampWidget.prototype.getFieldView = function(){"use strict";
             backgroundGradient: Display.backgroundGradientGray,
             borderColor: '#999',
             borderWidth: 1,
-            width: Ti.UI.SIZE,
+            width: Ti.App.isIOS ? 200 : Ti.UI.SIZE,
             borderRadius: 10,
             color: '#eee',
             top: 10,
-            height: Ti.UI.SIZE,
+            height: Ti.App.isIOS ? 45 : Ti.UI.SIZE,
             horizontalWrap: false,
             fieldName: this.instance.field_name
         });

@@ -89,11 +89,11 @@ ExtraPriceWidget.prototype.getFieldView = function(){"use strict";
             backgroundGradient: Display.backgroundGradientGray,
             borderColor: '#999',
             borderWidth: 1,
-            width: Ti.UI.SIZE,
+            width: Ti.App.isIOS ? 200 : Ti.UI.SIZE,
             borderRadius: 10,
             color: '#eee',
             top: 10,
-            height: Ti.UI.SIZE,
+            height: Ti.App.isIOS ? 45 : Ti.UI.SIZE,
             horizontalWrap: false,
             fieldName: this.instance.field_name
         });
@@ -681,16 +681,15 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
         detailsView.width = '60%';
         detailsView.top = 2;
         detailsView.hintText = 'Details';
-        detailsView.visible = false;
-        detailsView.height = 0;
+        detailsView.visible = true;
         detailsView.delta = index;
         detailsView.instance = this.instance;
         
         this.detailsFields[index] = detailsView;
         
-        if(typeof this.instance.settings.use_details !== 'undefined' && this.instance.settings.use_details == 1){
-            detailsView.visible = true;
-            detailsView.height = Ti.UI.SIZE;
+        if(this.instance.settings.use_details != 1){
+            detailsView.visible = false;
+            detailsView.height = 0;
         }
         
         detailsView.addEventListener('change', function(e){

@@ -19,7 +19,6 @@ Omadi.location.isLocationEnabled = function(callback){"use strict";
     }
     else if(Ti.App.isIOS){
         locAuth = Ti.Geolocation.getLocationServicesAuthorization();
-        
         if(!Ti.Geolocation.getLocationServicesEnabled()){
             dialog = Ti.UI.createAlertDialog({
                message: "Your GPS is turned off for all apps. Please turn it on in the settings app under Privacy -> Location Services.",
@@ -185,7 +184,7 @@ Omadi.location.uploadGPSCoordinates = function() {"use strict";
             else {
                 Omadi.location.unset_GPS_uploading();
                 Ti.API.debug('No GPS coordinates found');
-
+                
                 Ti.Geolocation.purpose = "Location Alerts";
                 Ti.Geolocation.getCurrentPosition(Omadi.location.currentPositionCallback);
                 Ti.API.debug("FETCHING CURRENT POSITION");

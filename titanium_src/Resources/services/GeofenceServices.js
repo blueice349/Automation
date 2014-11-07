@@ -45,10 +45,9 @@ GeofenceServices.prototype.getCurrentLocation = function() {
 
 /* PIVATE METHODS */
 
-GeofenceServices.prototype._handleLocationChange = function() {
-	var currentLocation = JSON.parse(Ti.Geolocation.getLastGeolocation() || '{}');
-	this._updateCurrentLocation(currentLocation.latitude, currentLocation.longitude);
-	this._updateBreached(currentLocation.latitude, currentLocation.longitude);
+GeofenceServices.prototype._handleLocationChange = function(event) {
+	this._updateCurrentLocation(event.coords.latitude, event.coords.longitude);
+	this._updateBreached(event.coords.latitude, event.coords.longitude);
 	this._saveState();
 };
 

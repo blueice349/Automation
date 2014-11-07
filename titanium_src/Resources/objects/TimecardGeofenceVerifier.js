@@ -98,10 +98,8 @@ TimecardGeofenceVerifier.prototype._isLocationAuthorized = function() {
 	return true;
 };
 
-TimecardGeofenceVerifier.prototype._handleFreshLocationAccuired = function() {
-	var currentLocation = JSON.parse(Ti.Geolocation.getLastGeolocation() || '{}');
-	
-	if (this.getCurrentGeofences({lat: currentLocation.latitude, lng: currentLocation.longitude}).length !== 0) {
+TimecardGeofenceVerifier.prototype._handleFreshLocationAccuired = function(event) {
+	if (this.getCurrentGeofences({lat: event.coords.latitude, lng: event.coords.longitude}).length !== 0) {
 		alert('Location acquired. You can clock in or out now.');
 	} else {
 		alert('You must be in an authorized location to clock in or out.');

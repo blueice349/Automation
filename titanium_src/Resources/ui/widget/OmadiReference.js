@@ -210,8 +210,8 @@ OmadiReferenceWidget.prototype._getOptionDialog = function(index) {
 		    });
 		    
 		    var self = this;
-		    cache.optionDialog.addEventListener('click', function() {
-		    	self._optionDialogClicked(index);
+		    cache.optionDialog.addEventListener('click', function(event) {
+		    	self._optionDialogClicked(index, event);
 		    });
 		}
 		return cache.optionDialog;
@@ -561,11 +561,11 @@ OmadiReferenceWidget.prototype._getAddButton = function() {
 	            backgroundGradient: Display.backgroundGradientGray,
 	            borderColor: '#999',
 	            borderWidth: 1,
-	            width: Ti.UI.SIZE,
+	            width: Ti.App.isIOS ? 200 : Ti.UI.SIZE,
 	            borderRadius: 10,
 	            color: '#eee',
 	            top: 10,
-	            height: Ti.UI.SIZE
+	            height: Ti.App.isIOS ? 45 : Ti.UI.SIZE
 	        });
 	        
 	        var self = this;
