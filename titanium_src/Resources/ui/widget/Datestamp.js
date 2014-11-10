@@ -147,12 +147,7 @@ DatestampWidget.prototype.getNewElement = function(index){"use strict";
     
     Ti.API.debug("Creating datestamp field: " + this.instance.label);
     
-    if (this.instance.settings.time == 1 || (typeof this.instance.settings.granularity !== 'undefined' && typeof this.instance.settings.granularity.hour !== 'undefined' && this.instance.settings.granularity.hour == 1)) {
-        showTime = true;
-    }
-    else {
-        showTime = false;
-    }
+    showTime = (this.instance.settings.time == 1 || (this.instance.settings.granularity && this.instance.settings.granularity.hour && this.instance.settings.granularity.hour != '0'));
 
     jsDate = new Date();
 

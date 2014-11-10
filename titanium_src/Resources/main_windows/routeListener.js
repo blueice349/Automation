@@ -27,7 +27,7 @@ function hideDialog() {
 }
 
 
-var Route = function(route) {
+var Route = function(route, tag) {
 	this.nid = route.nid;
 	this.node = null;
 	this.title = route.title;
@@ -45,6 +45,10 @@ var Route = function(route) {
 	this._drawInitialElements();
 	this._initNFCEventDispatcher();
 	this._startRoute();
+	
+	if (tag) {
+		this._handleTagScanned(tag);
+	}
 };
 
 Route.prototype._initNFCEventDispatcher = function() {
@@ -470,5 +474,5 @@ Route.prototype._getLocationDescriptionLabel = function() {
 var instance = null;var currentWindow = Ti.UI.currentWindow;
 
 (function() {
-    instance = new Route(currentWindow.route);
+    instance = new Route(currentWindow.route, currentWindow.tag);
 })();

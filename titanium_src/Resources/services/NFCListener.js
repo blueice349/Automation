@@ -3,6 +3,8 @@
 
 var NFC = require('services/NFC');
 var NFCEventDispatcher = require('services/NFCEventDispatcher');
+var RouteListener = require('objects/RouteListener');
+var Node = require('objects/Node');
 var Database = require('lib/Database');
 var Utils = require('lib/Utils');
 
@@ -43,13 +45,37 @@ NFCListener.prototype._handleTagScanned = function(tag) {
 	
 	var validTags = this._getValidTags();
 	if (validTags[tag.getData()]) {
-		NFC.sendScan(tag);
 		tag.playSuccessFeedback();
-		return true;
+		
+		var routes = this._getRoutes(validTags[tag.getData()].nid);
+		
+		if (routes.length == 0) {
+			NFC.sendScan(tag);
+			return;
+		}
+		
+		if (routes.length == 1) {
+			RouteListener.startRoute(routes[0], tag);
+			return;
+		}
+    		
+		var startedRoutes = this._getStartedRoutes(routes);
+		if (startedRoutes.length == 1) {
+			RouteListener.startRoute(startedRoutes[0], tag);
+			return;
+		}
+		
+		RouteListener.askSelectRoute(routes, function(event) {
+			if (routes[event.index]) {
+				RouteListener.startRoute(routes[event.index], tag);
+	    	} else {
+	    		NFC.sendScan(tag);
+	    	}
+		});
+	} else {
+		alert('There was an error reading the NFC tag. It may not be a valid Omadi tag.');
+		tag.playErrorFeedback();
 	}
-	alert('There was an error reading the NFC tag. It may not be a valid Omadi tag.');
-	tag.playErrorFeedback();
-	return false;
 };
 
 NFCListener.prototype._getValidTags = function() {
@@ -82,6 +108,34 @@ NFCListener.prototype._getValidTags = function() {
 	}
 	
 	return validTags;
+};
+
+NFCListener.prototype._getRoutes = function(nid) {
+	var possibleRoutes = RouteListener.getPossibleRoutes();
+	
+	var routes = [];
+	for (var i = 0; i < possibleRoutes.length; i++) {
+		if (possibleRoutes[i].locationNids) {
+			var locationNids = JSON.parse(possibleRoutes[i].locationNids);
+			
+			for (var j = 0; j < locationNids.length; j++) {
+				if (locationNids[j] == nid) {
+					routes.push(possibleRoutes[i]);
+				}
+			}
+		}
+	}
+	return routes;
+};
+
+NFCListener.prototype._getStartedRoutes = function(routes) {
+	var started = [];
+	for (var i = 0; i < routes.length; i++) {
+		if (routes[i].status == RouteListener.Status.STARTED) {
+			started.push(routes[i]);
+		}
+	}
+	return started;
 };
 
 NFCListener.prototype._getNFCFields = function() {

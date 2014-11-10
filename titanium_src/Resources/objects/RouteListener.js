@@ -6,7 +6,7 @@ var Display = require('lib/Display');
 var Utils = require('lib/Utils');
 
 exports.askToStartRoute = function() {
-	var routes = getPossibleRoutes();
+	var routes = exports.getPossibleRoutes();
 	if (routes.length == 0) {
 		return;
 	}
@@ -18,7 +18,11 @@ exports.askToStartRoute = function() {
     
     dialog.addEventListener('click', function(event) {
     	if (event.index == 0) {
-    		askSelectRoute(routes);
+    		exports.askSelectRoute(routes, function(event) {
+    			if (routes[event.index]) {
+					exports.startRoute(routes[event.index]);
+		    	}
+    		});
     	}
     });
     
@@ -37,7 +41,7 @@ exports.Repeat = {
 };
 
 exports.getRoute = function(nid) {
-	var routes = getPossibleRoutes();
+	var routes = exports.getPossibleRoutes();
 	
 	for (var i = 0; i < routes.length; i++) {
 		if (routes[i].nid == nid) {
@@ -48,10 +52,11 @@ exports.getRoute = function(nid) {
 	return null;
 };
 
-exports.startRoute = function(route) {
+exports.startRoute = function(route, tag) {
 	var win = Titanium.UI.createWindow({
         navBarHidden : true,
         route: route,
+        tag: tag,
         url : '/main_windows/routeListener.js',
         orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
     });
@@ -81,7 +86,7 @@ exports.hasRoutes = function() {
 	return result.field(0) != 0;
 };
 
-function getPossibleRoutes() {
+exports.getPossibleRoutes = function() {
 	if (!hasRouteAssignment()) {
 		return [];
 	}
@@ -111,7 +116,7 @@ function getPossibleRoutes() {
 	Database.close();
 	
 	return data;
-}
+};
 
 function hasRouteAssignment() {
 	var result = Database.query('SELECT COUNT(*) FROM node WHERE nid > 0 AND table_name = "route_assignment"');
@@ -121,7 +126,7 @@ function hasRouteAssignment() {
 	return count !== 0;
 }
 
-function askSelectRoute(routes) {
+exports.askSelectRoute = function(routes, callback) {
 	var options = [];
 	for (var i = 0; i < routes.length; i++) {
 		options[i] = routes[i].title;
@@ -141,10 +146,10 @@ function askSelectRoute(routes) {
     });
     
     dialog.addEventListener('click', function(event) {
-    	if (routes[event.index]) {
-			exports.startRoute(routes[event.index]);
+    	if (callback) {
+    		callback(event);
     	}
     });
     
     dialog.show();
-}
+};
