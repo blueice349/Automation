@@ -297,6 +297,7 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
             descView.textValue = JSON.stringify(jsonValue);
             
             // Update the total amount
+            self.setTotalDelta(e.source.delta);
             widget.setTotalDelta(e.source.delta);
         });
         
@@ -561,50 +562,46 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
                         instance: e.source.instance
                     });
                     
-                    dialog.addEventListener('click', function(ev){
-                        var widget, jsonValue, descView, optionsIndex;
+                    dialog.addEventListener('click', function(event){
+                        var jsonValue, optionsIndex;
                         
                         try{
-                            if(ev.index !== null && ev.index != ev.source.cancel){
+                            if(event.index !== null && event.index != event.source.cancel){
                                 
-                                if(typeof ev.source.options[ev.index] !== 'undefined'){
-                                    
-                                    widget = self;
-                                    
-                                    descView = widget.descFields[e.source.delta];
-                                    quantityField = widget.quantityFields[e.source.delta];
+                                if(typeof options[event.index] !== 'undefined'){
+                                	
                                     jsonValue = descView.jsonValue;
                                    
                                     if(jsonValue == null){
                                         jsonValue = {};
                                     }
                                     
-                                    jsonValue.desc = ev.source.options[ev.index];
+                                    jsonValue.desc = options[event.index];
                                     
                                     
-                                    descView.setText(ev.source.options[ev.index]);
+                                    descView.setText(options[event.index]);
                                     
                                     optionsIndex = -1;
                                     
-                                    for(i = 0; i < widget.possibleValues.length; i ++){
-                                        if(widget.possibleValues[i].title == ev.source.options[ev.index]){
+                                    for(i = 0; i < self.possibleValues.length; i ++){
+                                        if(self.possibleValues[i].title == options[event.index]){
                                             optionsIndex = i;
                                             break;
                                         }
                                     }
                                     
                                     if(optionsIndex > -1){
-                                        jsonValue = widget.changeQuantityField(jsonValue, optionsIndex, e.source.delta, true);
+                                        jsonValue = self.changeQuantityField(jsonValue, optionsIndex, index, true);
                                     }
                                     
                                     descView.jsonValue = jsonValue;
                                     descView.textValue = JSON.stringify(jsonValue);
                                     
-                                    widget.itemChangeDelta(e.source.delta);
+                                    self.itemChangeDelta(index);
                                     
                                     if(descView.check_conditional_fields.length > 0){
                                         Ti.API.debug("Checking conditionally required in amounts field");
-                                        widget.formObj.setConditionallyRequiredLabels(e.source.instance, descView.check_conditional_fields);
+                                        self.formObj.setConditionallyRequiredLabels(self.instance, descView.check_conditional_fields);
                                     }
                                 }
                             }
@@ -625,34 +622,24 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
         priceView.addEventListener('change', function(e) {
             var tempValue, useQuantity;
             /*jslint regexp: true*/
-           Ti.API.debug("price view change to " + e.source.value);
+           Ti.API.info("price view change to " + priceView.value);
            
             // Must compare as strings since 4. and 4 would need to be different, but wouldn't be for a number
-            if ((e.source.lastValue + "".toString()) != (e.source.value + "".toString())) {
-                tempValue = "";
-                if(e.source.value !== null){
-                    if((e.source.value + "".toString()).match(/^-?\d*\.?\d?\d?$/)){
-                        tempValue = e.source.value;
-                    }
-                    else{
-                        tempValue = e.source.lastValue;
-                    }
+            if ((priceView.lastValue + "".toString()) != (priceView.value + "".toString())) {
+                tempValue = '';
+                if(priceView.value !== null){
+                	tempValue = String(priceView.value).match(/^-?\d*\.?\d?\d?$/) ? priceView.value : priceView.lastValue;
                 }
                 
-                if (tempValue != e.source.value) {
-                    e.source.value = tempValue;
-                    if (Ti.App.isAndroid && e.source.value != null && typeof e.source.value.length !== 'undefined') {
-                        e.source.setSelection(e.source.value.length, e.source.value.length);
+                if (tempValue != priceView.value) {
+                    priceView.value = tempValue;
+                    if (Ti.App.isAndroid && priceView.value != null && typeof priceView.value.length !== 'undefined') {
+                        priceView.setSelection(priceView.value.length, priceView.value.length);
                     }
-                }
-                
-                useQuantity = false;
-                if(typeof e.source.instance.settings.use_quantity !== 'undefined' && e.source.instance.settings.use_quantity == 1){
-                    useQuantity = true;
                 }
                 
                 // Only set the dbValue for the price if the total field does not exist
-                if(!useQuantity){
+                if(!e.source.instance.settings.use_quantity){
                     if (e.source.value != null && typeof e.source.value.length !== 'undefined' && e.source.value.length > 0) {
                         e.source.dbValue = parseFloat(e.source.value);
                     }
@@ -863,34 +850,31 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
     return outsideWrapper;
 };
 
-ExtraPriceWidget.prototype.changeQuantityField = function(jsonValue, optionsIndex, delta, reset){"use strict";
-    var noQty, quantityField, quantityValue, option;
+ExtraPriceWidget.prototype.changeQuantityField = function(jsonValue, optionsIndex, index, reset){"use strict";
+    var quantityField, quantityValue, option;
     
-    Ti.API.debug("In change quantity Field: " + optionsIndex + " " + delta);
+    Ti.API.debug("In change quantity Field: " + optionsIndex + " " + index);
     
     try{
-        if(typeof this.quantityFields[delta] !== 'undefined'){
-            quantityField = this.quantityFields[delta];
-            
-            noQty = false;
-            option = this.possibleValues[optionsIndex];
-            
-            if(typeof option.description !== 'undefined'){
-                if(typeof option.description.options !== 'undefined'){
-                    if(typeof option.description.options.force_quantity_to_1 !== 'undefined'){
-                        if(option.description.options.force_quantity_to_1 == 1){
-                            noQty = true;
-                        }
-                    }
-                }
+        if(typeof this.quantityFields[index] !== 'undefined'){
+            quantityField = this.quantityFields[index];
+            quantityValue = parseFloat(quantityField.getValue());
+            if (isNaN(quantityValue)) {
+            	quantityField.setValue(1);
+                jsonValue.quantity = 1;
             }
             
-            if(noQty){
+            option = this.possibleValues[optionsIndex];
+            
+            if (option.description &&
+            	option.description.options &&
+            	option.description.options.force_quantity_to_1 == 1){
+            		
                 quantityField.setBackgroundColor('#ccc');
                 quantityField.setTouchEnabled(false);
-                quantityValue = parseFloat(quantityField.getValue());
                 
-                if(isNaN(quantityValue) || quantityValue < 1 || reset){
+                
+                if(quantityValue < 1 || reset){
                     quantityField.setValue(1);
                     jsonValue.quantity = 1;
                 }
@@ -1003,140 +987,91 @@ ExtraPriceWidget.prototype.itemChangeDelta = function(delta){"use strict";
         jsonValue = this.descFields[delta].jsonValue;
         
         Ti.API.debug("Current value before item change is " + JSON.stringify(jsonValue));
-        if(jsonValue != null){
-           
-            prices = this.getPrices(jsonValue.desc);
-            Ti.API.debug("Prices: " + JSON.stringify(prices));
+        
+        if (!jsonValue) {
+        	return;
+        }
+        
+        prices = this.getPrices(jsonValue.desc);
+        
+        if (!prices) {
+        	return;
+        }
+        
+        // Get the default category price
+        
+        if(this.instance.settings.reference_field_name && prices.references) {
+                    
+            var referenceFieldName = this.instance.settings.reference_field_name;
+            var referenceVal = null;
+            if (this.node[referenceFieldName] &&
+            	this.node[referenceFieldName].dbValues &&
+            	this.node[referenceFieldName].dbValues[0]) {
+            	
+            	referenceVal = this.node[referenceFieldName].dbValues[0];
+            }
             
-            if(prices){
-                // Get the default category price
+            if (referenceVal){
+                // If we're using a taxonomy field, make sure we prefix the value with t
+                if (this.formObj.instances[referenceFieldName] &&
+                	this.formObj.instances[referenceFieldName].type == 'taxonomy_term_reference') {
+                	
+                	referenceVal = "t" + referenceVal;
+                }
                 
-                if(typeof this.instance.settings.reference_field_name !== 'undefined'){
-                    if(this.instance.settings.reference_field_name > ''){
-                        if(typeof prices.references !== 'undefined'){
+                if (prices.references[referenceVal]){
+                    
+                    // Look in the reference modifier first
+                    if (this.instance.settings.modifier_field_name){
+                        if (prices.references[referenceVal]._modifiers){
+                            var modifierFieldName = this.instance.settings.modifier_field_name;
+                            var modifierVal = null;
+                            if (this.node[modifierFieldName] &&
+                            	this.node[modifierFieldName].dbValues &&
+                            	this.node[modifierFieldName].dbValues[0]) {
+                        		
+                        		modifierVal = this.node[modifierFieldName].dbValues[0];
+                        	}
                             
-                            var referenceFieldName = this.instance.settings.reference_field_name;
-                            var referenceVal = null;
-                            if(typeof this.node[referenceFieldName] !== 'undefined'){
-                                if(typeof this.node[referenceFieldName].dbValues !== 'undefined'){
-                                    if(typeof this.node[referenceFieldName].dbValues[0] !== 'undefined'){
-                                        referenceVal = this.node[referenceFieldName].dbValues[0];
-                                    }
-                                }
-                            }
-                            
-                            if(referenceVal && referenceVal !== ''){
+                            if(modifierVal){
                                 
                                 // If we're using a taxonomy field, make sure we prefix the value with t
-                                if(typeof this.formObj.instances[referenceFieldName] !== 'undefined'){
-                                    if(this.formObj.instances[referenceFieldName].type == 'taxonomy_term_reference'){
-                                        referenceVal = "t" + referenceVal;
-                                    }
+                                if (this.formObj.instances[modifierFieldName] &&
+                                	this.formObj.instances[modifierFieldName].type == 'taxonomy_term_reference') {
+                                    
+                                    modifierVal = "t" + modifierVal;
                                 }
                                 
-                                if(typeof prices.references[referenceVal] !== 'undefined'){
+                                if(prices.references[referenceVal]._modifiers[modifierVal]){
                                     
-                                    // Look in the reference modifier first
-                                    if(typeof this.instance.settings.modifier_field_name !== 'undefined'){
-                                        if(this.instance.settings.modifier_field_name > ''){
+                                    // Get the default reference modifier and category price
+                                    if (this.instance.settings.category_field_name) {
+                                        categoryFieldName = this.instance.settings.category_field_name;
+                                        categoryVal = null;
+                                        if (this.node[categoryFieldName] &&
+                                        	this.node[categoryFieldName].dbValues &&
+                                        	this.node[categoryFieldName].dbValues[0]) {
+                                    		
+                                    		categoryVal = this.node[categoryFieldName].dbValues[0];
+                                    	}
+                                        
+                                        if (categoryVal) {
+                                            index = 't' + categoryVal;
                                             
-                                            if(typeof prices.references[referenceVal]._modifiers !== 'undefined'){
-                                                var modifierFieldName = this.instance.settings.modifier_field_name;
-                                                var modifierVal = null;
-                                                if(typeof this.node[modifierFieldName] !== 'undefined'){
-                                                    if(typeof this.node[modifierFieldName].dbValues !== 'undefined'){
-                                                        if(typeof this.node[modifierFieldName].dbValues[0] !== 'undefined'){
-                                                            modifierVal = this.node[modifierFieldName].dbValues[0];
-                                                        }
-                                                    }
-                                                }
-                                                
-                                                if(modifierVal && modifierVal !== ''){
-                                                    
-                                                    // If we're using a taxonomy field, make sure we prefix the value with t
-                                                    if(typeof this.formObj.instances[modifierFieldName] !== 'undefined'){
-                                                        if(this.formObj.instances[modifierFieldName].type == 'taxonomy_term_reference'){
-                                                            modifierVal = "t" + modifierVal;
-                                                        }
-                                                    }
-                                                    
-                                                    if(typeof prices.references[referenceVal]._modifiers[modifierVal] !== 'undefined'){
-                                                        
-                                                        // Get the default reference modifier and category price
-                                                        if(!foundPrice && typeof this.instance.settings.category_field_name !== 'undefined'){
-                                                            if(this.instance.settings.category_field_name > ''){
-                                                                
-                                                                categoryFieldName = this.instance.settings.category_field_name;
-                                                                categoryVal = null;
-                                                                if(typeof this.node[categoryFieldName] !== 'undefined'){
-                                                                    if(typeof this.node[categoryFieldName].dbValues !== 'undefined'){
-                                                                        if(typeof this.node[categoryFieldName].dbValues[0] !== 'undefined'){
-                                                                            categoryVal = this.node[categoryFieldName].dbValues[0];
-                                                                        }
-                                                                    }
-                                                                }
-                                                                
-                                                                if(categoryVal && categoryVal !== ''){
-                                                                    index = 't' + categoryVal;
-                                                                    
-                                                                    if(typeof prices.references[referenceVal]._modifiers[modifierVal][index] !== 'undefined'){
-                                                                        floatVal = parseFloat(prices.references[referenceVal]._modifiers[modifierVal][index]);
-                                                                        if(!isNaN(floatVal) || prices.references[referenceVal]._modifiers[modifierVal][index] === ''){
-                                                                            price = prices.references[referenceVal]._modifiers[modifierVal][index];
-                                                                            foundPrice = true;
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                        
-                                                        // Get the default reference modifier price
-                                                        if(!foundPrice && typeof prices.references[referenceVal]._modifiers[modifierVal]['default'] !== 'undefined'){
-                                                            floatVal = parseFloat(prices.references[referenceVal]._modifiers[modifierVal]['default']);
-                                                            if(!isNaN(floatVal) || prices.references[referenceVal]._modifiers[modifierVal]['default'] === ''){
-                                                                price = prices.references[referenceVal]._modifiers[modifierVal]['default'];
-                                                                foundPrice = true;
-                                                            }
-                                                        }
-                                                    }
-                                                }
+                                            
+                                            floatVal = parseFloat(prices.references[referenceVal]._modifiers[modifierVal][index]);
+                                            if (!isNaN(floatVal) || prices.references[referenceVal]._modifiers[modifierVal][index] === ''){
+                                                price = prices.references[referenceVal]._modifiers[modifierVal][index];
+                                                foundPrice = true;
                                             }
                                         }
                                     }
                                     
-                                    // Get the default reference and category price
-                                    if(!foundPrice && typeof this.instance.settings.category_field_name !== 'undefined'){
-                                        if(this.instance.settings.category_field_name > ''){
-                                            
-                                            categoryFieldName = this.instance.settings.category_field_name;
-                                            categoryVal = null;
-                                            if(typeof this.node[categoryFieldName] !== 'undefined'){
-                                                if(typeof this.node[categoryFieldName].dbValues !== 'undefined'){
-                                                    if(typeof this.node[categoryFieldName].dbValues[0] !== 'undefined'){
-                                                        categoryVal = this.node[categoryFieldName].dbValues[0];
-                                                    }
-                                                }
-                                            }
-                                            
-                                            if(categoryVal && categoryVal !== ''){
-                                                index = 't' + categoryVal;
-                                                
-                                                if(typeof prices.references[referenceVal][index] !== 'undefined'){
-                                                    floatVal = parseFloat(prices.references[referenceVal][index]);
-                                                    if(!isNaN(floatVal) || prices.references[referenceVal][index] === ''){
-                                                        price = prices.references[referenceVal][index];
-                                                        foundPrice = true;
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                    
-                                    // Get the default reference price
-                                    if(!foundPrice && typeof prices.references[referenceVal]['default'] !== 'undefined'){
-                                        floatVal = parseFloat(prices.references[referenceVal]['default']);
-                                        if(!isNaN(floatVal) || prices.references[referenceVal]['default'] === ''){
-                                            price = prices.references[referenceVal]['default'];
+                                    // Get the default reference modifier price
+                                    if (!foundPrice) {
+                                        floatVal = parseFloat(prices.references[referenceVal]._modifiers[modifierVal]['default']);
+                                        if(!isNaN(floatVal) || prices.references[referenceVal]._modifiers[modifierVal]['default'] === ''){
+                                            price = prices.references[referenceVal]._modifiers[modifierVal]['default'];
                                             foundPrice = true;
                                         }
                                     }
@@ -1144,10 +1079,9 @@ ExtraPriceWidget.prototype.itemChangeDelta = function(delta){"use strict";
                             }
                         }
                     }
-                }
-                
-                if(!foundPrice && typeof prices.defaults !== 'undefined'){
-                    if(typeof this.instance.settings.category_field_name !== 'undefined'){
+                    
+                    // Get the default reference and category price
+                    if(!foundPrice && typeof this.instance.settings.category_field_name !== 'undefined'){
                         if(this.instance.settings.category_field_name > ''){
                             
                             categoryFieldName = this.instance.settings.category_field_name;
@@ -1160,16 +1094,13 @@ ExtraPriceWidget.prototype.itemChangeDelta = function(delta){"use strict";
                                 }
                             }
                             
-                            Ti.API.debug("Using category val: " + categoryVal);
-                            
                             if(categoryVal && categoryVal !== ''){
                                 index = 't' + categoryVal;
                                 
-                                
-                                if(typeof prices.defaults[index] !== 'undefined'){
-                                    floatVal = parseFloat(prices.defaults[index]);
-                                    if(!isNaN(floatVal) || prices.defaults[index] === ''){
-                                        price = prices.defaults[index];
+                                if(typeof prices.references[referenceVal][index] !== 'undefined'){
+                                    floatVal = parseFloat(prices.references[referenceVal][index]);
+                                    if(!isNaN(floatVal) || prices.references[referenceVal][index] === ''){
+                                        price = prices.references[referenceVal][index];
                                         foundPrice = true;
                                     }
                                 }
@@ -1177,10 +1108,42 @@ ExtraPriceWidget.prototype.itemChangeDelta = function(delta){"use strict";
                         }
                     }
                     
-                    if(!foundPrice){
-                        if(typeof prices.defaults !== 'undefined'){
-                            if(typeof prices.defaults['default'] !== 'undefined'){
-                                price = prices.defaults['default'];
+                    // Get the default reference price
+                    if(!foundPrice && typeof prices.references[referenceVal]['default'] !== 'undefined'){
+                        floatVal = parseFloat(prices.references[referenceVal]['default']);
+                        if(!isNaN(floatVal) || prices.references[referenceVal]['default'] === ''){
+                            price = prices.references[referenceVal]['default'];
+                            foundPrice = true;
+                        }
+                    }
+                }
+            }
+        }
+        
+        if(!foundPrice && typeof prices.defaults !== 'undefined'){
+            if(typeof this.instance.settings.category_field_name !== 'undefined'){
+                if(this.instance.settings.category_field_name > ''){
+                    
+                    categoryFieldName = this.instance.settings.category_field_name;
+                    categoryVal = null;
+                    if(typeof this.node[categoryFieldName] !== 'undefined'){
+                        if(typeof this.node[categoryFieldName].dbValues !== 'undefined'){
+                            if(typeof this.node[categoryFieldName].dbValues[0] !== 'undefined'){
+                                categoryVal = this.node[categoryFieldName].dbValues[0];
+                            }
+                        }
+                    }
+                    
+                    Ti.API.debug("Using category val: " + categoryVal);
+                    
+                    if(categoryVal && categoryVal !== ''){
+                        index = 't' + categoryVal;
+                        
+                        
+                        if(typeof prices.defaults[index] !== 'undefined'){
+                            floatVal = parseFloat(prices.defaults[index]);
+                            if(!isNaN(floatVal) || prices.defaults[index] === ''){
+                                price = prices.defaults[index];
                                 foundPrice = true;
                             }
                         }
@@ -1188,23 +1151,31 @@ ExtraPriceWidget.prototype.itemChangeDelta = function(delta){"use strict";
                 }
             }
             
-            // Don't change anything if a price was not found
-            if(foundPrice){
-                
-                priceFloat = parseFloat(price);
-                if(isNaN(priceFloat) || priceFloat == 0){
-                    price = '';
+            if(!foundPrice){
+                if(typeof prices.defaults !== 'undefined'){
+                    if(typeof prices.defaults['default'] !== 'undefined'){
+                        price = prices.defaults['default'];
+                        foundPrice = true;
+                    }
                 }
-                
-                jsonValue.price = price;
-                this.descFields[delta].jsonValue = jsonValue;
-                this.descFields[delta].textValue = JSON.stringify(jsonValue);
-                
-                this.priceFields[delta].setValue(price);
+            }
+        }
+            
+        // Don't change anything if a price was not found
+        if(foundPrice){
+            
+            priceFloat = parseFloat(price);
+            if(isNaN(priceFloat) || priceFloat == 0){
+                price = '';
             }
             
+            jsonValue.price = price;
+            this.descFields[delta].jsonValue = jsonValue;
+            this.descFields[delta].textValue = JSON.stringify(jsonValue);
+            
+            this.priceFields[delta].setValue(price);
+            this.priceFields[delta].fireEvent('change');
         }
-        
     }
     catch(ex){
         Utils.sendErrorReport("Exception in itemChangeDelta: " + delta + " " + ex);
@@ -1212,21 +1183,18 @@ ExtraPriceWidget.prototype.itemChangeDelta = function(delta){"use strict";
 };
 
 ExtraPriceWidget.prototype.getPrices = function(descValue){"use strict";
-    var i, prices;
-    prices = null;
+    var prices = null;
     
-    try{
-        for(i = 0; i < this.possibleValues.length; i ++){
-            if(this.possibleValues[i].title == descValue){
-                if(typeof this.possibleValues[i].description !== 'undefined'){
-                    if(typeof this.possibleValues[i].description.prices !== 'undefined'){
-                        prices = this.possibleValues[i].description.prices;
-                    }
-                }
-            }
+    try {
+        for (var i = 0; i < this.possibleValues.length; i ++){
+        	if (this.possibleValues[i].title == descValue &&
+        		this.possibleValues[i].description &&
+        		this.possibleValues[i].description.prices) {
+        			
+        		prices = this.possibleValues[i].description.prices;
+        	}
         }
-    }
-    catch(ex){
+    } catch(ex) {
         Utils.sendErrorReport("Exception in getPrices: " + ex);
     }
     
