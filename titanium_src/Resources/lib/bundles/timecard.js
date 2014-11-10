@@ -195,7 +195,7 @@ Omadi.bundles.timecard.getLastClockInNid = function(){"use strict";
     db = Omadi.utils.openMainDatabase();
     
     try{
-        result = db.execute("SELECT t.nid, MAX(t.clock_in_time) FROM timecard t WHERE t.user_0 = " + uid + " LIMIT 1");
+        result = db.execute("SELECT nid, MAX(clock_in_time) FROM timecard WHERE user_0 = " + uid + " AND nid > 0 LIMIT 1");
         
         if(result.isValidRow()){
             try{
