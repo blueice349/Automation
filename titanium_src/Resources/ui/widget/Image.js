@@ -685,16 +685,23 @@ ImageWidget.prototype.openPictureChooser = function(imageView){
                 buttons = Ti.UI.createView({
                     width: '100%',
                     bottom: 0,
-                    height: 50
+                    height: 75
                 });
                 
                 useButton = Ti.UI.createButton({
                     title: 'Use Photos', 
                     width: '50%',
                     left: 0,
+                    bottom: 0,
                     disabled: true,
                     imageView: imageView,
-                    instance: this.instance
+                    instance: this.instance,
+		            style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
+		            backgroundGradient: Display.backgroundGradientGray,
+		            borderColor: '#999',
+		            borderWidth: 1,
+		            borderRadius: 10,
+		            color: '#eee'
                 });
                 
                 useButton.addEventListener('click', function(e){
@@ -752,7 +759,14 @@ ImageWidget.prototype.openPictureChooser = function(imageView){
                 cancelButton = Ti.UI.createButton({
                     title: 'Cancel',
                     width: '50%',
-                    right: 0 
+                    right: 0,
+                    style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
+		            backgroundGradient: Display.backgroundGradientGray,
+		            borderColor: '#999',
+		            borderWidth: 1,
+		            borderRadius: 10,
+		            color: '#eee',
+                    bottom: 0
                 });
                 
                 cancelButton.addEventListener('click', function(){
@@ -795,7 +809,7 @@ ImageWidget.prototype.openPictureChooser = function(imageView){
                 for(i = 0; i < imageStrings.length; i ++){
                     // Get the filename from the path
                     filename = imageStrings[i].replace(/^.*[\\\/]/, '');
-                    
+                	
                     if(allUsedFileNames.indexOf(filename) == -1){
                     
                         tempFile = Ti.Filesystem.getFile(photoDir.getNativePath(), imageStrings[i]);

@@ -3,8 +3,6 @@ Ti.include('/lib/functions.js');
 var Display = require('lib/Display');
 Display.setCurrentWindow(Ti.UI.currentWindow, 'settings');
 
-var Utils = require('lib/Utils');
-
 /*jslint eqeq:true, regexp: true*/
 
 /*global  Omadi*/
@@ -182,9 +180,7 @@ function addPhotoWidgetOptions(){"use strict";
     });
     
     photoOptionButton.addEventListener('click', function(e){
-        var dialog;
-       
-        dialog = Ti.UI.createOptionDialog({
+        var dialog = Ti.UI.createOptionDialog({
             title: 'Photo Widget',
             options: ['Take photos in the app', 'Choose photos from gallery', 'Cancel']  ,
             cancel: 2,
@@ -194,8 +190,6 @@ function addPhotoWidgetOptions(){"use strict";
         dialog.show();
         
         dialog.addEventListener('click', function(ev){
-            var cameraDialog;
-            
             if(ev.index == 0){
                 Omadi.utils.setPhotoWidget('take'); 
                 ev.source.button.setText("Take photos in the app");
@@ -203,80 +197,20 @@ function addPhotoWidgetOptions(){"use strict";
                 currentPhotoOptionIndex = 0;
             }
             else if(ev.index == 1){
-                
-                ev.source.button.setText("Choose photos from gallery");
-                chooseSettingsView.setVisible(true);
-                
-                cameraDialog = Ti.UI.createAlertDialog({
-                   title: 'Take a Photo',
-                   message: 'Please take a photo now so the app will know where to find your photos.',
-                   buttonNames: ['Open Camera'] 
+            	var cameraDialog = Ti.UI.createAlertDialog({
+                   title: 'Select a Photo',
+                   message: 'Please select a photo from the gallery now so the app will know where to find your photos.',
+                   buttonNames: ['Open Gallery'] 
                 }); 
-                
+
                 cameraDialog.addEventListener('click', function(){
-                    Ti.Media.showCamera({
-                        autohide: true,
-                        cancel: function(){
-                            alert("Camera action cancelled. In-app photos will be used.");
-                            Omadi.utils.setPhotoWidget('take');
-                            ev.source.button.setText("Take photos in the app");
-                            chooseSettingsView.setVisible(false);
-                            currentPhotoOptionIndex = 0;
-                        },
-                        error: function(){
-                            alert("A camera error occurred. In-app photos will be used.");
-                            Omadi.utils.setPhotoWidget('take');
-                            ev.source.button.setText("Take photos in the app");
-                            chooseSettingsView.setVisible(false);
-                            currentPhotoOptionIndex = 0;
-                        },
-                        saveToPhotoGallery: true,
-                        success: function(e){
-                            var nativeDir, width, height;
-                            
-                            if(typeof e.media.nativePath !== 'undefined'){
-                            
-                                Omadi.utils.setPhotoWidget('choose');
-                                currentPhotoOptionIndex = 1;
-                                
-                                nativeDir = e.media.nativePath.replace(/(.+)\/[^\/]+$/, "$1");
-                                
-                                Ti.App.Properties.setString("photoCameraPath", nativeDir);
-                                
-                                width = e.media.width;
-                                height = e.media.height;
-                                
-                                if(width > 1280 || height > 1280){
-                                
-                                    dialog = Ti.UI.createAlertDialog({
-                                       title: 'WHOA THERE!',
-                                       buttonNames: ['I Understand'],
-                                       message: 'Your camera app resolution is set to ' + width + 'x' + height + ', and that is a little too high. \n\nPlease set your camera resolution to a lower setting (ie. 1280x720). \n\nSide effects of very high resolution:\n1. Thumbnails may not show up.\n2. Up to 10x more bandwidth may be used on your data plan.\n3. As much as 10x more time is required to upload photos.\n4. More memory will be used on your phone, so a crash is more likely.'                                
-                                    });
-                                    dialog.show();
-                                }
-                                else{
-                                    dialog = Ti.UI.createAlertDialog({
-                                       title: 'Photo Widget Changed',
-                                       buttonNames: ['Ok'],
-                                       message: 'You should now take all photos using your regular photo app.'                                
-                                    });
-                                    dialog.show();
-                                }
-                            }
-                            else{
-                                Utils.sendErrorReport("No native path from camera");
-                                alert("There was a problem getting the save location. In-app photos will be used.");
-                                Omadi.utils.setPhotoWidget('take');
-                                ev.source.button.setText("Take photos in the app");
-                                chooseSettingsView.setVisible(false);
-                                currentPhotoOptionIndex = 0;
-                            }
-                        }
-                    });
-                });
-                
-                cameraDialog.show();
+	            	Titanium.Media.openPhotoGallery({success: function(event) {
+	            		var nativeDir = event.media.nativePath.replace(/(.+)\/[^\/]+$/, "$1");
+	            		Ti.App.Properties.setString("photoCameraPath", nativeDir);
+	            	}});
+	            });
+	            
+	            cameraDialog.show();
             }
         });
     });
