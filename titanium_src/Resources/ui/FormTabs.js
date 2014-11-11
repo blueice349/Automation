@@ -761,6 +761,8 @@ FormTabs.prototype.setupMenu = function(){"use strict";
                             menu_first = e.menu.add({
                                 title : 'Save',
                                 order : 1,
+                                height : 40,
+                                width: 40,
                                 icon: "/images/save_light_blue.png",
                                 showAsAction: (Ti.Android.SHOW_AS_ACTION_ALWAYS | Ti.Android.SHOW_AS_ACTION_WITH_TEXT)
                             });

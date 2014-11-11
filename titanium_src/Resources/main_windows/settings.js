@@ -197,6 +197,9 @@ function addPhotoWidgetOptions(){"use strict";
                 currentPhotoOptionIndex = 0;
             }
             else if(ev.index == 1){
+            	ev.source.button.setText("Choose photos from gallery");
+                chooseSettingsView.setVisible(true);
+                
             	var cameraDialog = Ti.UI.createAlertDialog({
                    title: 'Select a Photo',
                    message: 'Please select a photo from the gallery now so the app will know where to find your photos.',
@@ -204,10 +207,27 @@ function addPhotoWidgetOptions(){"use strict";
                 }); 
 
                 cameraDialog.addEventListener('click', function(){
-	            	Titanium.Media.openPhotoGallery({success: function(event) {
-	            		var nativeDir = event.media.nativePath.replace(/(.+)\/[^\/]+$/, "$1");
-	            		Ti.App.Properties.setString("photoCameraPath", nativeDir);
-	            	}});
+	            	Titanium.Media.openPhotoGallery({
+	            		success: function(event) {
+		            		var nativeDir = event.media.nativePath.replace(/(.+)\/[^\/]+$/, "$1");
+		            		Ti.App.Properties.setString("photoCameraPath", nativeDir);
+		            		Omadi.utils.setPhotoWidget('choose');
+		            	},
+		            	error: function() {
+							alert("Gallery action cancelled. In-app photos will be used.");
+							Omadi.utils.setPhotoWidget('take');
+							ev.source.button.setText("Take photos in the app");
+							chooseSettingsView.setVisible(false);
+							currentPhotoOptionIndex = 0;
+		            	},
+		            	cancel: function() {
+							alert("Gallery action cancelled. In-app photos will be used.");
+							Omadi.utils.setPhotoWidget('take');
+							ev.source.button.setText("Take photos in the app");
+							chooseSettingsView.setVisible(false);
+							currentPhotoOptionIndex = 0;
+		            	}
+	            	});
 	            });
 	            
 	            cameraDialog.show();
