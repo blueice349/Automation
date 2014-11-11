@@ -270,7 +270,7 @@ OmadiReferenceWidget.prototype._getAutoCompleteElement = function(index) {
 		        	self._autoCompleteElementTouched(index);
 		        });
 		        cache.element.addEventListener('blur', function() {
-		        	self._hideAutoCompleteTable(index);
+		        	self._autoCompleteElementBlurred(index);
 		        });
 		        cache.element.addEventListener('change', function(event) {
 		        	self._autoCompleteElementChanged(index, event);
@@ -293,10 +293,11 @@ OmadiReferenceWidget.prototype._autoCompleteElementTouched = function(index) {
 
 OmadiReferenceWidget.prototype._autoCompleteElementBlurred = function(index) {
 	try {
-		this._hideAutoCompleteTable(index);
-		
 		var element = this._getAutoCompleteElement(index);
 		element.blurred = true;
+		element.color = this._getPerfectMatchIndex(index, this._getMatches(element.value)) == -1 ? OmadiReferenceWidget.RED : OmadiReferenceWidget.GREEN;
+		
+		this._hideAutoCompleteTable(index);
 	} catch (error) {
 		Utils.sendErrorReport('Error in OmadiReferenceWidget.prototype._autoCompleteElementBlurred: ' + error);
 	}
@@ -311,6 +312,17 @@ OmadiReferenceWidget.prototype._hideAutoCompleteTable = function(index) {
 	} catch (error) {
 		Utils.sendErrorReport('Error in OmadiReferenceWidget.prototype._hideAutoCompleteTable: ' + error);
 	}
+};
+
+OmadiReferenceWidget.prototype._getPerfectMatchIndex = function(index, matches) {
+	var element = this._getAutoCompleteElement(index);
+	
+	for (var i = 0; i < matches.length; i++) {
+		if (matches[i].title.toUpperCase() == element.value.toUpperCase()) {
+			return i;
+		}
+	}
+	return -1;
 };
 
 OmadiReferenceWidget.prototype._showAutoCompleteTable = function(index, data) {
@@ -371,16 +383,17 @@ OmadiReferenceWidget.prototype._autoCompleteElementChanged = function(index, eve
 		}
 		
 		var matches = this._getMatches(element.value);
-		if (matches.length == 0) {
+		var perfectMatch = this._getPerfectMatchIndex(index, matches);
+		if (perfectMatch != -1) {
+			// Perfect match found
+			this._setValues(index, matches[perfectMatch].nid, matches[perfectMatch].title);
+			element.color = OmadiReferenceWidget.GREEN;
+			this._hideAutoCompleteTable(index);
+		} else if (matches.length == 0) {
 			// No matches found
 			this._setValues(index, null, '');
 			this._hideAutoCompleteTable();
 			element.color = OmadiReferenceWidget.RED;
-		} else if (matches[0].title.toUpperCase() == element.value.toUpperCase()) {
-			// Perfect match found
-			this._setValues(index, matches[0].nid, matches[0].title);
-			element.color = OmadiReferenceWidget.GREEN;
-			this._hideAutoCompleteTable();
 		} else {
 			// One or more matches found
 			var tableData = [];
@@ -394,12 +407,12 @@ OmadiReferenceWidget.prototype._autoCompleteElementChanged = function(index, eve
 			}
 			element.color = OmadiReferenceWidget.GREEN;
 			this._showAutoCompleteTable(index, tableData);
+			
+			if(element.blurred){
+	            element.blurred = false;
+	            this.formObj.scrollToField(event);
+	        }
 		}
-		
-		if(element.blurred){
-            element.blurred = false;
-            this.formObj.scrollToField(event);
-        }
     } catch (error) {
         Utils.sendErrorReport("Error in OmadiReferenceWidget.prototype._autoCompleteElementChanged: " + error);
     }

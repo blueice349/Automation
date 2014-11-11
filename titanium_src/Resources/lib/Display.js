@@ -598,6 +598,7 @@ exports.removeNotifications = function() {
 exports.openLocalPhotosWindow = function() {
 
     var localPhotosWindow = Ti.UI.createWindow({
+    	theme: 'Theme.NoActionBar',
         navBarHidden : true,
         url : '/main_windows/localPhotos.js',
         orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
@@ -718,6 +719,7 @@ exports.openListWindow = function(type, show_plus, filterValues, nestedWindows, 
     var listWindow = Titanium.UI.createWindow({
         navBarHidden : true,
         url : '/main_windows/objects.js',
+        theme: 'Theme.NoActionBar',
         type : type,
         show_plus : show_plus,
         filterValues : filterValues,
@@ -735,6 +737,7 @@ exports.openListWindow = function(type, show_plus, filterValues, nestedWindows, 
 
 exports.openDraftsWindow = function() {
     var draftsWindow = Titanium.UI.createWindow({
+    	theme: 'Theme.NoActionBar',
         title : 'Drafts',
         navBarHidden : true,
         url : '/main_windows/drafts.js',
@@ -815,6 +818,7 @@ exports.openJobsWindow = function() {
         
         if(exports.currentJobsWindow === null){
             exports.currentJobsWindow = Titanium.UI.createWindow({
+            	theme: 'Theme.NoActionBar',
                 title : 'Jobs',
                 navBarHidden : true,
                 url : '/main_windows/jobs.js',
@@ -1076,6 +1080,7 @@ exports.openWebViewInApp = function(nid) {
     });
     
     var webWin = Ti.UI.createWindow();
+    webWin.addEventListener('open', exports.hideActionBar);
     
     if(Ti.App.isIOS){
         var backButton = Ti.UI.createButton({
@@ -1105,3 +1110,4 @@ exports.openWebViewInApp = function(nid) {
         modal: true
     });
 };
+

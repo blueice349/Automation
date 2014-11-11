@@ -4,7 +4,6 @@
 var NFC = require('services/NFC');
 var NFCEventDispatcher = require('services/NFCEventDispatcher');
 var RouteListener = require('objects/RouteListener');
-var Node = require('objects/Node');
 var Database = require('lib/Database');
 var Utils = require('lib/Utils');
 

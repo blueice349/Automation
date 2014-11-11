@@ -620,13 +620,12 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
         }
         
         priceView.addEventListener('change', function(e) {
-            var tempValue, useQuantity;
             /*jslint regexp: true*/
            Ti.API.info("price view change to " + priceView.value);
            
             // Must compare as strings since 4. and 4 would need to be different, but wouldn't be for a number
             if ((priceView.lastValue + "".toString()) != (priceView.value + "".toString())) {
-                tempValue = '';
+                var tempValue = '';
                 if(priceView.value !== null){
                 	tempValue = String(priceView.value).match(/^-?\d*\.?\d?\d?$/) ? priceView.value : priceView.lastValue;
                 }

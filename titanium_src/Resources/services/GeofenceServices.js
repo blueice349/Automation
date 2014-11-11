@@ -46,7 +46,7 @@ GeofenceServices.prototype.getCurrentLocation = function() {
 /* PIVATE METHODS */
 
 GeofenceServices.prototype._handleLocationChange = function(event) {
-	if (!event) {
+	if (!event || !event.coords) {
 		return;
 	}
 	this._updateCurrentLocation(event.coords.latitude, event.coords.longitude);

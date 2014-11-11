@@ -141,6 +141,7 @@ Omadi.display.getFileViewType = function(filename){"use strict";
 
 Omadi.display.openNearMeWindow = function(formType, filterQuery) {'use strict';
 	var win = Titanium.UI.createWindow({
+		theme: 'Theme.NoActionBar',
         navBarHidden : true,
         formType: formType,
         filterQuery: filterQuery,
@@ -161,6 +162,7 @@ Omadi.display.openListWindow = function(type, show_plus, filterValues, nestedWin
 
 Omadi.display.openActionsWindow = function() {"use strict";
     var actionsWindow = Ti.UI.createWindow({
+    	theme: 'Theme.NoActionBar',
         title : 'Actions',
         navBarHidden : true,
         url : '/main_windows/actions.js',
@@ -176,6 +178,7 @@ Omadi.display.openActionsWindow = function() {"use strict";
 
 Omadi.display.openAboutWindow = function() {"use strict";
     var aboutWindow = Ti.UI.createWindow({
+    	theme: 'Theme.NoActionBar',
         title : 'About',
         navBarHidden : true,
         url : '/main_windows/about.js',
@@ -195,6 +198,7 @@ Omadi.display.openDraftsWindow = function() {"use strict";
 
 Omadi.display.openSettingsWindow = function() {"use strict";
     var settingsWindow = Titanium.UI.createWindow({
+    	theme: 'Theme.NoActionBar',
         title : 'Settings',
         navBarHidden : true,
         url : '/main_windows/settings.js',
@@ -209,36 +213,9 @@ Omadi.display.openSettingsWindow = function() {"use strict";
     return settingsWindow;
 };
 
-Omadi.display.currentJobsWindow = null;
 Omadi.display.openJobsWindow = function() {"use strict";
-
-    if(Omadi.bundles.dispatch.showJobsScreen()){
-        
-        if(Omadi.display.currentJobsWindow === null){
-            Omadi.display.currentJobsWindow = Titanium.UI.createWindow({
-                title : 'Jobs',
-                navBarHidden : true,
-                url : '/main_windows/jobs.js',
-                orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
-            });
-        
-            Omadi.display.loading();
-            
-            Omadi.display.currentJobsWindow.addEventListener('open', Omadi.display.doneLoading);
-            Omadi.display.currentJobsWindow.addEventListener('close', function(){
-                Omadi.display.currentJobsWindow = null;
-            });
-        
-            Omadi.display.currentJobsWindow.open();
-        }
-    
-        return Omadi.display.currentJobsWindow;
-    }
-    
-    return null;
+	return Display.openJobsWindow();
 };
-
-
 
 Omadi.display.openWebView = function(nid){"use strict";
     Display.openWebView(nid);
@@ -374,6 +351,7 @@ Omadi.display.openMainMenuWindow = function(options) {"use strict";
     Omadi.display.loading();
     
     var mainMenuWindow = Titanium.UI.createWindow({
+    	theme: 'Theme.NoActionBar',
         url : '/main_windows/mainMenu.js',
         navBarHidden : true,
         orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
