@@ -1080,7 +1080,6 @@ exports.openWebViewInApp = function(nid) {
     });
     
     var webWin = Ti.UI.createWindow();
-    webWin.addEventListener('open', exports.hideActionBar);
     
     if(Ti.App.isIOS){
         var backButton = Ti.UI.createButton({
