@@ -337,7 +337,6 @@ exports.displayFullImage = function(imageView) {
 
 exports.showBigImage = function(imageView) {
     var toolbar, back, space, label, webView, imageData, imageFile;
-    
     if(!exports.largePhotoWindow){
         
         try{
@@ -436,10 +435,13 @@ exports.showBigImage = function(imageView) {
             }
             else{
                 
-                if (Ti.App.isAndroid3OrBelow) {
-                // WebViews are scalable but they render as junk text on older android phones
-                webView = Ti.UI.createImageView({
-	                    image: imageData
+                if (Ti.App.isAndroid) {
+		        	var minWidth = Math.min(Ti.Platform.displayCaps.xdpi, Ti.Platform.displayCaps.ydpi);
+                	// WebViews are scalable but they render as junk text on older android phones
+                	webView = Ti.UI.createImageView({
+	                    image: imageData,
+	                    width: minWidth,
+	                    height: minWidth * 0.75
 	                });
                 } else {
 	                webView = Ti.UI.createWebView({
