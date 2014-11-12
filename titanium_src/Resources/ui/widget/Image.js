@@ -123,8 +123,6 @@ ImageWidget.prototype.getNewElement = function(){
 
     widgetView = Ti.UI.createScrollView({
         width : '92%',
-        //***** Don't set contentWidth to anything here.  It is set further down ******/
-        //contentWidth : 'auto',
         contentHeight : 100,
         height : 100,
         arrImages : null,
@@ -137,13 +135,9 @@ ImageWidget.prototype.getNewElement = function(){
 
 	this.addImageViewsToWidgetView(dbValues, widgetView);
 
-	var contentWidth = 110 * dbValues.length;
 	if (this.instance.can_edit && (this.instance.settings.cardinality == -1 || (dbValues.length < this.instance.settings.cardinality))) {
         widgetView.add(this.getTakePhotoButtonView());
-		contentWidth += 110;
 	}
-	
-	widgetView.contentWidth = contentWidth;
 
     widgetView.check_conditional_fields = this.formObj.affectsAnotherConditionalField(this.instance);
     this.formObj.addCheckConditionalFields(widgetView.check_conditional_fields);
@@ -729,7 +723,6 @@ ImageWidget.prototype.openPictureChooser = function(imageView){
                                     parentView.add(newImageView);
                                     parentView.add(chooseNextImageView);
                                     
-                                    parentView.setContentWidth(parentView.getContentWidth() + 110);
                                     parentView.remove(localImageView);
                                     imageView = null;
                                     
@@ -1016,8 +1009,6 @@ ImageWidget.prototype.openCamera = function(imageView) {
                             parentView.add(takeNextPhotoView);
                         }
                         
-                        parentView.setContentWidth(parentView.getContentWidth() + ((imageView.addedPhotos.length - missingFiles.length) * 110));
-                        
                         // Remove the original imageView from the parent
                         setTimeout(function(){
                             try{
@@ -1227,8 +1218,6 @@ ImageWidget.prototype.openCamera = function(imageView) {
                                 
                                 parentView.add(newImageView);
                                 parentView.add(takeNextPhotoView);
-                                
-                                parentView.setContentWidth(parentView.getContentWidth() + 110);
                                 parentView.remove(imageView);
                                 imageView = null;
                                 

@@ -254,8 +254,8 @@ exports.setImageViewThumbnail = function(imageView, nid, file_id) {
                     Utils.sendErrorReport("Exception displaying image thumbnail in Display.setImageViewThumbnail: " + ex);
                 }
                 
-                imageView.height = null;
-                imageView.width = null;
+                imageView.height = 100;
+                imageView.width = 100;
                 imageView.isImage = true;
                 imageView.thumbnailLoaded = true;
                 imageView.bigImg = null;

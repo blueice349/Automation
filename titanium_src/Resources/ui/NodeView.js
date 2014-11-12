@@ -438,7 +438,7 @@ NodeView.prototype.addRegion = function(regionObj) {"use strict";
 
 NodeView.prototype.addField = function(fieldObj) {"use strict";
     var i, rowView, valueView, valueLabel, labelView, labelLabel, fieldIsHidden, tableView, fileId, 
-        contentImage, field_parts, contentWidth, imagePath, degrees, widget;
+        contentImage, field_parts, imagePath, degrees, widget;
     
     fieldObj.can_edit = false;
     if ( typeof this.node[fieldObj.field_name] !== 'undefined') {
@@ -573,8 +573,6 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
                         width : '100%',
                         height : 100
                     });
-                    
-                    contentWidth = 0;
     
 					try {
 						var formObj = {node: this.node, nid: this.node.nid};
@@ -583,8 +581,6 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
 					} catch(e) {
 						Utils.sendErrorReport('Error adding image views to widget view (A): ' + e);
 					}
-                    
-                    valueView.setContentWidth(110 * this.node[fieldObj.field_name].dbValues.length);
     
                     if (valueView.getChildren().length === 0) {
                         valueView.height = 0;
@@ -614,8 +610,6 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
                         width : '100%',
                         height : 100
                     });
-                    
-                    contentWidth = 0;
 				
                     for ( i = 0; i < this.node[fieldObj.field_name].dbValues.length; i += 1) {
                         if (this.node[fieldObj.field_name].dbValues[i] > 0) {
@@ -644,7 +638,6 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
                             
                             valueView.add(contentImage);
                             Display.setImageViewVideoThumbnail(contentImage, this.node.nid, fileId, fieldObj.field_name);
-                            contentWidth += 110;
                         }
                     }
 
@@ -670,13 +663,9 @@ NodeView.prototype.addField = function(fieldObj) {"use strict";
 	                            });
 	                            
 	                            valueView.add(contentImage);
-	                            
-	                            contentWidth += 110;
 	                        }
 	                    }
 					}
-                    
-                    valueView.setContentWidth(contentWidth);
     
                     if (valueView.getChildren().length === 0) {
                         valueView.height = 0;

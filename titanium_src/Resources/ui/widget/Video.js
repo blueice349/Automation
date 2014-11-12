@@ -105,8 +105,6 @@ VideoWidget.prototype.getNewElement = function(){
 
     widgetView = Ti.UI.createScrollView({
         width : '92%',
-        //***** Don't set contentWidth to anything here.  It is set further down ******/
-        //contentWidth : 'auto',
         contentHeight : 100,
         height : 100,
         arrImages : null,
@@ -118,13 +116,9 @@ VideoWidget.prototype.getNewElement = function(){
 
     this.addVideoViewsToWidgetView(dbValues, widgetView);
 
-    var contentWidth = 110 * dbValues.length;
     if (this.instance.can_edit && (this.instance.settings.cardinality == -1 || (dbValues.length < this.instance.settings.cardinality))) {
         widgetView.add(this.getChooseVideoButtonView(widgetView));
-        contentWidth += 110;
     }
-    
-    widgetView.contentWidth = contentWidth;
 
     widgetView.check_conditional_fields = this.formObj.affectsAnotherConditionalField(this.instance);
     this.formObj.addCheckConditionalFields(widgetView.check_conditional_fields);
@@ -652,7 +646,6 @@ VideoWidget.prototype.openVideoChooser = function(imageView){
                         imageView.parentView.add(newImageView);
                         imageView.parentView.add(takeNextPhotoView);
                         
-                        imageView.parentView.setContentWidth(imageView.parentView.getContentWidth() + 110);
                         imageView.parentView.remove(imageView);
                         imageView = null;
                     }
@@ -733,7 +726,6 @@ VideoWidget.prototype.openVideoChooser = function(imageView){
                     takeNextPhotoView = self.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null, 0);
                     imageView.image = thumbVideo.thumbnailImageAtTime(0, Ti.Media.VIDEO_TIME_OPTION_NEAREST_KEYFRAME);
                     imageView.parentView.add(takeNextPhotoView);
-                    imageView.parentView.setContentWidth(imageView.parentView.getContentWidth() + 110);
                 }
                 else{
                     imageView.image = thumbVideo.thumbnailImageAtTime(0, Ti.Media.VIDEO_TIME_OPTION_NEAREST_KEYFRAME);
