@@ -578,7 +578,8 @@ function addLocalPhotos(){"use strict";
            image: '/images/camera_icon_color.png',
            top: 9,
            left: '3%',
-           width: 48
+           width: 48,
+           height: 33
         });
         
         wrapper.add(image);
@@ -953,7 +954,8 @@ function addLogout(){"use strict";
        image: '/images/logout_icon_color.png',
        top: 2,
        left: '3%',
-       width: 48
+       width: 48,
+       height: 35
     });
     
     wrapper.add(image);

@@ -215,15 +215,14 @@ var lastSyncTimestamp = Omadi.data.getLastUpdateTimestamp();
 var networkStatusAnimation = Titanium.UI.createAnimation();
 
 function displayWatermark(){"use strict";
-    var minWidth;
-    
-    minWidth = Math.min(Ti.Platform.displayCaps.platformHeight, Ti.Platform.displayCaps.platformWidth);
+    var minWidth = Math.min(Ti.Platform.displayCaps.xdpi, Ti.Platform.displayCaps.ydpi);
+    minWidth = Math.round(minWidth * 0.75);
     
     if(watermarkImage === null){
         watermarkImage = Ti.UI.createImageView({
             image: '/images/logo.png',
-            width: Math.round(minWidth * 0.75),
-            height: Math.round(minWidth * 0.75)
+            width: minWidth,
+            height: minWidth
         });
     }
     
@@ -231,7 +230,7 @@ function displayWatermark(){"use strict";
     listView.setHeight(0);
     
     watermarkImage.setVisible(true);
-    watermarkImage.setHeight(minWidth * 0.75);
+    watermarkImage.setHeight(minWidth);
 }
 
 function displayBundleList() {"use strict";

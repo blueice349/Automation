@@ -479,21 +479,18 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
         
         if(type == 'date'){
             date_picker = Titanium.UI.createPicker({
-                useSpinner : true,
+                useSpinner : false,
                 borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
                 value : jsDate,
                 type : Ti.UI.PICKER_TYPE_DATE,
                 minDate : minDate,
                 maxDate : maxDate,
                 color : '#000000',
+                backgroundColor: '#333',
                 height : Ti.UI.SIZE,
                 width : Ti.UI.FILL,
                 textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
             });
-            
-            if(Ti.App.isAndroid){
-                date_picker.width = Ti.UI.SIZE;
-            }
             
             // This sounds really stupid - and it is! If this onchange listener isn't in place, 
             // then the date won't actually be recorded
@@ -507,21 +504,18 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
         
         if (showTime && type == 'time') {
             time_picker = Titanium.UI.createPicker({
-                useSpinner : true,
+                useSpinner : false,
                 borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
                 value : jsDate,
                 type : Ti.UI.PICKER_TYPE_TIME,
                 color : '#000000',
+                backgroundColor: '#333',
                 timezone : null,
                 height : Ti.UI.SIZE,
                 width : Ti.UI.FILL,
                 textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER,
                 format24 : (Utils.getTimeFormat().indexOf('H') !== -1 ? true : false) // Only available on Android
             });
-            
-            if(Ti.App.isAndroid){
-                time_picker.width = Ti.UI.SIZE;
-            }
             
             innerWrapperView.add(time_picker);
     
