@@ -825,18 +825,6 @@ FormTabs.prototype.close = function(){"use strict";
         try{
             if (e.index == 0) {
                 self.handleUnsavedAttachments(function(){
-                    if(Dispatch.dispatchObj !== null){
-	                    Dispatch.dispatchObj.closeWindow();
-	                }
-	                
-	                if(Dispatch.workObj !== null){
-	                    Dispatch.workObj.closeWindow();
-	                }
-	                
-	                if(Dispatch.commentsTab) {
-                        Dispatch.commentsTab.window.close();
-	                }
-	                
 	                // Remove any fully-saved nodes that may not have been linked
 	                var db = Omadi.utils.openMainDatabase();
 	                db.execute("BEGIN IMMEDIATE TRANSACTION");

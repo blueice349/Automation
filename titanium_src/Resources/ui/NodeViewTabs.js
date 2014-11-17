@@ -368,19 +368,6 @@ NodeViewTabs.prototype.loggingOut = function() {
 
 NodeViewTabs.prototype.close = function() {
     try{
-        if(this.dispatchWindow !== null){
-        	this.tabGroup.removeTab(this.dispatchWindow);
-            this.dispatchWindow = null;
-        }
-        
-        if(this.workWindow !== null){
-        	this.tabGroup.removeTab(this.workWindow);
-            this.workWindow = null;
-        }
-    }
-    catch(ex){}
-    
-    try{
         if(this.tabGroup !== null){
             this.tabGroup.close();
             this.tabGroup = null;
