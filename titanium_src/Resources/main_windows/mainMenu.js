@@ -12,7 +12,6 @@ var Service = require('lib/Service');
 var ProgressBar = require('objects/ProgressBar');
 var Comments = require('services/Comments');
 
-
 var Database = require('lib/Database');
 // Make sure the database is reset so it's not using old data from another session
 Database.reset();
@@ -943,15 +942,6 @@ function openFormWindow(e){"use strict";
 }
 
 ( function() {"use strict";
-    // Make sure the field cache is reset if the user is logging into a separate account
-    Node.resetFieldCache();
-	var NFCListener = require('services/NFCListener');
-	if (Ti.App.isAndroid) {
-		new NFCListener(Titanium.Android.currentActivity);
-	}
-	
-	var RouteListener = require('objects/RouteListener');
-	RouteListener.askToStartRoute();
     
     // Initialize the global scope variable to map deleted nids to saved positive nids
     Ti.App.deletedNegatives = {};
@@ -1177,5 +1167,15 @@ function openFormWindow(e){"use strict";
     setTimeout(showContinuousSavedNode, 1000);
     
     isInitialized = true;
+    
+    // Make sure the field cache is reset if the user is logging into a separate account
+    Node.resetFieldCache();
+	var NFCListener = require('services/NFCListener');
+	if (Ti.App.isAndroid) {
+		new NFCListener(Titanium.Android.currentActivity);
+	}
+	
+	var RouteListener = require('objects/RouteListener');
+	RouteListener.askToStartRoute();
 }());
 

@@ -1,0 +1,24 @@
+dependencies: \
+  /Users/sterlinghurd/Projects/omadi_mobile/ios_src/ocr/iphone/Tesseract.mm \
+  /Users/sterlinghurd/Projects/omadi_mobile/ios_src/ocr/iphone/Tesseract.h \
+  /Users/sterlinghurd/Projects/omadi_mobile/ios_src/ocr/iphone/tesseract/baseapi.h \
+  /Users/sterlinghurd/Projects/omadi_mobile/ios_src/ocr/iphone/tesseract/platform.h \
+  /Users/sterlinghurd/Projects/omadi_mobile/ios_src/ocr/iphone/tesseract/apitypes.h \
+  /Users/sterlinghurd/Projects/omadi_mobile/ios_src/ocr/iphone/tesseract/publictypes.h \
+  /Users/sterlinghurd/Projects/omadi_mobile/ios_src/ocr/iphone/tesseract/thresholder.h \
+  /Users/sterlinghurd/Projects/omadi_mobile/ios_src/ocr/iphone/tesseract/unichar.h \
+  /Users/sterlinghurd/Projects/omadi_mobile/ios_src/ocr/iphone/tesseract/tesscallback.h \
+  /Users/sterlinghurd/Projects/omadi_mobile/ios_src/ocr/iphone/tesseract/host.h \
+  /Users/sterlinghurd/Projects/omadi_mobile/ios_src/ocr/iphone/tesseract/pageiterator.h \
+  /Users/sterlinghurd/Projects/omadi_mobile/ios_src/ocr/iphone/tesseract/resultiterator.h \
+  /Users/sterlinghurd/Projects/omadi_mobile/ios_src/ocr/iphone/tesseract/ltrresultiterator.h \
+  /Users/sterlinghurd/Projects/omadi_mobile/ios_src/ocr/iphone/tesseract/unicharset.h \
+  /Users/sterlinghurd/Projects/omadi_mobile/ios_src/ocr/iphone/tesseract/errcode.h \
+  /Users/sterlinghurd/Projects/omadi_mobile/ios_src/ocr/iphone/tesseract/helpers.h \
+  /Users/sterlinghurd/Projects/omadi_mobile/ios_src/ocr/iphone/tesseract/strngs.h \
+  /Users/sterlinghurd/Projects/omadi_mobile/ios_src/ocr/iphone/tesseract/memry.h \
+  /Users/sterlinghurd/Projects/omadi_mobile/ios_src/ocr/iphone/tesseract/unicharmap.h \
+  /Users/sterlinghurd/Projects/omadi_mobile/ios_src/ocr/iphone/tesseract/genericvector.h \
+  /Users/sterlinghurd/Projects/omadi_mobile/ios_src/ocr/iphone/tesseract/ndminx.h \
+  /Users/sterlinghurd/Projects/omadi_mobile/ios_src/ocr/iphone/leptonica/environ.h \
+  /Users/sterlinghurd/Projects/omadi_mobile/ios_src/ocr/iphone/leptonica/pix.h

@@ -102,19 +102,20 @@
         </manifest>
     </android>
     <modules>
-        <module platform="commonjs" version="3.2.1">ti.cloud</module>
-        <module platform="android" version="1.1">com.omadi.gps</module>
-        <module platform="iphone" version="4">com.omadi.ios_gps</module>
-        <module platform="iphone" version="0.7">bencoding.basicgeo</module>
-        <module platform="android" version="0.5">bencoding.alarmmanager</module>
-        <module platform="android" version="3.2.1">ti.cloudpush</module>
-        <module platform="android" version="2.0.2">ti.paint</module>
-        <module platform="iphone" version="1.3">ti.paint</module>
-        <module platform="android" version="3.0">com.omadi.newcamera</module>
         <module platform="iphone">ti.imagefactory</module>
-        <module platform="android" version="1.0">com.omadi.starmicronics</module>
-        <module platform="iphone" version="0.1">com.omadi.starmicronics</module>
-        <module platform="android">uk.me.thepotters.atf.sys</module>
         <module platform="android">ti.nfc</module>
+        <module platform="commonjs" version="3.2.1">ti.cloud</module>
+        <module platform="iphone" version="0.7">bencoding.basicgeo</module>
+        <module platform="android">uk.me.thepotters.atf.sys</module>
+        <module platform="android" version="0.5">bencoding.alarmmanager</module>
+        <module platform="iphone" version="1.3">ti.paint</module>
+        <module platform="iphone" version="0.1">com.omadi.starmicronics</module>
+        <module platform="android" version="2.0.2">ti.paint</module>
+        <module platform="android" version="3.0">com.omadi.newcamera</module>
+        <module platform="android" version="1.1">com.omadi.gps</module>
+        <module platform="android" version="1.0">com.omadi.starmicronics</module>
+        <module platform="android" version="3.2.1">ti.cloudpush</module>
+        <module platform="iphone" version="1.0.0">com.omadi.ocr</module>
+        <module platform="iphone" version="4">com.omadi.ios_gps</module>
     </modules>
 </ti:app>

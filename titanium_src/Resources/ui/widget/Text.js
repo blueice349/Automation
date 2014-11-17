@@ -2,6 +2,7 @@
 
 var Utils = require('lib/Utils');
 var Display = require('lib/Display');
+var OCR = require('lib/OCR');
 
 function TextWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.formObj = formObj;
@@ -189,6 +190,24 @@ TextWidget.prototype.getNewElementWrapper = function(index){"use strict";
 	});
     
     wrapper.add(element);
+    
+    if (this.instance.settings.allow_ocr && Ti.App.isIOS == 1) {
+    	element.width = '80%';
+    	
+    	var ocrButton = Ti.UI.createButton({
+	    	backgroundImage: '/images/take_photo.png',
+	        width: 40,
+           	height: 40,
+           	left: 5
+	    });
+    
+	    var self = this;
+	    ocrButton.addEventListener('click', function() {
+	    	self.takeOCRPhoto(index);
+	    });
+	    
+	    wrapper.add(ocrButton);
+    }
     
     if(index == 0 && typeof this.instance.settings.duplicate_warning !== 'undefined' && this.instance.settings.duplicate_warning == 1){
         
@@ -400,6 +419,21 @@ TextWidget.prototype.cleanUp = function(){"use strict";
         }
         catch(ex1){}
     }
+};
+
+TextWidget.prototype.takeOCRPhoto = function(index) {
+	var self = this;
+	OCR.recognizeFromCamera({
+		success: function(text) {
+			self.elements[index].value = text.replace(/\s/g,'');
+		},
+		error: function(error) {
+			alert(error);
+		},
+		cancel: function() {
+			alert('Canceled');
+		}
+	});
 };
 
 exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";

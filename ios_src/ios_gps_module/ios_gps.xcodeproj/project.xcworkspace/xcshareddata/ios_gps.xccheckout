@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>94A12881-75CC-445A-B627-414708356033</string>
+	<key>IDESourceControlProjectName</key>
+	<string>ios_gps</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>B25C761E14D4FB157C38F70292D4147F3DEC7CBD</key>
+		<string>ssh://xp-dev.com/omadi_mobile</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>ios_src/ios_gps_module/ios_gps.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>B25C761E14D4FB157C38F70292D4147F3DEC7CBD</key>
+		<string>../../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>ssh://xp-dev.com/omadi_mobile</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>B25C761E14D4FB157C38F70292D4147F3DEC7CBD</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>B25C761E14D4FB157C38F70292D4147F3DEC7CBD</string>
+			<key>IDESourceControlWCCName</key>
+			<string>omadi_mobile</string>
+		</dict>
+	</array>
+</dict>
+</plist>

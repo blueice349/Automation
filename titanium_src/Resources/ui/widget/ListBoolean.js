@@ -49,7 +49,8 @@ ListBooleanWidget.prototype.getFieldView = function(){"use strict";
     this.elements[0] = this.getNewElement(0);
     
     var labelView = this.formObj.getRegularLabelView(this.instance);
-    labelView.setWidth('80%');
+    labelView.setWidth(Ti.UI.SIZE);
+    labelView.setLeft(10);
     
     labelView.setEllipsize(false);
     labelView.setWordWrap(true);
@@ -57,10 +58,6 @@ ListBooleanWidget.prototype.getFieldView = function(){"use strict";
     labelView.setHeight(Ti.UI.SIZE);
     
     wrapper.add(this.elements[0]);
-    wrapper.add(Ti.UI.createView({
-        width : 10,
-        height : 10
-    }));
     wrapper.add(labelView);
     
     this.fieldView.add(wrapper);
