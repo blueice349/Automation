@@ -410,6 +410,13 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
                     
                     // Pretend like this is just loaded - mainly a fix for android, but makes sense for both
                     descView.touched = false;
+                    
+                    self.itemChangeDelta(index);
+                                    
+                    if(descView.check_conditional_fields.length > 0){
+                        Ti.API.debug("Checking conditionally required in amounts field");
+                        self.formObj.setConditionallyRequiredLabels(self.instance, descView.check_conditional_fields);
+                    }
                 }
                 catch(ex){
                     Utils.sendErrorReport("Exception touching autocomplete in extra price: " + ex);
