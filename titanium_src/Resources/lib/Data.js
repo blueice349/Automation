@@ -2277,7 +2277,11 @@ var updateSignatureFids = function(node) {
         var fieldName = result.fieldByName('field_name');
         var fid = node[fieldName];
         
-        Database.queryList('UPDATE _files SET fid=' + fid + ' WHERE nid=' + node.nid + ' AND field_name="' + fieldName + '"');
+        if (!isNaN(fid)) {
+        	Database.queryList('UPDATE _files SET fid=' + fid + ' WHERE nid=' + node.nid + ' AND field_name="' + fieldName + '"');
+        } else {
+        	Utils.sendErrorReport('Error in updateSignatureFids (' + fieldName + '): fid is NaN: ' + JSON.stringify(node));
+        }
         result.next(); 
     }
     
