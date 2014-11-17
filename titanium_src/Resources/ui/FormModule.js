@@ -2199,10 +2199,11 @@ FormModule.prototype.setValueWidgetProperty = function(field_name, property, val
         
         if(setIndex == -1){
             for(i = 0; i < children.length; i ++){
+            	
                 if(typeof children[i].dbValue !== 'undefined'){
-                   
                     if(property.length == 1){
                         this.fieldWrappers[field_name].children[i][property[0]] = value;
+                        
                     }
                     else if(property.length == 2){
                         this.fieldWrappers[field_name].children[i][property[0]][property[1]] = value;

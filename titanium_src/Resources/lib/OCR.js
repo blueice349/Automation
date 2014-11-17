@@ -21,7 +21,6 @@ exports.recognizeFromCamera = function(callback) {
 			var text = ocr.recognizedText(resized);
 			
 			Display.doneLoading();
-			console.log('Recognized text: "' + text + '"');
 			success(text, callback);
 		},
 		error: function() {

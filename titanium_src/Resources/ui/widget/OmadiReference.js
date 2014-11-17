@@ -18,7 +18,6 @@ function OmadiReferenceWidget(formObj, instance, fieldViewWrapper){
     
     this._resetMemberVariables();
 	
-    this.numVisibleFields = 1;
     if (this.instance.settings.cardinality == -1) {
     	this.numVisibleFields = this.dbValues.length || 1;
     } else {
@@ -129,8 +128,8 @@ OmadiReferenceWidget.prototype._getWrapperView = function(index) {
 		        width: '100%',
 		        height: Ti.UI.SIZE,
 		        layout: 'vertical',
-		        dbValue: this.dbValues[index],
-		        textValue: this.textValues[index]
+		        dbValue: this.dbValues[index] || null,
+		        textValue: this.textValues[index] || ''
 		    });
 		    
 		    
@@ -345,6 +344,11 @@ OmadiReferenceWidget.prototype._setValues = function(index, dbValue, textValue) 
 		wrapper.textValue = this.textValues[index] = textValue;
 		
 		this._updateAddressLabel(index, dbValue);
+		if (this.instance.widget.type == 'omadi_reference_select') {
+	    	this._getSelectElement(index).text = textValue;
+	    } else {
+	    	this._getAutoCompleteElement(index).value = textValue;
+	    }
 		
 		if (index === 0) {
 	    	this.formObj.setConditionallyRequiredLabels(this.instance, this.conditionallyRequiredFields);
@@ -682,6 +686,7 @@ OmadiReferenceWidget.prototype._getDefaultFields = function() {
 		        }
 		    }
 	    }
+	    
 	    return this.defaultFields;
 	} catch (error) {
 		Utils.sendErrorReport('Error in OmadiReferenceWidget.prototype._getDefaultFields: ' + error);
@@ -696,11 +701,17 @@ OmadiReferenceWidget.prototype._updateDefaultFieldValues = function() {
 				var sourceNode = Node.load(this.dbValues[0]);
 				
 				for (var i = 0; i < defaultFields.length; i++) {
-					var targetValues = this.formObj.getFormFieldValues(defaultFields.target);
-					var sourceValues = sourceNode[defaultFields.source];
+					var targetFieldName = defaultFields[i].target;
+					var targetValues = this.formObj.getFormFieldValues(defaultFields[i].target);
+					var sourceValues = sourceNode[defaultFields[i].source];
 					
 					if (sourceValues && (!targetValues.dbValues || targetValues.dbValues.length == 0 || !targetValues.dbValues[0])) {
-						this.formObj.setValues(defaultFields.target, sourceValues);
+						if (this.formObj.fieldObjects[targetFieldName]._setValues) {
+							for (var j = 0; j < sourceValues.dbValues.length; j++) {
+								this.formObj.fieldObjects[targetFieldName]._setValues(j, sourceValues.dbValues[j], sourceValues.textValues[j]);
+							}
+						}
+						this.formObj.setValues(targetFieldName, sourceValues);
 					}
 				}
 			}
