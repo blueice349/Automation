@@ -21,12 +21,14 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.os.AsyncTask;
+import android.R;
 import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
@@ -46,6 +48,8 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 	private Context context = null;
 	private int degrees = 0;
 	private int captureDegrees = 0;
+	private float density = 1;
+	private int densityAdjustedSize = 65;
 	private boolean cameraInitialized = false;
 	private boolean captureButtonPressed = false;
 	
@@ -95,6 +99,8 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 	public ToolsOverlay(Context c){
 		super(c);
 		
+		density = getContext().getResources().getDisplayMetrics().density;
+		densityAdjustedSize = (int) (65 * density + 0.5f);
 		toolsOverlay = this;
 		
 		try{
@@ -108,6 +114,7 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 		    container.setLayoutParams(containerParams);
 			
 			captureImage = new ImageView(context);
+			//captureImage.setImageResource(R.drawable.ic_menu_camera);
 			
 			RelativeLayout.LayoutParams captureParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 			captureParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
@@ -116,7 +123,7 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 	
 			try {
 				InputStream is = context.getAssets().open("ic_menu_camera.png");
-				bitmap = BitmapFactory.decodeStream(is);
+				bitmap = Bitmap.createScaledBitmap(BitmapFactory.decodeStream(is), densityAdjustedSize, densityAdjustedSize, false);
 			} 
 			catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -169,7 +176,7 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 	
 	        try {
 	       	 	InputStream is = context.getAssets().open("flashOff.png");
-		        bitmap = BitmapFactory.decodeStream(is);
+		        bitmap = Bitmap.createScaledBitmap(BitmapFactory.decodeStream(is), densityAdjustedSize, densityAdjustedSize, false);
 		        flashView.setImageBitmap(bitmap);     
 	        } 
 	        catch (IOException e) {
@@ -184,16 +191,6 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 
 					if (localCameraParams != null) {
 						try {
-
-							// boolean hasNightMode =
-							// hasNightMode(localCameraParams);
-							// boolean hasTorchMode =
-							// hasTorchMode(localCameraParams);
-
-							// Log.d("CAMERA", "CAMERA scene modes: " +
-							// supportedSceneModes.size() + " " + modes);
-							
-							
 							List<String> flashModes = localCameraParams.getSupportedFocusModes();
 							boolean hasFlashAuto = false;
 							boolean hasFlashOff = false;
@@ -249,7 +246,7 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 							}
 							
 							if(is != null){
-								bitmap = BitmapFactory.decodeStream(is);
+								bitmap = Bitmap.createScaledBitmap(BitmapFactory.decodeStream(is), densityAdjustedSize, densityAdjustedSize, false);
 								flashView.setImageBitmap(bitmap);
 							}
 							
@@ -296,14 +293,14 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
     
 		// ZOOMBASE
 	    zoomBase = new RelativeLayout(context);
-	    RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(65, LayoutParams.FILL_PARENT);
+	    RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(densityAdjustedSize, LayoutParams.FILL_PARENT);
 	    layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
 	    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
 	    zoomBase.setLayoutParams(layoutParams);
 
 	    // ZOOM CONTROLS
 	    zoomControls = new VerticalSeekBar(context);
-	    RelativeLayout.LayoutParams zoomParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, deviceHeight - 150);
+	    RelativeLayout.LayoutParams zoomParams = new RelativeLayout.LayoutParams(densityAdjustedSize, (int)(deviceHeight - 150 * density));
 	    zoomParams.addRule(RelativeLayout.CENTER_IN_PARENT);
 	    zoomControls.setLayoutParams(zoomParams);
 	    zoomControls.setPadding(5, 5, 5, 5);
@@ -416,7 +413,7 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 							}
 
 							cameraParams.setFlashMode(omadiFlashProp);
-							bitmap = BitmapFactory.decodeStream(is);
+							bitmap = Bitmap.createScaledBitmap(BitmapFactory.decodeStream(is), densityAdjustedSize, densityAdjustedSize, false);
 							flashView.setImageBitmap(bitmap);
 
 							camera.setParameters(cameraParams);
@@ -509,16 +506,16 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 			//RotateAnimation animation = null;
 			
 			if(degrees == 270){ // regular portrait
-				containerParams = new RelativeLayout.LayoutParams(65, LayoutParams.FILL_PARENT);
+				containerParams = new RelativeLayout.LayoutParams(densityAdjustedSize, LayoutParams.FILL_PARENT);
 			    containerParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
 			    
-			    captureParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+			    captureParams = new RelativeLayout.LayoutParams(densityAdjustedSize, densityAdjustedSize);
 				captureParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
 				captureParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
 				captureImage.setLayoutParams(captureParams);
 				
 				if(flashView != null){
-					flashParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+					flashParams = new RelativeLayout.LayoutParams(densityAdjustedSize, densityAdjustedSize);
 					flashParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
 					flashParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
 					flashView.setLayoutParams(flashParams);
@@ -527,7 +524,7 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 				//animation = getRotateAnimation(270);
 			}
 			else if(degrees == 90){
-				containerParams = new RelativeLayout.LayoutParams(65, LayoutParams.FILL_PARENT);
+				containerParams = new RelativeLayout.LayoutParams(densityAdjustedSize, LayoutParams.FILL_PARENT);
 			    containerParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
 			    
 			    captureParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
@@ -545,7 +542,7 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 				//animation = getRotateAnimation(90);
 			}
 			else if(degrees == 180){
-				containerParams = new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT, 65);
+				containerParams = new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT, densityAdjustedSize);
 			    containerParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
 			    
 			    captureParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
@@ -563,7 +560,7 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 				//animation = getRotateAnimation(180);
 			}
 			else{// Degrees = 0
-				containerParams = new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT, 65);
+				containerParams = new RelativeLayout.LayoutParams(LayoutParams.FILL_PARENT, densityAdjustedSize);
 			    containerParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
 			    
 			    captureParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
