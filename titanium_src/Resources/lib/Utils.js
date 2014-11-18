@@ -1859,7 +1859,7 @@ exports.createNotification = function(message) {
                 });
 
                 notification = Titanium.Android.createNotification({
-                    icon : 0x7f020000,
+                    icon : Ti.App.Android.R.drawable.appicon,
                     contentTitle : 'Omadi CRM',
                     contentText : message,
                     tickerText : 'Omadi GPS Service',
