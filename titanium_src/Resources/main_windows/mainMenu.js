@@ -786,6 +786,7 @@ function doneSendingPhotosMainMenu(){"use strict";
 }
 
 function unregisterAllGeofencesMainMenu(){"use strict";
+	GeofenceServices.getInstance().resetState();
 	GeofenceServices.getInstance().unregisterAllGeofences();
 }
 

@@ -35,6 +35,7 @@ RDNGeofenceListener.prototype.createInitialGeofences = function() {
 			geofences[i].setProperty('formType', 'runsheet');
 			geofenceServices.registerGeofence(geofences[i]);
 		}
+		geofenceServices.getNewLocation();
 	}
 };
 
@@ -50,6 +51,7 @@ RDNGeofenceListener.prototype.addOrUpdateGeofence = function(nid, lat, lng) {
 		var geofence = new PointGeofence(nid, lat, lng, RDNGeofenceListener.GEOFENCE_RADIUS_METERS);
 		geofence.setProperty('formType', 'runsheet');
 		geofenceServices.registerGeofence(geofence);
+		geofenceServices.getNewLocation();
 	}
 };
 

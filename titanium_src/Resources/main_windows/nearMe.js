@@ -110,6 +110,12 @@ var getCurrentLocation = function(callback) {'use strict';
 			lat: e.coords.latitude,
 			lng: e.coords.longitude
 		});
+		
+		Ti.App.fireEvent('OmadiLocation', {
+        	longitude: e.coords.longitude,
+        	latitude: e.coords.latitude,
+        	timestamp: (e.coords.timestamp / 1000)
+        });
 	});
 };
 

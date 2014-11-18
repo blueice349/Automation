@@ -14,10 +14,14 @@ var GeofenceServices = function() {
 	});
 	
 	this._restoreState();
-	this._getInitialLocation();
 };
 
 /* PUBLIC METHODS */
+
+GeofenceServices.prototype.resetState = function() {
+	Ti.App.Properties.removeProperty('GeofenceServices.state');
+	this._restoreState();
+};
 
 GeofenceServices.prototype.unregisterAllGeofences = function() {
 	this.geofences = {};
@@ -44,11 +48,7 @@ GeofenceServices.prototype.getCurrentLocation = function() {
 	return this.currentLocation;
 };
 
-/* PIVATE METHODS */
-
-
-
-GeofenceServices.prototype._getInitialLocation = function() {
+GeofenceServices.prototype.getNewLocation = function() {
 	var self = this;
 	Ti.Geolocation.getCurrentPosition(function(event) {
 		self._handleLocationChange({
@@ -57,6 +57,8 @@ GeofenceServices.prototype._getInitialLocation = function() {
 		});
 	});
 };
+
+/* PIVATE METHODS */
 
 GeofenceServices.prototype._handleLocationChange = function(event) {
 	this._updateCurrentLocation(event.latitude, event.longitude);
