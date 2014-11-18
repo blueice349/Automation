@@ -169,10 +169,9 @@ exports.resultToObjectArray = function(result) {
 };
 
 exports.removeAllData = function() {
-	var GeofenceServices = require('services/GeofenceServices');
 	var Data = require('lib/Data');
 	
-    GeofenceServices.getInstance().unregisterAllGeofences();
+	Ti.App.fireEvent('unregisterAllGeofences');
     
     Ti.App.Properties.setDouble('omadi:fullResetLastSync', Data.getLastUpdateTimestamp());
     

@@ -11,10 +11,14 @@ var AlertQueue = require('lib/AlertQueue');
 var Service = require('lib/Service');
 var ProgressBar = require('objects/ProgressBar');
 var Comments = require('services/Comments');
+var GeofenceServices = require('services/GeofenceServices');
+var RDNGeofenceListener = require('services/RDNGeofenceListener');
 
 var Database = require('lib/Database');
 // Make sure the database is reset so it's not using old data from another session
 Database.reset();
+
+RDNGeofenceListener.getInstance().createInitialGeofences();
 
 ProgressBar.mainMenu = Ti.UI.currentWindow;
 
@@ -781,6 +785,10 @@ function doneSendingPhotosMainMenu(){"use strict";
     hideNetworkStatus();
 }
 
+function unregisterAllGeofencesMainMenu(){"use strict";
+	GeofenceServices.getInstance().unregisterAllGeofences();
+}
+
 function sendingDataMainMenu(e){"use strict";
     // the progress bar set by onsendstream does not currently work with Android
     // Only allow iOS apps to show the progress bar for uploads
@@ -1011,6 +1019,9 @@ function openFormWindow(e){"use strict";
     Ti.App.removeEventListener("doneSendingPhotos", doneSendingPhotosMainMenu);
     Ti.App.addEventListener("doneSendingPhotos", doneSendingPhotosMainMenu);
     
+    Ti.App.removeEventListener("unregisterAllGeofences", unregisterAllGeofencesMainMenu);
+    Ti.App.addEventListener("unregisterAllGeofences", unregisterAllGeofencesMainMenu);
+    
     Ti.App.removeEventListener("sendingData", sendingDataMainMenu);
     Ti.App.addEventListener("sendingData", sendingDataMainMenu);
     
@@ -1117,6 +1128,7 @@ function openFormWindow(e){"use strict";
             Ti.App.removeEventListener("omadi:syncInstallComplete", displayBundleList);
             Ti.App.removeEventListener("doneSendingData", doneSendingDataMainMenu);
             Ti.App.removeEventListener("doneSendingPhotos", doneSendingPhotosMainMenu);
+            Ti.App.removeEventListener("unregisterAllGeofences", unregisterAllGeofencesMainMenu);
             Ti.App.removeEventListener("sendingData", sendingDataMainMenu);
             Ti.App.removeEventListener('loggingOut', loggingOutMainMenu);
             Ti.App.removeEventListener('sendComments', sendCommentsMainMenu);

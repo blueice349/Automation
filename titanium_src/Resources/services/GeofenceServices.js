@@ -85,8 +85,11 @@ GeofenceServices.prototype._saveState = function() {
 	}));
 };
 
-var geofenceServices = new GeofenceServices();
+var geofenceServices = null;
 
 exports.getInstance = function() {
+	if (!geofenceServices) {
+		geofenceServices = new GeofenceServices();
+	}
 	return geofenceServices;
 };

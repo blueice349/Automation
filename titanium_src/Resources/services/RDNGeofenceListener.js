@@ -78,21 +78,32 @@ RDNGeofenceListener.prototype.deleteGeofences = function(data) {
 
 RDNGeofenceListener.prototype._handleGeofenceEntered = function(event) {
 	if (event.geofence.getProperty('formType') === 'runsheet') {
-		event.geofence.setProperty('timeEntered', Utils.getUTCMillisServerCorrected());
+		var timestamp = Utils.getUTCMillisServerCorrected();
+		var enteredTime = new Date(timestamp);
+		var message = Utils.getRealname() + ' arrived at ' + enteredTime.format('g:i:s A') + ' on ' + enteredTime.format('j M Y');
+		
+		event.geofence.setProperty('timeEntered', timestamp);
+		
+		Comment.save(this._createRDNComment(message, event.geofence));
+		Ti.App.fireEvent('sendComments');
 	}
 };
 
 RDNGeofenceListener.prototype._handleGeofenceExited = function(event) {
 	if (event.geofence.getProperty('formType') === 'runsheet') {
-		event.geofence.setProperty('timeExited', Utils.getUTCMillisServerCorrected());
-		Comment.save(this._createRDNComment(event.geofence));
+		var timestamp = Utils.getUTCMillisServerCorrected();
+		var exitedTime = new Date(timestamp);
+		var message = Utils.getRealname() + ' left at ' + exitedTime.format('g:i:s A') + ' on ' + exitedTime.format('j M Y');
+		
+		event.geofence.setProperty('timeExited', timestamp);
+		
+		Comment.save(this._createRDNComment(message, event.geofence));
 		Ti.App.fireEvent('sendComments');
 	}
 };
 
-RDNGeofenceListener.prototype._createRDNComment = function(geofence) {
+RDNGeofenceListener.prototype._createRDNComment = function(message, geofence) {
 	var now = Utils.getUTCTimestampServerCorrected();
-	var message = this._getRDNCommentMessage(geofence);
 	
 	return {
 		created: now,
@@ -107,21 +118,6 @@ RDNGeofenceListener.prototype._createRDNComment = function(geofence) {
 			dbValues: [RDNGeofenceListener.UpdateType.AGENT_GPS_UPDATE]
 		}
 	};
-};
-
-RDNGeofenceListener.prototype._getRDNCommentMessage = function(geofence) {
-	var enteredTime = new Date(geofence.getProperty('timeEntered'));
-	var exitedTime = new Date(geofence.getProperty('timeExited'));
-	
-	var message = Utils.getRealname() + ' arrived at ' + enteredTime.format('g:i:s A') + ' on ' + enteredTime.format('j M Y');
-	
-	if (geofence.wasRestored()) {
-		message += '.';
-	} else {
-		message += ' and left ' + Utils.formatApproximateDuration(enteredTime, exitedTime) + ' later.';
-	}
-	
-	return message;
 };
 
 RDNGeofenceListener._hasRunsheets = function() {

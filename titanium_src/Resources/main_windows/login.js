@@ -3,7 +3,6 @@
 
 var Display = require('lib/Display');
 var Utils = require('lib/Utils');
-var RDNGeofenceListener = require('services/RDNGeofenceListener');
 var Service = require('lib/Service');
 
 Service.initActivityId();
@@ -346,7 +345,6 @@ function openMainScreen(loggedIn){"use strict";
         });
        
         startGPSService();
-        RDNGeofenceListener.getInstance().createInitialGeofences();
     }
     catch(ex){
         Utils.sendErrorReport("Exception opening main menu screen: " + ex);

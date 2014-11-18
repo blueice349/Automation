@@ -2,7 +2,6 @@
 'use strict';
 
 var Utils = require('lib/Utils');
-var GeofenceServices = require('services/GeofenceServices');
 var Database = require('lib/Database');
 var Data = require('lib/Data');
 var Display = require('lib/Display');
@@ -338,7 +337,7 @@ exports.logout = function() {
 		}
     }
     
-    GeofenceServices.getInstance().unregisterAllGeofences();
+    Ti.App.fireEvent('unregisterAllGeofences');
     
     exports.sendLogoutRequest();
 };
