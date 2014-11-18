@@ -32,6 +32,7 @@ RDNGeofenceListener.prototype.createInitialGeofences = function() {
 		var geofences = PointGeofence.newFromDB('runsheet', null, 'location');
 		var i;
 		for (i = 0; i < geofences.length; i++) {
+			geofences[i].setProperty('formType', 'runsheet');
 			geofenceServices.registerGeofence(geofences[i]);
 		}
 	}

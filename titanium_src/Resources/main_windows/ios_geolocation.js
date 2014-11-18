@@ -48,6 +48,12 @@ function updateCurrentLocationiOS(e) {"use strict";
             db.execute("INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('" + longitude + "','" + latitude + "'," + timestamp + ", 'notUploaded')");
             db.close();
             db = null;
+            
+            Ti.App.fireEvent('OmadiLocation', {
+            	longitude: longitude,
+            	latitude: latitude,
+            	timestamp: timestamp
+            });
 
             Ti.App.Properties.setBool("insertingGPS", false);
             

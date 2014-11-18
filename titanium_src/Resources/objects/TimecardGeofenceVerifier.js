@@ -19,8 +19,8 @@ var TimecardGeofenceVerifier = function() {
 	Ti.App.addEventListener('loggingOut', function(event) {
 		self._handleLoggingOut(event);
 	});
-	Ti.App.addEventListener('location', function(event) {
-		self._handleLocationChanged(event);
+	Ti.App.addEventListener('OmadiLocation', function() {
+		self._handleLocationChanged();
 	});
 };
 

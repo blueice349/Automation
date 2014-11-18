@@ -3,6 +3,7 @@
 Omadi.location = Omadi.location || {};
 
 var Utils = require('lib/Utils');
+var Location = require('lib/Location');
 
 Omadi.location.isLocationEnabled = function(callback){"use strict";
     var dialog = null, locAuth, retval = true;
@@ -49,48 +50,7 @@ Omadi.location.isLocationEnabled = function(callback){"use strict";
 };
 
 Omadi.location.getLastLocation = function(expire){"use strict";
-    var db, result, location, now, expireTimestamp;
-    
-    // Setup return value
-    location = {};
-    location.latitude = 0;
-    location.longitude = 0;
-    location.accuracy = 0;
-    
-    try{
-        if(typeof expire === 'undefined'){
-            // last 10 minutes
-            expire = 600;
-        }
-        else{
-            expire = parseInt(expire, 10);
-        }
-        
-        db = Omadi.utils.openGPSDatabase();
-        
-        if(!isNaN(expire) && expire > 0){
-            now = Omadi.utils.getUTCTimestamp();
-            expireTimestamp = now - expire;
-            result = db.execute("SELECT longitude, latitude, accuracy FROM user_location WHERE timestamp >= " + expireTimestamp + " ORDER BY timestamp DESC LIMIT 1");
-        }
-        else{
-            result = db.execute("SELECT longitude, latitude, accuracy FROM user_location ORDER BY timestamp DESC LIMIT 1");
-        }
-        
-        if(result.isValidRow()){
-            location.latitude = result.fieldByName('latitude');
-            location.longitude = result.fieldByName('longitude');
-            location.accuracy = result.fieldByName('accuracy');
-        }
-        
-        result.close();
-        db.close();
-    }
-    catch(ex){
-        Utils.sendErrorReport("Exception in getLastLocation: " + ex);
-    }
-    
-    return location;
+	return Location.getLastLocation(expire);
 };
 
 Omadi.location.currentPositionCallback = function(e) {"use strict";
@@ -106,6 +66,12 @@ Omadi.location.currentPositionCallback = function(e) {"use strict";
             db.execute("INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('" + coords.longitude + "', '" + coords.latitude + "', " + (coords.timestamp / 1000) + ", 'notUploaded')");
             db.close();
             
+            Ti.App.fireEvent('OmadiLocation', {
+            	longitude: coords.longitude,
+            	latitude: coords.latitude,
+            	timestamp: (coords.timestamp / 1000)
+            });
+                    
             Ti.App.Properties.setBool("insertingGPS", false);
 
             Omadi.location.uploadGPSCoordinates();

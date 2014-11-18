@@ -79,6 +79,12 @@ function updateCurrentLocation(e) {"use strict";
             db = Omadi.utils.openGPSDatabase();
             db.execute("INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('" + e.coords.longitude + "','" + e.coords.latitude + "'," + timestamp + ", 'notUploaded')");
             db.close();
+            
+            Ti.App.fireEvent('OmadiLocation', {
+            	longitude: e.coords.longitude,
+            	latitude: e.coords.latitude,
+            	timestamp: timestamp
+            });
 
             Ti.App.Properties.setBool("insertingGPS", false);
             

@@ -9,11 +9,12 @@ var GeofenceServices = function() {
 	this.currentLocation = {};
 	
 	var self = this;
-	Ti.Geolocation.addEventListener('location', function(event) {
+	Ti.App.addEventListener('OmadiLocation', function(event) {
 		self._handleLocationChange(event);
 	});
 	
 	this._restoreState();
+	this._getInitialLocation();
 };
 
 /* PUBLIC METHODS */
@@ -45,12 +46,21 @@ GeofenceServices.prototype.getCurrentLocation = function() {
 
 /* PIVATE METHODS */
 
+
+
+GeofenceServices.prototype._getInitialLocation = function() {
+	var self = this;
+	Ti.Geolocation.getCurrentPosition(function(event) {
+		self._handleLocationChange({
+			longitude: event.coords.longitude,
+			latitude: event.coords.latitude
+		});
+	});
+};
+
 GeofenceServices.prototype._handleLocationChange = function(event) {
-	if (!event || !event.coords) {
-		return;
-	}
-	this._updateCurrentLocation(event.coords.latitude, event.coords.longitude);
-	this._updateBreached(event.coords.latitude, event.coords.longitude);
+	this._updateCurrentLocation(event.latitude, event.longitude);
+	this._updateBreached(event.latitude, event.longitude);
 	this._saveState();
 };
 

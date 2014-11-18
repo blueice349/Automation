@@ -39,6 +39,7 @@ var saveCoordinate = function(e){"use strict";
                     Ti.App.Properties.setDouble("lastTimestamp", now);
                     
                     db = Omadi.utils.openGPSDatabase();
+                    
                     db.execute("INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('" + longitude + "','" + latitude + "'," + timestamp + ", 'notUploaded')");
                     
                     result = db.execute("SELECT COUNT(*) FROM user_location WHERE status = 'notUploaded' AND timestamp < " + (now - 120));
@@ -50,6 +51,12 @@ var saveCoordinate = function(e){"use strict";
                     }
                     
                     db.close();
+                    
+                    Ti.App.fireEvent('OmadiLocation', {
+                    	longitude: longitude,
+                    	latitude: latitude,
+                    	timestamp: timestamp
+                    });
                     
                     Ti.App.Properties.setBool("insertingGPS", false);
                     
