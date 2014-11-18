@@ -150,10 +150,10 @@ OmadiReferenceWidget.prototype._getWrapperView = function(index) {
 OmadiReferenceWidget.prototype._maybeSelectCurrentUserTruck = function(index) {
 	try {
 		var nodeTypes = this._getNodeTypes();
-		if (nodeTypes.length == 1 && !this.dbValues[index] && this.instance.isRequired && nodeTypes[0] == 'company_vehicle'){
+		if (nodeTypes.length == 1 && nodeTypes[0] == 'company_vehicle' && !this.dbValues[index]){
 	        var vehicleNid = Utils.getCurrentVehicleNid();
 	        if(vehicleNid > 0){
-	            this.textValue[index] = Utils.getCurrentVehicleName();
+	            this.textValues[index] = Utils.getCurrentVehicleName();
 	            this.dbValues[index] = vehicleNid;
 	        }
 	    }

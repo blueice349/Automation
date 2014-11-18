@@ -201,7 +201,6 @@ TextWidget.prototype.getNewElementWrapper = function(index){"use strict";
            	left: 5
 	    });
     
-	    var self = this;
 	    ocrButton.addEventListener('click', function() {
 	    	self.takeOCRPhoto(index);
 	    });
@@ -421,7 +420,7 @@ TextWidget.prototype.cleanUp = function(){"use strict";
     }
 };
 
-TextWidget.prototype.takeOCRPhoto = function(index) {
+TextWidget.prototype.takeOCRPhoto = function(index) {"use strict";
 	var self = this;
 	OCR.recognizeFromCamera({
 		success: function(text) {

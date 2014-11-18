@@ -1,6 +1,8 @@
 /*jslint node:true */
 'use strict';
 
+var Display = require('lib/Display');
+
 if (Ti.Platform.name !== 'android') {
 	var ocr = require('com.omadi.ocr');
 }
@@ -42,9 +44,9 @@ function success(text, callback) {
 	}
 }
 
-function error(error, callback) {
-	if (callback.error) {
-		callback.error(error);
+function error(er, callback) {
+	if (callback.er) {
+		callback.error(er);
 	}
 }
 
