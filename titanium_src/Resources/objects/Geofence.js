@@ -15,7 +15,7 @@ Geofence.prototype.setBreached = function(breached) {
 		this.breached = breached;
 		
 		var eventData = {
-			geofence: this
+			geofenceNid: this.nid
 		};
 		
 		if (breached) {

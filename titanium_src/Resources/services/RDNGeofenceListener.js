@@ -80,27 +80,29 @@ RDNGeofenceListener.prototype.deleteGeofences = function(data) {
 /* PRIVATE METHODS */
 
 RDNGeofenceListener.prototype._handleGeofenceEntered = function(event) {
-	if (event.geofence.getProperty('formType') === 'runsheet') {
+	var geofence = GeofenceServices.getInstance().getGeofence(event.geofenceNid);
+	if (geofence && geofence.getProperty('formType') === 'runsheet') {
 		var timestamp = Utils.getUTCMillisServerCorrected();
 		var enteredTime = new Date(timestamp);
 		var message = Utils.getRealname() + ' arrived at ' + enteredTime.format('g:i:s A') + ' on ' + enteredTime.format('j M Y');
 		
-		event.geofence.setProperty('timeEntered', timestamp);
+		geofence.setProperty('timeEntered', timestamp);
 		
-		Comment.save(this._createRDNComment(message, event.geofence));
+		Comment.save(this._createRDNComment(message, geofence));
 		Ti.App.fireEvent('sendComments');
 	}
 };
 
 RDNGeofenceListener.prototype._handleGeofenceExited = function(event) {
-	if (event.geofence.getProperty('formType') === 'runsheet') {
+	var geofence = GeofenceServices.getInstance().getGeofence(event.geofenceNid);
+	if (geofence && geofence.getProperty('formType') === 'runsheet') {
 		var timestamp = Utils.getUTCMillisServerCorrected();
 		var exitedTime = new Date(timestamp);
 		var message = Utils.getRealname() + ' left at ' + exitedTime.format('g:i:s A') + ' on ' + exitedTime.format('j M Y');
 		
-		event.geofence.setProperty('timeExited', timestamp);
+		geofence.setProperty('timeExited', timestamp);
 		
-		Comment.save(this._createRDNComment(message, event.geofence));
+		Comment.save(this._createRDNComment(message, geofence));
 		Ti.App.fireEvent('sendComments');
 	}
 };

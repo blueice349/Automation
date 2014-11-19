@@ -51,6 +51,9 @@ GeofenceServices.prototype.getCurrentLocation = function() {
 GeofenceServices.prototype.getNewLocation = function() {
 	var self = this;
 	Ti.Geolocation.getCurrentPosition(function(event) {
+		if (!event || !event.coords) {
+			return;
+		}
 		self._handleLocationChange({
 			longitude: event.coords.longitude,
 			latitude: event.coords.latitude
