@@ -355,7 +355,7 @@ NodeViewTabs.prototype.getTabs = function(allowActions) {
 };
 
 NodeViewTabs.prototype.savedNode = function(e) {
-	if (e.saveType != 'continuous') {
+	if (e.saveType != 'continuous' && _instance[e.nodeNid]) {
         _instance[e.nodeNid].close();
     }
 };

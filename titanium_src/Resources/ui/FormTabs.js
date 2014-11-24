@@ -1150,11 +1150,13 @@ FormTabs.prototype.savedDispatchNode = function(e){"use strict";
                 Dispatch.workObj.closeWindow();
             }
             
-            if(Dispatch.commentsTab) {
+            if(Dispatch.commentsTab && Dispatch.commentsTab.window) {
                 Dispatch.commentsTab.window.close();
             }
 	        
-            Dispatch.tabGroup.close();
+	        if (Dispatch.tabGroup) {
+            	Dispatch.tabGroup.close();
+            }
         } else if (e.saveType == 'next_part') {
             Dispatch.workObj.initNewWindowFromCurrentData(Dispatch.workObj.form_part + 1);
         } else if (e.saveType == 'new') {
