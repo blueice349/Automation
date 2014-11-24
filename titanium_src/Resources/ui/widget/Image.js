@@ -738,7 +738,7 @@ ImageWidget.prototype.openPictureChooser = function(imageView){
                             table.remove(rows[i]);
                             rows[i] = null;
                         }
-                        rows = null;
+                        rows = [];
                         pictureWindow.remove(table);
                         table = null;
                         
@@ -772,7 +772,7 @@ ImageWidget.prototype.openPictureChooser = function(imageView){
                             table.remove(rows[i]);
                             rows[i] = null;
                         }
-                        rows = null;
+                        rows = [];
                         pictureWindow.remove(table);
                         table = null;
                         

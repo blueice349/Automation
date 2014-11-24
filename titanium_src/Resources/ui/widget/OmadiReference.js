@@ -706,7 +706,7 @@ OmadiReferenceWidget.prototype._updateDefaultFieldValues = function() {
 					var sourceValues = sourceNode[defaultFields[i].source];
 					
 					if (sourceValues && (!targetValues.dbValues || targetValues.dbValues.length == 0 || !targetValues.dbValues[0])) {
-						if (this.formObj.fieldObjects[targetFieldName]._setValues) {
+						if (this.formObj.fieldObjects[targetFieldName] && this.formObj.fieldObjects[targetFieldName]._setValues) {
 							for (var j = 0; j < sourceValues.dbValues.length; j++) {
 								this.formObj.fieldObjects[targetFieldName]._setValues(j, sourceValues.dbValues[j], sourceValues.textValues[j]);
 							}

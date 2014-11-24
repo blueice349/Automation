@@ -453,11 +453,6 @@ exports.showBigImage = function(imageView) {
                 exports.largePhotoWindow.add(webView);
                 
                 exports.largePhotoWindow.open();
-
-				var OCR = require('com.omadi.ocr');
-				//var image = Titanium.Filesystem.getFile(Titanium.Filesystem.resourcesDirectory + '/plate.JPG');
-				var text = OCR.recognizedText(imageData);
-				alert(text);
                 
                 Ti.API.debug("large photo window showing...");
             }

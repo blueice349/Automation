@@ -249,6 +249,7 @@ TextWidget.prototype.getNewElementWrapper = function(index){"use strict";
 
 TextWidget.prototype.onChangeListener = function(e) {"use strict";
     var now, milliseconds, timeChange;
+    var self = this;
     
     now = new Date();
     milliseconds = now.getTime();
@@ -291,7 +292,7 @@ TextWidget.prototype.onChangeListener = function(e) {"use strict";
                     value = value.trim();
                     
                     if(value.length > 0){
-                        formPart = this.formObj.form_part;
+                        formPart = self.formObj.form_part;
                         
                         if(formPart <= 0){
                         
