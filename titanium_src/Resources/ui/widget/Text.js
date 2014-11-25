@@ -423,17 +423,16 @@ TextWidget.prototype.cleanUp = function(){"use strict";
 
 TextWidget.prototype.takeOCRPhoto = function(index) {"use strict";
 	var self = this;
-	OCR.recognizeFromCamera({
+	var ocr = new OCR({
 		success: function(text) {
+			alert(text);
 			self.elements[index].value = text.replace(/\s/g,'');
 		},
 		error: function(error) {
 			alert(error);
-		},
-		cancel: function() {
-			alert('Canceled');
 		}
 	});
+	ocr.recognizeFromCamera();
 };
 
 exports.getFieldObject = function(FormObj, instance, fieldViewWrapper){"use strict";

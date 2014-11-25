@@ -88,7 +88,17 @@ RDNGeofenceListener.prototype._handleGeofenceEntered = function(event) {
 		
 		geofence.setProperty('timeEntered', timestamp);
 		
-		Comment.save(this._createRDNComment(message, geofence));
+		var saved = Comment.save(this._createRDNComment(message, geofence));
+		var node = Node.load(event.geofenceNid);
+		
+		if (saved && node) {
+			var dialog = Titanium.UI.createAlertDialog({
+				title: 'RDN GPS Update Recorded',
+				message: 'Arrived at "' + node.title + '"'
+			});
+			dialog.show();
+		}
+		
 		Ti.App.fireEvent('sendComments');
 	}
 };

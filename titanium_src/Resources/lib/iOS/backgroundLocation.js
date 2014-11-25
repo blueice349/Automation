@@ -53,8 +53,8 @@ var saveCoordinate = function(e){"use strict";
                     db.close();
                     
                     Ti.App.fireEvent('OmadiLocation', {
-                    	longitude: longitude,
-                    	latitude: latitude,
+                		longitude: longitude,
+                		latitude: latitude,
                     	timestamp: timestamp
                     });
                     
