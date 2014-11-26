@@ -23,7 +23,7 @@ OCR.MIN_CROP_SIZE = 75;
 
 OCR.prototype.recognizeFromCamera = function() {
 	if (!ocr) {
-		error('OCR is not supported on this device.', callback);
+		this._error('OCR is not supported on this device.');
 		return;
 	}
 	
@@ -60,8 +60,8 @@ OCR.prototype._getOverlay = function() {
 	var crop = Ti.UI.createView({
 		borderWidth: 3,
 		borderColor: OCR.OVERLAY_COLOR,
-		width: Math.floor(dim.width * .9),
-		height: Math.floor(dim.height * .2),
+		width: Math.floor(dim.width * 0.9),
+		height: Math.floor(dim.height * 0.2),
 		touchEnabled: false
 	});
 	

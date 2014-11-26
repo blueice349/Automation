@@ -425,7 +425,6 @@ TextWidget.prototype.takeOCRPhoto = function(index) {"use strict";
 	var self = this;
 	var ocr = new OCR({
 		success: function(text) {
-			alert(text);
 			self.elements[index].value = text.replace(/\s/g,'');
 		},
 		error: function(error) {

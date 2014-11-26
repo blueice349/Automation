@@ -700,6 +700,9 @@ ImageWidget.prototype.openPictureChooser = function(imageView){
                 
                 useButton.addEventListener('click', function(e){
                     var i, file, localImageView, newImageView, chooseNextImageView, dbPath, parentView;
+                    if (!pictureWindow) {
+                    	return;
+                    }
                     try{
                         localImageView = e.source.imageView;
                         parentView = self.elements[0];
@@ -764,6 +767,9 @@ ImageWidget.prototype.openPictureChooser = function(imageView){
                 
                 cancelButton.addEventListener('click', function(){
                     var i;
+                    if (!pictureWindow) {
+                    	return;
+                    }
                     try{
                         pictureWindow.hide(); 
                         
