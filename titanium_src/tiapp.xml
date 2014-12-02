@@ -32,7 +32,7 @@
     </deployment-targets>
     <id>com.omadi.crm</id>
     <name>Omadi</name>
-    <version>2.10.19</version>
+    <version>2.10.21</version>
     <publisher>Omadi</publisher>
     <url>http://www.omadi.com</url>
     <description>Mobile CRM From Omadi</description>
@@ -63,7 +63,7 @@
             <service url="android_gps_event.js"/>
         </services>
         <manifest android:installLocation="preferExternal"
-            android:versionCode="113" android:versionName="2.10.19">
+            android:versionCode="115" android:versionName="2.10.21">
             <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="19"/>
             <uses-permission android:name="android.permission.READ_LOGS"/>
             <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
