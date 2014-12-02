@@ -99,6 +99,11 @@ TimecardGeofenceVerifier.prototype._isLocationAuthorized = function() {
 };
 
 TimecardGeofenceVerifier.prototype._handleFreshLocationAccuired = function(event) {
+	Ti.App.fireEvent('OmadiLocation', {
+    	longitude: event.coords.longitude,
+    	latitude: event.coords.latitude,
+    	timestamp: Omadi.utils.getUTCTimestamp()
+    });
 	if (this.getCurrentGeofences({lat: event.coords.latitude, lng: event.coords.longitude}).length !== 0) {
 		alert('Location acquired. You can clock in or out now.');
 	} else {

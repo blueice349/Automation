@@ -303,7 +303,7 @@ TextWidget.prototype.onChangeListener = function(e) {"use strict";
                             if(origLastChange == actualLastChange){
                                 // The last change happened 5 seconds ago, so possibly send request if it hasn't been sent before
                                 
-                                if(typeof this.duplicateWarnings[value] === 'undefined'){
+                                if(typeof self.duplicateWarnings[value] === 'undefined'){
                                     Ti.API.debug("Send Request baby!");    
                                     
                                     this.setDuplicateWarnings(fieldName, value, 'silent');
