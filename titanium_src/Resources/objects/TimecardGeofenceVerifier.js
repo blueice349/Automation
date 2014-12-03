@@ -4,6 +4,7 @@
 var GeofenceServices = require('services/GeofenceServices');
 var PointGeofence = require('objects/PointGeofence');
 var Node = require('objects/Node');
+var Utils = require('lib/Utils');
 
 var TimecardGeofenceVerifier = function() {
 	this.verifyClockIn = null;
@@ -102,7 +103,7 @@ TimecardGeofenceVerifier.prototype._handleFreshLocationAccuired = function(event
 	Ti.App.fireEvent('OmadiLocation', {
     	longitude: event.coords.longitude,
     	latitude: event.coords.latitude,
-    	timestamp: Omadi.utils.getUTCTimestamp()
+    	timestamp: Utils.getUTCTimestamp()
     });
 	if (this.getCurrentGeofences({lat: event.coords.latitude, lng: event.coords.longitude}).length !== 0) {
 		alert('Location acquired. You can clock in or out now.');
