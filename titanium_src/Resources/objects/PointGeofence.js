@@ -118,7 +118,7 @@ PointGeofence.newFromDB = function(formType, referenceField, addressField) {
 	var geofences = [];
 	try {
 		var data, radius, type;
-		if (!referenceField) {
+		if (!referenceField || referenceField == '0') {
 			data = PointGeofence._getDataFromDB(formType, addressField);
 			radius = PointGeofence._getRadius(formType, addressField);
 			type = formType;
@@ -191,7 +191,7 @@ PointGeofence._formTypeCache = {};
 PointGeofence._getFormType = function(nid) {
 	if (!PointGeofence._formTypeCache[nid]) {
 		try {
-			var result = Database.query('SELECT table_name FROM node WHERE nid = ' + nid);
+			var result = Database.query('SELECT table_name FROM node WHERE nid = ' + nid + ' AND table_name IS NOT NULL');
 			if (result.isValidRow()) {
 				PointGeofence._formTypeCache[nid] = result.fieldByName('table_name');
 			}
