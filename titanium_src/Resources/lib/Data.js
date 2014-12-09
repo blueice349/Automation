@@ -28,34 +28,34 @@ var RoleId = {
 
 exports.getNumFilesReadyToUpload = function(uid) {
     var result, sql, retval = 0;
-    
+
     try{
         sql = "SELECT COUNT(*) FROM _files WHERE nid > 0 AND finished = 0 AND fid > 0";
-        
+
         if(typeof uid !== 'undefined'){
             sql += " AND uid = " + uid;
         }
-        
+
         if(Ti.Network.networkType === Ti.Network.NETWORK_MOBILE){
             if(!Ti.App.Properties.getBool('allowVideoMobileNetwork', false)){
-                // We do not want to upload a video when on a mobile network   
-                sql += " AND type != 'video' "; 
+                // We do not want to upload a video when on a mobile network
+                sql += " AND type != 'video' ";
             }
         }
-        
+
         result = Database.queryList(sql);
-        
+
         if(result.isValidRow()){
             retval = result.field(0, Ti.Database.FIELD_TYPE_INT);
         }
-        
+
         result.close();
         Database.close();
     }
     catch(ex){
-        Utils.sendErrorReport('Error getting photo count: ' + ex);    
+        Utils.sendErrorReport('Error getting photo count: ' + ex);
     }
-    
+
     return retval;
 };
 
@@ -69,14 +69,14 @@ exports.setUpdating = function(updating) {
 
 exports.getLastUpdateTimestamp = function() {
     var timestamp = 0;
-    
+
     try{
         var result = Database.query('SELECT timestamp FROM updated WHERE rowid=1');
         if (result.isValidRow()) {
             timestamp = result.field(0, Ti.Database.FIELD_TYPE_INT);
         }
         result.close();
-        
+
         if(typeof useDB === 'undefined'){
             Database.close();
         }
@@ -105,12 +105,12 @@ exports.setLastUpdateTimestamp = function(sync_timestamp) {
 
 exports.saveFailedUpload = function(photoId, showMessage) {
 
-    var imageDir, newFilePath, imageView, oldImageFile, 
-        blob, result, dialog, nid, field_name, delta, filePath, 
+    var imageDir, newFilePath, imageView, oldImageFile,
+        blob, result, dialog, nid, field_name, delta, filePath,
         sdCardPath, sdIndex, thumbPath;
 
     result = Database.queryList("SELECT * FROM _files WHERE id = " + photoId);
-    
+
     if(typeof showMessage === 'undefined'){
         showMessage = true;
     }
@@ -130,56 +130,56 @@ exports.saveFailedUpload = function(photoId, showMessage) {
             imageView = Ti.UI.createImageView({
                 image : blob
             });
-            
+
             if(showMessage){
                 Utils.sendErrorReport("going to save to photo gallery_nid_" + nid + "_field_name_" + field_name + "_delta_" + delta + "_photoId_" + photoId);
             }
 
             if (Ti.App.isAndroid) {
-                
+
                 if (Ti.Filesystem.isExternalStoragePresent()) {
 
                     imageDir = Ti.Filesystem.getFile(Ti.Filesystem.externalStorageDirectory, 'failed_uploads');
-                    
-                    newFilePath = 'failed_' + nid + '_' + field_name + '_' + delta + '_' + Utils.getUTCTimestamp() + '.jpg'; 
-                    
+
+                    newFilePath = 'failed_' + nid + '_' + field_name + '_' + delta + '_' + Utils.getUTCTimestamp() + '.jpg';
+
                     if (! imageDir.exists()) {
                         imageDir.createDirectory();
                     }
 
                     Ti.API.info("file_path: " + filePath);
-                    
+
                     oldImageFile = Ti.Filesystem.getFile(filePath);
-                    
+
                     if(oldImageFile.exists() && oldImageFile.isFile()){
                         newFilePath = Ti.Filesystem.externalStorageDirectory + "/failed_uploads/" + newFilePath;
-                        
+
                         if(oldImageFile.move(newFilePath)){
                             newFilePath = Ti.Filesystem.getFile(newFilePath);
-                            
+
                             if(showMessage){
-                                
+
                                 sdCardPath = newFilePath.getNativePath();
                                 sdIndex = sdCardPath.indexOf("/sdcard/");
                                 if(sdIndex != -1){
                                     sdCardPath = sdCardPath.substring(sdIndex + 7);
                                 }
-                                
+
                                 dialog = Ti.UI.createAlertDialog({
                                     title : 'File Upload Problem',
                                     message : "There was a problem uploading a file for node #" + nid + " after 5 tries. The file was saved to your SD card at " + sdCardPath,
                                     buttonNames : ['OK']
                                 });
                                 dialog.show();
-        
+
                                 Utils.sendErrorReport("Saved to photo gallery Android: " + nid);
                             }
-                            
+
                             // Only delete the original file if the file was moved correctly
                             ImageWidget.deletePhotoUpload(photoId, true);
                         }
                         else{
-                            
+
                             Utils.sendErrorReport("Did not save to photo gallery: " + photoId);
                             dialog = Titanium.UI.createAlertDialog({
                                 title : 'Corrupted File',
@@ -187,7 +187,7 @@ exports.saveFailedUpload = function(photoId, showMessage) {
                                 buttonNames : ['OK']
                             });
                             dialog.show();
-                            
+
                             ImageWidget.deletePhotoUpload(photoId, false);
                         }
                     }
@@ -195,10 +195,10 @@ exports.saveFailedUpload = function(photoId, showMessage) {
                          // File was not found, so don't bother with an alert
                         ImageWidget.deletePhotoUpload(photoId, false);
                     }
-                    
+
                     // dispose of file handles
                     oldImageFile = null;
-                        
+
                     // dispose of file handles
                     imageDir = null;
                 }
@@ -207,15 +207,15 @@ exports.saveFailedUpload = function(photoId, showMessage) {
                 }
             }
             else{
-                        
+
                 Ti.API.info("file_path: " + filePath);
-                
+
                 oldImageFile = Ti.Filesystem.getFile(filePath);
-                
+
                 if(oldImageFile.exists() && oldImageFile.isFile()){
                     Titanium.Media.saveToPhotoGallery(oldImageFile, {
                         success : function() {
-                            
+
                             if(showMessage){
                                 dialog = Titanium.UI.createAlertDialog({
                                     title : 'File Upload Problem',
@@ -223,10 +223,10 @@ exports.saveFailedUpload = function(photoId, showMessage) {
                                     buttonNames : ['OK']
                                 });
                                 dialog.show();
-        
+
                                 Utils.sendErrorReport("Saved to photo gallery iOS: " + nid);
                             }
-                            
+
                             ImageWidget.deletePhotoUpload(photoId, true);
                         },
                         error : function() {
@@ -237,7 +237,7 @@ exports.saveFailedUpload = function(photoId, showMessage) {
                                 buttonNames : ['OK']
                             });
                             dialog.show();
-    
+
                             ImageWidget.deletePhotoUpload(photoId, true);
                         }
                     });
@@ -265,50 +265,50 @@ exports.saveFailedUpload = function(photoId, showMessage) {
 
 exports.getNextPhotoData = function() {
 
-    var imageFile, imageBlob, maxDiff, newWidth, newHeight, 
-        dialog, fileStream, buffer, numBytesRead, position, 
+    var imageFile, imageBlob, maxDiff, newWidth, newHeight,
+        dialog, fileStream, buffer, numBytesRead, position,
         filePart, resizedBlob, files, i, incrementTries, retryEncode;
-   
+
     var nextFile = null;
     var readyForUpload = true;
     var restartSuggested = false;
     var maxPhotoPixels = 1280;
-    
+
     files = exports.getFileArray();
-           
+
     for(i = 0; i < files.length; i ++){
         incrementTries = 0;
-        
+
         try{
             nextFile = files[i];
             if(nextFile.fid <= 0){
                 // Only upload photos that already have an fid assigned to them
                 continue;
             }
-            
+
             imageFile = Ti.Filesystem.getFile(nextFile.file_path);
-            
+
             if(!imageFile.exists()){
                 Utils.sendErrorReport("The file at " + nextFile.file_path + " for node #" + nextFile.nid + " cannot be found for upload.");
-                
+
                 alert("The file at " + nextFile.file_path + " for node #" + nextFile.nid + " cannot be found for upload.");
-                
+
                 // Don't show this error again, since this will not ever be resolved
                 incrementTries = 10;
             }
             else{
-                
+
                 nextFile.loaded = false;
-            
+
                 if(nextFile.type == 'image' || nextFile.type == 'signature'){
-                    
+
                     if(Ti.App.isAndroid){
-                        
+
                         retryEncode = false;
-                        
+
                         try{
                             nextFile.file_data = AndroidCamera.base64Encode(nextFile.file_path);
-                            
+
                             if(nextFile.file_data.length > 5000){
                                 // If we have at least 5KB of data, we probably have a photo (signature can be < 10KB)
                                 nextFile.loaded = true;
@@ -324,18 +324,18 @@ exports.getNextPhotoData = function() {
                             Utils.sendErrorReport("Exception reading Android base64Encode: " + exbase64);
                             retryEncode = true;
                         }
-                        
+
                         if(retryEncode){
                             // Fall back to original method of encoding the image
                             try{
                                 imageBlob = imageFile.read();
-                                
+
                                 if(!imageBlob){
                                     incrementTries = 1;
                                     Ti.API.debug("Image Blob is null");
                                     Utils.sendErrorReport("Image blob is null");
                                     restartSuggested = true;
-                                } 
+                                }
                             }
                             catch(exRead){
                                 Ti.API.debug("Exception reading file: " + exRead);
@@ -343,7 +343,7 @@ exports.getNextPhotoData = function() {
                                 readyForUpload = false;
                                 // This is probably a memory error, so request a restart
                                 restartSuggested = true;
-                                
+
                                 incrementTries = 1;
                             }
                         }
@@ -351,7 +351,7 @@ exports.getNextPhotoData = function() {
                     else{
                         try{
                             imageBlob = imageFile.read();
-                            
+
                             if(!imageBlob){
                                 incrementTries = 1;
                                 Ti.API.debug("Image Blob is null");
@@ -365,20 +365,20 @@ exports.getNextPhotoData = function() {
                             readyForUpload = false;
                             // This is probably a memory error, so request a restart
                             restartSuggested = true;
-                            
+
                             incrementTries = 1;
                         }
-                        
+
                         if(incrementTries == 0){
-                            
+
                             if(Ti.App.isIOS){
                                 // Resize the photo to a smaller size
                                 try {
-                                    
+
                                     Ti.API.debug("Original: " + imageBlob.length + " " + imageBlob.width + "x" + imageBlob.height);
-                                    
+
                                     if (imageBlob.length > MAX_BYTES_PER_UPLOAD || imageBlob.height > maxPhotoPixels || imageBlob.width > maxPhotoPixels) {
-        
+
                                         maxDiff = imageBlob.height - maxPhotoPixels;
                                         if (imageBlob.width - maxPhotoPixels > maxDiff) {
                                             // Width is bigger
@@ -390,20 +390,20 @@ exports.getNextPhotoData = function() {
                                             newHeight = maxPhotoPixels;
                                             newWidth = (maxPhotoPixels / imageBlob.height) * imageBlob.width;
                                         }
-        
+
                                         resizedBlob = imageBlob.imageAsResized(newWidth, newHeight);
                                         Ti.API.debug("Resized: " + resizedBlob.length);
-                                        
+
                                         if(resizedBlob.length > maxPhotoPixels){
                                         	var ImageFactory = require('ti.imagefactory');
                                             imageBlob = ImageFactory.compress(resizedBlob, 0.75);
                                             nextFile.filesize = imageBlob.length;
-                                            
+
                                             nextFile.numUploadParts = 1;
                                             nextFile.upload_part = 1;
                                             nextFile.uploading_bytes = nextFile.filesize;
                                         }
-                                        
+
                                         Ti.API.debug("Compressed: " + imageBlob.length);
                                     }
                                     else{
@@ -424,31 +424,31 @@ exports.getNextPhotoData = function() {
                     }
                 }
                 else if(nextFile.type == 'video' || nextFile.type == 'file'){
-                    
+
                     Ti.API.debug("uploading a video");
-                    
+
                     try{
                         fileStream = imageFile.open(Ti.Filesystem.MODE_READ);
                         buffer = Ti.createBuffer({
-                            length: MAX_BYTES_PER_UPLOAD 
+                            length: MAX_BYTES_PER_UPLOAD
                         });
-                        
+
                         Ti.API.debug("bytes already uploaded: " + nextFile.bytes_uploaded);
-                        
+
                         position = 0;
                         filePart = 0;
-                        
+
                         // No seek function, so move the stream to the correct position
                         while(position < nextFile.bytes_uploaded){
                             filePart ++;
                             position += fileStream.read(buffer);
                             Ti.API.debug("used a buffer");
                         }
-                        
+
                         if(filePart > 0){
                             buffer.clear();
                         }
-                        
+
                         numBytesRead = fileStream.read(buffer);
                         if(numBytesRead > 0){
                             if(numBytesRead < buffer.length){
@@ -460,10 +460,10 @@ exports.getNextPhotoData = function() {
                             Utils.sendErrorReport("Read zero bytes from stream.");
                             incrementTries = 1;
                         }
-                        
+
                         // Set the actual number of bytes we're uploading for this part
                         nextFile.uploading_bytes = numBytesRead;
-                        
+
                         // Release the resources
                         buffer.release();
                     }
@@ -472,48 +472,48 @@ exports.getNextPhotoData = function() {
                         incrementTries = 1;
                     }
                 }
-                
+
                 if(!nextFile.loaded && incrementTries == 0){
                     Ti.API.debug("Upload Part: " + nextFile.upload_part + "/" + nextFile.numUploadParts);
                     Ti.API.debug(nextFile);
-                    
+
                     try{
                         nextFile.file_data = Ti.Utils.base64encode(imageBlob);
-                        
+
                         try{
                             nextFile.file_data = nextFile.file_data.getText();
                         }
                         catch(ex6){
-                            Utils.sendErrorReport("Exception getting text of base64 photo of size " + imageBlob.length + ": " + ex6); 
+                            Utils.sendErrorReport("Exception getting text of base64 photo of size " + imageBlob.length + ": " + ex6);
                             // This photo is not going to upload correctly
                             readyForUpload = false;
                             incrementTries = 0;
-                            
+
 	                        // A memory problem is usually the culprit here.
 	                        restartSuggested = true;
                         }
                     }
                     catch(ex5){
-                        Utils.sendErrorReport("Exception base64 encoding photo of size " + imageBlob.length + ": " + ex5 + ", availableMemory " + Ti.Platform.availableMemory); 
+                        Utils.sendErrorReport("Exception base64 encoding photo of size " + imageBlob.length + ": " + ex5 + ", availableMemory " + Ti.Platform.availableMemory);
                         // This photo is not going to upload correctly
                         readyForUpload = false;
                         incrementTries = 0;
-                        
+
                         // A memory problem is usually the culprit here.
                         restartSuggested = true;
                     }
                 }
-                
+
                 imageBlob = null;
             }
-            
+
             imageFile = null;
         }
         catch(exAll){
             incrementTries = 1;
             Utils.sendErrorReport("File error: " + exAll);
         }
-        
+
         if(incrementTries > 0){
             // Increment the file load tries counter
             Database.queryList("UPDATE _files SET tries = (tries + " + incrementTries + ") WHERE id = " + nextFile.id);
@@ -524,61 +524,61 @@ exports.getNextPhotoData = function() {
             return nextFile;
         }
     }
-    
+
     if(Ti.App.isAndroid && restartSuggested){
         dialog = Ti.UI.createAlertDialog({
            buttonNames: ['Close App', 'Cancel'],
            cancel: 1,
            message: 'The Omadi app is currently using too much memory. An app restart is suggested.',
-           title: 'Restart is Suggested' 
+           title: 'Restart is Suggested'
         });
-        
+
         dialog.addEventListener('click', function(e){
             try{
                if(e.index == 0){
                    Utils.sendErrorReport("Actually closing the app by user");
                    Utils.closeApp();
-               } 
+               }
             }
             catch(ex){
                 Utils.sendErrorReport("exception the app is currently using too much memory: " + ex);
             }
         });
-        
+
         dialog.show();
-        
+
         Utils.sendErrorReport("An Android restart was suggested.");
     }
-    
+
     return null;
 };
 
 exports.getFileArray = function() {
-    var files, sql, result, nextFile, now, node, message, 
-        neverUploadIds, dialog, deleteFile, photoWidget, photoDeleteOption, imageFile, 
+    var files, sql, result, nextFile, now, node, message,
+        neverUploadIds, dialog, deleteFile, photoWidget, photoDeleteOption, imageFile,
         thumbFile, deleteFinishedIds;
-    
+
     neverUploadIds = [];
     deleteFinishedIds = [];
     files = [];
-    
-    
+
+
     sql = "SELECT * FROM _files ";
     if(Ti.Network.networkType === Ti.Network.NETWORK_MOBILE && !Ti.App.Properties.getBool('allowVideoMobileNetwork', false)){
-        sql += " WHERE type != 'video' "; 
+        sql += " WHERE type != 'video' ";
     }
     // Try to upload non-failed files first, then the smallest size, then by delta
     sql += " ORDER BY tries ASC, filesize ASC, delta ASC";
-    
+
     now = Utils.getUTCTimestamp();
-    
+
     try{
         result = Database.queryList(sql);
-        
+
         while(result.isValidRow()) {
-            
+
             try{
-                
+
                 nextFile = {
                     nid : parseInt(result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT), 10) || 0,
                     id : result.fieldByName('id', Ti.Database.FIELD_TYPE_INT),
@@ -602,15 +602,15 @@ exports.getFileArray = function() {
                     uploading : parseInt(result.fieldByName('uploading'), 10) || 0,
                     finished : parseInt(result.fieldByName('finished'), 10) || 0
                 };
-                
+
                 // Upload videos and files in chunks
                 if(nextFile.type == 'video' || nextFile.type == 'file'){
-                    // A -1 means that the video upload needs to be restarted 
+                    // A -1 means that the video upload needs to be restarted
                     var tempBytesUploaded = nextFile.bytes_uploaded;
                     if(tempBytesUploaded == -1){
                         tempBytesUploaded = 0;
                     }
-                    
+
                     nextFile.numUploadParts = Math.ceil(nextFile.filesize / MAX_BYTES_PER_UPLOAD);
                     nextFile.upload_part = (tempBytesUploaded / MAX_BYTES_PER_UPLOAD) + 1;
                     nextFile.uploading_bytes = MAX_BYTES_PER_UPLOAD;
@@ -619,10 +619,10 @@ exports.getFileArray = function() {
                     nextFile.upload_part = 1;
                     nextFile.uploading_bytes = nextFile.filesize;
                 }
-                 
+
                 // Negative nids mean they haven't been uploaded yet, -1000000 means never upload.
                 // Send error reports for files that should have been uploaded but are over 30 minutes old.
-                if (nextFile.nid <= 0) { 
+                if (nextFile.nid <= 0) {
                     if (nextFile.nid != -1000000 && nextFile.timestamp < now - 1800) {
 	                    node = Node.load(nextFile.nid);
 	                    if (node !== null) {
@@ -633,7 +633,7 @@ exports.getFileArray = function() {
 	                            message = message.substring(0, 2000);
 	                            message += JSON.stringify(nextFile);
 	                            Utils.sendErrorReport(message);
-	                            
+
 	                            // Do not remove this as an upload just yet.
 	                            // It could be a continuous save node
 	                            // Need to look at error data from users using this
@@ -643,32 +643,32 @@ exports.getFileArray = function() {
 	                        message = "Null negative Node with nid " + nextFile.nid + " ";
 	                        message += JSON.stringify(nextFile);
 	                        Utils.sendErrorReport(message);
-	                        
+
 	                        // This file should stop attempting to be uploaded
 	                        neverUploadIds.push(nextFile.id);
 	                    }
                     }
                 } else if (nextFile.finished > 0) {
                     // We don't show the finished uploads
-                    
+
                     if(now > nextFile.finished + (3600 * 16)){
                         // Delete any files that have been uploaded and still exist on the device for too long (16 hours)
-                        
+
                         deleteFile = true;
-                        
+
                         photoWidget = Ti.App.Properties.getString("photoWidget", 'take');
                         photoDeleteOption = Ti.App.Properties.getString("deleteOnUpload", "false");
-                       
+
                         if(photoWidget == 'choose' && photoDeleteOption == "false"){
                             deleteFile = false;
                         }
-                        
+
                         if(deleteFile){
                             imageFile = Ti.Filesystem.getFile(nextFile.file_path);
                             if(imageFile.exists()){
                                 imageFile.deleteFile();
-                            } 
-                            
+                            }
+
                             // Delete the thumbnail if one is saved
                             if(nextFile.thumb_path != null && nextFile.thumb_path.length > 10){
                                 thumbFile = Ti.Filesystem.getFile(nextFile.thumb_path);
@@ -676,18 +676,18 @@ exports.getFileArray = function() {
                                    thumbFile.deleteFile();
                                 }
                             }
-                            
+
                             deleteFinishedIds.push(nextFile.id);
                         }
                     }
                 }
                 else if(nextFile.tries > 10){
-                    
+
                     // Show everything if the file was attempted more than 10 times
                     node = Node.load(nextFile.nid);
-                    
+
                     if(node !== null){
-                       
+
                         message = "Over 10 tries: " + JSON.stringify(node);
                         // Limit node message to 2000 characters
                         message = message.substring(0, 2000);
@@ -699,7 +699,7 @@ exports.getFileArray = function() {
                         message += JSON.stringify(nextFile);
                         Utils.sendErrorReport(message);
                     }
-                    
+
                     // This file should stop attempting to be uploaded
                     neverUploadIds.push(nextFile.id);
                 }
@@ -712,7 +712,7 @@ exports.getFileArray = function() {
                 // Catch the inner exception so it doesn't throw away all uploads
                 Utils.sendErrorReport("Error in get file query load: " + innerEx);
             }
-            
+
             result.next();
         }
         result.close();
@@ -720,22 +720,22 @@ exports.getFileArray = function() {
     catch(exDB){
         Utils.sendErrorReport("Error in get file query load: " + exDB);
     }
-    
+
     if(deleteFinishedIds.length > 0){
         // Delete the record from the files table
         Database.queryList("DELETE FROM _files WHERE id IN(" + deleteFinishedIds.join(',') + ")");
     }
-    
+
     if(neverUploadIds.length > 0){
         // Set files to never be attempted again
         Database.queryList("UPDATE _files SET nid = -1000000 WHERE id IN(" + neverUploadIds.join(',') + ")");
         Utils.sendErrorReport(neverUploadIds.length + " file" + (neverUploadIds.length > 1 ? 's' : '') + " could not be uploaded. You can see non-uploaded files under 'Actions' -> 'Photos Not Uploaded'");
         dialog = Ti.UI.createAlertDialog({
            title: 'Upload Problem',
-           message: neverUploadIds.length + " file" + (neverUploadIds.length > 1 ? 's' : '') + " could not be uploaded. You can see non-uploaded files under 'Actions' -> 'Photos Not Uploaded'",  
+           message: neverUploadIds.length + " file" + (neverUploadIds.length > 1 ? 's' : '') + " could not be uploaded. You can see non-uploaded files under 'Actions' -> 'Photos Not Uploaded'",
            buttonNames: ['Ok', 'Take Me There']
         });
-        
+
         dialog.addEventListener('click', function(e){
             try{
                 if(e.index === 1){
@@ -746,12 +746,12 @@ exports.getFileArray = function() {
                 Utils.sendErrorReport("exception upload problem dialog: " + ex);
             }
         });
-        
+
         dialog.show();
     }
-        
+
     Database.close();
-    
+
     return files;
 };
 
@@ -784,7 +784,7 @@ exports.getAllFiles = function() {
                 uploading : parseInt(result.fieldByName('uploading'), 10) || 0,
                 finished : parseInt(result.fieldByName('finished'), 10) || 0
             };
-            
+
             files.push(file);
             result.next();
 		}
@@ -798,19 +798,19 @@ exports.getAllFiles = function() {
 exports.processFetchedJson = function(json) {
     try {
         if (json.delete_all === true || json.delete_all === "true") {
-            
+
             Ti.API.info("Reseting mainDB, delete_all is required");
-            
+
             //If delete_all is present, delete all contents:
             Database.removeAllData();
         }
         else{
-            
+
             // Setup the timestamp offset to be used when saving UTC timestamps to the mobile database
             var secondDifference = parseInt(json.current_server_timestamp, 10);
             if(!isNaN(secondDifference)){
                 secondDifference -= Utils.getUTCTimestamp();
-                
+
                 if(secondDifference){
                     Ti.App.Properties.setDouble("service:serverTimestampOffset", secondDifference);
                 }
@@ -828,7 +828,7 @@ exports.processFetchedJson = function(json) {
         else {
         	var progressBar = new ProgressBar(numItems, 'Installing...');
             progressBar.show();
-            
+
             if (exports.getLastUpdateTimestamp() === 0) {
                 Database.query('UPDATE updated SET "url"="' + Ti.App.DOMAIN_NAME + '" WHERE "rowid"=1');
             }
@@ -849,7 +849,7 @@ exports.processFetchedJson = function(json) {
                 Ti.API.debug("Installing fields");
                 processFieldsJson(json, progressBar);
             }
-            
+
             if ( typeof json.fake_fields !== 'undefined') {
                 Ti.API.debug("Installing fake fields");
                 processFakeFieldsJson(json, progressBar);
@@ -884,7 +884,7 @@ exports.processFetchedJson = function(json) {
                         }
                     }
                 }
-                
+
                 if (json.node.runsheet) {
 					var rdnGeofenceListener = RDNGeofenceListener.getInstance();
 					if (json.node.runsheet.insert) {
@@ -894,38 +894,38 @@ exports.processFetchedJson = function(json) {
 						rdnGeofenceListener.deleteGeofences(json.node.runsheet['delete']);
 					}
                 }
-                
+
                 //TimecardGeofenceVerifier.getInstance().clearCache();
             }
-            
+
             if ( typeof json.comment !== 'undefined') {
                 Ti.API.debug("Installing comments");
                 exports.processCommentJson(json, progressBar);
             }
-            
+
             progressBar.hide();
-            
+
             Database.close();
-            
+
             exports.setLastUpdateTimestamp(json.request_time);
-            
-            Ti.App.fireEvent("omadi:syncInstallComplete");   
+
+            Ti.App.fireEvent("omadi:syncInstallComplete");
         }
 
         if ( typeof json.new_app !== 'undefined' && json.new_app.length > 0) {
             Ti.API.debug("New App: " + json.new_app);
             Display.newAppAvailable(json.new_app);
         }
-        
+
         DispatchBundle.showNewDispatchJobs();
         Display.showNewNotificationDialog();
-        
-        
-        if(typeof json.page !== 'undefined' && 
-            typeof json.total_pages !== 'undefined' && 
+
+
+        if(typeof json.page !== 'undefined' &&
+            typeof json.total_pages !== 'undefined' &&
             typeof json.total_node_count !== 'undefined' &&
             typeof json.total_comment_count !== 'undefined'){
-            
+
             exports.syncInitialFormItems(json.total_node_count, json.total_comment_count, json.total_pages);
         }
     }
@@ -967,12 +967,12 @@ var processVehicleJson = function(json)  {
 };
 
 var processNodeTypeJson = function(json, progressBar) {
-    var queries, roles, i, type, perm_idx, role_idx, bundle_result, 
-        app_permissions, title_fields, data, display, description, 
+    var queries, roles, i, type, perm_idx, role_idx, bundle_result,
+        app_permissions, title_fields, data, display, description,
         disabled, is_disabled, permission_string, childForms, resetBundles;
-    
+
     resetBundles = [];
-    
+
     try {
         //Node types creation:
         queries = [];
@@ -982,14 +982,14 @@ var processNodeTypeJson = function(json, progressBar) {
         //Node type inserts
         if (json.node_type.insert) {
             if (json.node_type.insert.length) {
-            
+
                 // Ti.API.debug("node_type: " + JSON.stringify(json.node_type));
 
                 for ( i = 0; i < json.node_type.insert.length; i++) {
                     type = json.node_type.insert[i].type;
 
                     if (type != 'user' && type != '') {
-                        
+
                         //Increment the progress bar
                        	progressBar.increment();
 
@@ -997,26 +997,26 @@ var processNodeTypeJson = function(json, progressBar) {
                         if (bundle_result.field(0, Ti.Database.FIELD_TYPE_INT) === 0) {
                             Ti.API.debug("CREATING TABLE " + type);
                             queries.push("CREATE TABLE " + type + " ('nid' INTEGER PRIMARY KEY NOT NULL UNIQUE )");
-                            
+
                             // Create the comment table too
                             queries.push("CREATE TABLE 'comment_node_" + type + "' ('cid' INTEGER PRIMARY KEY NOT NULL UNIQUE )");
                         }
-                        
+
                         data = [];
                         if(typeof json.node_type.insert[i].data !== 'undefined'){
                             data = json.node_type.insert[i].data;
                         }
-                        
+
                         title_fields = [];
                         if(typeof data.title_fields !== 'undefined'){
-                            title_fields = data.title_fields;        
+                            title_fields = data.title_fields;
                         }
-                        
+
                         childForms = '';
                         if(typeof json.node_type.insert[i].child_forms !== 'undefined'){
                             childForms = json.node_type.insert[i].child_forms;
                         }
-                        
+
                         display = json.node_type.insert[i].name.toUpperCase();
                         description = json.node_type.insert[i].description;
                         disabled = json.node_type.insert[i].disabled;
@@ -1081,7 +1081,7 @@ var processNodeTypeJson = function(json, progressBar) {
                         }
 
                         queries.push("INSERT OR REPLACE INTO bundles (bundle_name, display_name, description, title_fields, _data, can_create, can_view, child_forms) VALUES ('" + Utils.dbEsc(type) + "', '" + Utils.dbEsc(display) + "','" + Utils.dbEsc(description) + "','" + Utils.dbEsc(JSON.stringify(title_fields)) + "','" + Utils.dbEsc(JSON.stringify(data)) + "'," + app_permissions.can_create + "," + app_permissions.can_view + ",'" + Utils.dbEsc(JSON.stringify(childForms)) + "')");
-                        
+
                         resetBundles.push(type);
                     }
                 }
@@ -1114,7 +1114,7 @@ var processNodeTypeJson = function(json, progressBar) {
             Database.query(queries[i]);
         }
         Database.query("COMMIT TRANSACTION");
-        
+
         if(resetBundles.length > 0){
             for(i = 0; i < resetBundles.length; i ++){
                 // Just clear the bundle cache for other functions to use correctly
@@ -1133,17 +1133,17 @@ var processNodeTypeJson = function(json, progressBar) {
 };
 
 var processFieldsJson = function(json, progressBar) {
-    var result, fid, field_exists, field_type, db_type, field_name, label, widgetString, 
-        settingsString, region, part, queries, description, bundle, weight, required, 
-        disabled, can_view, can_edit, settings, omadi_session_details, roles, 
+    var result, fid, field_exists, field_type, db_type, field_name, label, widgetString,
+        settingsString, region, part, queries, description, bundle, weight, required,
+        disabled, can_view, can_edit, settings, omadi_session_details, roles,
         permissionsString, permIdx, roleIdx, i, nodeBundle;
-        
+
     try {
         queries = [];
 
         omadi_session_details = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
         roles = omadi_session_details.user.roles;
-        
+
 
         if (json.fields.insert) {
             if (json.fields.insert.length) {
@@ -1151,10 +1151,10 @@ var processFieldsJson = function(json, progressBar) {
                 for ( i = 0; i < json.fields.insert.length; i++) {
 
                     progressBar.increment();
-                    
+
                     field_name = json.fields.insert[i].field_name;
                     bundle = json.fields.insert[i].bundle;
-                    
+
                     settings = json.fields.insert[i].settings;
                     widgetString = JSON.stringify(json.fields.insert[i].widget);
 
@@ -1162,14 +1162,14 @@ var processFieldsJson = function(json, progressBar) {
 
                     fid = json.fields.insert[i].fid;
                     field_type = json.fields.insert[i].type;
-                    
+
                     label = json.fields.insert[i].label;
                     description = json.fields.insert[i].description;
-                    
+
                     weight = json.fields.insert[i].weight;
                     required = json.fields.insert[i].required;
                     disabled = json.fields.insert[i].disabled;
-                    
+
                     if(typeof json.fields.insert[i].settings.region !== 'undefined'){
                         region = json.fields.insert[i].settings.region;
                     }
@@ -1179,7 +1179,7 @@ var processFieldsJson = function(json, progressBar) {
 
                     can_view = 0;
                     can_edit = 0;
-                    
+
                     if (roles.hasOwnProperty(RoleId.ADMIN) || roles.hasOwnProperty(RoleId.OMADI_AGENT)) {
                         // Admin users can view/edit any field
                         can_view = can_edit = 1;
@@ -1220,7 +1220,7 @@ var processFieldsJson = function(json, progressBar) {
 
                     if (!field_exists) {
                         db_type = "TEXT";
-                        
+
                         //Check if it is a valid bundle (automatically inserted through the API):
                         result = Database.query("SELECT * FROM bundles WHERE bundle_name='" + bundle + "'");
                         if (result.isValidRow()) {
@@ -1235,7 +1235,7 @@ var processFieldsJson = function(json, progressBar) {
                             }
                             else {
                                 queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "' " + db_type);
-                                
+
                                 if (json.fields.insert[i].type == 'file') {
                                     queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "___filename' " + db_type);
                                 } else if (json.fields.insert[i].type == 'extra_price') {
@@ -1246,24 +1246,24 @@ var processFieldsJson = function(json, progressBar) {
                             }
                         }
                         else{
-                               
+
                             // The bundle does not exist, so it may be a comment field
                             nodeBundle = bundle.replace('comment_node_', '');
                             result = Database.query("SELECT * FROM bundles WHERE bundle_name='" + nodeBundle + "'");
-                            
+
                             if (result.isValidRow()) {
-                                
+
                                 result.close();
-                                
+
                                 // The node type exists, so add the column to the correct comment table
                                 result = Database.query("SELECT name FROM sqlite_master WHERE type='table' AND name='" + bundle + "'");
-                                
+
                                 if(!result.isValidRow()){
                                     // The table has not yet been created, so create it
                                     // This must be created immediately so that any other fields referencing this table will see it
                                     Database.query("CREATE TABLE '" + bundle + "' ('cid' INTEGER PRIMARY KEY NOT NULL UNIQUE )");
                                 }
-                                
+
                                 queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "' " + db_type);
                             }
                         }
@@ -1309,9 +1309,9 @@ var processFieldsJson = function(json, progressBar) {
 
         if (json.fields["delete"]) {
             if (json.fields["delete"].length) {
-                
-                
-                
+
+
+
                 for ( i = 0; i < json.fields["delete"].length; i++) {
                     //Deletes rows from terms
                     queries.push('DELETE FROM fields WHERE fid=' + json.fields["delete"][i].fid);
@@ -1326,7 +1326,7 @@ var processFieldsJson = function(json, progressBar) {
                 Database.query(queries[i]);
             }
             Database.query("COMMIT TRANSACTION");
-            
+
             // Reset the field cache
             Node.resetFieldCache();
         }
@@ -1338,7 +1338,7 @@ var processFieldsJson = function(json, progressBar) {
 
 var processFakeFieldsJson = function(json, progressBar) {
     var result, field_exists, queries, i, field_name, bundle;
-    
+
     try {
         queries = [];
 
@@ -1349,28 +1349,28 @@ var processFakeFieldsJson = function(json, progressBar) {
                 for ( i = 0; i < json.fake_fields.insert.length; i++) {
 
                     progressBar.increment();
-                    
+
                     field_name = json.fake_fields.insert[i].field_name;
                     bundle = json.fake_fields.insert[i].bundle;
-    
+
                     result = Database.query("SELECT COUNT(*) FROM fake_fields WHERE field_name='" + field_name + "' AND bundle='" + bundle + "'");
-                    
+
                     field_exists = false;
                     if (result.field(0, Ti.Database.FIELD_TYPE_INT) > 0) {
                         field_exists = true;
                     }
-                
+
                     result.close();
-                    
+
                     if(!field_exists){
-                        queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "' TEXT"); 
+                        queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "' TEXT");
                         queries.push("INSERT INTO fake_fields (bundle, field_name) VALUES ('" + bundle + "','" + field_name + "')");
-                           
+
                     }
                 }
             }
         }
-        
+
         if (queries.length > 0) {
 
             Database.query("BEGIN IMMEDIATE TRANSACTION");
@@ -1378,7 +1378,7 @@ var processFakeFieldsJson = function(json, progressBar) {
                 Database.query(queries[i]);
             }
             Database.query("COMMIT TRANSACTION");
-            
+
             // Reset the fake field cache
             Node.resetFakeFieldCache();
         }
@@ -1435,7 +1435,7 @@ var processRegionsJson = function(json, progressBar)  {
                 Database.query(queries[i]);
             }
             Database.query("COMMIT TRANSACTION");
-            
+
             // Reset the region cache
             Node.resetRegionCache();
         }
@@ -1448,57 +1448,57 @@ var processRegionsJson = function(json, progressBar)  {
 var processVocabulariesJson = function(json, progressBar) {
     var queries = [], i, vid, name, machine_name;
     try {
-        
+
         if (typeof json !== 'undefined' && typeof json.vocabularies !== 'undefined'){
-            
+
             if (typeof json.vocabularies.insert !== 'undefined' &&
                 json.vocabularies.insert &&
                 json.vocabularies.insert.length) {
-    
+
                     for ( i = 0; i < json.vocabularies.insert.length; i++) {
                         //Increment Progress Bar
                         progressBar.increment();
                         vid = json.vocabularies.insert[i].vid;
                         name = json.vocabularies.insert[i].name;
                         machine_name = json.vocabularies.insert[i].machine_name;
-    
+
                         queries.push('INSERT OR REPLACE  INTO vocabulary (vid, name, machine_name) VALUES (' + vid + ",'" + Utils.dbEsc(name) + "','" + Utils.dbEsc(machine_name) + "')");
                     }
             }
             if (typeof json.vocabularies.update !== 'undefined' &&
                 json.vocabularies.update &&
                 json.vocabularies.update.length) {
-                    
+
                     for ( i = 0; i < json.vocabularies.update.length; i++) {
                         progressBar.increment();
-    
+
                         queries.push("UPDATE vocabulary SET name='" + Utils.dbEsc(json.vocabularies.insert[i].name) + "', machine_name='" + Utils.dbEsc(json.vocabularies.update[i].machine_name) + "' WHERE vid=" + json.vocabularies.update[i].vid);
                     }
             }
-            
-            if (typeof json.vocabularies["delete"] !== 'undefined' && 
+
+            if (typeof json.vocabularies["delete"] !== 'undefined' &&
                 json.vocabularies["delete"] &&
                 json.vocabularies["delete"].length) {
-             
+
                     for ( i = 0; i < json.vocabularies["delete"].length; i++) {
                         progressBar.increment();
-    
+
                         //Deletes rows from terms
                         queries.push('DELETE FROM term_data WHERE vid=' + json.vocabularies["delete"][i].vid);
-    
+
                         //Deletes corresponding rows in vocabulary
                         queries.push('DELETE FROM vocabulary WHERE vid=' + json.vocabularies["delete"][i].vid);
                     }
             }
-    
+
             if (queries.length > 0) {
-    
+
                 Database.query("BEGIN IMMEDIATE TRANSACTION");
                 for ( i = 0; i < queries.length; i++) {
                     Database.query(queries[i]);
                 }
                 Database.query("COMMIT TRANSACTION");
-    
+
             }
         }
     }
@@ -1513,7 +1513,7 @@ var processTermsJson = function(json, progressBar) {
 
     try {
         queries = [];
-       
+
         if (json.terms.insert) {
             if (json.terms.insert.length) {
 
@@ -1526,7 +1526,7 @@ var processTermsJson = function(json, progressBar) {
                     desc = json.terms.insert[i].description;
                     desc = JSON.stringify(desc);
                     weight = json.terms.insert[i].weight;
-                    
+
                     if (weight == null) {
                         weight = 0;
                     }
@@ -1543,18 +1543,18 @@ var processTermsJson = function(json, progressBar) {
                 for ( i = 0; i < json.terms.update.length; i++) {
 
                     progressBar.increment();
-                    
+
                     vid = json.terms.update[i].vid;
                     tid = json.terms.update[i].tid;
                     name = json.terms.update[i].name;
                     desc = json.terms.update[i].description;
                     desc = JSON.stringify(desc);
                     weight = json.terms.update[i].weight;
-                    
+
                     if (weight == null) {
                         weight = 0;
                     }
-                    
+
                     queries.push("UPDATE term_data SET name='" + Utils.dbEsc(name) + "', description='" + Utils.dbEsc(desc) + "', weight='" + Utils.dbEsc(weight) + "', vid=" + vid + ' WHERE tid=' + tid);
                 }
             }
@@ -1666,20 +1666,20 @@ var processUsersJson = function(json, progressBar)  {
 var processNodeJson = function(type, json, progressBar)  {
     /*jslint nomen: true*/
 
-    var closeDB, instances, fakeFields, queries, i, field_name, query, 
-        fieldNames, values, value, notifications = {}, numSets, 
-        result, reason, dialog, updateNid, 
+    var closeDB, instances, fakeFields, queries, i, field_name, query,
+        fieldNames, values, value, notifications = {}, numSets,
+        result, reason, dialog, updateNid,
         fullResetLastSync, nodeChangedTimestamp, real_field_name;
-    
-    
+
+
     fullResetLastSync = Ti.App.Properties.getDouble('omadi:fullResetLastSync', 0);
-    
+
     // No full reset is happening after this process, so reset, the value is cached above
     Ti.App.Properties.setDouble('omadi:fullResetLastSync', 0);
-    
+
     closeDB = false;
     queries = [];
-    
+
     var sentErrors = 0;
 
     try {
@@ -1692,46 +1692,46 @@ var processNodeJson = function(type, json, progressBar)  {
         if (result.field(0, Ti.Database.FIELD_TYPE_INT) > 0) {
 
             //Insert
-            if (json && 
-                json.node && 
-                json.node[type] && 
+            if (json &&
+                json.node &&
+                json.node[type] &&
                 json.node[type].insert) {
-                    
+
                 Ti.API.debug("inserting " + type + " nodes: " + json.node[type].insert.length);
-                
+
                 for ( i = 0; i < json.node[type].insert.length; i++) {
-                    
+
                     if(json.node[type].insert[i].__error){
-                        
+
                         Ti.API.debug("HAS ERROR");
-                        
+
                         if(typeof json.node[type].insert[i].__error_reasons !== 'undefined'){
                             reason = json.node[type].insert[i].__error_reasons.join(", ");
-                           
+
                             Ti.API.debug("Reason: " + reason);
-                            
+
                             if(typeof json.node[type].insert[i].__negative_nid !== 'undefined'){
                                 updateNid = json.node[type].insert[i].__negative_nid;
                             }
                             else{
                                 updateNid = json.node[type].insert[i].nid;
                             }
-                            
+
                             reason += " The entry has been saved as a draft.";
                             queries.push('UPDATE node SET flag_is_updated=3 WHERE nid=' + updateNid);
-                            
+
                             dialog = Ti.UI.createAlertDialog({
                                 title: "Recent Data Not Synched",
                                 message: reason,
                                 ok: 'Go to Drafts'
                             });
-                            
+
                             dialog.addEventListener("click", Display.openDraftsWindow);
-                            
+
                             dialog.show();
                         }
                     } else {
-                    
+
                         //Insert into node table
                         if ((json.node[type].insert[i].title === null) || (json.node[type].insert[i].title == 'undefined') || (json.node[type].insert[i].title === false)) {
                             json.node[type].insert[i].title = "No Title";
@@ -1757,10 +1757,10 @@ var processNodeJson = function(type, json, progressBar)  {
 
                         fieldNames = [];
                         fieldNames.push('nid');
-                        
+
                         for (field_name in instances) {
                             fieldNames.push("`" + field_name + "`");
-                            
+
                             if(instances[field_name].type == 'file'){
                                 fieldNames.push(field_name + "___filename");
                             }
@@ -1773,11 +1773,11 @@ var processNodeJson = function(type, json, progressBar)  {
 								fieldNames.push(real_field_name + '___lng');
                             }
                         }
-                        
+
                         for(field_name in fakeFields){
                             fieldNames.push("`" + field_name + "`");
                         }
-                        
+
                         query += fieldNames.join(',');
                         query += ') VALUES (';
 
@@ -1786,7 +1786,7 @@ var processNodeJson = function(type, json, progressBar)  {
 
                         for (field_name in instances) {
                             if(instances[field_name].type == 'file'){
-                                
+
                                 if (typeof json.node[type].insert[i][field_name + "___fid"] === "undefined" || json.node[type].insert[i][field_name + "___fid"] === null) {
                                     values.push("null");
                                 }
@@ -1800,7 +1800,7 @@ var processNodeJson = function(type, json, progressBar)  {
                                         values.push("'" + Utils.dbEsc(value) + "'");
                                     }
                                 }
-                                
+
                                 if (typeof json.node[type].insert[i][field_name + "___filename"] === "undefined" || json.node[type].insert[i][field_name + "___filename"] === null) {
                                     values.push("null");
                                 }
@@ -1816,7 +1816,7 @@ var processNodeJson = function(type, json, progressBar)  {
                                 }
                             }
                             else if(instances[field_name].type == 'extra_price'){
-                                
+
                                 if (typeof json.node[type].insert[i][field_name + "___value"] === "undefined" || json.node[type].insert[i][field_name + "___value"] === null) {
                                     values.push("null");
                                 }
@@ -1824,7 +1824,7 @@ var processNodeJson = function(type, json, progressBar)  {
                                     value = json.node[type].insert[i][field_name + "___value"];
                                     values.push("'" + Utils.dbEsc(value) + "'");
                                 }
-                              
+
                                 if (typeof json.node[type].insert[i][field_name + "___data"] === "undefined" || json.node[type].insert[i][field_name + "___data"] === null) {
                                     values.push("null");
                                 }
@@ -1835,15 +1835,15 @@ var processNodeJson = function(type, json, progressBar)  {
                             }
                             else if(instances[field_name].type == 'location' && field_name.indexOf('___postal_code') != -1){
 								real_field_name = field_name.split('___')[0];
-								
+
 								// push ___postal_code value
 								value = json.node[type].insert[i][field_name];
 								values.push("'" + Utils.dbEsc(value instanceof Array ? JSON.stringify(value) : value) + "'");
-								
+
 								// push ___lat
 								value = json.node[type].insert[i][real_field_name + '___lat'];
 								values.push("'" + Utils.dbEsc(value instanceof Array ? JSON.stringify(value) : value) + "'");
-								
+
 								// push ___lng
 								value = json.node[type].insert[i][real_field_name + '___lng'];
 								values.push("'" + Utils.dbEsc(value instanceof Array ? JSON.stringify(value) : value) + "'");
@@ -1862,7 +1862,7 @@ var processNodeJson = function(type, json, progressBar)  {
                                     case 'omadi_time':
                                     case 'datestamp':
                                     case 'image':
-                                    
+
                                         value = json.node[type].insert[i][field_name];
 
                                         if (typeof value === 'number') {
@@ -1884,7 +1884,7 @@ var processNodeJson = function(type, json, progressBar)  {
                                             values.push("null");
                                         }
                                         break;
-										
+
                                     default:
                                         value = json.node[type].insert[i][field_name];
 
@@ -1898,10 +1898,10 @@ var processNodeJson = function(type, json, progressBar)  {
                                 }
                             }
                         }
-                        
+
                         for(field_name in fakeFields){
                             if(fakeFields.hasOwnProperty(field_name)){
-                                
+
                                 if(typeof json.node[type].insert[i][field_name] !== 'undefined'){
                                     value = json.node[type].insert[i][field_name];
                                     values.push("'" + Utils.dbEsc(value) + "'");
@@ -1914,56 +1914,56 @@ var processNodeJson = function(type, json, progressBar)  {
 
                         query += values.join(",");
                         query += ')';
-                        
+
                         queries.push(query);
-                        
+
                         // Don't display new items from a full reset, as it is just annoying
-                        
+
                         nodeChangedTimestamp = parseInt(json.node[type].insert[i].changed, 10);
-                        
-                        // Allow a notification or dispatch screen to be shown if this is not a full reset 
+
+                        // Allow a notification or dispatch screen to be shown if this is not a full reset
                         // OR if the node has actually changed even though this is a full reset
                         if((fullResetLastSync > 0 && nodeChangedTimestamp >= fullResetLastSync) || fullResetLastSync == 0){
-                            
+
                             if(json.node[type].insert[i].viewed == 0){
                                 if (type == 'notification') {
                                     notifications = Ti.App.Properties.getObject('newNotifications', {
                                         count : 0,
                                         nid : 0
                                     });
-        
+
                                     Ti.App.Properties.setObject('newNotifications', {
                                         count : notifications.count + 1,
                                         nid : json.node[type].insert[i].nid
                                     });
                                 }
                             }
-                            
+
                             // Allow previously viewed dispatches to popup the dispatch screen
                             // The login of when that pops up is dependent on the server's response
                             //  and the code in the dispatch bundle .js file
                             if(type == 'dispatch' &&
                                     typeof json.node[type].insert[i].dispatch_nid !== 'undefined' &&
                                     json.node[type].insert[i].dispatch_nid > 0){
-                                 
+
                                  DispatchBundle.checkInsertNode(json.node[type].insert[i]);
                             }
                         }
-                        
+
                         if ( typeof json.node[type].insert[i].__negative_nid !== 'undefined') {
                             Ti.API.debug("Deleting nid: " + json.node[type].insert[i].__negative_nid);
-                            
+
                             Ti.App.deletedNegatives[json.node[type].insert[i].__negative_nid] = json.node[type].insert[i].nid;
-                            
-                            
+
+
                             queries.push('DELETE FROM ' + type + ' WHERE nid=' + json.node[type].insert[i].__negative_nid);
                             queries.push('DELETE FROM node WHERE nid=' + json.node[type].insert[i].__negative_nid);
-                            
+
                             Database.queryList("UPDATE _files SET nid =" + json.node[type].insert[i].nid + " WHERE nid=" + json.node[type].insert[i].__negative_nid);
                             Database.close();
-                            
+
                             updateSignatureFids(json.node[type].insert[i]);
-                            
+
                             try{
                                 Ti.App.fireEvent('switchedItUp', {
                                     negativeNid : json.node[type].insert[i].__negative_nid,
@@ -1986,29 +1986,29 @@ var processNodeJson = function(type, json, progressBar)  {
                                 Utils.sendErrorReport("Exception firing newFilesAdded event: " + e);
                             }
                         }
-                        
-                        
+
+
                         // Set signature fields to show as uploaded
                         for (field_name in instances) {
                             if(instances.hasOwnProperty(field_name)){
                                 if(instances[field_name].type == 'image'){
-                                    
+
                                     if(typeof instances[field_name].widget !== 'undefined' &&
                                         typeof instances[field_name].widget.type !== 'undefined' &&
                                         instances[field_name].widget.type &&
                                         instances[field_name].widget.type == 'omadi_image_signature'){
-                                            
+
                                             // Remove the signature from the non-uploaded list since it was synched in the original form JSON
                                             Database.queryList("UPDATE _files SET finished = " + Utils.getUTCTimestamp() + " WHERE nid=" + json.node[type].insert[i].nid + " AND type='signature'");
                                             Database.close();
-                                            
+
                                             // The DB query only needs to be done once for all fields if multiple signature fields exist on the form
                                             break;
                                     }
                                 }
                             }
                         }
-                    
+
 						if (json.node[type].insert[i].__newFiles) {
 							updateFidsOnNewFiles(json.node[type].insert[i].nid, json.node[type].insert[i].__newFiles);
 						}
@@ -2016,10 +2016,10 @@ var processNodeJson = function(type, json, progressBar)  {
                 }
             }
 
-            if (json.node && 
+            if (json.node &&
                 json.node[type] &&
                 json.node[type]['delete']) {
-                    
+
                     for ( i = 0; i < json.node[type]['delete'].length; i++) {
                         queries.push("DELETE FROM node WHERE nid = " + json.node[type]['delete'][i].nid);
                         queries.push("DELETE FROM " + type + " WHERE nid = " + json.node[type]['delete'][i].nid);
@@ -2039,13 +2039,13 @@ var processNodeJson = function(type, json, progressBar)  {
                         if (i % 4 == 0) {
                             progressBar.increment();
                             numSets++;
-                        }   
+                        }
                     }
                     catch(ex1) {
                         if(sentErrors < 5){
                             Utils.sendErrorReport("Error saving node Data for " + type + ": " + ex1 + ". Details: " + queries[i]);
                             alert("Error saving node Data for " + type + ": " + ex1 + ". Details: " + queries[i]);
-                            sentErrors ++;   
+                            sentErrors ++;
                         }
                     }
                 }
@@ -2055,13 +2055,13 @@ var processNodeJson = function(type, json, progressBar)  {
                     // Don't allow one bad node to ruin the rest of the inserts
                     // Do a try/catch for each one
                     try{
-                        Database.query(queries[i]); 
+                        Database.query(queries[i]);
                     }
                     catch(ex2) {
                         if(sentErrors < 5){
                             Utils.sendErrorReport("Error saving node Data for " + type + ": " + ex2 + ". Details: " + queries[i]);
                             alert("Error saving node Data for " + type + ": " + ex2 + ". Details: " + queries[i]);
-                            sentErrors ++;   
+                            sentErrors ++;
                         }
                     }
                 }
@@ -2079,7 +2079,7 @@ var processNodeJson = function(type, json, progressBar)  {
     catch(ex) {
         Utils.sendErrorReport("Exception saving from sync: " + ex);
         alert("Saving Form Data for " + type + ": " + ex);
-        
+
     }
     Database.close();
 };
@@ -2097,20 +2097,20 @@ exports.processCommentJson = function(json, progressBar)  {
                         //Increment Progress Bar
                         progressBar.increment();
                     }
-                    
+
                     tableName = json.comment.insert[i].node_type;
-                    
+
                     queries.push('INSERT OR REPLACE INTO comment (cid, nid, uid, subject, created, changed, status, name, node_type) VALUES (' + Utils.dbEsc(json.comment.insert[i].cid) + "," + Utils.dbEsc(json.comment.insert[i].nid) + "," + Utils.dbEsc(json.comment.insert[i].uid) + ",'" + Utils.dbEsc(json.comment.insert[i].subject) + "'," + Utils.dbEsc(json.comment.insert[i].created) + "," + Utils.dbEsc(json.comment.insert[i].changed) + "," + Utils.dbEsc(json.comment.insert[i].status) + ",'" + Utils.dbEsc(json.comment.insert[i].name) + "','" + Utils.dbEsc(tableName) + "')");
-                    
+
                     query = 'INSERT OR REPLACE  INTO ' + tableName + ' (';
-    
+
                     fieldNames = [];
                     fieldNames.push('cid');
                     instances = Node.getFields(tableName);
-                    
+
                     for (field_name in instances) {
                         fieldNames.push("`" + field_name + "`");
-                        
+
                         if(instances[field_name].type == 'file'){
                             fieldNames.push(field_name + "___filename");
                         }
@@ -2118,7 +2118,7 @@ exports.processCommentJson = function(json, progressBar)  {
                             fieldNames.push(field_name + "___data");
                         }
                     }
-                    
+
                     query += fieldNames.join(',');
                     query += ') VALUES (';
 
@@ -2127,9 +2127,9 @@ exports.processCommentJson = function(json, progressBar)  {
 
                     for (field_name in instances) {
                         if(instances.hasOwnProperty(field_name)){
-                            
+
                             if(instances[field_name].type == 'file'){
-                                
+
                                 if (typeof json.comment.insert[i][field_name + "___fid"] === "undefined" || json.comment.insert[i][field_name + "___fid"] === null) {
                                     values.push("null");
                                 }
@@ -2143,7 +2143,7 @@ exports.processCommentJson = function(json, progressBar)  {
                                         values.push("'" + Utils.dbEsc(value) + "'");
                                     }
                                 }
-                                
+
                                 if (typeof json.comment.insert[i][field_name + "___filename"] === "undefined" || json.comment.insert[i][field_name + "___filename"] === null) {
                                     values.push("null");
                                 }
@@ -2159,7 +2159,7 @@ exports.processCommentJson = function(json, progressBar)  {
                                 }
                             }
                             else if(instances[field_name].type == 'extra_price'){
-                                
+
                                 if (typeof json.comment.insert[i][field_name + "___value"] === "undefined" || json.comment.insert[i][field_name + "___value"] === null) {
                                     values.push("null");
                                 }
@@ -2167,7 +2167,7 @@ exports.processCommentJson = function(json, progressBar)  {
                                     value = json.comment.insert[i][field_name + "___value"];
                                     values.push("'" + Utils.dbEsc(value) + "'");
                                 }
-                              
+
                                 if (typeof json.comment.insert[i][field_name + "___data"] === "undefined" || json.comment.insert[i][field_name + "___data"] === null) {
                                     values.push("null");
                                 }
@@ -2190,7 +2190,7 @@ exports.processCommentJson = function(json, progressBar)  {
                                     case 'omadi_time':
                                     case 'datestamp':
                                     case 'image':
-                                    
+
                                         value = json.comment.insert[i][field_name];
 
                                         if (typeof value === 'number') {
@@ -2212,7 +2212,7 @@ exports.processCommentJson = function(json, progressBar)  {
                                             values.push("null");
                                         }
                                         break;
-        
+
                                     default:
                                         value = json.comment.insert[i][field_name];
 
@@ -2230,8 +2230,8 @@ exports.processCommentJson = function(json, progressBar)  {
 
                     query += values.join(",");
                     query += ')';
-                
-                    queries.push(query);    
+
+                    queries.push(query);
                 }
             }
         }
@@ -2261,7 +2261,17 @@ var updateFidsOnNewFiles = function(nid, newFiles) {
 			if (result.isValidRow()) {
 				Database.queryList('UPDATE _files SET fid=' + newFiles[i].fid + ' WHERE id=' + result.fieldByName('id'));
 			} else {
-				Utils.sendErrorReport('Could not find matching file in updateFidsOnNewFiles: SELECT id FROM _files WHERE nid=' + nid + ' AND field_name="' + newFiles[i].fieldName + '" AND fid=0 ORDER BY timestamp ASC LIMIT 1');
+				var allFilesForNid = Database.queryList('SELECT * FROM _files WHERE nid=' + nid + ' ORDER BY timestamp ASC');
+				var files = [];
+				while (allFilesForNid.isValidRow()) {
+					var file = {};
+					for (var j = 0; j < allFilesForNid.fieldCount(); j++) {
+						file[allFilesForNid.fieldName(i)] = allFilesForNid.field(j);
+					}
+					files.push(file);
+					allFilesForNid.next();
+				}
+				Utils.sendErrorReport('Could not find matching file in updateFidsOnNewFiles: nid=' + nid + ', field_name=""' + newFiles[i].fieldName + '", fid=0. All files for nid=" + nid + ": ' + JSON.stringify(files));
 			}
 		}
 	} catch (e) {
@@ -2272,19 +2282,19 @@ var updateFidsOnNewFiles = function(nid, newFiles) {
 
 var updateSignatureFids = function(node) {
     var result = Database.queryList('SELECT field_name FROM _files WHERE nid=' + node.nid + ' AND type="signature"');
-    
+
     while(result.isValidRow()) {
         var fieldName = result.fieldByName('field_name');
         var fid = node[fieldName];
-        
+
         if (!isNaN(fid)) {
         	Database.queryList('UPDATE _files SET fid=' + fid + ' WHERE nid=' + node.nid + ' AND field_name="' + fieldName + '"');
         } else {
         	Utils.sendErrorReport('Error in updateSignatureFids (' + fieldName + '): fid is NaN: ' + JSON.stringify(node));
         }
-        result.next(); 
+        result.next();
     }
-    
+
     result.close();
     Database.close();
 };
@@ -2313,17 +2323,17 @@ exports.getNodeTableInsertStatement = function(node) {
 };
 
 exports.getFinishedUploadPath = function(nid, fieldName, delta) {
-    
+
     var path = null;
-    
+
     var result = Database.queryList("SELECT file_path FROM _files WHERE nid = " + nid + " AND field_name='" + fieldName + "' AND delta = " + delta);
     if(result.isValidRow()){
         path = result.field(0);
     }
     result.close();
     Database.close();
-    
-    return path;  
+
+    return path;
 };
 
 exports.initialInstallPage = 0;
@@ -2334,32 +2344,32 @@ exports.initialSyncProgressBar = null;
 exports.syncInitialFormItems = function(nodeCount, commentCount, numPages) {
     try{
         var count = nodeCount + commentCount;
-        
+
         var max = count + (numPages * 500);
-        
+
         exports.initialSyncProgressBar = new ProgressBar(max, 'Syncing ' + count + ' form items ...');
         exports.initialSyncProgressBar.show();
-        
+
         Ti.API.debug("Syncing initial form items: " + count);
-        
+
         exports.initialInstallPage = 0;
         exports.initialInstallTotalPages = numPages;
         exports.isInitialInstall = true;
-        
+
         // Make sure any incremental syncs do not interfere
         exports.setUpdating(true);
-        
-        Ti.App.removeEventListener('omadi:initialInstallDownloadComplete', exports.syncInitialInstallDownloadNextPage); 
-        Ti.App.addEventListener('omadi:initialInstallDownloadComplete', exports.syncInitialInstallDownloadNextPage);      
-           
-        Ti.App.removeEventListener('omadi:initialInstallDownloadRetry', exports.syncInitialInstallDownloadRetry); 
-        Ti.App.addEventListener('omadi:initialInstallDownloadRetry', exports.syncInitialInstallDownloadRetry);  
-        
+
+        Ti.App.removeEventListener('omadi:initialInstallDownloadComplete', exports.syncInitialInstallDownloadNextPage);
+        Ti.App.addEventListener('omadi:initialInstallDownloadComplete', exports.syncInitialInstallDownloadNextPage);
+
+        Ti.App.removeEventListener('omadi:initialInstallDownloadRetry', exports.syncInitialInstallDownloadRetry);
+        Ti.App.addEventListener('omadi:initialInstallDownloadRetry', exports.syncInitialInstallDownloadRetry);
+
         exports.syncInitialInstallDownloadNextPage();
     }
     catch(ex1){
         exports.setUpdating(false);
-        Utils.sendErrorReport("Exception in paging retrieval setup: " + ex1);    
+        Utils.sendErrorReport("Exception in paging retrieval setup: " + ex1);
     }
 };
 
@@ -2368,46 +2378,46 @@ exports.syncInitialInstallDownloadNextPage = function() {
 	var Service = require('lib/Service');
     exports.initialInstallPage++;
     exports.syncInitialInstallRetryCount = 0;
-    
+
     exports.setUpdating(true);
-    
+
     if(exports.initialInstallPage < exports.initialInstallTotalPages){
-        // Make sure the update timestamp is 0 because the sync is not complete    
+        // Make sure the update timestamp is 0 because the sync is not complete
         Ti.API.debug("About to sync page " + exports.initialInstallPage);
         exports.setLastUpdateTimestamp(0);
-        exports.syncInitialFormPage(exports.initialInstallPage);   
+        exports.syncInitialFormPage(exports.initialInstallPage);
     }
     else{
         exports.setUpdating(false);
-        
+
         if(exports.initialSyncProgressBar){
             exports.initialSyncProgressBar.hide();
         }
-        
+
         Ti.API.info("NOW DO AN INCREMENTAL SYNC");
-        
+
         Ti.API.info("last sync: " + exports.getLastUpdateTimestamp());
-        
+
         Service.fetchUpdates(true, true);
     }
 };
 
 exports.syncInitialInstallDownloadRetry = function() {
     exports.syncInitialInstallRetryCount++;
-    
+
     if(exports.syncInitialInstallRetryCount <= 5){
         // Make sure the update timestamp is 0 because the sync is not complete
         exports.setLastUpdateTimestamp(0);
-        
+
         if(exports.initialInstallPage < exports.initialInstallTotalPages){
             // Wait 5 seconds before retrying again
             setTimeout(function(){
-                exports.syncInitialFormPage(exports.initialInstallPage);       
+                exports.syncInitialFormPage(exports.initialInstallPage);
             }, 5000);
         }
         else{
             Utils.sendErrorReport("in else in syncInitialInstallDownloadRetry: page=" + exports.initialInstallPage + ', total=' + exports.initialInstallTotalPages);
-            
+
             if(exports.initialSyncProgressBar){
 	            exports.initialSyncProgressBar.hide();
 	        }
@@ -2415,7 +2425,7 @@ exports.syncInitialInstallDownloadRetry = function() {
     }
     else{
         exports.setLastUpdateTimestamp(0);
-        
+
         alert("A problem occurred syncing the initial form entries. Please logout and try again.");
         Utils.sendErrorReport("Too many retries in the initial install");
     }
@@ -2427,9 +2437,9 @@ exports.processInitialInstallJSON = function(json) {
     // All other objects except for the nodes are installed previous to this
     // We only care about the nodes here
     try{
-        
+
         Ti.API.debug("About to do a node initial install");
-        
+
         if (typeof json.node !== 'undefined') {
             Ti.API.debug("Installing nodes");
             for (tableName in json.node) {
@@ -2440,15 +2450,15 @@ exports.processInitialInstallJSON = function(json) {
                 }
             }
         }
-        
+
         if (typeof json.comment !== 'undefined') {
             Ti.API.debug("Installing comments");
             exports.processCommentJson(json, exports.initialSyncProgressBar);
         }
-        
+
         Ti.API.debug("about to set request_time");
         Database.close();
-        
+
         // Setup the last update timestamp to the correct timestamp in case this is the last synced node bunch
         if(typeof json.request_time !== 'undefined'){
             exports.setLastUpdateTimestamp(json.request_time);
@@ -2469,48 +2479,48 @@ exports.syncInitialLastProgress = 0;
 exports.syncInitialFormPage = function(page) {
 	var Service = require('lib/Service');
     var http, syncURL;
-    
+
     Ti.API.info("syncing for page " + page);
-    
+
     try{
         http = Ti.Network.createHTTPClient({
             enableKeepAlive: false,
             validatesSecureCertificate: false,
             timeout: 30000
         });
-        
+
         exports.syncInitialLastProgress = 0;
-        
+
         // While streaming - following method should be called before open URL
         http.ondatastream = function(e) {
             // Multiply by 500 because the the max was initialized with 500 times how many pages, as that is how many items a page can contain
             exports.initialSyncProgressBar.increment((e.progress - exports.syncInitialLastProgress) * 500);
             exports.syncInitialLastProgress = e.progress;
         };
-        
+
         syncURL = Ti.App.DOMAIN_NAME + '/js-sync/download.json?sync_timestamp=0&page=' + page;
-        
+
         http.open('GET', syncURL);
-    
+
         //Header parameters
         http.setRequestHeader("Content-Type", "application/json");
-    
+
         Utils.setCookieHeader(http);
-    
+
         //When connected
         http.onload = function() {
             var dir, file, string;
-            
+
             try{
                 Ti.API.debug("Initial Sync data loaded");
                 if (typeof this.responseText !== 'undefined' && this.responseText !== null){
                     Ti.API.debug("JSON String Length 1: " + this.responseText.length);
                 }
-                
+
                 if (typeof this.responseData !== 'undefined' && this.responseData !== null){
                     Ti.API.debug("JSON String Length 2: " + this.responseData.length);
                 }
-                
+
                 Ti.API.debug("another sync message");
                 //Parses response into strings
                 if (typeof this.responseText !== 'undefined' && this.responseText !== null && Utils.isJsonString(this.responseText) === true) {
@@ -2524,21 +2534,21 @@ exports.syncInitialFormPage = function(page) {
                     // Here, we write the data to a file, read it back and do the installation
                     try{
                         dir = Ti.Filesystem.getFile(Ti.Filesystem.tempDirectory);
-                        
+
                         Ti.API.debug("Got here 1");
-                        
+
                         if(!dir.exists()){
                             dir.createDirectory();
                         }
-                        
+
                         Ti.API.debug("JSON String Length: " + this.responseData.length);
-                        
+
                         file = Ti.Filesystem.getFile(Ti.Filesystem.tempDirectory + "/download_" + Utils.getUTCTimestamp() + ".txt");
-                        
+
                         if(file.write(this.responseData)){
-                           
+
                            string = file.read();
-                           
+
                            if(Utils.isJsonString(string.text)){
                                 if(Ti.App.isAndroid && typeof AndroidSysUtil !== 'undefined' && AndroidSysUtil != null){
                                     AndroidSysUtil.OptimiseMemory();
@@ -2555,7 +2565,7 @@ exports.syncInitialFormPage = function(page) {
                         else{
                             Utils.sendErrorReport("Failed to write to the download file");
                         }
-                        
+
                         if(file.exists()){
                             file.deleteFile();
                         }
@@ -2564,35 +2574,35 @@ exports.syncInitialFormPage = function(page) {
                         Ti.API.debug("Exception at data: " + ex);
                         Utils.sendErrorReport("Exception at json data: " + ex);
                     }
-                    
+
                     file = null;
                     dir = null;
                 }
                 else{
-                    Ti.API.debug("No data was found.");        
+                    Ti.API.debug("No data was found.");
                     Utils.sendErrorReport("Bad response text and data for download: " + this.responseText + ", stautus: " + this.status + ", statusText: " + this.statusText);
                 }
-                
+
                 setTimeout(function(){
-                    Ti.App.fireEvent('omadi:initialInstallDownloadComplete');      
-                }, 500);       
+                    Ti.App.fireEvent('omadi:initialInstallDownloadComplete');
+                }, 500);
             }
             catch(ex1){
                 Utils.sendErrorReport("Exception in saving initial install data onsuccess: " + ex1);
-                
-                Ti.App.fireEvent('omadi:initialInstallDownloadRetry'); 
+
+                Ti.App.fireEvent('omadi:initialInstallDownloadRetry');
             }
         };
-    
+
         //Connection error:
         http.onerror = function(e) {
             var dialog, message, errorDescription;
-            
+
             Ti.API.error('Code status: ' + e.error);
             Ti.API.error('CODE ERROR = ' + this.status);
-    
+
             if (this.status == 403) {
-                
+
                 // Do not allow a logout when a background logout is disabled
                 // Currently, this should only be when the user is filling out a form
                 if(Ti.App.allowBackgroundLogout){
@@ -2601,7 +2611,7 @@ exports.syncInitialFormPage = function(page) {
                         buttonNames : ['OK'],
                         message : "You have been logged out. Please log back in."
                     });
-    
+
                     dialog.addEventListener('click', function() {
                         try{
                             Database.queryList('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
@@ -2611,7 +2621,7 @@ exports.syncInitialFormPage = function(page) {
                             Utils.sendErrorReport("exception in logged out update 403: " + ex);
                         }
                     });
-    
+
                     dialog.show();
                     Service.logout();
                 }
@@ -2625,7 +2635,7 @@ exports.syncInitialFormPage = function(page) {
                         buttonNames : ['OK'],
                         message : "Your session is no longer valid. Please log back in."
                     });
-    
+
                     dialog.addEventListener('click', function() {
                         try{
                             Database.queryList('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
@@ -2635,15 +2645,15 @@ exports.syncInitialFormPage = function(page) {
                             Utils.sendErrorReport("exception in logged out update 401: " + ex);
                         }
                     });
-    
+
                     dialog.show();
-                    
+
                     Service.logout();
                 }
             }
             // Only show the dialog if this is not a background update
             else{
-   
+
                 errorDescription = "Error description: " + e.error;
                 if (errorDescription.indexOf('connection failure') != -1) {
                     errorDescription = '';
@@ -2651,11 +2661,11 @@ exports.syncInitialFormPage = function(page) {
                 else if (errorDescription.indexOf("imeout") != -1) {
                     errorDescription = 'Error: Timeout. Please check your Internet connection.';
                 }
-                
+
                 if(exports.getLastUpdateTimestamp() <= 1 || this.userInitiated){
-                    
+
                     Utils.sendErrorReport("Network Error with dialog: " + errorDescription);
-                    
+
                     message = "There was a network error";
                     dialog = Titanium.UI.createAlertDialog({
                         title : 'Network Error',
@@ -2666,27 +2676,27 @@ exports.syncInitialFormPage = function(page) {
                         row_obj : e.row,
                         message : "A network error occurred. Do you want to retry?"
                     });
-    
+
                     dialog.addEventListener('click', function(e) {
-                        
+
                         if(e.index == 0){
                             setTimeout(function() {
                                 Service.fetchUpdates(true);
                             }, 300);
                         }
                     });
-    
+
                     dialog.show();
                 }
-                
+
                 Ti.App.fireEvent('omadi:initialInstallDownloadRetry');
             }
         };
-    
+
         http.send();
-        
+
     }
     catch(ex1){
-        Utils.sendErrorReport("Exception in paging retrieval: " + ex1);    
+        Utils.sendErrorReport("Exception in paging retrieval: " + ex1);
     }
 };

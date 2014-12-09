@@ -61,7 +61,7 @@ var roles = jsonLogin.user.roles;
 
 Ti.App.Properties.setObject('userRoles', roles);
 
-Ti.Geolocation.getCurrentPosition(function(event){
+Ti.Geolocation.getCurrentPosition(function(event){"use strict";
 	Ti.App.fireEvent('OmadiLocation', {
     	longitude: event.coords.longitude,
     	latitude: event.coords.latitude,
