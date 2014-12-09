@@ -61,6 +61,14 @@ var roles = jsonLogin.user.roles;
 
 Ti.App.Properties.setObject('userRoles', roles);
 
+Ti.Geolocation.getCurrentPosition(function(event){
+	Ti.App.fireEvent('OmadiLocation', {
+    	longitude: event.coords.longitude,
+    	latitude: event.coords.latitude,
+    	timestamp: Utils.getUTCTimestamp()
+    });
+});
+
 var loggedView = Titanium.UI.createView({
     top : 40,
     backgroundColor : '#333',
@@ -220,7 +228,7 @@ var networkStatusAnimation = Titanium.UI.createAnimation();
 function displayWatermark(){"use strict";
     var minWidth = Math.min(Ti.Platform.displayCaps.xdpi, Ti.Platform.displayCaps.ydpi);
     minWidth = Math.round(minWidth * 0.75);
-    
+
     if(watermarkImage === null){
         watermarkImage = Ti.UI.createImageView({
             image: '/images/logo.png',
@@ -228,24 +236,24 @@ function displayWatermark(){"use strict";
             height: minWidth
         });
     }
-    
+
     listView.setVisible(false);
     listView.setHeight(0);
-    
+
     watermarkImage.setVisible(true);
     watermarkImage.setHeight(minWidth);
 }
 
 function displayBundleList() {"use strict";
-    var db, result, dataRows, i, j, 
-        description, row_t, icon, titleLabel, plusButton, 
+    var db, result, dataRows, i, j,
+        description, row_t, icon, titleLabel, plusButton,
         colorGroups, item, colors, iconFile, numBundles;
 
     db = Omadi.utils.openMainDatabase();
     result = db.execute('SELECT * FROM bundles ORDER BY display_name ASC');
 
     dataRows = [];
-    
+
     colorGroups = {
       light_blue: [],
       green: [],
@@ -253,13 +261,13 @@ function displayBundleList() {"use strict";
       purple: [],
       orange: [],
       red: [],
-      gray: []  
+      gray: []
     };
-    
+
     numBundles = 0;
-    
+
     while (result.isValidRow()) {
-        
+
         item = {
             name_table : result.fieldByName("bundle_name"),
             display : result.fieldByName("display_name"),
@@ -268,37 +276,37 @@ function displayBundleList() {"use strict";
             can_create : result.fieldByName("can_create", Ti.Database.FIELD_TYPE_INT),
             data : JSON.parse(result.fieldByName('_data'))
         };
-        
+
         if(typeof item.data.color !== 'undefined'){
             colorGroups[item.data.color].push(item);
         }
         else{
             colorGroups.gray.push(item);
         }
-        
+
         numBundles ++;
-        
+
         result.next();
     }
     result.close();
     db.close();
-    
+
     Ti.API.info("Num Bundles: " + numBundles);
-    
+
     if(numBundles == 0){
-        
+
         displayWatermark();
     }
     else{
         colors = ["light_blue", "green", "dark_blue", "purple", "orange", "red", "gray"];
-        
+
         for(i = 0; i < colors.length; i ++){
             if(colorGroups[colors[i]].length > 0){
                 for(j = 0; j < colorGroups[colors[i]].length; j ++){
                     item = colorGroups[colors[i]][j];
-                
+
                     if (item.can_view === 1 || item.can_create) {
-            
+
                         row_t = Ti.UI.createTableViewRow({
                             height : 53,
                             display : item.display,
@@ -307,7 +315,7 @@ function displayBundleList() {"use strict";
                             name_table : item.name_table,
                             show_plus : (item.can_create === 1 ? true : false)
                         });
-                        
+
                         icon = Titanium.UI.createImageView({
                             width : 42,
                             height : 42,
@@ -315,15 +323,15 @@ function displayBundleList() {"use strict";
                             left : 5,
                             desc : description
                         });
-                        
+
                         iconFile = Omadi.display.getIconFile(item.name_table);
-                        
+
                         icon.image = iconFile;
-                        
+
                         if(typeof iconFile.imageNotLoaded !== 'undefined' && iconFile.imageNotLoaded){
                             Omadi.display.insertBundleIcon(item.name_table, icon);
                         }
-            
+
                         titleLabel = Titanium.UI.createLabel({
                             text : item.display,
                             font : {
@@ -337,10 +345,10 @@ function displayBundleList() {"use strict";
                             color : '#000',
                             desc : item.description
                         });
-            
+
                         row_t.add(icon);
                         row_t.add(titleLabel);
-            
+
                         if (item.can_create === 1) {
                             plusButton = Titanium.UI.createButton({
                                 backgroundImage : '/images/plus_btn_light_gray.png',
@@ -352,7 +360,7 @@ function displayBundleList() {"use strict";
                             });
                             row_t.add(plusButton);
                         }
-            
+
                         dataRows.push(row_t);
                     }
                     else{
@@ -364,25 +372,25 @@ function displayBundleList() {"use strict";
                 }
             }
         }
-        
+
         listView.setData(dataRows);
         listView.setHeight(null);
         listView.setVisible(true);
-        
+
         watermarkImage.setHeight(0);
         watermarkImage.setVisible(false);
     }
 }
 
 function setupBottomButtons() {"use strict";
-    var alertsView, alertsImg, alertsLabel, 
-        jobsView, jobsImg, jobsLabel, 
+    var alertsView, alertsImg, alertsLabel,
+        jobsView, jobsImg, jobsLabel,
         recentView, recentLabel, recentImg,
         tagsReadyView, tagsReadyImg, tagsReadyLabel,
         numButtons, widthPercent;
-    
+
     numButtons = 0;
-    
+
     try{
         curWin.remove(databaseStatusView);
     }
@@ -431,16 +439,16 @@ function setupBottomButtons() {"use strict";
     alertsView.addEventListener('click', function() {
         try{
             var alertsWindow, locationEnabled;
-            
+
             locationEnabled = Omadi.location.isLocationEnabled(function() {
             	alertsWindow = Ti.UI.createWindow({
                     navBarHidden : true,
                     url : '/main_windows/message_center.js',
                     orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
                 });
-        
+
                 Omadi.display.loading();
-                
+
                 alertsWindow.addEventListener('open', Omadi.display.doneLoading);
                 alertsWindow.open();
             });
@@ -449,11 +457,11 @@ function setupBottomButtons() {"use strict";
             Utils.sendErrorReport("Exception alerts view clicked: " + ex);
         }
     });
-    
+
     numButtons ++;
-    
+
     if(Omadi.bundles.dispatch.showJobsScreen()){
-        
+
         jobsView = Ti.UI.createView({
             backgroundSelectedColor : 'orange',
             focusable : true,
@@ -462,15 +470,15 @@ function setupBottomButtons() {"use strict";
             layout : 'vertical',
             color : '#fff'
         });
-    
+
         databaseStatusView.add(jobsView);
-    
+
         jobsImg = Ti.UI.createImageView({
             image : '/images/dispatch_white.png',
             height : 18,
             top : 5
         });
-    
+
         jobsLabel = Ti.UI.createLabel({
             text : 'Jobs',
             font : {
@@ -482,16 +490,16 @@ function setupBottomButtons() {"use strict";
             width : Ti.UI.SIZE,
             textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
         });
-    
+
         jobsView.add(jobsImg);
         jobsView.add(jobsLabel);
         jobsView.addEventListener('click', function() {
             Omadi.display.openJobsWindow();
         });
-        
+
         numButtons ++;
     }
-    
+
     recentView = Ti.UI.createView({
         backgroundSelectedColor : 'orange',
         focusable : true,
@@ -531,9 +539,9 @@ function setupBottomButtons() {"use strict";
                 backgroundColor: '#eee',
                 windowSoftInputMode: Ti.UI.SOFT_INPUT_STATE_HIDDEN
             });
-    
+
             Omadi.display.loading();
-            
+
             recentWindow.addEventListener('open', Omadi.display.doneLoading);
             recentWindow.open();
         }
@@ -541,11 +549,11 @@ function setupBottomButtons() {"use strict";
             Utils.sendErrorReport("Exception recent view clicked: " + ex);
         }
     });
-    
+
     numButtons ++;
-    
+
     if(Omadi.bundles.tag.hasSavedTags()){
-        
+
         tagsReadyView = Ti.UI.createView({
             backgroundSelectedColor : 'orange',
             focusable : true,
@@ -555,7 +563,7 @@ function setupBottomButtons() {"use strict";
             color : '#fff'
         });
         databaseStatusView.add(tagsReadyView);
-    
+
         tagsReadyImg = Ti.UI.createImageView({
             image : '/images/tag_white.png',
             height : 18,
@@ -572,7 +580,7 @@ function setupBottomButtons() {"use strict";
             width : Ti.UI.SIZE,
             textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
         });
-    
+
         tagsReadyView.add(tagsReadyImg);
         tagsReadyView.add(tagsReadyLabel);
         tagsReadyView.addEventListener('click', function() {
@@ -584,9 +592,9 @@ function setupBottomButtons() {"use strict";
                     orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT],
                     title: 'Expired Tags'
                 });
-        
+
                 Omadi.display.loading();
-        
+
                 tagsReadyWindow.addEventListener('open', Omadi.display.doneLoading);
                 tagsReadyWindow.open();
             }
@@ -594,18 +602,18 @@ function setupBottomButtons() {"use strict";
                 Utils.sendErrorReport("Exception with tagsready view click: " + ex);
             }
         });
-        
+
         numButtons ++;
     }
-    
+
     if(numButtons > 2){
         if(numButtons == 3){
             widthPercent = '33%';
         }
         else if(numButtons == 4){
             widthPercent = '25%';
-        }   
-        
+        }
+
         if(typeof alertsView !== 'undefined'){
             alertsView.setWidth(widthPercent);
         }
@@ -619,7 +627,7 @@ function setupBottomButtons() {"use strict";
             tagsReadyView.setWidth(widthPercent);
         }
     }
-    
+
     curWin.add(databaseStatusView);
 }
 
@@ -628,9 +636,9 @@ function showNetworkStatusHandler(){"use strict";
         headerListView.top = 20;
     }
     else{
-        headerListView.top = 0;   
+        headerListView.top = 0;
     }
-    
+
     networkStatusView.height = 45;
 }
 
@@ -640,13 +648,13 @@ function showNetworkStatus(){"use strict";
         networkStatusAnimation.top = 20;
     }
     else{
-        networkStatusAnimation.top = 0; 
+        networkStatusAnimation.top = 0;
     }
-    
+
     networkStatusView.height = 45;
-    
+
     networkStatusAnimation.addEventListener('complete', showNetworkStatusHandler);
-    
+
     headerListView.animate(networkStatusAnimation);
 }
 
@@ -657,34 +665,34 @@ function hideNetworkStatusHandler(){"use strict";
     else{
         headerListView.top = -40;
     }
-    
+
     networkStatusView.height = 0;
 }
 
 function hideNetworkStatus(){"use strict";
-    
+
     networkStatusAnimation.duration = 1000;
     if(Ti.App.isIOS7){
         networkStatusAnimation.top = -20;
     }
     else{
-        networkStatusAnimation.top = -40;    
+        networkStatusAnimation.top = -40;
     }
-    
+
     networkStatusAnimation.addEventListener('complete', hideNetworkStatusHandler);
-    
+
     headerListView.animate(networkStatusAnimation);
 }
 
 function showAndroidMemoryAlert(){"use strict";
     var dialog;
-    
+
     dialog = Ti.UI.createAlertDialog({
         title: "Low Memory",
         message: "Your device is running low on memory. Restart the app?",
-        buttonNames: ['Restart', 'Ignore', 'Info'] 
+        buttonNames: ['Restart', 'Ignore', 'Info']
     });
-    
+
     dialog.addEventListener('click', function(e){
         var dialog2;
         try{
@@ -699,7 +707,7 @@ function showAndroidMemoryAlert(){"use strict";
                     message: "On the Android version of this app, memory is not being managed correctly due to a bug. This issue is estimated to be resolved in summer 2014 by our middleware provider, and you will receive that update as it becomes available. We understand this is a very annoying issue, and we are currently coming up with ways to mitigate this issue before summer 2014.",
                     buttonNames: ['OK', 'Restart', 'Ignore']
                 });
-                
+
                 dialog2.addEventListener('click', function(e2){
                     try{
                         if(e2.index == 1){
@@ -712,7 +720,7 @@ function showAndroidMemoryAlert(){"use strict";
                         Utils.sendErrorReport("Exception in low memory alert after reading info: " + ex2);
                     }
                 });
-                
+
                 dialog2.show();
             }
         }
@@ -720,17 +728,17 @@ function showAndroidMemoryAlert(){"use strict";
             Utils.sendErrorReport("Exception in low memory alert: " + ex);
         }
     });
-    
+
     dialog.show();
 }
 
 var lastAvailableBytes = 0;
 function checkAndroidMemoryAfterGC(){"use strict";
     var availableBytes;
-    
+
     try{
         availableBytes = Ti.Platform.getAvailableMemory();
-        
+
         if(availableBytes < 800000){
             Utils.sendErrorReport("Showing Android memory alert: " + availableBytes);
             showAndroidMemoryAlert();
@@ -744,9 +752,9 @@ function checkAndroidMemoryAfterGC(){"use strict";
 function checkAndroidMemory(){"use strict";
     try{
         lastAvailableBytes = Ti.Platform.getAvailableMemory();
-        
+
         if(lastAvailableBytes < 1800000){
-            AndroidSysUtil.OptimiseMemory();            
+            AndroidSysUtil.OptimiseMemory();
             setTimeout(checkAndroidMemoryAfterGC, 1000);
         }
     }
@@ -757,14 +765,14 @@ function checkAndroidMemory(){"use strict";
 
 function doneSendingDataMainMenu(){"use strict";
     Ti.API.debug("Done Sending data event received");
-    
+
     // Allow background updates again
     Ti.App.allowBackgroundUpdate = true;
-    
+
     hideNetworkStatus();
-    
+
     Service.uploadFile();
-    
+
     if(Ti.App.isAndroid){
         checkAndroidMemory();
     }
@@ -806,11 +814,11 @@ function sendingDataMainMenu(e){"use strict";
         uploadingProgressBar.uploadingBytes = e.uploadingBytes;
         uploadingProgressBar.filesize = e.filesize;
         uploadingProgressBar.bytesUploaded = e.bytesUploaded;
-        
+
         networkStatusLabel.setVisible(false);
         uploadingProgressBar.setVisible(true);
     }
-    
+
     showNetworkStatus();
 }
 
@@ -818,9 +826,9 @@ function loggingOutMainMenu(){"use strict";
     if(typeof Omadi.display.FormTabs !== 'undefined' && Omadi.display.FormTabs !== null){
         Omadi.display.FormTabs.loggingOut();
     }
-    
+
     Omadi.service.abortFileUpload();
-    
+
     Ti.UI.currentWindow.close();
 }
 
@@ -843,20 +851,20 @@ function fullUpdateFromMenu(){"use strict";
     if (!Ti.Network.online) {
         alert("You do not have an Internet connection right now, so new data will not be downloaded until you connect.");
     }
-    
+
     Omadi.data.resetDatabases();
-    
+
     displayWatermark();
-    
+
     setupBottomButtons();
 
     Omadi.data.setUpdating(false);
-    
+
     Omadi.service.checkUpdate('from_menu');
 }
 
 function backgroundCheckForUpdates(){"use strict";
-    
+
     // allowBackground update is set to true at the beginning of the main menu opening.
     // It is set to false from just before the node is saved on the phone and just after
     //    the time it is saved to the web server or an error occurs.
@@ -874,7 +882,7 @@ function showContinuousSavedNode(){"use strict";
         db = Omadi.utils.openMainDatabase();
         result = db.execute("SELECT nid, table_name, form_part FROM node WHERE flag_is_updated = 4 AND table_name != 'dispatch' ORDER BY changed DESC");
         continuousSave = null;
-        
+
         if(result.isValidRow()){
             continuousSave = {
                 node_type: result.fieldByName('table_name'),
@@ -884,12 +892,12 @@ function showContinuousSavedNode(){"use strict";
         }
         result.close();
         db.close();
-        
+
         if(continuousSave !== null){
             Omadi.display.openFormWindow(continuousSave.node_type, continuousSave.nid, continuousSave.form_part);
         }
         else{
-            
+
             // Check to see if any photos are orphans
             listDB = Omadi.utils.openListDatabase();
             result = listDB.execute("SELECT COUNT(*) FROM _files WHERE nid = 0");
@@ -899,10 +907,10 @@ function showContinuousSavedNode(){"use strict";
                      // Let omadi know about the problem
                     Utils.sendErrorReport(count + " photo" + (count > 1 ? "s" : "") + " with a 0 nid was found without a node to load.");
                     Omadi.data.sendDebugData(false);
-                    
+
                     // If no form pops up, that probably means the app crashed while taking a photo and something weird happened
                     listDB.execute("UPDATE _files SET nid = -1000000 WHERE nid = 0");
-                    
+
                     // Let the user know about the problem
                     if (count > 1) {
                         alert(count + " recent photos were not attached to a form properly, but they were saved. To see them, go to Actions -> Photos Not Uploaded");
@@ -921,7 +929,7 @@ function showContinuousSavedNode(){"use strict";
 }
 
 function mainMenuFirstSyncInstallComplete(){"use strict";
-    
+
     Ti.App.removeEventListener('omadi:finishedDataSync', mainMenuFirstSyncInstallComplete);
     AlertQueue.showNextAlertInQueue();
 }
@@ -932,7 +940,7 @@ function userInitiatedUpdateCheck(){"use strict";
 
 function switchedNodeIdMainMenu(e){"use strict";
     Ti.API.debug("Switched it up: " + JSON.stringify(e));
-    
+
     if(typeof Omadi.display.FormTabs !== 'undefined' && Omadi.display.FormTabs !== null){
         Omadi.display.FormTabs.switchedNid(e);
     }
@@ -940,7 +948,7 @@ function switchedNodeIdMainMenu(e){"use strict";
 
 function addNewFilesMainMenu(e) {"use strict";
 	Ti.API.debug("Added new files: " + JSON.stringify(e));
-    
+
     if(typeof Omadi.display.FormTabs !== 'undefined' && Omadi.display.FormTabs !== null){
         Omadi.display.FormTabs.addNewFiles(e);
     }
@@ -951,13 +959,13 @@ function openFormWindow(e){"use strict";
 }
 
 ( function() {"use strict";
-    
+
     // Initialize the global scope variable to map deleted nids to saved positive nids
     Ti.App.deletedNegatives = {};
     Ti.App.allowBackgroundUpdate = true;
     Ti.App.allowBackgroundLogout = true;
     Ti.App.closingApp = false;
-   
+
     listView = Titanium.UI.createTableView({
         data : [],
         top : 85,
@@ -972,9 +980,9 @@ function openFormWindow(e){"use strict";
             width : '100%'
         });
     }
-    
+
     displayWatermark();
-    
+
     // Don't show an alert immediately after the user logs in
     var nowTimestamp = Omadi.utils.getUTCTimestamp();
     Ti.App.Properties.setString("last_alert_popup", nowTimestamp);
@@ -983,21 +991,21 @@ function openFormWindow(e){"use strict";
     networkStatusView.add(uploadingProgressBar);
 
     displayBundleList();
-    
-    
+
+
     loggedView.add(refresh_image);
 
     loggedView.add(label_top);
     loggedView.add(offImage);
-    
+
     loggedView.add(actionsButton);
-    
+
     actionsButton.addEventListener('click', function(){
        Omadi.display.openActionsWindow();
     });
-    
+
     headerListView.add(networkStatusView);
-    
+
     headerListView.add(loggedView);
     headerListView.add(listView);
     headerListView.add(watermarkImage);
@@ -1011,65 +1019,65 @@ function openFormWindow(e){"use strict";
     }
 
     setupBottomButtons();
-    
+
     // First try to remove the listener, as the app may have crashed, and the listeners aren't removed
-    
+
     Ti.App.removeEventListener("doneSendingData", doneSendingDataMainMenu);
     Ti.App.addEventListener("doneSendingData", doneSendingDataMainMenu);
-    
+
     Ti.App.removeEventListener("doneSendingPhotos", doneSendingPhotosMainMenu);
     Ti.App.addEventListener("doneSendingPhotos", doneSendingPhotosMainMenu);
-    
+
     Ti.App.removeEventListener("unregisterAllGeofences", unregisterAllGeofencesMainMenu);
     Ti.App.addEventListener("unregisterAllGeofences", unregisterAllGeofencesMainMenu);
-    
+
     Ti.App.removeEventListener("sendingData", sendingDataMainMenu);
     Ti.App.addEventListener("sendingData", sendingDataMainMenu);
-    
+
     Ti.App.removeEventListener('loggingOut', loggingOutMainMenu);
     Ti.App.addEventListener('loggingOut', loggingOutMainMenu);
-    
+
     Ti.App.removeEventListener('full_update_from_menu', fullUpdateFromMenu);
     Ti.App.addEventListener('full_update_from_menu', fullUpdateFromMenu);
-    
+
     Ti.App.removeEventListener('omadi:finishedDataSync', setupBottomButtons);
     Ti.App.addEventListener('omadi:finishedDataSync', setupBottomButtons);
-    
+
     Ti.App.removeEventListener('normal_update_from_menu', normalUpdateFromMenu);
     Ti.App.addEventListener('normal_update_from_menu', normalUpdateFromMenu);
-    
+
     Ti.App.removeEventListener("omadi:syncInstallComplete", displayBundleList);
     Ti.App.addEventListener("omadi:syncInstallComplete", displayBundleList);
-    
+
     Ti.App.removeEventListener('switchedItUp', switchedNodeIdMainMenu);
     Ti.App.addEventListener('switchedItUp', switchedNodeIdMainMenu);
-    
+
     Ti.App.removeEventListener('newFilesAdded', addNewFilesMainMenu);
     Ti.App.addEventListener('newFilesAdded', addNewFilesMainMenu);
-    
+
     Ti.App.removeEventListener('openFormWindow', openFormWindow);
     Ti.App.addEventListener('openFormWindow', openFormWindow);
-    
+
     Ti.App.removeEventListener('sendComments', sendCommentsMainMenu);
     Ti.App.addEventListener('sendComments', sendCommentsMainMenu);
-    
+
     Ti.App.removeEventListener('openViewWindow', openViewWindowMainMenu);
     Ti.App.addEventListener('openViewWindow', openViewWindowMainMenu);
-    
+
     if(Ti.App.isIOS){
         Ti.App.removeEventListener('resume', Omadi.service.checkUpdate);
         Ti.App.addEventListener('resume', Omadi.service.checkUpdate);
     }
-    
+
     Ti.Network.removeEventListener('change', networkChangedMainMenu);
     Ti.Network.addEventListener('change', networkChangedMainMenu);
 
     listView.addEventListener('click', function(e) {
         try{
             Omadi.data.setUpdating(true);
-            
+
             var bundle = Omadi.data.getBundle(e.row.name_table);
-            
+
             if (e.source.is_plus || !bundle.can_view) {
                 // A click anywhere when only create permissions are available will go to the new form
                 Omadi.display.openFormWindow(e.row.name_table, 'new', 0);
@@ -1077,16 +1085,16 @@ function openFormWindow(e){"use strict";
             else {
                 Omadi.display.openListWindow(e.row.name_table, e.row.show_plus, [], [], false);
             }
-    
+
             Omadi.data.setUpdating(false);
         }
         catch(ex){
             Utils.sendErrorReport("Exception swith listview clicked on main menu: " + ex);
         }
     });
-    
+
     refresh_image.addEventListener('click', userInitiatedUpdateCheck);
-    
+
     offImage.addEventListener('click', function() {
         Omadi.display.logoutButtonPressed();
     });
@@ -1094,38 +1102,38 @@ function openFormWindow(e){"use strict";
     // When back button on the phone is pressed, it alerts the user (pop up box)
     // that he needs to log out in order to go back to the root window
     curWin.addEventListener('android:back', function() {
-        
+
         Omadi.display.logoutButtonPressed();
     });
-    
+
     Ti.App.syncInterval = setInterval(backgroundCheckForUpdates, 300000);
     Ti.App.photoUploadCheck = setInterval(Service.uploadFile, 60000);
 
     if ( typeof curWin.fromSavedCookie !== 'undefined' && !curWin.fromSavedCookie) {
-        
+
         // The option dialog should go after clock in, but some of the options
         // are blocked because of the alert dialog being show in askclockin
-        
+
         Omadi.bundles.companyVehicle.askAboutVehicle();
         Omadi.location.isLocationEnabled(Omadi.bundles.timecard.askClockIn);
     }
-    
-    
-    
+
+
+
     Ti.API.debug("before init");
     Omadi.push_notifications.init();
-    
+
     Ti.UI.currentWindow.addEventListener('close', function() {
         try{
             Ti.API.info('Closing main menu');
-            
+
             clearInterval(Ti.App.syncInterval);
             clearInterval(Ti.App.photoUploadCheck);
-            
+
             if(Ti.App.isIOS){
                 Ti.App.removeEventListener('resume', Omadi.service.checkUpdate);
             }
-            
+
             Ti.App.removeEventListener("omadi:syncInstallComplete", displayBundleList);
             Ti.App.removeEventListener("doneSendingData", doneSendingDataMainMenu);
             Ti.App.removeEventListener("doneSendingPhotos", doneSendingPhotosMainMenu);
@@ -1140,9 +1148,9 @@ function openFormWindow(e){"use strict";
             Ti.App.removeEventListener('switchedItUp', switchedNodeIdMainMenu);
             Ti.App.removeEventListener('newFilesAdded', addNewFilesMainMenu);
             Ti.App.removeEventListener('openFormWindow', openFormWindow);
-            
+
             Ti.Network.removeEventListener('change', networkChangedMainMenu);
-            
+
             // Release memory
             try{
                 Ti.UI.currentWindow.remove(loggedView);
@@ -1153,11 +1161,11 @@ function openFormWindow(e){"use strict";
             catch(ex){
                 Ti.API.debug("Could not remove a view from the main menu window");
             }
-            
+
             loggedView = null;
             listView = null;
             curWin = null;
-            
+
             refresh_image = null;
             label_top = null;
             offImage = null;
@@ -1168,26 +1176,26 @@ function openFormWindow(e){"use strict";
             Utils.sendErrorReport("In closing of main menu: " + ex1);
         }
     });
-    
+
     // Only after the first sync after login
     Ti.App.addEventListener('omadi:finishedDataSync', mainMenuFirstSyncInstallComplete);
-    
+
     Ti.API.debug("About to check for updates.");
     Omadi.service.checkUpdate('from_menu');
-    
+
     // Allow the main menu to show up faster and on iOS, if that doesn't happen, the main menu will appear on top of the form screen
     // Wait some time before loading the continuous node
     setTimeout(showContinuousSavedNode, 1000);
-    
+
     isInitialized = true;
-    
+
     // Make sure the field cache is reset if the user is logging into a separate account
     Node.resetFieldCache();
 	var NFCListener = require('services/NFCListener');
 	if (Ti.App.isAndroid) {
 		new NFCListener(Titanium.Android.currentActivity);
 	}
-	
+
 	var RouteListener = require('objects/RouteListener');
 	RouteListener.askToStartRoute();
 }());
