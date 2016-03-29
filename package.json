@@ -1,0 +1,19 @@
+{
+  "name": "omadi-appium",
+  "version": "1.0.0",
+  "description": "Omadi Appium tests",
+  "keywords": [
+    "appium",
+    "omadi"
+  ],
+  "devDependencies": {
+    "chai": "^2.2.0",
+    "chai-as-promised": "^5.0.0",
+    "colors": "^1.0.3",
+    "q": "^2.0.2",
+    "underscore": "^1.8.3",
+    "wd": "^0.3.11",
+    "yiewd": "*",
+    "mocha": "*"
+  }
+}
