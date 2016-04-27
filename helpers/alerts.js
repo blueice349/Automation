@@ -26,3 +26,9 @@ exports.actionsScreenAlerts = {
 	}
 }
 
+exports.jobScreenAlerts = {
+	'openJobs' : {
+		'updateFormInfo' : 'Update Form Info First'
+	}
+}
+
