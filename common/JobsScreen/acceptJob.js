@@ -11,67 +11,99 @@ var elements = require( '../../helpers/elements' );
 var login    = require( '../../helpers/loginTable' );
 var Store    = require( '../../helpers/Store' );
 
-var driver = config.driver;
+var driver   = config.driver;
 
+describe( 'Start Accept New Job Process using "acceptJob.js"'.green, function () {
 
-describe( 'Start Accept New Job Process'.green, function () {
+	commons.beforeEachDes();
+	commons.beforeEachIt();
+	commons.afterEachDes();
+	
+	it( 'Should wait for actions button on mainMenuScreen'.green, function () {
+		
+		
+		return driver
+		.waitForElementByName( elements.mainMenuScreen.actions, 20000 )
+		.then( function () {
+			
+			config.currentTest = 'passed';
+		} );
+	} );
 
-	it( 'Should update status to accept job from the jobs screen.'.green, function ( done ) {
-		var lastUser = Store.get( 'lastUser' );
-		driver
-		.waitForElementByName( elements.mainMenuScreen.syncAllowed, 20000 )
-		.sleep( 1000 )
-		.then( function ( user ) {
-			if ( lastUser.userRole != 'client' && lastUser.userRole != 'AdminClient' ) {
-				return driver
-				.waitForElementByName( elements.mainMenuScreen.jobs, 20000 )
-				.click()
-				.sleep( 800 )
-				.then( function ( isIOS ) {
+	it( 'should check userRole and go to jobsScreen'. green, function () {
+		
+		if ( Store.get( 'lastUser' ).userRole != 'client' && Store.get( 'lastUser' ).userRole != 'AdminClient' ) {
+			return driver
+			.waitForElementByName( elements.mainMenuScreen.jobs, 20000 )
+			.click()
+			.sleep( 800 )
+			.then( function ( isIOS ) {
 
-					if( commons.isIOS() ) {
-						return driver
-						.elementByName( elements.jobsScreen.otherOptions.back )
-						.isDisplayed().should.eventually.be.true;
-					}
-				} )
-				.elementByName( elements.jobsScreen.newJobsTab.newJobsHeader )
-				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.jobsScreen.openJobsTab.currentJobsHeader )
-				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.jobsScreen.otherOpenJobsTab.otherOpenJobsHeader )
-				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.jobsScreen.appointmentJobsTab.appointmentsHeader )
-				.isDisplayed().should.eventually.be.true
+				if( commons.isIOS() ) {
+					return driver
+					.elementByName( elements.jobsScreen.otherOptions.back )
+					.isDisplayed().should.eventually.be.true;
+				}
+			} )
+			.then( function () {
+				
+				config.currentTest = 'passed';
+			} );
+			
+		} else {
+			console.log( 'user does not have acces to Jobs Screen'.red );
+			return driver
+			.sleep( 60 )
+			.then( function () {
+				
+				config.currentTest = 'passed';
+			} );
+		}
+	} );
 
-				//.waitForElementByName( elements.jobsScreen.newJobs + 0 + '.', 20000 )
-				.elementByNameIfExists( commons.getItem( elements.jobsScreen.newJobsTab.newJobs, 0 ) )
-				.then( function ( newJobs ) {
+	it( 'should check tabs on jobsScreen are there'.green, function () {
+				
+		if (  Store.get( 'lastUser' ).userRole != 'client' &&  Store.get( 'lastUser' ).userRole != 'AdminClient' ) {
+			return driver
+			.elementByName( elements.jobsScreen.newJobsTab.newJobsHeader )
+			.isDisplayed().should.eventually.be.true
+			.elementByName( elements.jobsScreen.openJobsTab.currentJobsHeader )
+			.isDisplayed().should.eventually.be.true
+			.elementByName( elements.jobsScreen.otherOpenJobsTab.otherOpenJobsHeader )
+			.isDisplayed().should.eventually.be.true
+			.elementByName( elements.jobsScreen.appointmentJobsTab.appointmentsHeader )
+			.isDisplayed().should.eventually.be.true
+			.then( function () {
 
-					if ( newJobs ) {
-						return newJobs
-						.click()
-						.sleep( 1000 )
-						.waitForElementByName( elements.jobsScreen.updateStatusOptions.acceptJob, 10000 )
-						.click().sleep( 1000 )
-						.then( function () {
+				config.currentTest = 'passed';
+			} );
+		} else {
+			console.log( 'curren user does not have the jobsScreen'.green );
+			return driver
+			sleep( 10 )
+			.then( function () {
 
-							if ( commons.isIOS() ) {
-								return driver
-								.waitForElementByName( elements.jobsScreen.otherOptions.back, 10000 )
-								.click()
-								.sleep( 1000 );
+				config.currentTest = 'passed';
+			} );
+		}
+	} );
 
-							} else if ( commons.isAndroid() ) {
-								return driver
-								.back()
-								.sleep( 1000 );
-							}
-						} );
+	it( 'Sould look for jobs to accept and accept if job is present'.green, function () {
+		
+		if (  Store.get( 'lastUser' ).userRole != 'client' &&  Store.get( 'lastUser' ).userRole != 'AdminClient' ) {
+			return driver
+			//.waitForElementByName( elements.jobsScreen.newJobs + 0 + '.', 20000 )
+			.elementByNameIfExists( commons.getItem( elements.jobsScreen.newJobsTab.newJobs, 0 ) )
+			.then( function ( newJobs ) {
 
-					} else {
-						console.log( 'No New Jobs to Select.'.red);
-						//config.synNeeded = no;
+				if ( newJobs ) {
+					return newJobs
+					.click()
+					.sleep( 1000 )
+					.waitForElementByName( elements.jobsScreen.updateStatusOptions.acceptJob, 10000 )
+					.click().sleep( 1000 )
+					.then( function () {
+
 						if ( commons.isIOS() ) {
 							return driver
 							.waitForElementByName( elements.jobsScreen.otherOptions.back, 10000 )
@@ -83,23 +115,51 @@ describe( 'Start Accept New Job Process'.green, function () {
 							.back()
 							.sleep( 1000 );
 						}
-						return driver;
+					} );
+
+				} else {
+					console.log( 'No New Jobs to Select.'.red);
+					//config.syncNeeded = no;
+					if ( commons.isIOS() ) {
+						return driver
+						.waitForElementByName( elements.jobsScreen.otherOptions.back, 10000 )
+						.click()
+						.sleep( 1000 );
+
+					} else if ( commons.isAndroid() ) {
+						return driver
+						.back()
+						.sleep( 1000 );
 					}
-					return driver;
-				} ) 
-			} else {
-				console.log( 'user does not have acces to Jobs Screen'.red );
-				return driver;
-			}
-		} )
+				}
+			} )
+			.then( function () {
+
+				config.currentTest = 'passed';
+			} );
+
+		} else {
+			console.log( 'user does not have acces to Jobs Screen'.red );
+			return driver
+			.sleep( 60 )
+			.then( function () {
+				
+				config.currentTest = 'passed';
+			} );
+		}
+	} );
+
+	it( 'should go back to mainMenuScreen'.green, function () {
+				
+		return driver
 		.elementByName( elements.mainMenuScreen.actions )
 		.isDisplayed()
-		.then( function ( sync ) {
+		.then( function ( mainMenuScreen ) {
 
-			if ( sync ) {
+			if ( mainMenuScreen ) {
 				return driver
-				.elementByName( elementByName.mainMenuScreen.actions )
-				.should.eventually.be.true
+				.elementByName( elements.mainMenuScreen.actions )
+				.isDisplayed().should.eventually.be.true
 				.waitForElementByName( elements.mainMenuScreen.syncAllowed, 30000 )
 				.click()
 				.sleep ( 2000 );
@@ -107,9 +167,9 @@ describe( 'Start Accept New Job Process'.green, function () {
 			} else {
 				if ( commons.isIOS() ) {
 					return driver
-					.elementByName( elementByName.mainMenuScreen.actions )
-					.should.eventually.be.true
-					.elementByName( elementByName.mainMenuScreen.actions )
+					.elementByName( elementByName.jobsScreen.back )
+					.isDisplayed().should.eventually.be.true
+					.elementByName( elementByName.jobsScreen.back )
 					.click()
 					.sleep( 1000 );
 
@@ -121,44 +181,63 @@ describe( 'Start Accept New Job Process'.green, function () {
 			}
 		} )
 		.waitForElementByName( elements.mainMenuScreen.syncAllowed, 180000 )
-		.isDisplayed().should.eventually.be.true
 		.then( function () {
-
-                  //Checks for buttons to be displayed on main menu after log on.
-			if ( lastUser.userRole == 'admin' || lastUser.userRole == 'driver' ) {
-				return driver
-				.elementByName( lastUser.name )
-				.text().should.become( lastUser.name )
-				.elementByName( elements.mainMenuScreen.actions )
-				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.mainMenuScreen.logout )
-				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.mainMenuScreen.syncAllowed )
-				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.mainMenuScreen.alerts )
-				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.mainMenuScreen.expiredTags )
-				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.mainMenuScreen.jobs )
-				.isDisplayed().should.eventually.be.true
-
-			} else if ( lastUser.userRole == 'client' || lastUser.userRole == 'AdminClient' ) {
-				return driver
-				.elementByName( elements.mainMenuScreen.name )
-				.text().should.become( name )
-				.elementByName( elements.mainMenuScreen.actions )
-				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.mainMenuScreen.logout )
-				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.mainMenuScreen.syncAllowed )
-				.isDisplayed().should.eventually.be.true
-			}
-		} )
-		.then( function () {
-
-			console.log( 'Accepted a Job has Completed....'.green );
+			
 			config.currentTest = 'passed';
-			done();
-	 	} );
+		} );
+	} );
+	
+	it( 'should check mainMenuScreen for buttons'.green, function () {	
+		
+        //Checks for buttons to be displayed on main menu after log on.
+		if (  Store.get( 'lastUser' ).userRole == 'admin' ||  Store.get( 'lastUser' ).userRole == 'driver' ) {
+			return driver
+			.elementByName(  Store.get( 'lastUser' ).name )
+			.text().should.become(  Store.get( 'lastUser' ).name )
+			.elementByName( elements.mainMenuScreen.actions )
+			.isDisplayed().should.eventually.be.true
+			.elementByName( elements.mainMenuScreen.logout )
+			.isDisplayed().should.eventually.be.true
+			.waitForElementByName( elements.mainMenuScreen.syncAllowed, 180000 )
+			.isDisplayed().should.eventually.be.true
+			.elementByName( elements.mainMenuScreen.alerts )
+			.isDisplayed().should.eventually.be.true
+			.elementByName( elements.mainMenuScreen.expiredTags )
+			.isDisplayed().should.eventually.be.true
+			.elementByName( elements.mainMenuScreen.jobs )
+			.isDisplayed().should.eventually.be.true
+			.then( function () {
+
+				config.currentTest = 'passed';
+			} );
+
+		} else if (  Store.get( 'lastUser' ).userRole == 'client' ||  Store.get( 'lastUser' ).userRole == 'AdminClient' ) {
+			return driver
+			.elementByName(  Store.get( 'lastUser' ).name )
+			.text().should.become(  Store.get( 'lastUser' ).name )
+			.elementByName( elements.mainMenuScreen.actions )
+			.isDisplayed().should.eventually.be.true
+			.elementByName( elements.mainMenuScreen.logout )
+			.isDisplayed().should.eventually.be.true
+			.waitForElementByName( elements.mainMenuScreen.syncAllowed, 180000 )
+			.isDisplayed().should.eventually.be.true
+			.elementByName( elements.mainMenuScreen.alerts )
+			.isDisplayed().should.eventually.be.false
+			.elementByName( elements.mainMenuScreen.expiredTags )
+			.isDisplayed().should.eventually.be.false
+			.elementByName( elements.mainMenuScreen.jobs )
+			.isDisplayed().should.eventually.be.false
+			.then( function () {
+
+				config.currentTest = 'passed';
+			} );
+		}
+	} );
+
+	it( 'should set currentTest to "passed"'.green, function ( done ) {
+		
+		console.log( 'Accepted a Job has Psssed....'.green );
+		config.currentTest = 'passed';
+		done();
 	} );
 } );

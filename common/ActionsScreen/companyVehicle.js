@@ -143,8 +143,8 @@ describe( 'Start Done with Vehicle Process'.green, function () {
 				.isDisplayed().should.eventually.be.ok
 				.elementByName( elements.mainMenuScreen.logout )
 				.isDisplayed().should.eventually.be.ok
-				.elementByName( elements.mainMenuScreen.syncAllowed )
-				.isDisplayed().should.eventually.be.ok
+				.waitForElementByName( elements.mainMenuScreen.syncAllowed, 180000 )
+				.isDisplayed().should.eventually.be.true
 				.elementByName( elements.mainMenuScreen.alerts )
 				.isDisplayed().should.eventually.be.ok
 				.elementByName( elements.mainMenuScreen.expiredTags )
@@ -160,8 +160,8 @@ describe( 'Start Done with Vehicle Process'.green, function () {
 				.isDisplayed().should.eventually.be.ok
 				.elementByName( elements.mainMenuScreen.logout )
 				.isDisplayed().should.eventually.be.ok
-				.elementByName( elements.mainMenuScreen.syncAllowed )
-				.isDisplayed().should.eventually.be.ok
+				.waitForElementByName( elements.mainMenuScreen.syncAllowed, 180000 )
+				.isDisplayed().should.eventually.be.true
 			}
 		} )
 		.waitForElementByName( elements.mainMenuScreen.syncAllowed, 10000 )

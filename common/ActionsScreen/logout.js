@@ -14,19 +14,45 @@ var driver = config.driver;
 
 describe( 'Start Done with Vehicle Process'.green, function () {
 
-	it( 'should log out of a app from actions screen.'.green, function ( done ) {
+	it( 'should wait for syncAllowed.'.green, function () {
 		var lastUser = Store.get( 'lastUser' );
-		console.log( 'Log Out of App from actionsScreen Automation...'.green );
-		driver
+		return driver
 		.waitForElementByName( elements.mainMenuScreen.syncAllowed, 20000 )
+		.then( function () {
+
+			config.currentTest = 'passed';
+		} );
+	} );
+
+	it( 'should go to actionsScreen from mainMenuScreen'.green, function () {
+
+		return driver
 		.elementByName( elements.mainMenuScreen.actions )
 		.click().sleep( 1000 )
+		.then( function () {
+
+			config.currentTest = 'passed';
+		} );
+	} );
+
+	it( 'should click on the logout_button from actionsScreen'.green, function () {
+
+		return driver
 		.waitForElementByName( elements.actionsScreen.logout, 40000 )
 		.click()
+		.then( function () {
+
+			config.currentTest = 'passed';
+		} );
+	} );
+
+	it( 'should check for a inspections and click logOutNow'.green, function () {
+
+		return driver
 		.sleep( 800 )
 		.then( function ( inspection ) {
 			
-			if ( lastUser.truckOption === true && lastUser.userRole != 'client' ) {
+			if ( Store.get( 'lastUser' ).truckOption === true && Store.get( 'lastUser' ).userRole != 'client' ) {
 				console.log( 'Log out with A inspection request'.red );
 				if( commons.isAndroid() ) {
 					return commons.alertText( driver, alerts.loginAlerts.noInspection )
@@ -39,7 +65,7 @@ describe( 'Start Done with Vehicle Process'.green, function () {
 					} );
 
 				} else if ( commons.isIOS() ) {
-					return commons.alertText( driver, 'null ' + alerts.loginAlerts.noInspection )
+					return commons.alertText( driver, alerts.loginAlerts.noInspection )
 					.elementByName( elements.alertButtons.no )
 					.click()
 					.then( function () {
@@ -63,8 +89,16 @@ describe( 'Start Done with Vehicle Process'.green, function () {
 					.click();
 				}
 			}
-			return driver;
 		} )
+		.then( function () {
+
+			config.currentTest = 'passsed';
+		} );
+	} );
+
+	it( 'should check for elements on loginScreen after being logged out'.green, function () {
+
+		return driver
 		.waitForElementByName( elements.loginScreen.client_account, 200000 )
 		.isDisplayed().should.eventually.be.ok		
 		.then( function ( loginScreen ) {
@@ -83,11 +117,11 @@ describe( 'Start Done with Vehicle Process'.green, function () {
 			} else {
 				assert.fail( 'Can\'t find the ' + elements.loginScreen.client_account + ' element.' ); 
 			}
+		} )
 		.then( function () {
 
 			console.log( 'Logged out of Vehicle has Completed....'.green );
 			config.currentTest = 'passed';
-			done();
 	 	} );
 	} );
 } );
