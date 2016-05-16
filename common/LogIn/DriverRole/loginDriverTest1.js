@@ -229,48 +229,34 @@ module.exports = function () {
 		
 		it( 'should wait for sync to Complete'.green, function () {
 			
-			if ( clockInOption === false && truckOption === true && userRole != 'client' && userRole != 'AdminClient' ) {
-				console.log( 'Wait for Select Vehicle Options'.red );
+			if ( clockInOption === false && truckOption === true ) {
+				console.log( 'User does not have clock in options, but has truck options, will wait for Select Vehicle Options'.red );
 				return driver
 				.waitForElementByName( elements.companyVehicle.vehicle1, 180000 )
 				.isDisplayed().should.eventually.be.true
 				.then( function ( vehicle ) {
 
-					if ( vehicle ) {
-						config.currentTest = 'passed';
-					} else {
-						assert.fail( 'Did not find '.red + elements.companyVehicle.vehicle1 + ' before within 3 mins.'.red );
-					}
+					config.currentTest = 'passed';
 				} );
 
-			} else if ( clockInOption === true && userRole != 'client' && userRole != 'AdminClient' ) {
-				console.log( 'Wait for Clockin Options'.red );
+			} else if ( clockInOption === true ) {
+				console.log( 'User has clockin options, will wait for Clockin Options'.red );
 				return driver
 				.waitForElementByName( elements.alertButtons.clockIn, 180000 )
 				.isDisplayed().should.eventually.be.true
 				.then( function ( clockIn ) {
-					
-					if( clockedIn ) {
-						config.currentTest = 'passed';
 
-					} else {
-						assert.fail( 'Did not find '.red + elements.alertButtons.clockIn + ' before within 3 mins.'.red );
-					}
+					config.currentTest = 'passed';
 				} );
 
-			} else {
-				console.log( 'Wait for syncAllowed'.red );
+			} else if( clockInOption === false && truckOption === false ) {
+				console.log( 'User has no truck or clock in options, will wait for syncAllowed'.red );
 				return driver
 				.waitForElementByName( elements.mainMenuScreen.syncAllowed, 180000 )
 				.isDisplayed().should.eventually.be.true
 				.then( function ( syncAllowed ) {
-					
-					if( syncAllowed ) {
-						config.currentTest = 'passed';
 
-					} else {
-						assert.fail( 'Did not find '.red + elements.mainMenuScreen.syncAllowed + ' before within 3 mins.'.red );
-					}
+					config.currentTest = 'passed';
 				} );
 			}
 		} );

@@ -92,56 +92,38 @@ module.exports = function () {
 
 		it( 'Sould look for jobs to accept and accept if job is present'.green, function () {
 			
-			if (  Store.get( 'lastUser' ).userRole != 'client' &&  Store.get( 'lastUser' ).userRole != 'AdminClient' ) {
+			if ( Store.get( 'lastUser' ).newJob === true && Store.get( 'lastUser' ).userRole != 'client' &&  Store.get( 'lastUser' ).userRole != 'AdminClient' ) {
 				return driver
 				//.waitForElementByName( elements.jobsScreen.newJobs + 0 + '.', 20000 )
-				.elementByNameIfExists( commons.getItem( elements.jobsScreen.newJobsTab.newJobs, 0 ) )
-				.then( function ( newJobs ) {
-
-					if ( newJobs ) {
-						return newJobs
-						.click()
-						.sleep( 1000 )
-						.waitForElementByName( elements.jobsScreen.updateStatusOptions.acceptJob, 10000 )
-						.click().sleep( 1000 )
-						.then( function () {
-
-							if ( commons.isIOS() ) {
-								return driver
-								.waitForElementByName( elements.jobsScreen.otherOptions.back, 10000 )
-								.click()
-								.sleep( 1000 );
-
-							} else if ( commons.isAndroid() ) {
-								return driver
-								.back()
-								.sleep( 1000 );
-							}
-						} );
-
-					} else {
-						console.log( 'No New Jobs to Select.'.red);
-						//config.syncNeeded = no;
-						if ( commons.isIOS() ) {
-							return driver
-							.waitForElementByName( elements.jobsScreen.otherOptions.back, 10000 )
-							.click()
-							.sleep( 1000 );
-
-						} else if ( commons.isAndroid() ) {
-							return driver
-							.back()
-							.sleep( 1000 );
-						}
-					}
-				} )
+				.elementByName( commons.getItem( elements.jobsScreen.newJobsTab.newJobs, 0 ) )
+				.click()
+				.sleep( 1000 )
+				.waitForElementByName( elements.jobsScreen.updateStatusOptions.acceptJob, 10000 )
+				.click().sleep( 1000 )
 				.then( function () {
 
-					config.currentTest = 'passed';
-				} );
+					if ( commons.isIOS() ) {
+						return driver
+						.waitForElementByName( elements.jobsScreen.otherOptions.back, 10000 )
+						.click()
+						.sleep( 1000 )
+						.then( function () {
 
+							config.currentTest = 'passed';
+						} );
+
+					} else if ( commons.isAndroid() ) {
+						return driver
+						.back()
+						.sleep( 1000 )
+						.then( function () {
+
+							config.currentTest = 'passed';
+						} );
+					}
+				} )
 			} else {
-				console.log( 'user does not have acces to Jobs Screen'.red );
+				console.log( 'user does not have a newJob'.red );
 				return driver
 				.sleep( 60 )
 				.then( function () {

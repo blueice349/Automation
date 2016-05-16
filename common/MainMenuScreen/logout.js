@@ -130,73 +130,38 @@ module.exports = function () {
 
 				} else if ( Store.get( 'lastUser' ).truckOption === true && Store.get( 'lastUser' ).clockInOption === true ) {	
 					console.log( 'Log out with A inspection request and clockout + logout option'.red );
-					if( commons.isAndroid() ) {
-						return commons.alertText( alerts.loginAlerts.noInspection )
-						.elementByName( elements.alertButtons.no )
-						.click()
-						.elementByNameIfExists( alerts.actionsScreenAlerts.logOutNow.logOutClockout )
-						.then( function ( logOutClockout ) {
-							if ( logOutClockout ) {
-								return commons.alertText( alerts.actionsScreenAlerts.logOutNow.logOutClockout )
-								.elementByName( elements.alertButtons.logout )
-								.click();
-							} else {
-								return commons.alertText( alerts.actionsScreenAlerts.logOutNow.logOut )
-								.elementByName( elements.alertButtons.clockOutLogout )
-								.click();
-							}
-						} );
+					return commons.alertText( alerts.loginAlerts.noInspection )
+					.elementByName( elements.alertButtons.no )
+					.click()
+					.sleep( 100 )
+					.elementByNameIfExists( alerts.actionsScreenAlerts.logOutNow.logOut )
+					.then( function ( logOutNow ) {
+						if ( logOutNow ) {
+							return commons.alertText( alerts.actionsScreenAlerts.logOutNow.logOut )
+							.elementByName( elements.alertButtons.logout )
+							.click();
+						} else {
+							return commons.alertText( alerts.actionsScreenAlerts.logOutNow.logOutClockout )
+							.elementByName( elements.alertButtons.clockOutLogout )
+							.click();
+						}
+					} );
 
-					} else if ( commons.isIOS() ) {
-						return commons.alertText( alerts.loginAlerts.noInspection )
-						.elementByName( elements.alertButtons.no )
-						.click()
-						.elementByNameIfExists( alerts.actionsScreenAlerts.logOutNow.logOutClockout )
-						.then( function ( logOutClockout ) {
-							if ( logOutClockout ) {
-								return commons.alertText( alerts.actionsScreenAlerts.logOutNow.logOutClockout )
-								.elementByName( elements.alertButtons.logout )
-								.click();
-							} else {
-								return commons.alertText( 'null ' + alerts.actionsScreenAlerts.logOutNow.logOut )
-								.elementByName( elements.alertButtons.clockOutLogout )
-								.click();
-							}
-						} );
-					}	
-				
 				} else if ( Store.get( 'lastUser' ).truckOption === false && Store.get( 'lastUser' ).clockInOption === true && Store.get( 'lastUser' ).userRole != 'client' ) {	
 					console.log( 'Log out with No inspection request and clockout + logout option'.red );
-					if( commons.isAndroid() ) {
-						return driver
-						.elementByNameIfExists( alerts.actionsScreenAlerts.logOutNow.logOutClockout )
-						.then( function ( logOutClockout ) {
-							if ( logOutClockout ) {
-								return commons.alertText( alerts.actionsScreenAlerts.logOutNow.logOutClockout )
-								.elementByName( elements.alertButtons.clockOutLogout )
-								.click();
-							} else {
-								return commons.alertText( alerts.actionsScreenAlerts.logOutNow.logOut )
-								.elementByName( elements.alertButtons.logout )
-								.click();
-							}
-						} );
-
-					} else if ( commons.isIOS() ) {
-						return driver
-						.elementByNameIfExists( 'null ' + alerts.actionsScreenAlerts.logOutNow.logOutClockout )
-						.then( function ( logOutClockout ) {
-							if ( logOutClockout ) {
-								return commons.alertText( alerts.actionsScreenAlerts.logOutNow.logOutClockout )
-								.elementByName( elements.alertButtons.clockOutLogout )
-								.click();
-							} else {
-								return commons.alertText( alerts.actionsScreenAlerts.logOutNow.logOut )
-								.elementByName( elements.alertButtons.logout )
-								.click();
-							}
-						} );
-					}	
+					return driver
+					.elementByNameIfExists( alerts.actionsScreenAlerts.logOutNow.logOut )
+					.then( function ( logOutNow ) {
+						if ( logOutNow ) {
+							return commons.alertText( alerts.actionsScreenAlerts.logOutNow.logOut )
+							.elementByName( elements.alertButtons.logout )
+							.click();
+						} else {
+							return commons.alertText( alerts.actionsScreenAlerts.logOutNow.logOutClockout )
+							.elementByName( elements.alertButtons.clockOutLogout )
+							.click();
+						}
+					} );
 
 				} else {
 					console.log( 'No inspection request and no clock out request required to Log-out'.red );

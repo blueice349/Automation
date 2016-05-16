@@ -23,11 +23,11 @@ module.exports = function () {
 			
 			var lastUser = Store.get( 'lastUser' );
 			if ( lastUser.userRole === 'client' || lastUser.userRole === 'AdminClient' || lastUser.clockInOption === false ) {
-				console.log( lastUser.userRole.red + ' Is a Cleint and/or does not have clockInOptions'.red ); 
+				console.log( lastUser.userRole.red + ' does not have clockInOptions'.red ); 
 				config.currentTest = 'passed';
 				config.clockedIn   = false;
 
-			} else if ( lastUser.clockInOption === true && lastUser.userRole != 'client' && lastUser.userRole != 'AdminClient' ) {
+			} else if ( lastUser.clockInOption === true ) {
 				console.log( lastUser.userRole.red + ' Has clockInOptions'.red );
 				return commons.alertText( alerts.loginAlerts.clockin )
 				.waitForElementByName( elements.alertButtons.clockIn, 180000 )

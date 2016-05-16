@@ -222,29 +222,32 @@ module.exports = function () {
 		
 		it( 'should wait for sync to Complete'.green, function () {
 			
-			if ( clockInOption === false && truckOption === true && userRole != 'client' && userRole != 'AdminClient' ) {
-				console.log( 'Wait for Select Vehicle Options'.red );
+			if ( clockInOption === false && truckOption === true ) {
+				console.log( 'User does not have clock in options, but has truck options, will wait for Select Vehicle Options'.red );
 				return driver
 				.waitForElementByName( elements.companyVehicle.vehicle1, 180000 )
-				.then( function () {
+				.isDisplayed().should.eventually.be.true
+				.then( function ( vehicle ) {
 
-				config.currentTest = 'passed';
+					config.currentTest = 'passed';
 				} );
 
-			} else if ( clockInOption === true && userRole != 'client' && userRole != 'AdminClient' ) {
-				console.log( 'Wait for Clockin Options'.red );
+			} else if ( clockInOption === true ) {
+				console.log( 'User has clockin options, will wait for Clockin Options'.red );
 				return driver
 				.waitForElementByName( elements.alertButtons.clockIn, 180000 )
-				.then( function () {
+				.isDisplayed().should.eventually.be.true
+				.then( function ( clockIn ) {
 
-				config.currentTest = 'passed';
+					config.currentTest = 'passed';
 				} );
 
-			} else {
-				consol.log( 'Wait for syncAllowed'.red );
+			} else if( clockInOption === false && truckOption === false ) {
+				console.log( 'User has no truck or clock in options, will wait for syncAllowed'.red );
 				return driver
 				.waitForElementByName( elements.mainMenuScreen.syncAllowed, 180000 )
-				.then( function () {
+				.isDisplayed().should.eventually.be.true
+				.then( function ( syncAllowed ) {
 
 					config.currentTest = 'passed';
 				} );
