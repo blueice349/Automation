@@ -123,7 +123,7 @@ describe( 'Automation Test in Progress!'.green, function () {
 
 	describe( 'Running automation test, Please wait for all test to complete!'.red, function () {
 
-		var run = require( './Test.js' );
+		var run = require( './TestFiles.js' );
 
 			run.logins( 'driver1' );
 			run.logins( 'clockin' );
