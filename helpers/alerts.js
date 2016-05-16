@@ -22,7 +22,12 @@ exports.actionsScreenAlerts = {
 		'clockout' : 'Verify Clock Out'
 	},
 	'logOutNow' : {
-		'logOut' : 'Really Logout?'
+		'logOut'         : 'Really Logout?',
+		'logOutClockout' : 'What do you want to do?'
+	},
+	'resetAllData' : {
+		'resetAllDataHeader' : 'Really Reset Everything?',
+		'resetAllDataDetail' : 'This will delete any data not uploaded to the server, and this cannot be undone! Are you sure?'
 	}
 }
 

@@ -1,83 +1,100 @@
 'use strict';
 
-require( 'colors' );
-var assert   = require('assert');
-var config   = require( '../../helpers/Config' );
-var elements = require( '../../helpers/elements' );
-var commons  = require( '../../helpers/Commons' );
+module.exports = function () {
 
-var driver = config.driver;
+	require( 'colors' );
+	require( '../../helpers/setup' );
+	var alerts   = require( '../../helpers/alerts' );
+	var assert   = require( 'assert' );
+	var caps     = require( '../../helpers/caps' );
+	var config   = require( '../../helpers/Config' );
+	var commons  = require( '../../helpers/Commons' );
+	var elements = require( '../../helpers/elements' );
+	var login    = require( '../../helpers/loginTable' );
+	var Store    = require( '../../helpers/Store' );
+	var driver = config.driver;
 
+	describe( 'Start Reset All Data Process'.green, function () {
 
-describe( 'Start Reset All Data Process'.green, function () {
+		commons.beforeEachDes();
+		commons.beforeEachIt();
+		commons.afterEachDes();
 
-	it( 'should reset all data from actions screen.'.green, function ( done ) {
+		it( 'should wait for syncAllowed.'.green, function () {
+			return driver
+			.waitForElementByName( elements.mainMenuScreen.syncAllowed, 20000 )
+			.then( function () {
 
-		console.log( 'Reset All Data Automation...'.green );
-		driver
-		.waitForElementByName( elements.mainMenuScreen.syncAllowed, 20000 )
-		.elementByName( elements.mainMenuScreen.actions )
-		.click().sleep( 1000 )
-		.waitForElementByName( elements.actionsScreen.drafts, 20000 )
-		.sleep( 1000 )
-		.elementByName( elements.actionsScreen.resetData )
-		.isDisplayed()
-		.then( function ( resetData ) {
+				config.currentTest = 'passed';
+			} );
+		} );
 
-			if ( resetData === false ) {
-				return driver
-				.elementByName( elements.actionsScreen.about )
-				.getLocation()
-				.then( function ( loc ) {
+		it( 'Should go to Actions Screen'.green, function() {
+			
+			return driver
+			.waitForElementByName( elements.mainMenuScreen.syncAllowed, 180000 )
+			.elementByName( elements.mainMenuScreen.actions )
+			.click()
+			.sleep( 800 )
+			.then( function () {
 
-					return driver.swipe( {
-		              startX: loc.x, startY: loc.y,
-		              endX: loc.x, endY: loc.y - 500,
-		              duration: 800 
-		          	} );
-				} );
-			}
-		} )
-		.sleep ( 1000 )
-		.elementByName( elements.actionsScreen.resetData )
-		.click()
-		.sleep( 800 )
-		.elementByName( elements.alertButtons.deleteIt )
-		.click()
-		.waitForElementByName( elements.mainMenuScreen.syncAllowed, 180000 )
-		.then( function ( sync ) {
+				config.currentTest = 'passed';
+			} );
+		} );
 
-			if ( sync ) {
-				return driver
-				.elementByName( elements.mainMenuScreen.syncAllowed )
-				.click()
-				.sleep ( 2000 )
-				.elementByName( elements.mainMenuScreen.actions )
-				.isDisplayed()
-				.then( function ( mainMenuScreen ) {
+		it( 'should reset all data from actions screen.'.green, function () {
 
-					if ( !mainMenuScreen ) {
-						if ( commons.isIOS() ) {
-							return driver
-							.waitForElementByName( elements.jobsScreen.otherOptions.back, 10000 )
-							.click()
-							.sleep( 1000 );
+			return driver
+			.elementByName( elements.actionsScreen.resetData )
+			.isDisplayed()
+			.then( function ( resetData ) {
 
-						} else if ( commons.isAndroid() ) {
-							return driver
-							.back()
-							.sleep( 1000 );
-						}
-					}
-				} );
-			}
-			return driver;
-		} )
-		.then( function () {
+				if ( resetData === false ) {
+					return driver
+					.elementByName( elements.actionsScreen.about )
+					.getLocation()
+					.then( function ( loc ) {
 
-			console.log( 'Reset ALL Data has Completed....'.green );
+						return driver.swipe( {
+			              startX: loc.x, startY: loc.y,
+			              endX: loc.x, endY: loc.y - 500,
+			              duration: 800 
+			          	} );
+					} );
+				}
+			} )
+			.sleep ( 1000 )
+			.elementByName( elements.actionsScreen.resetData )
+			.click()
+			.sleep( 800 )
+			.then( function () {
+
+				return commons.alertText( alerts.actionsScreenAlerts.resetAllData.resetAllDataHeader );
+			} )
+			.elementByName( elements.alertButtons.deleteIt )
+			.click()
+			.then( function () {
+
+				config.currentTest = 'passed';
+			} );
+		} );
+
+		it( 'should be on mainMenuScreen from actionsScreen and wait for syncAllowed.'.green, function () {
+
+			return driver
+			.waitForElementByName( elements.mainMenuScreen.syncAllowed, 180000 )
+			.isDisplayed().should.eventually.be.true
+			.then( function () {
+
+				config.currentTest = 'passed';
+			} );
+		} );
+
+		it( 'should set currentTest to "passed"'.green, function ( done ) {
+			
+			console.log( 'resetAllData test has Psssed....'.green );
 			config.currentTest = 'passed';
 			done();
-	 	} );
+		} );
 	} );
-} );
+};

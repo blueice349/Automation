@@ -2,6 +2,7 @@
 require( './setup' );
 var assert   = require( 'assert' );
 var config   = require( './Config' );
+var Store    = require( './Store' );
 
 var Commons = function () {
 
@@ -158,6 +159,7 @@ Commons.prototype.beforeEachIt = function ( ) {
 			this.skip();
 
 		} else if ( config.currentTest == 'passed' || config.currentTest == 'notStarted' ) {
+			var lastUser = Store.get( 'lastUser' );
 			config.currentTest = 'testStarted';
 		}
 	} );
@@ -186,18 +188,26 @@ Commons.prototype.afterEachDes = function () {
 		
 		if ( config.currentTest != 'passed' && config.loginTest != true && config.logoutTest != true ) {
 			config.currentTest = 'notStarted';
+			config.resetApp = true;
 			return driver
 			.resetApp()
 			.sleep ( 1000 )
+			// .then( function () {
+
+			// 	var lastLogin = Store.get( 'lastLogin' );
+
+			// 	if ( lastLogin && lastLogin.loginTest ) {
+			// 		require( lastLogin.loginTest )();
+			// 	}
+			// } );
 			.then( function () {
 			
 				console.log( 'App Restarted due to Failed test... App will not restart if a failed login test was performed'.green );
 				return driver
-				.elementByName( elements.formScreen.actions )
-				.isDisplayed()
+				.elementByNameIfExists( elements.formScreen.actions )
 				.then( function ( actions ) {
 
-					if ( actions === true ) {
+					if ( actions ) {
 						if ( this.isIOS() ) {
 							return driver
 							.elementByName( elements.formScreen.back )
@@ -213,7 +223,7 @@ Commons.prototype.afterEachDes = function () {
 							console.log( 'Made sure test is back on the mainMenuScreen'.green );
 						}
 					} else if ( config.logoutTest === true ) {
-						driver
+						return driver
 						.elementByNameIfExists( elements.loginScreen.client_account )
 						.then( function ( loginScreen ) {
 

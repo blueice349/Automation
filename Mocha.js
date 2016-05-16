@@ -52,6 +52,16 @@ for ( var i in args ) {
 			break;
 		}
 
+		case '-reset' : {
+			if ( args[ i + 1 ] !== undefined ) {
+				config.set( {
+					'reset' : true
+				} );
+			}
+
+			break;
+		}
+
 		case '-os' : {
 			if ( args[ i + 1 ] !== undefined ) {
 				desired = require( './helpers/caps' )[ args[ i + 1 ] ];
@@ -97,7 +107,7 @@ var driver = wd.promiseChainRemote( serverConfigs.local );
 config.set( {
 	'driver'   : driver,
 	'elements' : elements
-} );
+} );;
 
 describe( 'Automation Test in Progress!'.green, function () {
 
@@ -115,15 +125,19 @@ describe( 'Automation Test in Progress!'.green, function () {
 
 		var run = require( './Test.js' );
 
-			run.logins( 'driver2' );
-			run.jobsScreen( 'acceptJob' );
-			run.jobsScreen( 'drivingToJob' );
-			run.jobsScreen( 'arrivedAtJob' );
-			run.jobsScreen( 'towingJob' );
-			run.jobsScreen( 'arrivedDestination' );
-			run.jobsScreen( 'jobComplete' );
+			run.logins( 'driver1' );
+			run.logins( 'clockin' );
+			run.logins( 'selectVehicle' );
+			//run.mainMenuScreen( 'mainMenuItems' );
+			// run.jobsScreen( 'acceptJob' );
+			// run.jobsScreen( 'drivingToJob' );
+			// run.jobsScreen( 'arrivedAtJob' );
+			// run.jobsScreen( 'towingJob' );
+			// run.jobsScreen( 'arrivedDestination' );
+			// run.jobsScreen( 'jobComplete' );
 			// run.restrictions( 'licensePlate' );
 			// run.newNodes( 'required' );
+			//run.expiredTags( 'newTag;' );
 			// run.newNodes( 'conditionallyRequired' );
 			// run.newNodes( 'nodeToDrafts1' );
 			// run.newNodes( 'nodeToDrafts2' );
@@ -133,9 +147,21 @@ describe( 'Automation Test in Progress!'.green, function () {
 			// run.actionsScreen( 'companyVehicle' );
 			// run.actionsScreen( 'clockInOut' );
 			// run.actionsScreen( 'aboutButton' );
-			run.mainMenuScreen( 'logout' );
+			//run.mainMenuScreen( 'logout' );
 			// run.logins( 'client1' );
+			// run.mainMenuScreen( 'mainMenuItems' );
+			//run.expiredTags( 'newTag;' );
+			// run.actionsScreen( 'resetAllData' );
+			// run.actionsScreen( 'aboutButton' );
 			// run.restrictions( 'clientDoNotTow' );
+			// run.mainMenuScreen( 'logout' );
+			// run.logins( 'driver1' );
+			// run.logins( 'selectVehicle' );
+			// run.logins( 'loginOptions' );
+			// run.mainMenuScreen( 'mainMenuItems' );
+			run.actionsScreen( 'logout' );
+			// run.logins( 'client2' );
+			// run.mainMenuScreen( 'mainMenuItems' );
 			// run.actionsScreen( 'logout' );
 	} );
 } );

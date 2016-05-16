@@ -11,7 +11,7 @@ var driver = config.driver;
 
 describe( 'Start Create New Mobile Mike Node and Save to Drafts'.green, function () {
 
-	it( 'Should Create New Node from mainMenuScreen Save to Drafts'.green, function ( done ) {
+	it( 'Should Create New Node from mainMenuScreen Save to Drafts'.green, function () {
 		var lastUser = Store.get( 'lastUser' );
 		driver
 		.waitForElementByName( elements.mainMenuScreen.syncAllowed, 20000 )
@@ -67,7 +67,6 @@ describe( 'Start Create New Mobile Mike Node and Save to Drafts'.green, function
 
 			console.log( 'Adding a New Node to Drafts has Completed....'.green );
 			config.currentTest = 'passed';
-			done();
 	 	} );
 	} );
 } );

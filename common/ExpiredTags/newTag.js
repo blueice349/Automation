@@ -1,25 +1,42 @@
 'use strict';
 
-require( 'colors' );
-var config   = require( '../../helpers/Config' );
-var elements = require( '../../helpers/elements' );
-var commons  = require( '../../helpers/Commons' );
-var Store    = require( '../../helpers/Store' );
+module.exports = function () {
 
-var driver = config.driver;
+	require( 'colors' );
+	require( '../../helpers/setup' );
+	var alerts    = require( '../../helpers/alerts' );
+	var caps      = require( '../../helpers/caps' );
+	var config    = require( '../../helpers/Config' );
+	var commons   = require( '../../helpers/Commons' );
+	var elements  = require( '../../helpers/elements' );
+	var login     = require( '../../helpers/loginTable' );
+	var Store     = require( '../../helpers/Store' );
+	var driver    = config.driver;
+	var canCreate = false;
 
+	describe( 'Start Create New Tag Node and save'.green, function () {
 
-describe( 'Start Create New Expired Tag Node and save'.green, function () {
+		it( 'Should check userRole '.green, function () {
 
-	it( 'Should Create New Tag from mainMenuScreen Save'.green, function ( done ) {
-		var lastUser = Store.get( 'lastUser' );
-		driver
-		.waitForElementByName( elements.mainMenuScreen.syncAllowed, 20000 )
-		
-		.then( function ( mobileMike ) {
+			return driver
+			.waitForElementByName( elements.mainMenuScreen.syncAllowed, 20000 )
+			.then( function () {
 
-			if ( lastUser.userRole === 'admin' || lastUser.userRole === 'driver'  ) {
-				console.log( 'User is Allowed to add a New Redord'.red );
+				if ( Store.get( 'lastUser' )userRole === 'admin' || Store.get( 'lastUser' )userRole === 'driver'  ) {
+					console.log( 'User is Allowed to add a New Redord'.red );
+					canCreate = true;
+					config.currentTest = 'passed';
+
+				} else {
+					console.log( 'Current User Does Not Have The Option to Add a New Tag'.red );
+					config.currentTest = 'passed';
+				}
+			} );
+		} );
+
+		it( 'Should create new tagRecord from mainMenuScreen'.green, function () {
+			
+			if( canCreate === true ) {
 				return driver
 				.elementByName( elements.tagRecord.tag + elements.mainMenuScreen.plusButton )
 				.click()
@@ -36,7 +53,7 @@ describe( 'Start Create New Expired Tag Node and save'.green, function () {
 				.then( function ( licensePlate ) {
 
 					if ( licensePlate ) {
-						return commons.sendKeys( licensePlate, 'Test' )
+						return commons.sendKeys( licensePlate, 'Test123' )
 						.sleep( 1000 );
 					}
 				} )
@@ -57,27 +74,24 @@ describe( 'Start Create New Expired Tag Node and save'.green, function () {
 						.click()
 						.sleep( 1000 );
 					}
-				} );
-			} else {
-				console.log( 'Current User Does Not Have The Option to Add a New Tag'.red );
-			}
-			return driver;
-		} ) 
-		.waitForElementByName( elements.mainMenuScreen.syncAllowed, 20000 )
-		.then( function ( sync ) {
-			if ( sync ) {
-				return driver
-				.elementByName( elements.mainMenuScreen.syncAllowed )
-				.click()
-				.sleep ( 2000 );
-			}
-			return driver;
-		} )
-		.then( function () {
+				} )
+				.sleep( 80 )
+				.then( function () {
 
-			console.log( 'Adding a New Tag has Completed....'.green );
+					config.currentTest = 'passed';
+				} );
+
+			} else {
+				console.log( 'User does not have access to create a tagRecord'.red );
+				config.currentTest = 'passed';
+			}
+		} );
+
+		it( 'should set currentTest to "passed"'.green, function ( done ) {
+		
+			console.log( 'Create New tagRecord test has Passed....'.green );
 			config.currentTest = 'passed';
 			done();
-	 	} );
+		} );
 	} );
-} );
+};

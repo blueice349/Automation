@@ -1,120 +1,177 @@
 'use strict';
 
-require( 'colors' );
-var config   = require( '../../../helpers/Config' );
-var elements = require( '../../../helpers/elements' );
-var commons  = require( '../../../helpers/Commons' );
-var Store    = require( '../../../helpers/Store' );
+module.exports = function () {
 
-var driver = config.driver;
+	require( 'colors' );
+	require( '../../../helpers/setup' );
+	var alerts   = require( '../../../helpers/alerts' );
+	var assert   = require( 'assert' );
+	var caps     = require( '../../../helpers/caps' );
+	var config   = require( '../../../helpers/Config' );
+	var commons  = require( '../../../helpers/Commons' );
+	var elements = require( '../../../helpers/elements' );
+	var login    = require( '../../../helpers/loginTable' );
+	var Store    = require( '../../../helpers/Store' );
+	var driver = config.driver;
 
+	describe( 'Start Delete Draft(s) Process'.green, function () {
 
-describe( 'Start Delete Draft(s) Process'.green, function () {
+		commons.beforeEachDes();
+		commons.beforeEachIt();
+		commons.afterEachDes();
 
-	it( 'Should delete draft(s) from the actions--> drafts screen.'.green, function ( done ) {
-		var lastUser = Store.get( 'lastUser' );
-		driver
-		.waitForElementByName( elements.mainMenuScreen.syncAllowed, 180000 )
-		.elementByName( elements.mainMenuScreen.actions )
-		.click()
-		.sleep( 800 )
-		.elementByName( elements.actionsScreen.drafts )
-		.click()
-		.sleep( 800 )
-		.elementByNameIfExists( commons.getItem( elements.draftsScreen.draft, 0 ) )
-		.then( function ( drafts ) {
+		it( 'should wait for syncAllowed.'.green, function () {
+			return driver
+			.waitForElementByName( elements.mainMenuScreen.syncAllowed, 20000 )
+			.then( function () {
 
-			if ( drafts ) {
-				return drafts
-				.click()
-				.sleep( 1000 )
-				.waitForElementByName( elements.alertButtons.deleteRecord, 10000 )
-				.click()
-				.sleep( 2000 )
-				.then( function () {
+				config.currentTest = 'passed';
+			} );
+		} );
+		
+		it( 'Should go to Actions Screen'.green, function() {
+			
+			return driver
+			.waitForElementByName( elements.mainMenuScreen.syncAllowed, 180000 )
+			.elementByName( elements.mainMenuScreen.actions )
+			.click()
+			.sleep( 800 )
+			.then( function () {
 
-					if ( commons.isIOS() ) {
-						return driver
-						.elementByName( elements.draftsScreen.back )
-						.click()
-						.sleep( 1000 );
+				config.currentTest = 'passed';
+			} );
+		} );
 
-					} else if ( commons.isAndroid() ) {
-						return driver
-						.hideKeyboard().sleep ( 200 )
-						.back()
-						.sleep( 1000 );
-					}
-				} );
+		it( 'Should go to the drafts Screen from the actions screen.'.green, function () {
 
-			} else {
-				console.log( 'No Drafts to Delete.'.red);
-				if ( commons.isIOS() ) {
-					return driver
-					.elementByName( elements.draftsScreen.back )
+			return driver
+			.elementByName( elements.actionsScreen.drafts )
+			.click()
+			.sleep( 800 )
+			.then( function () {
+
+				config.currentTest = 'passed';
+			} );
+		} );
+
+		it( 'Should delete draft(s) from actions screen --> drafts screen.'.green, function () {
+
+			return driver
+			.elementByNameIfExists( commons.getItem( elements.draftsScreen.draft, 0 ) )
+			.then( function ( drafts ) {
+
+				if ( drafts ) {
+					return drafts
 					.click()
-					.sleep( 1000 );
+					.sleep( 1000 )
+					.waitForElementByName( elements.alertButtons.deleteRecord, 10000 )
+					.click()
+					.sleep( 2000 )
+					.then( function () {
 
-				} else if ( commons.isAndroid() ) {
-					return driver
-					.back()
-					.sleep( 1000 );
+						config.currentTest = 'passed';
+					} );
+
+				} else {
+					console.log( 'No Drafts to Delete.'.red);
+					config.currentTest = 'passed';
 				}
-				return driver;
-			}
-			return driver;
-		} ) 
-		.waitForElementByName( elements.actionsScreen.drafts, 180000 )
-		.then( function () {
+			} )
+		} );
 
+		it( 'Should go back to the actionsScreen from draftsScreen.'.green, function () {
+			
 			if ( commons.isIOS() ) {
 				return driver
-				.elementByName( elements.actionsScreen.back )
+				.elementByName( elements.draftsScreen.back )
 				.click()
-				.sleep( 1000 );
+				.sleep( 1000 )
+				.then( function () {
+
+					config.currentTest = 'passed';
+				} );
 
 			} else if ( commons.isAndroid() ) {
 				return driver
-				.waitForElementByName( elements.actionsScreen.drafts, 3000 )
-				.sleep( 200 )
+				.hideKeyboard().sleep ( 200 )
 				.back()
-				.sleep( 1000 );
-			}
-		} )
-		.waitForElementByName( elements.mainMenuScreen.syncAllowed )
-		.then( function ( sync ) {
+				.sleep( 1000 )
+				.then( function () {
 
-			if ( sync ) {
-				return driver
-				.elementByName( elements.mainMenuScreen.syncAllowed )
-				.click()
-				.sleep ( 2000 )
-				.elementByName( elements.mainMenuScreen.actions )
-				.isDisplayed()
-				.then( function ( mainMenuScreen ) {
-
-					if ( !mainMenuScreen ) {
-						if ( commons.isIOS() ) {
-							return driver
-							.waitForElementByName( elements.jobsScreen.otherOptions.back, 10000 )
-							.click()
-							.sleep( 1000 );
-
-						} else if ( commons.isAndroid() ) {
-							return driver
-							.back()
-							.sleep( 1000 );
-						}
-					}
+					config.currentTest = 'passed';
 				} );
 			}
-			return driver;
-			} )
-		.then( function () {
+		} );
 
-			console.log( 'Accepted a Job has Completed....'.green );
+		it( 'Should go back to the mainMenuScreen from actionsScreen.'.green, function() {
+
+			return driver
+			.waitForElementByName( elements.actionsScreen.drafts, 180000 )
+			.then( function () {
+
+				if ( commons.isIOS() ) {
+					return driver
+					.elementByName( elements.actionsScreen.back )
+					.click()
+					.sleep( 1000 )
+					.then( function () {
+
+					config.currentTest = 'passed';
+				} );
+
+				} else if ( commons.isAndroid() ) {
+					return driver
+					.waitForElementByName( elements.actionsScreen.drafts, 3000 )
+					.sleep( 200 )
+					.back()
+					.sleep( 1000 )
+					.then( function () {
+
+					config.currentTest = 'passed';
+				} );
+				}
+			} )
+
+			.waitForElementByName( elements.mainMenuScreen.syncAllowed )
+			.then( function ( sync ) {
+
+				if ( sync ) {
+					return driver
+					.elementByName( elements.mainMenuScreen.syncAllowed )
+					.click()
+					.sleep ( 2000 )
+					.elementByName( elements.mainMenuScreen.actions )
+					.isDisplayed()
+					.then( function ( mainMenuScreen ) {
+
+						if ( !mainMenuScreen ) {
+							if ( commons.isIOS() ) {
+								return driver
+								.waitForElementByName( elements.jobsScreen.otherOptions.back, 10000 )
+								.click()
+								.sleep( 1000 );
+
+							} else if ( commons.isAndroid() ) {
+								return driver
+								.back()
+								.sleep( 1000 );
+							}
+						}
+					} );
+				}
+			} )
+			return driver
+			.then( function () {
+
+				config.currentTest = 'passed';
+			} );
+		} );
+
+		it( 'should set currentTest to "passed"'.green, function ( done ) {
+			
+			console.log( 'Delete a Draft has Psssed....'.green );
 			config.currentTest = 'passed';
 			done();
-	 	} );
+		} );
 	} );
-} );
+};

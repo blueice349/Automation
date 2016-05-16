@@ -1,59 +1,104 @@
 'use strict';
 
-require( 'colors' );
-var config   = require( '../../helpers/Config' );
-var elements = require( '../../helpers/elements' );
-var commons  = require( '../../helpers/Commons' );
-var Store    = require( '../../helpers/Store' );
+module.exports = function () {
 
-var driver = config.driver;
+	require( 'colors' );
+	var config   = require( '../../helpers/Config' );
+	var elements = require( '../../helpers/elements' );
+	var commons  = require( '../../helpers/Commons' );
+	var Store    = require( '../../helpers/Store' );
+	var driver = config.driver;
+	var lastUser = Store.get( 'lastUser' );
 
+	describe( 'Start About Page Process'.green, function () {
 
-describe( 'Start About Page Process'.green, function () {
+		commons.beforeEachDes();
+		commons.beforeEachIt();
+		commons.afterEachDes();
 
-	it( 'should go to about from actions screen.'.green, function ( done ) {
-		var lastUser = Store.get( 'lastUser' );
-		console.log( 'About App Automation...'.green );
-		driver
-		.waitForElementByName( elements.mainMenuScreen.syncAllowed, 20000 )
-		.elementByName( elements.mainMenuScreen.actions )
-		.click().sleep( 1000 )
-		.waitForElementByName( elements.actionsScreen.drafts, 20000 )
-		.elementByName( elements.actionsScreen.about )
-		.click()
-		.sleep( 1000 )
-		.then( function () {
+		it( 'Should go to Actions Screen from mainMenuScreen'.green, function() {
+			
+			return driver
+			.waitForElementByName( elements.mainMenuScreen.syncAllowed, 180000 )
+			.elementByName( elements.mainMenuScreen.actions )
+			.click()
+			.sleep( 800 )
+			.then( function () {
+
+				config.currentTest = 'passed';
+			} );
+		} );
+
+		it( 'should go to aboutScreen from actions screen.'.green, function () {
+
+			return driver
+			.waitForElementByName( elements.actionsScreen.drafts, 20000 )
+			.isDisplayed().should.eventually.be.true
+			.elementByName( elements.actionsScreen.about )
+			.click()
+			.sleep( 1000 )
+			.then( function () {
+
+				config.currentTest = 'passed';
+			} );
+		} );
+
+		it( 'should go back to the actionsScreen from aboutScreen.'.green, function () {
 
 			if ( commons.isIOS() ) {
 				return driver
 				.waitForElementByName( elements.aboutScreen.back, 10000 )
+				.isDisplayed().should.eventually.be.true
+				.elementByName( elements.aboutScreen.back )
 				.click()
-				.waitForElementByName( elements.actionsScreen.back, 180000 )
-				.click();
+				.then( function () {
+
+					config.currentTest = 'passed';
+				} );
 
 			} else if ( commons.isAndroid() ) {
 				return driver
 				.back()
 				.waitForElementByName( elements.actionsScreen.drafts, 20000 )
-				.back().sleep( 100 );
-			}
-		} )
-		.elementByNameIfExists( elements.mainMenuScreen.syncAllowed )
-		.then( function ( sync ) {
+				.isDisplayed().should.eventually.be.true
+				.then( function () {
 
-			if ( sync ) {
+					config.currentTest = 'passed';
+				} );
+			}
+		} );
+
+		it( 'should goo back to the mainMenuScreen from actionsScreen.'.green, function () {
+
+			if ( commons.isIOS() ) {
 				return driver
-				.elementByName( elements.mainMenuScreen.syncAllowed )
+				.waitForElementByName( elements.actionsScreen.back, 180000 )
+				.isDisplayed().should.eventually.be.true
+				.elementByName( elements.actionsScreen.back )
 				.click()
-				.sleep ( 2000 );
-			}
-			return driver;
-		} )
-		.then( function () {
+				.then( function () {
 
-			console.log( 'Logged out of Vehicle has Completed....'.green );
+					config.currentTest = 'passed';
+				} );
+
+			} else if ( commons.isAndroid() ) {
+				return driver
+				.waitForElementByName( elements.actionsScreen.drafts, 20000 )
+				.isDisplayed().should.eventually.be.true
+				.back().sleep( 100 )
+				.then( function () {
+
+					config.currentTest = 'passed';
+				} );
+			}
+		} );
+		
+
+		it( 'should set currentTest to "passed".'.green, function ( done ) {
+			
+			console.log( 'go to aboutScreen test has Completed....'.green );
 			config.currentTest = 'passed';
 			done();
-	 	} );
+		} );
 	} );
-} );
+};
