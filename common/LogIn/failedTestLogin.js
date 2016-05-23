@@ -56,7 +56,7 @@ var reSetLogin = function () {
 			} )
 		 }
 	} )
-	.waitForElementByName( elements.mainMenuScreen.syncAllowed, 180000 )
+	.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
 	.sleep( 1000 )
 	//.sleep( 80000 )
 	.elementByNameIfExists( elements.companyVehicle.vehicle1 )
@@ -93,11 +93,11 @@ var reSetLogin = function () {
 							return ok
 							.click()
 							.sleep( 1000 )
-							.elementByName( elements.mainMenuScreen.actions )
+							.elementByName( elements.homeScreen.actions )
 							.isDisplayed()
-							.then( function ( mainMenuScreen ) {
+							.then( function ( homeScreen ) {
 
-								if ( !mainMenuScreen ) {
+								if ( !homeScreen ) {
 									return driver
 									.elementByName( elements.jobsScreen.otherOptions.back )
 									.click();
@@ -116,11 +116,11 @@ var reSetLogin = function () {
 							return ok
 							.click()
 							.sleep( 1000 )
-							.elementByName( elements.mainMenuScreen.actions )
+							.elementByName( elements.homeScreen.actions )
 							.isDisplayed()
-							.then( function ( mainMenuScreen ) {
+							.then( function ( homeScreen ) {
 
-								if ( !mainMenuScreen ) {
+								if ( !homeScreen ) {
 									return driver
 									.waitForElementByName( elements.jobsScreen.otherOptions.back, 10000 )
 									.click();
@@ -130,11 +130,11 @@ var reSetLogin = function () {
 						} else {
 							console.log( 'No Clock in & No Inspection Option IOS.'.red ); 
 							return driver
-							.elementByName( elements.mainMenuScreen.actions )
+							.elementByName( elements.homeScreen.actions )
 							.isDisplayed()
-							.then( function ( mainMenuScreen ) {
+							.then( function ( homeScreen ) {
 
-								if ( !mainMenuScreen ) {
+								if ( !homeScreen ) {
 									return driver
 									.waitForElementByName( elements.jobsScreen.otherOptions.back, 10000 )
 									.click();
@@ -166,10 +166,10 @@ var reSetLogin = function () {
 						}
 						return driver;
 					} )
-					.elementByNameIfExists( elements.mainMenuScreen.actions )
-					.then( function ( mainMenuScreen ) {
+					.elementByNameIfExists( elements.homeScreen.actions )
+					.then( function ( homeScreen ) {
 
-						if ( !mainMenuScreen ) {
+						if ( !homeScreen ) {
 							return driver
 							.back();
 						}
@@ -185,10 +185,10 @@ var reSetLogin = function () {
 							console.log( 'Clock in option with No Inspection Andoid'.red );
 							return clockIn
 							.click().sleep( 1000 )
-							.elementByNameIfExists( elements.mainMenuScreen.actions )
-							.then( function ( mainMenuScreen ) {
+							.elementByNameIfExists( elements.homeScreen.actions )
+							.then( function ( homeScreen ) {
 
-								if ( !mainMenuScreen ) {
+								if ( !homeScreen ) {
 									return driver
 									.back();
 								}
@@ -197,10 +197,10 @@ var reSetLogin = function () {
 						} else {
 							console.log( 'No Clock in option and No Inspection Andoid'.red );
 							return driver
-							.elementByNameIfExists( elements.mainMenuScreen.actions )
-							.then( function ( mainMenuScreen ) {
+							.elementByNameIfExists( elements.homeScreen.actions )
+							.then( function ( homeScreen ) {
 
-								if ( !mainMenuScreen ) {
+								if ( !homeScreen ) {
 									return driver
 									.back();
 								}
@@ -212,8 +212,8 @@ var reSetLogin = function () {
 			} )
 		}
 	} )
-	//.waitForElementByName( 'PPI' + elements.mainMenuScreen.plus_Button, 20000 )
-	.waitForElementByName( elements.mainMenuScreen.syncAllowed, 180000 )
+	//.waitForElementByName( 'PPI' + elements.homeScreen.plus_Button, 20000 )
+	.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
 	.then( function() {
 
 		console.log( 'Failed Test Login Completed...'.red );

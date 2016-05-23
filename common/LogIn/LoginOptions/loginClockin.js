@@ -25,18 +25,17 @@ module.exports = function () {
 			if ( lastUser.userRole === 'client' || lastUser.userRole === 'AdminClient' || lastUser.clockInOption === false ) {
 				console.log( lastUser.userRole.red + ' does not have clockInOptions'.red ); 
 				config.currentTest = 'passed';
-				config.clockedIn   = false;
 
-			} else if ( lastUser.clockInOption === true ) {
+			} else if ( lastUser.clockInOption === true && config.isClockedin != true ) {
 				console.log( lastUser.userRole.red + ' Has clockInOptions'.red );
-				return commons.alertText( alerts.loginAlerts.clockin )
-				.waitForElementByName( elements.alertButtons.clockIn, 180000 )
+				return commons.alertText( alerts.loginLogoutAlerts.clockin )
+				.waitForElementByName( elements.alertButtons.clockIn, 120000 )
 			    .click()
 			    .sleep( 1000 )
 				.then( function () {
 
 					config.currentTest = 'passed';
-					config.clockedIn   = true;
+					config.isClockedin = true;
 				} );
 			}
 		} );

@@ -25,12 +25,13 @@ module.exports = function () {
 			if ( lastUser.truckOption === true && lastUser.userRole != 'client' && lastUser.userRole != 'AdminClient' ) {
 				console.log( 'Select Vehicle'.red );
 				return driver
-				.waitForElementByName( elements.companyVehicle.vehicle1, 180000 )
+				.waitForElementByName( elements.companyVehicle.vehicle1, 120000 )
 				.click()
 				.sleep( 1000 )
 				.then( function () {
 
 				config.currentTest = 'passed';
+				config.isInVehicle = true;
 				} );
 
 			} else {
@@ -44,15 +45,15 @@ module.exports = function () {
 			var lastUser = Store.get( 'lastUser' );
 			if ( lastUser.truckOption === true && lastUser.userRole != 'client' && lastUser.userRole != 'AdminClient' ) {
 				driver.sleep( 600 )
-				return commons.alertText( alerts.loginAlerts.noInspectionReviewHeader )
-				.waitForElementByName( elements.alertButtons.ok, 180000 )
+				return commons.alertText( alerts.loginLogoutAlerts.noInspectionReviewHeader )
+				.waitForElementByName( elements.alertButtons.ok, 120000 )
 				.click()
 				.sleep( 1000 )
-				.elementByName( elements.mainMenuScreen.actions )
+				.elementByName( elements.homeScreen.actions )
 				.isDisplayed()
-				.then( function ( mainMenuScreen ) {
+				.then( function ( homeScreen ) {
 
-					if ( !mainMenuScreen ) {
+					if ( !homeScreen ) {
 						return driver
 						.waitForElementByName( elements.jobsScreen.otherOptions.back, 10000 )
 						.click();

@@ -125,42 +125,50 @@ describe( 'Automation Test in Progress!'.green, function () {
 
 		var run = require( './TestFiles.js' );
 
+			/* Driver login with truck and clockin options */
+
 			run.logins( 'driver1' );
 			run.logins( 'clockin' );
 			run.logins( 'selectVehicle' );
-			run.mainMenuScreen( 'mainMenuItems' );
-			run.jobsScreen( 'acceptJob' );
-			run.jobsScreen( 'drivingToJob' );
-			run.jobsScreen( 'arrivedAtJob' );
-			run.jobsScreen( 'towingJob' );
-			run.jobsScreen( 'arrivedDestination' );
-			run.jobsScreen( 'jobComplete' );
+			run.homeScreen( 'homeScreeItems' );
+			// run.jobsScreen( 'acceptJob' );
+			// run.jobsScreen( 'drivingToJob' );
+			// run.jobsScreen( 'arrivedAtJob' );
+			// run.jobsScreen( 'towingJob' );
+			// run.jobsScreen( 'arrivedDestination' );
+			// run.jobsScreen( 'jobComplete' );
 			// run.restrictions( 'licensePlate' );
 			// run.newNodes( 'required' );
 			//run.expiredTags( 'newTag;' );
 			// run.newNodes( 'conditionallyRequired' );
 			// run.newNodes( 'nodeToDrafts1' );
 			// run.newNodes( 'nodeToDrafts2' );
-			run.actionsScreen( 'draftSave' );
-			run.actionsScreen( 'draftDelete' );
-			run.actionsScreen( 'resetAllData' );
-			run.actionsScreen( 'companyVehicle' );
-			run.actionsScreen( 'clockInOut' );
-			run.actionsScreen( 'aboutButton' );
-			run.mainMenuScreen( 'logout' );
-			run.logins( 'client1' );
-			run.mainMenuScreen( 'mainMenuItems' );
-			//run.expiredTags( 'newTag;' );
+			// run.actionsScreen( 'draftSave' );
+			// run.actionsScreen( 'draftDelete' );
 			// run.actionsScreen( 'resetAllData' );
+			// run.actionsScreen( 'removeVehicle' );
+			// run.actionsScreen( 'selectVehicle' );
+			// run.actionsScreen( 'clockout' );
+			// run.actionsScreen( 'clockin' );
+			run.actionsScreen( 'clockout' );
 			// run.actionsScreen( 'aboutButton' );
-			// run.restrictions( 'clientDoNotTow' );
-			run.mainMenuScreen( 'logout' );
-			run.logins( 'driver1' );
-			run.logins( 'clockin' );
-			run.logins( 'selectVehicle' );
-			run.actionsScreen( 'logout' );
-			run.logins( 'client2' );
-			run.mainMenuScreen( 'mainMenuItems' );
-			run.actionsScreen( 'logout' );
+			run.homeScreen( 'logout' );
+
+			/* Client1 login */
+
+			// run.logins( 'client1' );
+			// run.homeScreen( 'homeScreeItems' );
+			// //run.expiredTags( 'newTag;' );
+			// // run.actionsScreen( 'resetAllData' );
+			// // run.actionsScreen( 'aboutButton' );
+			// // run.restrictions( 'clientDoNotTow' );
+			// run.homeScreen( 'logout' );
+			// run.logins( 'driver1' );
+			// run.logins( 'clockin' );
+			// run.logins( 'selectVehicle' );
+			// run.actionsScreen( 'logout' );
+			// run.logins( 'client2' );
+			// run.homeScreen( 'homeScreeItems' );
+			// run.actionsScreen( 'logout' );
 	} );
 } );

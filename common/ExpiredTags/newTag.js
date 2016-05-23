@@ -19,7 +19,7 @@ module.exports = function () {
 		it( 'Should check userRole '.green, function () {
 
 			return driver
-			.waitForElementByName( elements.mainMenuScreen.syncAllowed, 20000 )
+			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
 			.then( function () {
 
 				if ( Store.get( 'lastUser' )userRole === 'admin' || Store.get( 'lastUser' )userRole === 'driver'  ) {
@@ -34,11 +34,11 @@ module.exports = function () {
 			} );
 		} );
 
-		it( 'Should create new tagRecord from mainMenuScreen'.green, function () {
+		it( 'Should create new tagRecord from homeScreen'.green, function () {
 			
 			if( canCreate === true ) {
 				return driver
-				.elementByName( elements.tagRecord.tag + elements.mainMenuScreen.plusButton )
+				.elementByName( elements.tagRecord.tag + elements.homeScreen.plusButton )
 				.click()
 				.sleep( 1000 )
 				.elementByName( elements.tagRecord.propertyRef.property )

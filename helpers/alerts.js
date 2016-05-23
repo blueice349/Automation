@@ -1,12 +1,12 @@
-exports.loginAlerts = {
+exports.loginLogoutAlerts = {
 'iosNotification'           : '“Omadi” Would Like to Send You Notifications Notifications may include alerts, sounds, and icon badges. These can be configured in Settings.',
 'iosGps'                    : 'Allow “Omadi” to access your location even when you are not using the app? Allows detection of geofence breaches while the device is locked.',
 'androidGps'                : 'Allow Omadi to access this device\'s location?',
 'vehicle'                   : 'Which Vehicle Will You Drive?',
 'noInspectionReviewHeader'  : 'No inspection to review',
 'noInspectionReviewDetail'  : 'Somebody failed to do their post-shift inspection or it has not synced to this device.',
-'doInspection'              : 'Do Post-Shift Inspections?',
-'noInspection'              : '',
+'doInspection'              : 'Do Post-Shift Inspection?',
+'noInspection'              : 'No inspection to review',
 'clockin'                   : 'Clock In Now?'
 
 }

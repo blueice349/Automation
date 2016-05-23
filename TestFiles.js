@@ -52,7 +52,7 @@ module.exports.newNodes = function ( newNodes ) {
 
 	switch ( newNodes ) {
 		case 'newNode'                :
-			return require( './common/NewNodes/newNodeMainMenu.js' )();
+			return require( './common/NewNodes/newNodeHomeScreen.js' )();
 		case 'nodeToDrafts1'          :
 			return require( './common/NewNodes/newNodeToDrafts1.js' )();
 		case 'nodeToDrafts2'          :
@@ -74,12 +74,16 @@ module.exports.actionsScreen = function ( actionsScreen ) {
 			return require( './common/ActionsScreen/Drafts/draftSave.js' )();
 		case 'resetAllData'  :
 			return require( './common/ActionsScreen/resetAllData.js' )();
-		case 'companyVehicle':
-			return require( './common/ActionsScreen/companyVehicle.js' )();
-		case 'clockInOut'    :
-			return require( './common/ActionsScreen/clockInOut.js' )();
+		case 'selectVehicle':
+			return require( './common/ActionsScreen/CompanyVehicle/actionsSelectVehicle.js' )();
+		case 'removeVehicle':
+			return require( './common/ActionsScreen/CompanyVehicle/actionsRemoveVehicle.js' )();
+		case 'clockin'      :
+			return require( './common/ActionsScreen/TimeCard/actionsClockin.js' )();
+		case 'clockout'      :
+			return require( './common/ActionsScreen/TimeCard/actionsClockout.js' )();	
 		case 'logout'        :
-			return require( './common/ActionsScreen/logout.js' )();
+			return require( './common/ActionsScreen/actionsLogout.js' )();
 		case 'aboutButton'   :
 			return require( './common/ActionsScreen/aboutButton.js' )();
 	}
@@ -106,13 +110,13 @@ module.exports.expiredTags = function ( expiredTags ) {
 		console.log( 'No test case was selcected!' );
 };
 
-module.exports.mainMenuScreen = function ( mainMenuScreen ) {
+module.exports.homeScreen = function ( homeScreen ) {
 
-	switch ( mainMenuScreen ) {
+	switch ( homeScreen ) {
 		case 'logout'        :
-			return require( './common/MainMenuScreen/logout.js' )();
-		case 'mainMenuItems' :
-			return require( './common/MainMenuScreen/mainMenuItems.js' )();
+			return require( './common/HomeScreen/homeScreenLogout.js' )();
+		case 'homeScreeItems' :
+			return require( './common/HomeScreen/homeScreenItems.js' )();
 	}
 	console.log( 'No test case was selcected!' );
 };

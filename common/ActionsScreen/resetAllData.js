@@ -22,7 +22,7 @@ module.exports = function () {
 
 		it( 'should wait for syncAllowed.'.green, function () {
 			return driver
-			.waitForElementByName( elements.mainMenuScreen.syncAllowed, 20000 )
+			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
 			.then( function () {
 
 				config.currentTest = 'passed';
@@ -32,8 +32,8 @@ module.exports = function () {
 		it( 'Should go to Actions Screen'.green, function() {
 			
 			return driver
-			.waitForElementByName( elements.mainMenuScreen.syncAllowed, 180000 )
-			.elementByName( elements.mainMenuScreen.actions )
+			.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
+			.elementByName( elements.homeScreen.actions )
 			.click()
 			.sleep( 800 )
 			.then( function () {
@@ -79,10 +79,10 @@ module.exports = function () {
 			} );
 		} );
 
-		it( 'should be on mainMenuScreen from actionsScreen and wait for syncAllowed.'.green, function () {
+		it( 'should be on homeScreen from actionsScreen and wait for syncAllowed.'.green, function () {
 
 			return driver
-			.waitForElementByName( elements.mainMenuScreen.syncAllowed, 180000 )
+			.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
 			.isDisplayed().should.eventually.be.true
 			.then( function () {
 

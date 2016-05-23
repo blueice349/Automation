@@ -22,7 +22,7 @@ module.exports = function () {
 
 		it( 'should wait for syncAllowed.'.green, function () {
 			return driver
-			.waitForElementByName( elements.mainMenuScreen.syncAllowed, 20000 )
+			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
 			.then( function () {
 
 				config.currentTest = 'passed';
@@ -32,8 +32,8 @@ module.exports = function () {
 		it( 'Should go to Actions Screen'.green, function() {
 			
 			return driver
-			.waitForElementByName( elements.mainMenuScreen.syncAllowed, 180000 )
-			.elementByName( elements.mainMenuScreen.actions )
+			.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
+			.elementByName( elements.homeScreen.actions )
 			.click()
 			.sleep( 800 )
 			.then( function () {
@@ -103,10 +103,10 @@ module.exports = function () {
 			}
 		} );
 
-		it( 'Should go back to the mainMenuScreen from actionsScreen.'.green, function() {
+		it( 'Should go back to the homeScreen from actionsScreen.'.green, function() {
 
 			return driver
-			.waitForElementByName( elements.actionsScreen.drafts, 180000 )
+			.waitForElementByName( elements.actionsScreen.drafts, 120000 )
 			.then( function () {
 
 				if ( commons.isIOS() ) {
@@ -132,19 +132,19 @@ module.exports = function () {
 				}
 			} )
 
-			.waitForElementByName( elements.mainMenuScreen.syncAllowed )
+			.waitForElementByName( elements.homeScreen.syncAllowed )
 			.then( function ( sync ) {
 
 				if ( sync ) {
 					return driver
-					.elementByName( elements.mainMenuScreen.syncAllowed )
+					.elementByName( elements.homeScreen.syncAllowed )
 					.click()
 					.sleep ( 2000 )
-					.elementByName( elements.mainMenuScreen.actions )
+					.elementByName( elements.homeScreen.actions )
 					.isDisplayed()
-					.then( function ( mainMenuScreen ) {
+					.then( function ( homeScreen ) {
 
-						if ( !mainMenuScreen ) {
+						if ( !homeScreen ) {
 							if ( commons.isIOS() ) {
 								return driver
 								.waitForElementByName( elements.jobsScreen.otherOptions.back, 10000 )

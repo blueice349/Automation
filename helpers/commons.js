@@ -104,10 +104,10 @@ Commons.prototype.whereAmI = function () {
 			}
 		}
 		return driver
-		.waitForElementByName( elements.mainMenuScreen.syncAllowed, 180000 )
+		.waitForElementByName( elements.homeScreen.syncAllowed, 180000 )
 		.then( function () {
 		
-			console.log( 'Made sure test is back on the mainMenuScreen'.green );
+			console.log( 'Made sure test is back on the homeScreen'.green );
 			//assert.error( this.currentTest.state );
 		} )
 	} )
@@ -213,14 +213,14 @@ Commons.prototype.afterEachDes = function () {
 							.elementByName( elements.formScreen.back )
 							.click()
 							.sleep ( 1000 )
-							.waitForElementByName( elements.mainMenuScreen.syncAllowed, 180000 )
-							console.log( 'Made sure test is back on the mainMenuScreen'.green );
+							.waitForElementByName( elements.homeScreen.syncAllowed, 180000 )
+							console.log( 'Made sure test is back on the homeScreen'.green );
 						} else if ( this.isAndroid() ) { 
 							return driver
 							.back()
 							.sleep( 1000 )
-							.waitForElementByName( elements.mainMenuScreen.syncAllowed, 180000 )
-							console.log( 'Made sure test is back on the mainMenuScreen'.green );
+							.waitForElementByName( elements.homeScreen.syncAllowed, 180000 )
+							console.log( 'Made sure test is back on the homeScreen'.green );
 						}
 					} else if ( config.logoutTest === true ) {
 						return driver

@@ -12,10 +12,10 @@ module.exports = function () {
 
 	describe( 'Start Create New Mobile Mike Node and Save to Drafts'.green, function () {
 
-		it( 'Should Create New Node from mainMenuScreen Save to Drafts'.green, function () {
+		it( 'Should Create New Node from homeScreen Save to Drafts'.green, function () {
 			var lastUser = Store.get( 'lastUser' );
 			driver
-			.waitForElementByName( elements.mainMenuScreen.syncAllowed, 20000 )
+			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
 			.then( function ( mobileMike ) {
 
 				if ( lastUser.userRole != 'client' && lastUser.userRole != 'AdminClient' ) {
@@ -118,11 +118,11 @@ module.exports = function () {
 				} else {
 					console.log( 'Current User Does Not Have The Option to Add a Node to Restriction'.red );
 				    driver
-				    .elementByNameIfExists( elements.mainMenuScreen.syncAllowed )
+				    .elementByNameIfExists( elements.homeScreen.syncAllowed )
 				    .isDisplayed()
-					.then( function ( mainMenuScreen ) {
+					.then( function ( homeScreen ) {
 
-						if ( !mainMenuScreen ) {
+						if ( !homeScreen ) {
 							if ( commons.isIOS() ) {
 								return driver
 								.waitForElementByName( elements.formScreen.back, 10000 )
@@ -153,11 +153,11 @@ module.exports = function () {
 			// 		.sleep( 1000 );
 			// 	}
 			// } )
-			.waitForElementByName( elements.mainMenuScreen.syncAllowed, 20000 )
+			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
 			.then( function ( sync ) {
 				if ( sync ) {
 					return driver
-					.elementByName( elements.mainMenuScreen.syncAllowed )
+					.elementByName( elements.homeScreen.syncAllowed )
 					.click()
 					.sleep ( 2000 );
 				}

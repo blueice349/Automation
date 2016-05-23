@@ -13,30 +13,30 @@ module.exports = function () {
 	var Store    = require( '../../helpers/Store' );
 	var driver   = config.driver;
 
-	describe( 'Start Check Main MenuScreen Options process using "mainMenuItems.js"'.green, function() {
+	describe( 'Start Check homeScreenItems process using "homeScreenItems.js"'.green, function() {
 
 		commons.beforeEachDes();
 		commons.beforeEachIt();
 		commons.afterEachDes();
 		
-		it( 'Should make sure all buttons are visble on mainMenuScreen after intinal sync'.green, function () {
+		it( 'Should make sure all buttons are visble on homeScreen after intinal sync'.green, function () {
 			var lastUser = Store.get( 'lastUser' );
 	     	//Checks for buttons to be displayed on main menu after log on.
 			if ( lastUser.userRole == 'admin' || lastUser.userRole == 'driver' ) {
 				return driver
 				.elementByName( lastUser.name )
 				.text().should.eventually.become( lastUser.name )
-				.elementByName( elements.mainMenuScreen.actions )
+				.elementByName( elements.homeScreen.actions )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.mainMenuScreen.logout )
+				.elementByName( elements.homeScreen.logout )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.mainMenuScreen.syncAllowed )
+				.elementByName( elements.homeScreen.syncAllowed )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.mainMenuScreen.alerts )
+				.elementByName( elements.homeScreen.alerts )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.mainMenuScreen.expiredTags )
+				.elementByName( elements.homeScreen.expiredTags )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.mainMenuScreen.jobs )
+				.elementByName( elements.homeScreen.jobs )
 				.isDisplayed().should.eventually.be.true
 				.then( function () {
 
@@ -47,27 +47,27 @@ module.exports = function () {
 				return driver
 				.elementByName( lastUser.name )
 				.text().should.eventually.become( lastUser.name )
-				.elementByName( elements.mainMenuScreen.actions )
+				.elementByName( elements.homeScreen.actions )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.mainMenuScreen.logout )
+				.elementByName( elements.homeScreen.logout )
 				.isDisplayed().should.eventually.be.true
-				.waitForElementByName( elements.mainMenuScreen.syncAllowed, 180000 )
+				.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
 				.isDisplayed().should.eventually.be.true	
-				.elementByNameIfExists( elements.mainMenuScreen.alerts )
+				.elementByNameIfExists( elements.homeScreen.alerts )
 				.then( function ( alerts ) {
 
 					if ( alerts ) {
 						assert.fail( 'The following element exist and should not exist '.red + alerts );
 					}
 				} )
-				.elementByNameIfExists( elements.mainMenuScreen.expiredTags )
+				.elementByNameIfExists( elements.homeScreen.expiredTags )
 				.then( function ( expiredTags ) {
 
 					if ( expiredTags ) {
 						assert.fail( 'The following element exist and should not exist '.red + alerts );
 					}
 				} )
-				.elementByNameIfExists( elements.mainMenuScreen.jobs )
+				.elementByNameIfExists( elements.homeScreen.jobs )
 				.then( function ( jobs ) {
 
 					if ( jobs ) {
@@ -83,7 +83,7 @@ module.exports = function () {
 
 		it( 'should set currentTest to "passed".'.green, function ( done ) {
 			
-			console.log( 'mainMenuItems test has Completed....'.green );
+			console.log( 'homeScreenItems test has Completed....'.green );
 			config.currentTest = 'passed';
 			done();
 		} );

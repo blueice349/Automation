@@ -64,3 +64,11 @@ exports.androidDevice3 = {
   'platformVersion' : '5.1.1',
   'deviceName'      : 'SM-G920T'
 };
+
+//Omadi Samsun Galaxy S7 Edge
+exports.androidDevice4 = {
+  'appium-version'  : '1.4',
+  'platformName'    : 'Android',
+  'platformVersion' : '6.0',
+  'deviceName'      : 'SM-G935V'
+};

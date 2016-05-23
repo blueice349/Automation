@@ -12,17 +12,17 @@ module.exports = function () {
 
 	describe( 'Start Create New Do Not Tow Node and save'.green, function () {
 
-		it( 'Should Create New do not tow Node from mainMenuScreen Save'.green, function () {
+		it( 'Should Create New do not tow Node from homeScreen Save'.green, function () {
 			var lastUser = Store.get( 'lastUser' );
 			driver
-			.waitForElementByName( elements.mainMenuScreen.syncAllowed, 20000 )
+			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
 			
 			.then( function ( mobileMike ) {
 
 				if ( lastUser.userRole === 'AdminClient' || lastUser.userRole === 'client' || lastUser === 'admin'  ) {
 					console.log( 'User is Allowed to add a New Redord'.red );
 					return driver
-					.elementByName( elements.doNotTow.doNotTow + elements.mainMenuScreen.plusButton )
+					.elementByName( elements.doNotTow.doNotTow + elements.homeScreen.plusButton )
 					.click()
 					.sleep( 1000 )
 					.elementByName( elements.doNotTow.otherFields.licensePlate )
@@ -57,11 +57,11 @@ module.exports = function () {
 				}
 				return driver;
 			} ) 
-			.waitForElementByName( elements.mainMenuScreen.syncAllowed, 20000 )
+			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
 			.then( function ( sync ) {
 				if ( sync ) {
 					return driver
-					.elementByName( elements.mainMenuScreen.syncAllowed )
+					.elementByName( elements.homeScreen.syncAllowed )
 					.click()
 					.sleep ( 2000 );
 				}

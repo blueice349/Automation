@@ -12,16 +12,16 @@ module.exports = function () {
 
 	describe( 'Start Create New Mobile Mike Node and Save to Drafts'.green, function () {
 
-		it( 'Should Create New Node from mainMenuScreen Save to Drafts'.green, function ( done ) {
+		it( 'Should Create New Node from homeScreen Save to Drafts'.green, function ( done ) {
 			var lastUser = Store.get( 'lastUser' );
 			driver
-			.waitForElementByName( elements.mainMenuScreen.syncAllowed, 20000 )
+			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
 			.then( function ( mobileMike ) {
 
 				if ( lastUser.userRole === 'admin' || lastUser.userRole === 'driver' || lastUser.userRole === 'AdminClient' ) {
 					console.log( 'User is Allowed to add a New Redord'.red );
 					return driver
-					.elementByName( elements.mobile_MikeRecord.mobileMike + elements.mainMenuScreen.plusButton )
+					.elementByName( elements.mobile_MikeRecord.mobileMike + elements.homeScreen.plusButton )
 					.click()
 					.sleep( 1000 )
 					.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
@@ -53,12 +53,12 @@ module.exports = function () {
 				}
 				return driver;
 			} ) 
-			.waitForElementByName( elements.mainMenuScreen.syncAllowed, 20000 )
+			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
 			.then( function ( sync ) {
 				
 				if ( sync ) {
 					return driver
-					.elementByName( elements.mainMenuScreen.syncAllowed )
+					.elementByName( elements.homeScreen.syncAllowed )
 					.click()
 					.sleep ( 2000 );
 				}

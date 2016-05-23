@@ -12,10 +12,10 @@ module.exports = function () {
 
 	describe( 'Start Create New Mobile Mike Node with Condition required filed and save'.green, function () {
 
-		it( 'Should Create New Node from mainMenuScreen with Conditions and Save'.green, function () {
+		it( 'Should Create New Node from homeScreen with Conditions and Save'.green, function () {
 			var lastUser = Store.get( 'lastUser' );
 			driver
-			.waitForElementByName( elements.mainMenuScreen.syncAllowed, 20000 )
+			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
 			
 			.then( function ( mobileMike ) {
 
@@ -26,7 +26,7 @@ module.exports = function () {
 				} else if ( lastUser.userName == 'driver1' || lastUser.userName == 'driver2'  ) {
 					console.log( 'User should have a field required to save'.red );
 					return driver
-					.elementByName( elements.mobile_MikeRecord.mobileMike + elements.mainMenuScreen.plusButton )
+					.elementByName( elements.mobile_MikeRecord.mobileMike + elements.homeScreen.plusButton )
 					.click()
 					.sleep( 1000 )
 					.then( function () {
@@ -64,7 +64,7 @@ module.exports = function () {
 				} else if ( lastUser.userRole == 'driver' && lastUser.userName != 'driver1' &&  lastUser.userName != 'driver2' || lastUser.userRole == 'admin' ) {
 					console.log ( 'current user can save with out a condion required field' );
 					return driver
-					.elementByName( elements.mobile_MikeRecord.mobileMike + elements.mainMenuScreen.plusButton )
+					.elementByName( elements.mobile_MikeRecord.mobileMike + elements.homeScreen.plusButton )
 					.click()
 					.sleep( 1000 )
 					.then( function () {
@@ -87,12 +87,12 @@ module.exports = function () {
 					.sleep( 1000 );
 				}
 			} ) 
-			.waitForElementByName( elements.mainMenuScreen.syncAllowed, 20000 )
+			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
 
 			.then( function ( sync ) {
 				if ( sync ) {
 					return driver
-					.elementByName( elements.mainMenuScreen.syncAllowed )
+					.elementByName( elements.homeScreen.syncAllowed )
 					.click()
 					.sleep ( 2000 );
 				}

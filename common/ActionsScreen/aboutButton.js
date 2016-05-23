@@ -16,11 +16,11 @@ module.exports = function () {
 		commons.beforeEachIt();
 		commons.afterEachDes();
 
-		it( 'Should go to Actions Screen from mainMenuScreen'.green, function() {
+		it( 'Should go to Actions Screen from homeScreen'.green, function() {
 			
 			return driver
-			.waitForElementByName( elements.mainMenuScreen.syncAllowed, 180000 )
-			.elementByName( elements.mainMenuScreen.actions )
+			.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
+			.elementByName( elements.homeScreen.actions )
 			.click()
 			.sleep( 800 )
 			.then( function () {
@@ -68,11 +68,11 @@ module.exports = function () {
 			}
 		} );
 
-		it( 'should goo back to the mainMenuScreen from actionsScreen.'.green, function () {
+		it( 'should goo back to the homeScreen from actionsScreen.'.green, function () {
 
 			if ( commons.isIOS() ) {
 				return driver
-				.waitForElementByName( elements.actionsScreen.back, 180000 )
+				.waitForElementByName( elements.actionsScreen.back, 120000 )
 				.isDisplayed().should.eventually.be.true
 				.elementByName( elements.actionsScreen.back )
 				.click()

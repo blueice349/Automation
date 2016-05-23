@@ -21,11 +21,11 @@ module.exports = function () {
 		commons.beforeEachIt();
 		commons.afterEachDes();
 		
-		it( 'Should wait for actions button on mainMenuScreen'.green, function () {
+		it( 'Should wait for actions button on homeScreen'.green, function () {
 			
 			
 			return driver
-			.waitForElementByName( elements.mainMenuScreen.actions, 20000 )
+			.waitForElementByName( elements.homeScreen.actions, 20000 )
 			.then( function () {
 				
 				config.currentTest = 'passed';
@@ -36,7 +36,7 @@ module.exports = function () {
 			
 			if ( Store.get( 'lastUser' ).userRole != 'client' && Store.get( 'lastUser' ).userRole != 'AdminClient' ) {
 				return driver
-				.waitForElementByName( elements.mainMenuScreen.jobs, 20000 )
+				.waitForElementByName( elements.homeScreen.jobs, 20000 )
 				.click()
 				.sleep( 800 )
 				.then( function ( isIOS ) {
@@ -94,34 +94,42 @@ module.exports = function () {
 			
 			if ( Store.get( 'lastUser' ).newJob === true && Store.get( 'lastUser' ).userRole != 'client' &&  Store.get( 'lastUser' ).userRole != 'AdminClient' ) {
 				return driver
-				//.waitForElementByName( elements.jobsScreen.newJobs + 0 + '.', 20000 )
-				.elementByName( commons.getItem( elements.jobsScreen.newJobsTab.newJobs, 0 ) )
-				.click()
-				.sleep( 1000 )
-				.waitForElementByName( elements.jobsScreen.updateStatusOptions.acceptJob, 10000 )
-				.click().sleep( 1000 )
-				.then( function () {
+				.elementByNameIfExists( commons.getItem( elements.jobsScreen.newJobsTab.newJobs, 0 ) )
+				.then( function ( newJob ) {
 
-					if ( commons.isIOS() ) {
-						return driver
-						.waitForElementByName( elements.jobsScreen.otherOptions.back, 10000 )
+					if( newJob ) {
+						return newJob
 						.click()
 						.sleep( 1000 )
+						.waitForElementByName( elements.jobsScreen.updateStatusOptions.acceptJob, 10000 )
+						.click().sleep( 1000 )
 						.then( function () {
 
-							config.currentTest = 'passed';
-						} );
+							if ( commons.isIOS() ) {
+								return driver
+								.waitForElementByName( elements.jobsScreen.otherOptions.back, 10000 )
+								.click()
+								.sleep( 1000 )
+								.then( function () {
 
-					} else if ( commons.isAndroid() ) {
-						return driver
-						.back()
-						.sleep( 1000 )
-						.then( function () {
+									config.currentTest = 'passed';
+								} );
 
-							config.currentTest = 'passed';
-						} );
+							} else if ( commons.isAndroid() ) {
+								return driver
+								.back()
+								.sleep( 1000 )
+								.then( function () {
+
+									config.currentTest = 'passed';
+								} );
+							}
+						} )
+
+					} else {
+						assert.fail( 'User should have seen a job, Please make sure a job was created on web.' );
 					}
-				} )
+				} );
 			} else {
 				console.log( 'user does not have a newJob'.red );
 				return driver
@@ -133,23 +141,25 @@ module.exports = function () {
 			}
 		} );
 
-		it( 'should go back to mainMenuScreen'.green, function () {
+		it( 'should go back to homeScreen'.green, function () {
 					
 			return driver
-			.elementByName( elements.mainMenuScreen.actions )
+			.elementByName( elements.homeScreen.actions )
 			.isDisplayed()
-			.then( function ( mainMenuScreen ) {
+			.then( function ( homeScreen ) {
 
-				if ( mainMenuScreen ) {
+				if ( homeScreen ) {
+					console.log( 'App is already at the homeScreen.'.red );
 					return driver
-					.elementByName( elements.mainMenuScreen.actions )
+					.elementByName( elements.homeScreen.actions )
 					.isDisplayed().should.eventually.be.true
-					.waitForElementByName( elements.mainMenuScreen.syncAllowed, 30000 )
+					.waitForElementByName( elements.homeScreen.syncAllowed, 30000 )
 					.click()
 					.sleep ( 2000 );
 
 				} else {
 					if ( commons.isIOS() ) {
+						console.log( 'isIOS app is at the jobsScreen.'.red ); 
 						return driver
 						.elementByName( elementByName.jobsScreen.back )
 						.isDisplayed().should.eventually.be.true
@@ -158,79 +168,18 @@ module.exports = function () {
 						.sleep( 1000 );
 
 					} else if ( commons.isAndroid() ) {
+						console.log( 'isAndroid app is at the jobsScreen.'.red ); 
 						return driver
 						.back()
 						.sleep( 1000 );
 					}
 				}
 			} )
-			.waitForElementByName( elements.mainMenuScreen.syncAllowed, 180000 )
+			.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
 			.then( function () {
 				
 				config.currentTest = 'passed';
 			} );
-		} );
-		
-		it( 'should check mainMenuScreen for buttons'.green, function () {	
-			
-	        //Checks for buttons to be displayed on main menu after log on.
-			if (  Store.get( 'lastUser' ).userRole == 'admin' ||  Store.get( 'lastUser' ).userRole == 'driver' ) {
-				return driver
-				.elementByName(  Store.get( 'lastUser' ).name )
-				.text().should.become(  Store.get( 'lastUser' ).name )
-				.waitForElementByName( elements.mainMenuScreen.actions, 180000 )
-				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.mainMenuScreen.logout )
-				.isDisplayed().should.eventually.be.true
-				.waitForElementByName( elements.mainMenuScreen.syncAllowed, 180000 )
-				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.mainMenuScreen.alerts )
-				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.mainMenuScreen.expiredTags )
-				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.mainMenuScreen.jobs )
-				.isDisplayed().should.eventually.be.true
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
-
-			} else if (  Store.get( 'lastUser' ).userRole == 'client' ||  Store.get( 'lastUser' ).userRole == 'AdminClient' ) {
-				return driver
-				.elementByName(  Store.get( 'lastUser' ).name )
-				.text().should.become(  Store.get( 'lastUser' ).name )
-				.elementByName( elements.mainMenuScreen.actions )
-				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.mainMenuScreen.logout )
-				.isDisplayed().should.eventually.be.true
-				.waitForElementByName( elements.mainMenuScreen.syncAllowed, 180000 )
-				.isDisplayed().should.eventually.be.true
-				.elementByNameIfExists( elements.mainMenuScreen.alerts )
-				.then( function ( alerts ) {
-
-					if ( alerts ) {
-						assert.fail( 'The following element exist and should not exist '.red + alerts );
-					}
-				} )
-				.elementByNameIfExists( elements.mainMenuScreen.expiredTags )
-				.then( function ( expiredTags ) {
-
-					if ( expiredTags ) {
-						assert.fail( 'The following element exist and should not exist '.red + alerts );
-					}
-				} )
-				.elementByNameIfExists( elements.mainMenuScreen.jobs )
-				.then( function ( jobs ) {
-
-					if ( jobs ) {
-						assert.fail( 'The following element exist and should not exist '.red + alerts );
-					}
-				} )
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
-			}
 		} );
 
 		it( 'should set currentTest to "passed"'.green, function ( done ) {

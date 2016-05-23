@@ -31,7 +31,7 @@ module.exports = function () {
 
 			config.loginTest = true;
 			return driver
-			.waitForElementByName( elements.loginScreen.client_account, 180000 )
+			.waitForElementByName( elements.loginScreen.client_account, 120000 )
 			.isDisplayed().should.eventually.be.true
 			.elementByName( elements.loginScreen.user_name )
 			.isDisplayed().should.eventually.be.true
@@ -156,7 +156,7 @@ module.exports = function () {
 		   		.then( function ( ok ) {
 
 		   			if ( ok ) {
-				   		return commons.alertText( alerts.loginAlerts.iosNotification )
+				   		return commons.alertText( alerts.loginLogoutAlerts.iosNotification )
 		   				.elementByName( elements.alertButtons.ok )
 		   				.click();
 		   			}
@@ -165,7 +165,7 @@ module.exports = function () {
 		   		.then( function ( allow ) {
 
 					if ( allow ) {
-		   				return commons.alertText( alerts.loginAlerts.iosGps )
+		   				return commons.alertText( alerts.loginLogoutAlerts.iosGps )
 						.elementByName( elements.alertButtons.allow )
 						.click();
 					}
@@ -182,7 +182,7 @@ module.exports = function () {
 		   		.then( function ( allow ) {
 
 					if ( allow ) {
-		   				return commons.alertText( alerts.loginAlerts.iosGps )
+		   				return commons.alertText( alerts.loginLogoutAlerts.iosGps )
 						.elementByName( elements.alertButtons.allow )
 						.click();
 					}
@@ -191,7 +191,7 @@ module.exports = function () {
 		   		.then( function ( ok ) {
 
 		   			if ( ok ) {
-				   		return commons.alertText( alerts.loginAlerts.iosNotification )
+				   		return commons.alertText( alerts.loginLogoutAlerts.iosNotification )
 		   				.elementByName( elements.alertButtons.ok )
 		   				.click();
 		   			}
@@ -207,7 +207,7 @@ module.exports = function () {
 				.then( function ( allow ) {
 
 					if ( allow ) {
-						return commons.alertText( alerts.loginAlerts.androidGps )
+						return commons.alertText( alerts.loginLogoutAlerts.androidGps )
 						.elementByName( elements.alertButtons.allow )
 						.click();
 					}
@@ -224,7 +224,7 @@ module.exports = function () {
 			if ( clockInOption === false && truckOption === true ) {
 				console.log( 'User does not have clock in options, but has truck options, will wait for Select Vehicle Options'.red );
 				return driver
-				.waitForElementByName( elements.companyVehicle.vehicle1, 180000 )
+				.waitForElementByName( elements.companyVehicle.vehicle1, 120000 )
 				.isDisplayed().should.eventually.be.true
 				.then( function ( vehicle ) {
 
@@ -234,7 +234,7 @@ module.exports = function () {
 			} else if ( clockInOption === true ) {
 				console.log( 'User has clockin options, will wait for Clockin Options'.red );
 				return driver
-				.waitForElementByName( elements.alertButtons.clockIn, 180000 )
+				.waitForElementByName( elements.alertButtons.clockIn, 120000 )
 				.isDisplayed().should.eventually.be.true
 				.then( function ( clockIn ) {
 
@@ -244,7 +244,7 @@ module.exports = function () {
 			} else if( clockInOption === false && truckOption === false ) {
 				console.log( 'User has no truck or clock in options, will wait for syncAllowed'.red );
 				return driver
-				.waitForElementByName( elements.mainMenuScreen.syncAllowed, 180000 )
+				.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
 				.isDisplayed().should.eventually.be.true
 				.then( function ( syncAllowed ) {
 

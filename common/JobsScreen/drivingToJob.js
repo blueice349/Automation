@@ -21,10 +21,10 @@ module.exports = function () {
 		commons.beforeEachIt();
 		commons.afterEachDes();
 		
-		it( 'Should wait for actions button on mainMenuScreen'.green, function () {
+		it( 'Should wait for actions button on homeScreen'.green, function () {
 
 			return driver
-			.waitForElementByName( elements.mainMenuScreen.actions, 20000 )
+			.waitForElementByName( elements.homeScreen.actions, 20000 )
 			.then( function () {
 				
 				config.currentTest = 'passed';
@@ -35,7 +35,7 @@ module.exports = function () {
 			
 			if ( Store.get( 'lastUser' ).userRole != 'client' && Store.get( 'lastUser' ).userRole != 'AdminClient' ) {
 				return driver
-				.waitForElementByName( elements.mainMenuScreen.jobs, 20000 )
+				.waitForElementByName( elements.homeScreen.jobs, 20000 )
 				.click()
 				.sleep( 800 )
 				.then( function ( isIOS ) {
@@ -81,7 +81,7 @@ module.exports = function () {
 			} else {
 				console.log( 'current user does not have the jobsScreen'.green );
 				return driver
-				.elementByName( elements.mainMenuScreen.jobs )
+				.elementByName( elements.homeScreen.jobs )
 				.isDisplayed().should.eventually.be.false
 				.sleep( 10 )
 				.then( function () {
@@ -245,18 +245,18 @@ module.exports = function () {
 			}
 		} );
 
-		it( 'should go back to mainMenuScreen'.green, function () {
+		it( 'should go back to homeScreen'.green, function () {
 					
 			return driver
-			.elementByName( elements.mainMenuScreen.actions )
+			.elementByName( elements.homeScreen.actions )
 			.isDisplayed()
-			.then( function ( mainMenuScreen ) {
+			.then( function ( homeScreen ) {
 
-				if ( mainMenuScreen ) {
+				if ( homeScreen ) {
 					return driver
-					.elementByName( elements.mainMenuScreen.actions )
+					.elementByName( elements.homeScreen.actions )
 					.isDisplayed().should.eventually.be.true
-					.waitForElementByName( elements.mainMenuScreen.syncAllowed, 30000 )
+					.waitForElementByName( elements.homeScreen.syncAllowed, 30000 )
 					.click()
 					.sleep ( 2000 );
 
@@ -276,7 +276,7 @@ module.exports = function () {
 					}
 				}
 			} )
-			.waitForElementByName( elements.mainMenuScreen.syncAllowed, 180000 )
+			.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
 			.then( function () {
 				
 				config.currentTest = 'passed';

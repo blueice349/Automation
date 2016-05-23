@@ -74,7 +74,7 @@ exports.companyVehicle = {
 	'ok'        : 'OK'
 }	
 
-exports.mainMenuScreen = {
+exports.homeScreen = {
 	'actions'          : 'actions_Button.',
 	'clockOut'         : 'mainMenuClockOut_Button',
 	'clockIn'          : 'mainMenuClockIn_Button',
