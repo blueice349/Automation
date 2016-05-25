@@ -3,26 +3,28 @@
 module.exports.logins = function ( login ) {
 
 	switch ( login ) {
-		case 'admin1'      :
+		case 'admin1'        :
 			return require( './common/LogIn/AdminRole/loginAdminTest1.js' )();
-		case 'admin2'      :
+		case 'admin2'        :
 			return require( './common/LogIn/AdminRole/loginAdminTest2.js' )();
-		case 'client1'     :
+		case 'client1'       :
 			return require( './common/LogIn/ClientRole/loginClientTest1.js' )();
-		case 'client2'     :
+		case 'client2'       :
 			return require( './common/LogIn/ClientRole/loginClientTest2.js' )();
-		case 'driver1'      :
+		case 'driver1'       :
 			return require( './common/LogIn/DriverRole/loginDriverTest1.js' )();
-		case 'driver2'      :
+		case 'driver2'       :
 			return require( './common/LogIn/DriverRole/loginDriverTest2.js' )();
-		case 'badLogin'     :
+		case 'badLogin'      :
 			return require( './common/LogIn/badLogin.js' )();	
-		case 'loginOptions' :
+		case 'loginOptions'  :
 			return require( './common/LogIn/LoginOptions/loginOptions.js' )();
-		case 'selectVehicle' :
+		case 'selectVehicle'  :
 			return require( './common/LogIn/LoginOptions/loginSelectVehicle.js' )();
-		case 'clockin'       :
+		case 'clockin'        :
 			return require( './common/LogIn/LoginOptions/loginClockin.js' )();
+		case 'homeScreenCheck' :
+			return require( './common/LogIn/LoginOptions/homeScreenCheck.js' )();
 	}
 	console.log( 'No test case was selcected!' );
 };

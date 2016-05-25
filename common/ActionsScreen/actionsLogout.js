@@ -47,101 +47,66 @@ module.exports = function () {
 			} );
 		} );
 
-		it( 'should check for a inspections and click logOutNow'.green, function () {
+		it( 'should check for a Vehicle Inspection'.green, function () {
 				
-			if ( Store.get( 'lastUser' ).truckOption === true && Store.get( 'lastUser' ).clockInOption === false && Store.get( 'lastUser' ).userRole != 'client' ) {
-				console.log( 'Log out with A inspection request'.red );
-				if ( config.isInVehicle === true ) {
-					commons.alertText( alerts.loginLogoutAlerts.doInspection )
-					.elementByName( elements.alertButtons.no )
-					.click();
-				}
-				return commons.alertText( alerts.actionsScreenAlerts.logOutNow.logOut )
-				.elementByName( elements.alertButtons.logout )
+			if ( Store.get( 'lastUser' ).truckOption === true ) {
+				console.log( 'Should ask user to post-Inspect'.red );
+				return commons.alertText( alerts.loginLogoutAlerts.doInspection )
+				.elementByName( elements.alertButtons.no )
 				.click()
 				.then( function () {
 
 					config.currentTest = 'passsed';
 				} );
 
-			} else if ( Store.get( 'lastUser' ).truckOption === true && Store.get( 'lastUser' ).clockInOption === true ) {	
-				console.log( 'Log out with inspection request'.red );
-				if ( config.isInVehicle === true ) {
-					commons.alertText( alerts.loginLogoutAlerts.doInspection )
-					.elementByName( elements.alertButtons.no )
-					.click()
-					.sleep( 100 )
-				}
-				return driver
-				.elementByNameIfExists( alerts.actionsScreenAlerts.logOutNow.logOut )
-				.then( function ( logOutNow ) {
-					if ( logOutNow ) {
-						console.log( 'Logout Now'.red );
-						return commons.alertText( alerts.actionsScreenAlerts.logOutNow.logOut )
-						.elementByName( elements.alertButtons.logout )
-						.click()
-						.then( function () {
-
-							config.currentTest = 'passsed';
-						} );
-					} else {
-						console.log( 'Clock out + Logout'.red );
-						return commons.alertText( alerts.actionsScreenAlerts.logOutNow.logOutClockout )
-						.elementByName( elements.alertButtons.clockOutLogout )
-						.click()
-						.then( function () {
-
-							config.currentTest = 'passsed';
-						} );
-					}
-				} );
-
-			} else if ( Store.get( 'lastUser' ).truckOption === false && Store.get( 'lastUser' ).clockInOption === true && Store.get( 'lastUser' ).userRole != 'client' ) {	
-				console.log( 'Log out with No inspection request'.red );
-				return driver
-				.elementByNameIfExists( alerts.actionsScreenAlerts.logOutNow.logOut )
-				.then( function ( logOutNow ) {
-					if ( logOutNow ) {
-						console.log( 'Logout Now'.red );
-						return commons.alertText( alerts.actionsScreenAlerts.logOutNow.logOut )
-						.elementByName( elements.alertButtons.logout )
-						.click()
-						.then( function () {
-
-							config.currentTest = 'passsed';
-						} );
-					} else {
-						console.log( 'Clock out + Logout'.red );
-						return commons.alertText( alerts.actionsScreenAlerts.logOutNow.logOutClockout )
-						.elementByName( elements.alertButtons.clockOutLogout )
-						.click()
-						.then( function () {
-
-							config.currentTest = 'passsed';
-						} );
-					}
-				} );
+			} else if ( Store.get( 'lastUser' ).truckOption === false ) {
+				console.log( 'User does not have vehicle options!'.red );
+				config.currentTest = 'passsed';
 
 			} else {
-				console.log( 'No inspection request and no clock out request required to Log-out'.red );
-				if( commons.isAndroid() ) {
-					return driver
-					.elementByName( elements.alertButtons.logout )
-					.click()
-					.then( function () {
+				assert.fail( 'User truckOption is \'undefined\' and/or not set up!'.red );
+			}
+		} );
 
-						config.currentTest = 'passsed';
-					} );
+		it( 'should check if user isClockedin'.green, function () {
 
-				} else if ( commons.isIOS() ) {
-					return driver
-					.elementByName( elements.alertButtons.logout )
-					.click()
-					.then( function () {
+			if ( Store.get( 'lastUser' ).clockInOption === true && config.isClockedin === true ) {
+				console.log( 'User isClockedin should check if current alert is visibile'.red );
+				return commons.alertText( alerts.actionsScreenAlerts.logOutNow.logOutClockout )
+				.then( function () {
 
-						config.currentTest = 'passsed';
-					} );
-				}
+					config.currentTest = 'passed';
+				} );
+			} else {
+				console.log( 'User is NOT clockedin should check if current alert is visibile'.red );
+				return commons.alertText( alerts.actionsScreenAlerts.logOutNow.logOut )
+				.then( function () {
+
+					config.currentTest = 'passed';
+				} );
+			}
+		} );
+
+		it( 'should clockOut & logout or Clockout Now'.green, function () {
+
+			if ( Store.get( 'lastUser' ).clockInOption === true && config.isClockedin === true ) {
+				console.log( 'Clock out + Logout'.red );
+				return driver
+				.elementByName( elements.alertButtons.clockOutLogout )
+				.click()
+				.then( function () {
+
+					config.currentTest = 'passed';
+				} );
+			} else {
+				console.log( 'Logout Now'.red );
+				return driver
+				.elementByName( elements.alertButtons.logout )
+				.click()
+				.then( function () {
+
+					config.currentTest = 'passed';
+				} );
 			}
 		} );
 

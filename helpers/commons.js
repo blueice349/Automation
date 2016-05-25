@@ -155,7 +155,8 @@ Commons.prototype.beforeEachIt = function ( ) {
 				&& config.loginTest == true
 			) || ( config.currentTest == 'testStarted' )
 		) {
-			console.log( 'Next test was skipped do to login failed test '.red );
+			console.log( 'Next test was skipped do to a failed logoutTest test or a stat is testStarted '.red );
+			assert.fail( 'current test status ' + config.currentTest );
 			this.skip();
 
 		} else if ( config.currentTest == 'passed' || config.currentTest == 'notStarted' ) {

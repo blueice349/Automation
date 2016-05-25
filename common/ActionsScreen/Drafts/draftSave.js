@@ -198,7 +198,7 @@ module.exports = function () {
 		it( 'Should wait for syncAllowed and press syncAllowed.'.green, function () {
 
 			return driver
-			.waitForElementByName( elements.homeScreen.syncAllowed )
+			.waitForElementByName( elements.homeScreen.syncAllowed, 30000 )
 			.then( function ( sync ) {
 
 				if ( sync ) {
@@ -206,11 +206,11 @@ module.exports = function () {
 					.elementByName( elements.homeScreen.syncAllowed )
 					.click()
 					.sleep ( 2000 )
-					.elementByName( elements.homeScreen.actions )
+					.elementByNameIfExists( elements.homeScreen.actions )
 					.isDisplayed()
 					.then( function ( homeScreen ) {
 
-						if ( !homeScreen ) {
+						if ( homeScreen === false ) {
 							if ( commons.isIOS() ) {
 								return driver
 								.waitForElementByName( elements.jobsScreen.otherOptions.back, 10000 )

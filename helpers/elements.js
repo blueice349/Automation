@@ -32,7 +32,7 @@ exports.alertButtons = {
 	'cancel'          : 'Cancel',
 	'clockIn'         : 'Clock in',
 	'clockOut'        : 'Clock out',
-	'clockOutLogout'  : 'Clock Out + Logout',
+	'clockOutLogout'  : 'ClockOut & Logout',
 	'closeApp'        : 'Close App',
 	'closeAnyways'    : 'Close Anyway',
 	'deleteRecord'    : 'Delete',

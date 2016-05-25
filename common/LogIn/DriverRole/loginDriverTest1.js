@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = function () {
-
+	
 	require( 'colors' );
 	require( '../../../helpers/setup' );
 	var alerts   = require( '../../../helpers/alerts' );

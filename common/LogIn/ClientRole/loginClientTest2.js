@@ -133,8 +133,9 @@ module.exports = function () {
 			}
 		} );
 
-		it( 'should click accept_termsand login_button'.green, function () {
+		it( 'should click accept_terms and login_button'.green, function () {
 
+			config.loginTest = true;
 			return driver
 			.elementByName( elements.loginScreen.accept_terms )
 			.click()
@@ -147,10 +148,26 @@ module.exports = function () {
 			} );
 		} );
 
+		it( 'should store current user information'.green, function () {
+
+			config.loginTest = true;
+			Store.set( 'lastUser', {
+				'truckOption'       : truckOption,
+				'clockInOption'     : clockInOption,
+				'userRole'          : userRole,
+				'userName'          : userName,
+				'name'              : name,
+				'permissionGranted' : permissionGranted,
+				'newJob'            : newJob
+			} );
+			config.currentTest = 'passed';
+		} );
+
 		it( 'should check for permissions'.green, function () {
-			console.log( 'User role 1 '.red + userRole );
+		 	
+		 	config.loginTest = true;
 		 	if ( commons.isIOS() && userRole != 'client' && userRole != 'AdminClient' ) {
-			 	console.log( 'User role 2 '.red + userRole );
+		 		console.log( 'CRM user on a iOS device'.green );
 			 	return driver
 			 	.sleep( 4000 )
 		   		.elementByNameIfExists( elements.alertButtons.ok )
@@ -172,12 +189,13 @@ module.exports = function () {
 					}
 				} )
 				.then( function () {
-
+					
+					console.log( 'Permissions completed'.green );
 					config.currentTest = 'passed';
 				} );
 
 			} else if( commons.isIOS() && ( userRole === 'client' ||  userRole === 'AdminClient' ) ) {
-				console.log( 'User role 3 '.red + userRole );
+				console.log( 'Client user on a iOS device'.green );
 				return driver
 		   		.elementByNameIfExists( elements.alertButtons.allow )
 		   		.then( function ( allow ) {
@@ -199,9 +217,12 @@ module.exports = function () {
 		   		} )
 		   		.then( function () {
 
+					console.log( 'Permissions completed'.green );
 					config.currentTest = 'passed';
 				} );
+
 			 } else if ( commons.isAndroid6() ) {
+				console.log( 'Client or CRM user on a Android 6.0.x device'.green );
 				return driver
 				.sleep( 4000 )
 				.elementByNameIfExists( elements.alertButtons.allow )
@@ -215,13 +236,21 @@ module.exports = function () {
 				} )
 				.then( function () {
 
+					console.log( 'Permissions completed'.green );
 					config.currentTest = 'passed';
 				} );
+
+			 } else if ( commons.isAndroid() ) {
+			 	console.log( 'User on a Android that does not request permissons'.green );
+			 	config.currentTest = 'passed';
 			 }
 		} );
 		
 		it( 'should wait for sync to Complete'.green, function () {
-			
+
+			config.loginTest = true;
+			console.log( 'Clockin Status: '.red + config.isClockedin );
+			console.log( 'Before should wait for sync to Complete'.green );
 			if ( clockInOption === false && truckOption === true ) {
 				console.log( 'User does not have clock in options, but has truck options, will wait for Select Vehicle Options'.red );
 				return driver
@@ -232,12 +261,32 @@ module.exports = function () {
 					config.currentTest = 'passed';
 				} );
 
-			} else if ( clockInOption === true ) {
+			} else if ( clockInOption === true && truckOption === false && config.isClockedin != true || clockInOption === true && truckOption === true && config.isClockedin != true ) {
 				console.log( 'User has clockin options, will wait for Clockin Options'.red );
 				return driver
 				.waitForElementByName( elements.alertButtons.clockIn, 120000 )
 				.isDisplayed().should.eventually.be.true
 				.then( function ( clockIn ) {
+
+					config.currentTest = 'passed';
+				} );
+
+			} else if ( clockInOption === true && truckOption === false && config.isClockedin === true ) {
+				console.log( 'User is clockedin Already, will wait for syncAllowed'.red );
+				return driver
+				.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
+				.isDisplayed().should.eventually.be.true
+				.then( function ( syncAllowed ) {
+
+					config.currentTest = 'passed';
+				} );
+
+			} else if ( clockInOption === true && truckOption === true && config.isClockedin === true ) {
+				console.log( 'User is clockedin and has truck options, will wait for Select Vehicle Options'.red );
+				return driver
+				.waitForElementByName( elements.companyVehicle.vehicle1, 120000 )
+				.isDisplayed().should.eventually.be.true
+				.then( function ( vehicle ) {
 
 					config.currentTest = 'passed';
 				} );
@@ -254,23 +303,10 @@ module.exports = function () {
 			}
 		} );
 		
-		it( 'should store current user information'.green, function () {
-
-			Store.set( 'lastUser', {
-				'truckOption'       : truckOption,
-				'clockInOption'     : clockInOption,
-				'userRole'          : userRole,
-				'userName'          : userName,
-				'name'              : name,
-				'permissionGranted' : permissionGranted,
-				'newJob'            : newJob
-			} );
-			config.currentTest = 'passed';
-		} );
-
 		it( 'should set currentTest to "passed".'.green, function ( done ) {
 			
-			console.log( 'loginClientTest2 test has Completed....'.green );
+			config.loginTest = true;	
+			console.log( 'loginDriverTest1 test has Completed....'.green );
 			config.currentTest = 'passed';
 			done();
 		} );
