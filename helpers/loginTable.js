@@ -7,6 +7,7 @@ exports.adminLogins = {
 		'name'               : 'IOS Admin 1',
 		'userRole'           : 'admin',
 		'newJob'             : false,
+		'tagButton'          : false,
 		'permissionGranted'  : false,
 		'clockInOption'      : true,
 		'truckOption'        : true
@@ -19,6 +20,7 @@ exports.adminLogins = {
 		'name'               : 'Android Admin 2',
 		'userRole'           : 'admin',
 		'newJob'             : false,
+		'tagButton'          : false,
 		'permissionGranted'  : false,
 		'clockInOption'      : true,
 		'truckOption'        : true
@@ -31,6 +33,7 @@ exports.adminLogins = {
 		'name'               : 'IOS Admin 3',
 		'userRole'           : 'admin',
 		'newJob'             : false,
+		'tagButton'          : false,
 		'permissionGranted'  : false,
 		'clockInOption'      : false,
 		'truckOption'        : false		
@@ -43,6 +46,7 @@ exports.adminLogins = {
 		'name'               : 'IOS Admin 4',
 		'userRole'           : 'admin',
 		'newJob'             : false,
+		'tagButton'          : false,
 		'permissionGranted'  : false,
 		'clockInOption'      : false,
 		'truckOption'        : false	
@@ -57,6 +61,7 @@ exports.clientLogins = {
 		'name'               : 'Client1',
 		'userRole'           : 'AdminClient',
 		'newJob'             : false,
+		'tagButton'          : false,
 		'permissionGranted'  : false,
 		'clockInOption'      : false,
 		'truckOption'        : false	
@@ -69,6 +74,7 @@ exports.clientLogins = {
 		'name'               : 'Client2',
 		'userRole'           : 'AdminClient',
 		'newJob'             : false,
+		'tagButton'          : false,
 		'permissionGranted'  : false,
 		'clockInOption'      : false,
 		'truckOption'        : false	
@@ -81,6 +87,7 @@ exports.clientLogins = {
 		'name'               : 'Client3',
 		'userRole'           : 'client',
 		'newJob'             : false,
+		'tagButton'          : false,
 		'permissionGranted'  : false,
 		'clockInOption'      : false,
 		'truckOption'        : false	
@@ -93,6 +100,7 @@ exports.clientLogins = {
 		'name'               : 'Client4',
 		'userRole'           : 'client',
 		'newJob'             : false,
+		'tagButton'          : false,
 		'permissionGranted'  : false,
 		'clockInOption'      : false,
 		'truckOption'        : false	
@@ -107,6 +115,7 @@ exports.driverLogins = {
 		'name'               : 'IOS Driver 1',
 		'userRole'           : 'driver',
 		'newJob'             : true,
+		'tagButton'          : true,
 		'permissionGranted'  : false,
 		'clockInOption'      : true,
 		'truckOption'        : true	
@@ -119,6 +128,7 @@ exports.driverLogins = {
 		'name'               : 'Android Driver 2',
 		'userRole'           : 'driver',
 		'newJob'             : true,
+		'tagButton'          : false,
 		'permissionGranted'  : false,
 		'clockInOption'      : true,
 		'truckOption'        : true	
@@ -131,6 +141,7 @@ exports.driverLogins = {
 		'name'               : 'IOS Driver 3',
 		'userRole'           : 'driver',
 		'newJob'             : true,
+		'tagButton'          : true,
 		'permissionGranted'  : false,
 		'clockInOption'      : false,
 		'truckOption'        : false	
@@ -143,6 +154,7 @@ exports.driverLogins = {
 		'name'               : 'Android Driver 4',
 		'userRole'           : 'driver',
 		'newJob'             : true,
+		'tagButton'          : false,
 		'permissionGranted'  : false,
 		'clockInOption'      : false,
 		'truckOption'        : false	

@@ -20,6 +20,7 @@ module.exports = function () {
 	var name;
 	var permissionGranted;
 	var newJob;
+	var tagButton;
 
 	describe( 'Start login Process using "loginClientTest1.js"'.green, function () {
 
@@ -60,6 +61,7 @@ module.exports = function () {
 					userName          = login.clientLogins.client1.username;
 					name              = login.clientLogins.client1.name;
 					newJob            = login.clientLogins.client1.newJob;
+					tagButton         = login.clientLogins.client1.tagButton;
 					return commons.sendKeys( el, login.clientLogins.client1.client_account );
 
 				} else if ( commons.isAndroid() ) {
@@ -69,6 +71,7 @@ module.exports = function () {
 					userName          = login.clientLogins.client2.username;
 					name              = login.clientLogins.client2.name;
 					newJob            = login.clientLogins.client2.newJob;
+					tagButton         = login.clientLogins.client2.tagButton;
 					return commons.sendKeys(el, login.clientLogins.client2.client_account );
 				}
 			} )
@@ -158,7 +161,8 @@ module.exports = function () {
 				'userName'          : userName,
 				'name'              : name,
 				'permissionGranted' : permissionGranted,
-				'newJob'            : newJob
+				'newJob'            : newJob,
+				'tagButton'         : tagButton
 			} );
 			config.currentTest = 'passed';
 		} );

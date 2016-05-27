@@ -48,8 +48,9 @@ module.exports = function () {
 		} );
 
 		it( 'should check for a Vehicle Inspection'.green, function () {
-				
-			if ( Store.get( 'lastUser' ).truckOption === true ) {
+			
+			var lastUser = Store.get( 'lastUser' );	
+			if ( lastUser.truckOption === true ) {
 				console.log( 'Should ask user to post-Inspect'.red );
 				return commons.alertText( alerts.loginLogoutAlerts.doInspection )
 				.elementByName( elements.alertButtons.no )
@@ -59,7 +60,7 @@ module.exports = function () {
 					config.currentTest = 'passsed';
 				} );
 
-			} else if ( Store.get( 'lastUser' ).truckOption === false ) {
+			} else if ( lastUser.truckOption === false ) {
 				console.log( 'User does not have vehicle options!'.red );
 				config.currentTest = 'passsed';
 
@@ -69,8 +70,9 @@ module.exports = function () {
 		} );
 
 		it( 'should check if user isClockedin'.green, function () {
-
-			if ( Store.get( 'lastUser' ).clockInOption === true && config.isClockedin === true ) {
+			
+			var lastUser = Store.get( 'lastUser' );
+			if ( lastUser.clockInOption === true && config.isClockedin === true ) {
 				console.log( 'User isClockedin should check if current alert is visibile'.red );
 				return commons.alertText( alerts.actionsScreenAlerts.logOutNow.logOutClockout )
 				.then( function () {
@@ -89,7 +91,8 @@ module.exports = function () {
 
 		it( 'should clockOut & logout or Clockout Now'.green, function () {
 
-			if ( Store.get( 'lastUser' ).clockInOption === true && config.isClockedin === true ) {
+			var lastUser = Store.get( 'lastUser' );
+			if ( lastUser.clockInOption === true && config.isClockedin === true ) {
 				console.log( 'Clock out + Logout'.red );
 				return driver
 				.elementByName( elements.alertButtons.clockOutLogout )

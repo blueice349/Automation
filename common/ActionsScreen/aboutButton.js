@@ -8,7 +8,6 @@ module.exports = function () {
 	var commons  = require( '../../helpers/Commons' );
 	var Store    = require( '../../helpers/Store' );
 	var driver = config.driver;
-	var lastUser = Store.get( 'lastUser' );
 
 	describe( 'Start About Page Process'.green, function () {
 

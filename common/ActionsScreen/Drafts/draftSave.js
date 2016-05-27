@@ -81,6 +81,7 @@ module.exports = function () {
 
 		it( 'Should check for text in required and conditionally required fields and add text where needed.'.green, function() {
 
+			var lastUser = Store.get( 'lastUser' );
 			return driver
 			.elementByNameIfExists( elements.formScreen.actions )
 			.then( function ( actions ) {
@@ -100,7 +101,7 @@ module.exports = function () {
 					.then( function ( textFieldCond ) {
 
 						if ( textFieldCond === '' ) {
-							 return commons.sendKeys( driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond ), Store.get( 'lastUser' ).userName + ' Conditional Field' );
+							 return commons.sendKeys( driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond ), lastUser.userName + ' Conditional Field' );
 
 						} else {
 							console.log( 'textFieldCond has the following data: ' + driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond ) );
@@ -111,7 +112,7 @@ module.exports = function () {
 					.then( function ( textFieldReq ) {
 
 						if ( textFieldReq === '' ) {
-							 return commons.sendKeys( driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq ), Store.get( 'lastUser' ).userName + ' Conditional Field' );
+							 return commons.sendKeys( driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq ), lastUser.userName + ' Conditional Field' );
 
 						} else {
 							console.log( 'textFieldReq has the following data: ' + driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq ) );

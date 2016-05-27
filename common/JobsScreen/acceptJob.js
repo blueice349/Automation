@@ -34,7 +34,8 @@ module.exports = function () {
 
 		it( 'should check userRole and go to jobsScreen'. green, function () {
 			
-			if ( Store.get( 'lastUser' ).userRole != 'client' && Store.get( 'lastUser' ).userRole != 'AdminClient' ) {
+			var lastUser = Store.get( 'lastUser' );
+			if ( lastUser.userRole != 'client' && lastUser.userRole != 'AdminClient' ) {
 				return driver
 				.waitForElementByName( elements.homeScreen.jobs, 20000 )
 				.click()
@@ -64,8 +65,9 @@ module.exports = function () {
 		} );
 
 		it( 'should check tabs on jobsScreen are there'.green, function () {
-					
-			if (  Store.get( 'lastUser' ).userRole != 'client' &&  Store.get( 'lastUser' ).userRole != 'AdminClient' ) {
+			
+			var lastUser = Store.get( 'lastUser' );		
+			if ( lastUser.userRole != 'client' &&  lastUser.userRole != 'AdminClient' ) {
 				return driver
 				.elementByName( elements.jobsScreen.newJobsTab.newJobsHeader )
 				.isDisplayed().should.eventually.be.true
@@ -92,7 +94,8 @@ module.exports = function () {
 
 		it( 'Sould look for jobs to accept and accept if job is present'.green, function () {
 			
-			if ( Store.get( 'lastUser' ).userRole != 'client' &&  Store.get( 'lastUser' ).userRole != 'AdminClient' && Store.get( 'lastUser' ).newJob === true ) {
+			var lastUser = Store.get( 'lastUser' );
+			if ( lastUser.userRole != 'client' &&  lastUser.userRole != 'AdminClient' && lastUser.newJob === true ) {
 				return driver
 				.elementByNameIfExists( commons.getItem( elements.jobsScreen.newJobsTab.newJobs, 0 ) )
 				.then( function ( newJob ) {
@@ -140,11 +143,11 @@ module.exports = function () {
 		it( 'should go back to homeScreen'.green, function () {
 					
 			return driver
-			.elementByName( elements.homeScreen.actions )
+			.elementByNameIfExists( elements.homeScreen.actions )
 			.isDisplayed()
 			.then( function ( homeScreen ) {
 
-				if ( homeScreen ) {
+				if ( homeScreen === true ) {
 					console.log( 'App is already at the homeScreen.'.red );
 					return driver
 					.elementByName( elements.homeScreen.actions )
@@ -153,7 +156,7 @@ module.exports = function () {
 					.click()
 					.sleep ( 2000 );
 
-				} else {
+				} else if ( homeScreen === false ) {
 					if ( commons.isIOS() ) {
 						console.log( 'isIOS app is at the jobsScreen.'.red ); 
 						return driver

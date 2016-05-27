@@ -38,7 +38,8 @@ module.exports = function () {
 
 		it( 'should log out of a vehicle from actions screen.'.green, function () {
 
-			if ( Store.get( 'lastUser' ).truckOption === true && Store.get( 'lastUser' ).userRole != 'client' && config.isInVehicle === true ) {
+			var lastUser = Store.get( 'lastUser' );
+			if ( lastUser.truckOption === true && lastUser.userRole != 'client' && config.isInVehicle === true ) {
 				console.log( 'Logged into a vehicle. Will log out of current vehicle'.red );
 				return driver
 				.elementByName( elements.actionsScreen.companyVehicle )
@@ -59,7 +60,8 @@ module.exports = function () {
 
 		it( 'should Do Post-Inspection?.'.green, function () {
 
-			if ( Store.get( 'lastUser' ).truckOption === true && Store.get( 'lastUser' ).userRole != 'client' && config.isInVehicle === true ) {
+			var lastUser = Store.get( 'lastUser' );
+			if ( lastUser.truckOption === true && lastUser.userRole != 'client' && config.isInVehicle === true ) {
 				console.log( 'user should perfom inspection'.red );
 				return commons.alertText( alerts.actionsScreenAlerts.companyVehicle.postInspection )
 				.elementByName( elements.alertButtons.no )

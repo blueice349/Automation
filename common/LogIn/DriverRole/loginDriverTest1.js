@@ -20,6 +20,7 @@ module.exports = function () {
 	var name;
 	var permissionGranted;
 	var newJob;
+	var tagButton;
 
 	describe( 'Start login Process using "loginDriverTest1.js"'.green, function( done ) {
 
@@ -70,6 +71,7 @@ module.exports = function () {
 					userName          = login.driverLogins.driver1.username;
 					name              = login.driverLogins.driver1.name;
 					newJob            = login.driverLogins.driver1.newJob;
+					tagButton         = login.driverLogins.driver1.tagButton;
 					return commons.sendKeys( el, login.driverLogins.driver1.client_account );
 
 				} else if ( commons.isAndroid() ) {
@@ -79,6 +81,7 @@ module.exports = function () {
 					userName          = login.driverLogins.driver2.username;
 					name              = login.driverLogins.driver2.name;
 					newJob            = login.driverLogins.driver2.newJob;
+					tagButton         = login.driverLogins.driver2.tagButton;
 					return commons.sendKeys(el, login.driverLogins.driver2.client_account );
 				}
 			} )
@@ -180,7 +183,8 @@ module.exports = function () {
 				'userName'          : userName,
 				'name'              : name,
 				'permissionGranted' : permissionGranted,
-				'newJob'            : newJob
+				'newJob'            : newJob,
+				'tagButton'         : tagButton
 			} );
 			config.currentTest = 'passed';
 		} );

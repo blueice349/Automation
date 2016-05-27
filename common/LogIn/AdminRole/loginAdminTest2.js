@@ -20,6 +20,7 @@ module.exports = function () {
 	var name;
 	var permissionGranted;
 	var newJob;
+	var tagButton;
 
 	describe( 'Start login Process using "loginAdminTest2.js"'.green, function( done ) {
 
@@ -60,6 +61,7 @@ module.exports = function () {
 					userName          = login.adminLogins.admin3.username;
 					name              = login.adminLogins.admin3.name;
 					newJob            = login.adminLogins.admin3.newJob;
+					tagButton         = login.adminLogins.admin3.tagButton;
 					return commons.sendKeys( el, login.adminLogins.admin3.client_account );
 
 				} else if ( commons.isAndroid() ) {
@@ -69,6 +71,7 @@ module.exports = function () {
 					userName          = login.adminLogins.admin4.username;
 					name              = login.adminLogins.admin4.name;
 					newJob            = login.adminLogins.admin4.newJob;
+					tagButton         = login.adminLogins.admin4.tagButton;
 					return commons.sendKeys(el, login.adminLogins.admin4.client_account );
 				}
 			} )
@@ -158,7 +161,8 @@ module.exports = function () {
 				'userName'          : userName,
 				'name'              : name,
 				'permissionGranted' : permissionGranted,
-				'newJob'            : newJob
+				'newJob'            : newJob,
+				'tagButton'         : tagButton
 			} );
 			config.currentTest = 'passed';
 		} );

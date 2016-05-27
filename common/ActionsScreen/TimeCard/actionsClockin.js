@@ -36,7 +36,8 @@ module.exports = function () {
 
 		it( 'should clockin from actionsScreen.'.green, function () {
 
-			if ( Store.get( 'lastUser' ).clockInOption === true && Store.get( 'lastUser' ).userRole != 'client' && config.isClockedin === false ) {	
+			var lastUser = Store.get( 'lastUser' );
+			if ( lastUser.clockInOption === true && lastUser.userRole != 'client' && config.isClockedin === false ) {	
 				console.log( 'Clock In Button'.red );
 				return driver
 				.elementByName( elements.actionsScreen.clockIn )

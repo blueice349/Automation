@@ -34,10 +34,16 @@ module.exports = function () {
 				.isDisplayed().should.eventually.be.true
 				.elementByName( elements.homeScreen.alerts )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.homeScreen.expiredTags )
-				.isDisplayed().should.eventually.be.true
 				.elementByName( elements.homeScreen.jobs )
 				.isDisplayed().should.eventually.be.true
+				.then( function () {
+
+					if ( lastUser.tagButton == true ) {
+						return driver
+						.elementByName( elements.homeScreen.expiredTags )
+						.isDisplayed().should.eventually.be.true
+					}
+				} )
 				.then( function () {
 
 					config.currentTest = 'passed';

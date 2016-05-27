@@ -37,7 +37,8 @@ module.exports = function () {
 
 		it( 'should click on the "select vehicle button" from actions screen.'.green, function () {
 
-			if ( Store.get( 'lastUser' ).truckOption === true && Store.get( 'lastUser' ).userRole != 'client' && config.isInVehicle === false ) {
+			var lastUser = Store.get( 'lastUser' );
+			if ( lastUser.truckOption === true && lastUser.userRole != 'client' && config.isInVehicle === false ) {
 					console.log( 'Not logged into a vehicle. Will log into a vehicle'.red );
 					return driver
 					.elementByName( elements.actionsScreen.companyVehicle )
@@ -59,7 +60,8 @@ module.exports = function () {
 
 		it( 'should Select a vehicle from actions screen.'.green, function () {
 
-			if ( Store.get( 'lastUser' ).truckOption === true && Store.get( 'lastUser' ).userRole != 'client' && config.isInVehicle === false ) {
+			var lastUser = Store.get( 'lastUser' );
+			if ( lastUser.truckOption === true && lastUser.userRole != 'client' && config.isInVehicle === false ) {
 					console.log( 'Not logged into a vehicle. Will log into a vehicle'.red );
 					return driver
 					.elementByName( elements.companyVehicle.vehicle1 )
@@ -81,8 +83,9 @@ module.exports = function () {
 		} );
 
 		it( 'Should Review Inspection.'.green, function () {
-
-			if ( Store.get( 'lastUser' ).truckOption === true && Store.get( 'lastUser' ).userRole != 'client' && config.isInVehicle === false ) {
+			
+			var lastUser = Store.get( 'lastUser' );
+			if ( lastUser.truckOption === true && lastUser.userRole != 'client' && config.isInVehicle === false ) {
 					console.log( 'Will perform insoection'.red );
 					return driver
 					.elementByNameIfExists( elements.companyVehicle.review )

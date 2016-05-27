@@ -18,11 +18,12 @@ module.exports = function () {
 
 		it( 'Should check userRole '.green, function () {
 
+			var lastUser = Store.get( 'lastUser' );
 			return driver
 			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
 			.then( function () {
 
-				if ( Store.get( 'lastUser' )userRole === 'admin' || Store.get( 'lastUser' )userRole === 'driver'  ) {
+				if ( lastUser.userRole === 'admin' || lastUser.userRole === 'driver'  ) {
 					console.log( 'User is Allowed to add a New Redord'.red );
 					canCreate = true;
 					config.currentTest = 'passed';

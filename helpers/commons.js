@@ -88,9 +88,10 @@ Commons.prototype.whereAmI = function () {
 
 	return driver
 	.elementByNameIfExists( elements.formScreen.actions )
+	.isDisplayed()
 	.then( function ( actions ) {
 
-		if ( actions ) {
+		if ( actions === true ) {
 			if ( this.isIOS() ) {
 				driver
 				.elementByName( elements.formScreen.back )
@@ -156,7 +157,7 @@ Commons.prototype.beforeEachIt = function ( ) {
 			) || ( config.currentTest == 'testStarted' )
 		) {
 			console.log( 'Next test was skipped do to a failed logoutTest test or a stat is testStarted '.red );
-			assert.fail( 'current test status ' + config.currentTest );
+			//assert.fail( 'current test status ' + config.currentTest );
 			this.skip();
 
 		} else if ( config.currentTest == 'passed' || config.currentTest == 'notStarted' ) {
@@ -201,42 +202,42 @@ Commons.prototype.afterEachDes = function () {
 			// 		require( lastLogin.loginTest )();
 			// 	}
 			// } );
-			.then( function () {
 			
-				console.log( 'App Restarted due to Failed test... App will not restart if a failed login test was performed'.green );
-				return driver
-				.elementByNameIfExists( elements.formScreen.actions )
-				.then( function ( actions ) {
+			// console.log( 'App Restarted due to Failed test... App will not restart if a failed login test was performed'.green );
+			// return driver
+			.elementByNameIfExists( elements.formScreen.actions )
+			.isDisplayed()
+			.then( function ( actions ) {
 
-					if ( actions ) {
-						if ( this.isIOS() ) {
-							return driver
-							.elementByName( elements.formScreen.back )
-							.click()
-							.sleep ( 1000 )
-							.waitForElementByName( elements.homeScreen.syncAllowed, 180000 )
-							console.log( 'Made sure test is back on the homeScreen'.green );
-						} else if ( this.isAndroid() ) { 
-							return driver
-							.back()
-							.sleep( 1000 )
-							.waitForElementByName( elements.homeScreen.syncAllowed, 180000 )
-							console.log( 'Made sure test is back on the homeScreen'.green );
-						}
-					} else if ( config.logoutTest === true ) {
+				if ( actions === true ) {
+					if ( this.isIOS() ) {
 						return driver
-						.elementByNameIfExists( elements.loginScreen.client_account )
-						.then( function ( loginScreen ) {
-
-							if( loginScreen ) {
-								console.log( 'Test is at loginScreen after a resetApp was performed'.red );
-							} else {
-								console.log( 'Test was unable to locate current location' );
-								this.skip();
-							}
-						} );
+						.elementByName( elements.formScreen.back )
+						.click()
+						.sleep ( 1000 )
+						.waitForElementByName( elements.homeScreen.syncAllowed, 180000 )
+						console.log( 'Made sure test is back on the homeScreen'.green );
+					} else if ( this.isAndroid() ) { 
+						return driver
+						.back()
+						.sleep( 1000 )
+						.waitForElementByName( elements.homeScreen.syncAllowed, 180000 )
+						console.log( 'Made sure test is back on the homeScreen'.green );
 					}
-				} );
+				} else if ( config.logoutTest === true ) {
+					return driver
+					.elementByNameIfExists( elements.loginScreen.client_account )
+					.isDisplayed()
+					.then( function ( loginScreen ) {
+
+						if( loginScreen === true ) {
+							console.log( 'Test is at loginScreen after a resetApp was performed'.red );
+						} else {
+							console.log( 'Test was unable to locate current location' );
+							this.skip();
+						}
+					} );
+				}
 			} );
 
 		} else if ( config.loginTest == true && config.currentTest != 'passed' ) {

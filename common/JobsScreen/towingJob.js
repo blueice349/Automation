@@ -33,7 +33,8 @@ module.exports = function () {
 
 		it( 'should check userRole and go to jobsScreen'. green, function () {
 			
-			if ( Store.get( 'lastUser' ).userRole != 'client' && Store.get( 'lastUser' ).userRole != 'AdminClient' ) {
+			var lastUser = Store.get( 'lastUser' );
+			if ( lastUser.userRole != 'client' && lastUser.userRole != 'AdminClient' ) {
 				return driver
 				.waitForElementByName( elements.homeScreen.jobs, 20000 )
 				.click()
@@ -63,8 +64,9 @@ module.exports = function () {
 		} );
 
 		it( 'should check tabs on jobsScreen are there'.green, function () {
-					
-			if (  Store.get( 'lastUser' ).userRole != 'client' &&  Store.get( 'lastUser' ).userRole != 'AdminClient' ) {
+			
+			var lastUser = Store.get( 'lastUser' );		
+			if ( lastUser.userRole != 'client' &&  lastUser.userRole != 'AdminClient' ) {
 				return driver
 				.elementByName( elements.jobsScreen.newJobsTab.newJobsHeader )
 				.isDisplayed().should.eventually.be.true
@@ -93,8 +95,8 @@ module.exports = function () {
 
 		it( 'Sould look for jobs in "My open Jobs" and "Update Status" to "Towing Job"'.green, function () {
 			
-			if (  Store.get( 'lastUser' ).userRole != 'client' &&  Store.get( 'lastUser' ).userRole != 'AdminClient' ) {
-
+			var lastUser = Store.get( 'lastUser' );
+			if ( lastUser.userRole != 'client' &&  lastUser.userRole != 'AdminClient' ) {
 				return driver
 				.elementByNameIfExists( commons.getItem( elements.jobsScreen.openJobsTab.openJobs, 0 ) )
 				.then( function ( openJobs ) {
@@ -124,12 +126,27 @@ module.exports = function () {
 										return towingPlus
 										.click()
 										.sleep ( 1000 )
+										.then( function () {
+
+											if ( commons.isAndroid() ) {
+												return driver
+												.elementByNameIfExists( elements.mobile_MikeRecord.otherFields.textFieldCond )
+												.isDisplayed()
+												.then( function ( keyboard ) {
+													
+													if ( keyboard === false ) {
+														console.log( 'keyboard is visible.'.red );
+														return driver
+														.hideKeyboard();
+													}
+												} )
+											}										} ) 
 										.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
 										.text()
 										.then( function ( textFieldCond ) {
 
 											if ( textFieldCond === '' ) {
-												 return commons.sendKeys( driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond ), Store.get( 'lastUser' ).userName + ' Conditional Field' );
+												 return commons.sendKeys( driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond ), lastUser.userName + ' Conditional Field' );
 
 											} else {
 												console.log( 'textFieldCond has the following data: ' + driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond ) );
@@ -140,7 +157,7 @@ module.exports = function () {
 										.then( function ( textFieldReq ) {
 
 											if ( textFieldReq === '' ) {
-												 return commons.sendKeys( driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq ), Store.get( 'lastUser' ).userName + ' Required Field' );
+												 return commons.sendKeys( driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq ), lastUser.userName + ' Required Field' );
 
 											} else {
 												console.log( 'textFieldReq has the following data: ' + driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq ) );
@@ -163,13 +180,29 @@ module.exports = function () {
 												return driver
 												.elementByName( elements.alertButtons.yes )
 												.click()
-												.sleep ( 1000 )
+												.sleep ( 100 )
+												.then( function () {
+
+													if ( commons.isAndroid() ) {
+														return driver
+														.elementByNameIfExists( elements.mobile_MikeRecord.otherFields.textFieldCond )
+														.isDisplayed()
+														.then( function ( keyboard ) {
+															
+															if ( keyboard === false ) {
+																console.log( 'keyboard is visible.'.red );
+																return driver
+																.hideKeyboard();
+															}
+														} )
+													}
+												} ) 
 												.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
 												.text()
 												.then( function ( textFieldCond ) {
 
 													if ( textFieldCond == '' ) {
-														 return commons.sendKeys( driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond ), Store.get( 'lastUser' ).userName + ' Conditional Field' );
+														 return commons.sendKeys( driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond ), lastUser.userName + ' Conditional Field' );
 
 													} else {
 														console.log( 'textFieldCond has the following data: ' + driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond ) );
@@ -180,7 +213,7 @@ module.exports = function () {
 												.then( function ( textFieldReq ) {
 
 													if ( textFieldReq == '' ) {
-														 return commons.sendKeys( driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq ), Store.get( 'lastUser' ).userName + ' Conditional Field' );
+														 return commons.sendKeys( driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq ), lastUser.userName + ' Conditional Field' );
 
 													} else {
 														console.log( 'textFieldReq has the following data: ' + driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq ) );
@@ -253,11 +286,11 @@ module.exports = function () {
 		it( 'should go back to homeScreen'.green, function () {
 					
 			return driver
-			.elementByName( elements.homeScreen.actions )
+			.elementByNameIfExists( elements.homeScreen.actions )
 			.isDisplayed()
 			.then( function ( homeScreen ) {
 
-				if ( homeScreen ) {
+				if ( homeScreen === true ) {
 					return driver
 					.elementByName( elements.homeScreen.actions )
 					.isDisplayed().should.eventually.be.true
@@ -265,7 +298,7 @@ module.exports = function () {
 					.click()
 					.sleep ( 2000 );
 
-				} else {
+				} else if ( homeScreen === false ) {
 					if ( commons.isIOS() ) {
 						return driver
 						.elementByName( elementByName.jobsScreen.back )
