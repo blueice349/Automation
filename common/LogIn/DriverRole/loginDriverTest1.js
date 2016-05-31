@@ -19,7 +19,7 @@ module.exports = function () {
 	var userName;
 	var name;
 	var permissionGranted;
-	var newJob;
+	var performJob;
 	var tagButton;
 
 	describe( 'Start login Process using "loginDriverTest1.js"'.green, function( done ) {
@@ -39,10 +39,10 @@ module.exports = function () {
 		it( 'should check fields on loginScreen'.green, function() {
 			
 			console.log( 'Config.clockedIn 1 '.red + config.clockedIn );
-			config.loginTest   = true;
+			config.loginTest = true;
 			return driver
 			.waitForElementByName( elements.loginScreen.client_account, 120000 )
-			.isDisplayed().should.eventually.be.true
+			.isDisplayed().should.eventually.be.false
 			.elementByName( elements.loginScreen.user_name )
 			.isDisplayed().should.eventually.be.true
 			.elementByName( elements.loginScreen.password )
@@ -70,7 +70,7 @@ module.exports = function () {
 					userRole          = login.driverLogins.driver1.userRole;
 					userName          = login.driverLogins.driver1.username;
 					name              = login.driverLogins.driver1.name;
-					newJob            = login.driverLogins.driver1.newJob;
+					performJob        = login.driverLogins.driver1.performJob;
 					tagButton         = login.driverLogins.driver1.tagButton;
 					return commons.sendKeys( el, login.driverLogins.driver1.client_account );
 
@@ -80,7 +80,7 @@ module.exports = function () {
 					userRole          = login.driverLogins.driver2.userRole;
 					userName          = login.driverLogins.driver2.username;
 					name              = login.driverLogins.driver2.name;
-					newJob            = login.driverLogins.driver2.newJob;
+					performJob        = login.driverLogins.driver2.performJob;
 					tagButton         = login.driverLogins.driver2.tagButton;
 					return commons.sendKeys(el, login.driverLogins.driver2.client_account );
 				}
@@ -183,7 +183,7 @@ module.exports = function () {
 				'userName'          : userName,
 				'name'              : name,
 				'permissionGranted' : permissionGranted,
-				'newJob'            : newJob,
+				'performJob'        : performJob,
 				'tagButton'         : tagButton
 			} );
 			config.currentTest = 'passed';
@@ -220,7 +220,7 @@ module.exports = function () {
 					config.currentTest = 'passed';
 				} );
 
-			} else if( commons.isIOS() && ( userRole === 'client' ||  userRole === 'AdminClient' ) ) {
+			} else if( commons.isIOS() && userRole != 'driver' && userRole != 'admin' ) {
 				console.log( 'Client user on a iOS device'.green );
 				return driver
 		   		.elementByNameIfExists( elements.alertButtons.allow )

@@ -19,7 +19,7 @@ module.exports = function () {
 	var userName;
 	var name;
 	var permissionGranted;
-	var newJob;
+	var performJob;
 	var tagButton;
 
 	describe( 'Start login Process using "loginClientTest2.js"'.green, function () {
@@ -60,7 +60,7 @@ module.exports = function () {
 					userRole          = login.clientLogins.client3.userRole;
 					userName          = login.clientLogins.client3.username;
 					name              = login.clientLogins.client3.name;
-					newJob            = login.clientLogins.client3.newJob;
+					performJob        = login.clientLogins.client3.performJob;
 					tagButton         = login.clientLogins.client3.tagButton;
 					return commons.sendKeys( el, login.clientLogins.client3.client_account );
 
@@ -70,7 +70,7 @@ module.exports = function () {
 					userRole          = login.clientLogins.client4.userRole;
 					userName          = login.clientLogins.client4.username;
 					name              = login.clientLogins.client4.name;
-					newJob            = login.clientLogins.client4.newJob;
+					performJob        = login.clientLogins.client4.performJob;
 					tagButton         = login.clientLogins.client4.tagButton;
 					return commons.sendKeys(el, login.clientLogins.client4.client_account );
 				}
@@ -161,7 +161,7 @@ module.exports = function () {
 				'userName'          : userName,
 				'name'              : name,
 				'permissionGranted' : permissionGranted,
-				'newJob'            : newJob,
+				'performJob'        : performJob,
 				'tagButton'         : tagButton
 			} );
 			config.currentTest = 'passed';

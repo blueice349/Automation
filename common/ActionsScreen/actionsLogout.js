@@ -15,6 +15,10 @@ module.exports = function () {
 
 	describe( 'Start Done with Logout Process from actionsScreen user logout.js'.green, function () {
 
+		commons.beforeEachDes();
+		commons.beforeEachIt();
+   		commons.afterEachDes();
+   		
 		it( 'should wait for syncAllowed.'.green, function () {
 			var lastUser = Store.get( 'lastUser' );
 			return driver
@@ -57,12 +61,12 @@ module.exports = function () {
 				.click()
 				.then( function () {
 
-					config.currentTest = 'passsed';
+					config.currentTest = 'passed';
 				} );
 
 			} else if ( lastUser.truckOption === false ) {
 				console.log( 'User does not have vehicle options!'.red );
-				config.currentTest = 'passsed';
+				config.currentTest = 'passed';
 
 			} else {
 				assert.fail( 'User truckOption is \'undefined\' and/or not set up!'.red );

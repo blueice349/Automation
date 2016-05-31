@@ -19,7 +19,7 @@ module.exports = function () {
 	var userName;
 	var name;
 	var permissionGranted;
-	var newJob;
+	var performJob;
 	var tagButton;
 
 	describe( 'Start login Process using "loginAdminTest1.js"'.green, function() {
@@ -60,7 +60,7 @@ module.exports = function () {
 					userRole          = login.adminLogins.admin1.userRole;
 					userName          = login.adminLogins.admin1.username;
 					name              = login.adminLogins.admin1.name;
-					newJob            = login.adminLogins.admin1.newJob;
+					performJob        = login.adminLogins.admin1.performJob;
 					tagButton         = login.adminLogins.admin1.tagButton;
 					return commons.sendKeys( el, login.adminLogins.admin1.client_account );
 
@@ -70,7 +70,7 @@ module.exports = function () {
 					userRole          = login.adminLogins.admin2.userRole;
 					userName          = login.adminLogins.admin2.username;
 					name              = login.adminLogins.admin2.name;
-					newJob            = login.adminLogins.admin2.newJob;
+					performJob        = login.adminLogins.admin2.performJob;
 					tagButton         = login.adminLogins.admin2.tagButton;
 					return commons.sendKeys(el, login.adminLogins.admin2.client_account );
 				}
@@ -161,7 +161,7 @@ module.exports = function () {
 				'userName'          : userName,
 				'name'              : name,
 				'permissionGranted' : permissionGranted,
-				'newJob'            : newJob,
+				'performJob'        : performJob,
 				'tagButton'         : tagButton
 			} );
 			config.currentTest = 'passed';

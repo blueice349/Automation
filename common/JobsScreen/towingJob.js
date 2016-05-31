@@ -134,13 +134,14 @@ module.exports = function () {
 												.isDisplayed()
 												.then( function ( keyboard ) {
 													
-													if ( keyboard === false ) {
+													if ( keyboard != true ) {
 														console.log( 'keyboard is visible.'.red );
 														return driver
 														.hideKeyboard();
 													}
 												} )
-											}										} ) 
+											}
+										} )
 										.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
 										.text()
 										.then( function ( textFieldCond ) {
@@ -189,7 +190,7 @@ module.exports = function () {
 														.isDisplayed()
 														.then( function ( keyboard ) {
 															
-															if ( keyboard === false ) {
+															if ( keyboard != true ) {
 																console.log( 'keyboard is visible.'.red );
 																return driver
 																.hideKeyboard();
@@ -301,9 +302,9 @@ module.exports = function () {
 				} else if ( homeScreen === false ) {
 					if ( commons.isIOS() ) {
 						return driver
-						.elementByName( elementByName.jobsScreen.back )
+						.elementByName( elements.jobsScreen.back )
 						.isDisplayed().should.eventually.be.true
-						.elementByName( elementByName.jobsScreen.back )
+						.elementByName( elements.jobsScreen.back )
 						.click()
 						.sleep( 1000 );
 

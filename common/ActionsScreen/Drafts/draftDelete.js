@@ -48,6 +48,16 @@ module.exports = function () {
 			.elementByName( elements.actionsScreen.drafts )
 			.click()
 			.sleep( 800 )
+			.elementByNameIfExists( elements.draftsScreen.search )
+			.isDisplayed()
+			.then( function ( hideKeyboard ) {
+
+				if ( commons.isAndroid() && hideKeyboard === true ) {
+					return driver
+					.hideKeyboard()
+					.sleep ( 200 );
+				}
+			} )
 			.then( function () {
 
 				config.currentTest = 'passed';
@@ -61,16 +71,16 @@ module.exports = function () {
 			.then( function ( drafts ) {
 
 				if ( drafts ) {
-					return drafts
-					.click()
-					.sleep( 1000 )
-					.waitForElementByName( elements.alertButtons.deleteRecord, 10000 )
-					.click()
-					.sleep( 2000 )
-					.then( function () {
+				return drafts
+				.click()
+				.sleep( 1000 )
+				.waitForElementByName( elements.alertButtons.deleteRecord, 10000 )
+				.click()
+				.sleep( 2000 )
+				.then( function () {
 
-						config.currentTest = 'passed';
-					} );
+					config.currentTest = 'passed';
+				} );
 
 				} else {
 					console.log( 'No Drafts to Delete.'.red);
@@ -93,7 +103,6 @@ module.exports = function () {
 
 			} else if ( commons.isAndroid() ) {
 				return driver
-				.hideKeyboard().sleep ( 200 )
 				.back()
 				.sleep( 1000 )
 				.then( function () {

@@ -111,7 +111,7 @@ exports.itemListScreen = {
 	'map'        : 'map_Button.',
 	'nearMe'     : 'nearMe_Button.',
 	'newRecord'  : 'new_Button.',
-	'search'     : 'search.',
+	'search'     : 'itemListSearch.',
 	'showAll'    : 'showAll_Button'
 }
 
@@ -192,7 +192,7 @@ exports.recentScreen = {
 	// 'saved_Item'  : 
 	'viewed_Tab'  : 'recentViewed_Tab.',
 	// 'viewed_Item' : 
-	'search'      : 'search.'
+	'search'      : 'recentSearch.'
 }
 
 exports.expiredTagsScreen = {
@@ -235,10 +235,12 @@ exports.settingsScreen = {
 
 exports.draftsScreen = {
 	'back'   : 'draftsBack_Button.',   //'//UIAApplication[1]/UIAWindow[1]/UIAToolbar[1]/UIAButton[1]',
+	'delete' : 'Delete',
 	'draft'  : 'draft_', //Make sure you use getItem() from the commons.
 	'edit'   : 'Edit',
-	'view'   : 'View',
-	'delete' : 'Delete'
+	'search' : 'draftSearch.',
+	'view'   : 'View'
+	
 }
 
 exports.inspectionRecord = {

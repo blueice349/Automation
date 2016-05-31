@@ -130,18 +130,14 @@ Commons.prototype.beforeAll = function () {
 
 Commons.prototype.beforeEachDes = function ( ) {
 
-	// before( function ( done ) {
-	
-	//  done( new Error( 'failed' ) ); 
-	// } );
-
 	before( function () {
+		
 		console.log( 'beforeEachDes '.red + config.currentTest + ' ' + config.loginTest );
-		if ( config.currentTest != 'passed' && config.loginTest == true ) {
+		if ( config.currentTest != 'passed' && config.loginTest === true ) {
 			console.log( 'Next test was skipped do to login failed test '.red );
 			this.skip();
 
-		} else if ( config.currentTest == 'passed' ) {
+		} else if ( config.currentTest === 'passed' ) {
 			config.currentTest = 'notStarted';
 			config.loginTest   = false; 
 		}
@@ -152,16 +148,11 @@ Commons.prototype.beforeEachIt = function ( ) {
 
 	beforeEach( function () {
 		console.log( 'beforeEachIt '.red + 'Curent Test Status ' + config.currentTest + ' Current test Login? ' + config.loginTest );
-		if ( ( config.currentTest != 'passed'
-				&& config.loginTest == true
-			) || ( config.currentTest == 'testStarted' )
-		) {
-			console.log( 'Next test was skipped do to a failed logoutTest test or a stat is testStarted '.red );
-			//assert.fail( 'current test status ' + config.currentTest );
+		if ( config.currentTest != 'passed' && config.loginTest === true || config.currentTest === 'testStarted' ) {
+			console.log( 'Next test was skipped'.red );
 			this.skip();
 
-		} else if ( config.currentTest == 'passed' || config.currentTest == 'notStarted' ) {
-			var lastUser = Store.get( 'lastUser' );
+		} else if ( config.currentTest === 'passed' || config.currentTest === 'notStarted' ) {
 			config.currentTest = 'testStarted';
 		}
 	} );
@@ -188,11 +179,14 @@ Commons.prototype.afterEachDes = function () {
 		console.log( 'afterEachDes '.red  + config.currentTest );
 		allPassed = allPassed && this.currentTest.state === 'passed';
 		
-		if ( config.currentTest != 'passed' && config.loginTest != true && config.logoutTest != true ) {
+		if ( config.currentTest != 'passed' && config.loginTest != true || config.currentTest != 'passed' && config.logoutTest === true  ) {
 			config.currentTest = 'notStarted';
-			config.resetApp = true;
 			return driver
 			.resetApp()
+			.then( function () {
+
+				config.resetApp = true;
+			} )
 			.sleep ( 1000 )
 			// .then( function () {
 
@@ -216,13 +210,21 @@ Commons.prototype.afterEachDes = function () {
 						.click()
 						.sleep ( 1000 )
 						.waitForElementByName( elements.homeScreen.syncAllowed, 180000 )
-						console.log( 'Made sure test is back on the homeScreen'.green );
-					} else if ( this.isAndroid() ) { 
+						.then( function () {
+
+							config.isAtHomeScreen = true;
+							console.log( 'Made sure test is back on the homeScreen'.green );
+						} );
+					} else if ( this.isAndroid() ) {
 						return driver
 						.back()
 						.sleep( 1000 )
 						.waitForElementByName( elements.homeScreen.syncAllowed, 180000 )
-						console.log( 'Made sure test is back on the homeScreen'.green );
+						.then( function () {
+
+							config.isAtHomeScreen = true;
+							console.log( 'Made sure test is back on the homeScreen'.green );
+						} );
 					}
 				} else if ( config.logoutTest === true ) {
 					return driver
@@ -240,12 +242,10 @@ Commons.prototype.afterEachDes = function () {
 				}
 			} );
 
-		} else if ( config.loginTest == true && config.currentTest != 'passed' ) {
+		} else if ( config.loginTest === true && config.currentTest != 'passed' ) {
 				console.log( 'Automation could not resert and comeplete due to a login failed test. '.red );
-		} else if ( config.logoutTest == true && config.currentTest != 'passed' ) {
-
-
-		} else if ( config.currentTest == 'passed' ) {
+	
+		} else if ( config.currentTest === 'passed' ) {
 			console.log( 'Tested Passed will start next test.....'.green );
 		}
 	}.bind( this ) );
@@ -254,7 +254,9 @@ Commons.prototype.afterEachDes = function () {
 Commons.prototype.afterEachIt = function () {
 	
 	afterEach( function () {
-
+		console.log( 'afterEachIt #1: ' + config.currentTest );
+		config.currentTest = 'passed';
+		console.log( 'afterEachIt #2: ' + config.currentTest );
 	} );
 };
 

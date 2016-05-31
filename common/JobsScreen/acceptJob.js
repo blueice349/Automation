@@ -95,7 +95,7 @@ module.exports = function () {
 		it( 'Sould look for jobs to accept and accept if job is present'.green, function () {
 			
 			var lastUser = Store.get( 'lastUser' );
-			if ( lastUser.userRole != 'client' &&  lastUser.userRole != 'AdminClient' && lastUser.newJob === true ) {
+			if ( lastUser.userRole != 'client' &&  lastUser.userRole != 'AdminClient' && lastUser.performJob === true ) {
 				return driver
 				.elementByNameIfExists( commons.getItem( elements.jobsScreen.newJobsTab.newJobs, 0 ) )
 				.then( function ( newJob ) {
@@ -135,7 +135,7 @@ module.exports = function () {
 					}
 				} );
 			} else {
-				console.log( 'user does not have a newJob'.red );
+				console.log( 'user does not have need to performJob'.red );
 				config.currentTest = 'passed';
 			}
 		} );
@@ -160,9 +160,9 @@ module.exports = function () {
 					if ( commons.isIOS() ) {
 						console.log( 'isIOS app is at the jobsScreen.'.red ); 
 						return driver
-						.elementByName( elementByName.jobsScreen.back )
+						.elementByName( elements.jobsScreen.back )
 						.isDisplayed().should.eventually.be.true
-						.elementByName( elementByName.jobsScreen.back )
+						.elementByName( elements.jobsScreen.back )
 						.click()
 						.sleep( 1000 );
 

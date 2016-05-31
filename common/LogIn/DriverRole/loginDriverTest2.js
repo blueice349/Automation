@@ -19,7 +19,7 @@ module.exports = function () {
 	var userName;
 	var name;
 	var permissionGranted;
-	var newJob;
+	var performJob;
 	var tagButton;
 
 	describe( 'Start login Process using "loginDriverTest2.js"'.green, function() {
@@ -60,7 +60,7 @@ module.exports = function () {
 					userRole          = login.driverLogins.driver3.userRole;
 					userName          = login.driverLogins.driver3.username;
 					name              = login.driverLogins.driver3.name;
-					newJob            = login.driverLogins.driver3.newJob;
+					performJob        = login.driverLogins.driver3.performJob;
 					tagButton         = login.driverLogins.driver3.tagButton;
 					return commons.sendKeys( el, login.driverLogins.driver3.client_account );
 
@@ -70,7 +70,7 @@ module.exports = function () {
 					userRole          = login.driverLogins.driver4.userRole;
 					userName          = login.driverLogins.driver4.username;
 					name              = login.driverLogins.driver4.name;
-					newJob            = login.driverLogins.driver4.newJob;
+					performJob        = login.driverLogins.driver4.performJob;
 					tagButton         = login.driverLogins.driver4.tagButton;
 					return commons.sendKeys(el, login.driverLogins.driver4.client_account );
 				}
@@ -136,7 +136,7 @@ module.exports = function () {
 			}
 		} );
 
-		iit( 'should click accept_terms and login_button'.green, function () {
+		it( 'should click accept_terms and login_button'.green, function () {
 
 			config.loginTest = true;
 			return driver
@@ -161,7 +161,7 @@ module.exports = function () {
 				'userName'          : userName,
 				'name'              : name,
 				'permissionGranted' : permissionGranted,
-				'newJob'            : newJob,
+				'performJob'        : performJob,
 				'tagButton'         : tagButton
 			} );
 			config.currentTest = 'passed';

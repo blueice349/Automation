@@ -48,6 +48,16 @@ module.exports = function () {
 			.elementByName( elements.actionsScreen.drafts )
 			.click()
 			.sleep( 800 )
+			.elementByNameIfExists( elements.draftsScreen.search )
+			.isDisplayed()
+			.then( function ( hideKeyboard ) {
+
+				if ( commons.isAndroid() && hideKeyboard === true ) {
+					return driver	
+					.hideKeyboard()
+					.sleep ( 200 );
+				}
+			} )
 			.then( function () {
 
 				config.currentTest = 'passed';
@@ -89,9 +99,12 @@ module.exports = function () {
 				if ( actions ) {
 					return driver
 					.sleep( 1000 )
-					.then( function () {
-
-						if ( commons.isAndroid() ) {
+					.elementByNameIfExists( elements.mobile_MikeRecord.otherFields.textFieldCond )
+					.isDisplayed()
+					.then( function ( keyboard ) {
+						
+						if ( commons.isAndroid() && keyboard != true ) {
+							console.log( 'keyboard is visible.'.red );
 							return driver
 							.hideKeyboard();
 						}
@@ -139,7 +152,21 @@ module.exports = function () {
 					.elementByName( elements.formScreen.actions )
 					.click()
 					.elementByName( elements.formScreen.save )
-					.click();
+					.click()
+					.then( function () {
+
+						if ( commons.isIOS() ) {
+							return driver
+							.elementByName( elements.draftsScreen.back )
+							.click()
+							.sleep( 1000 );
+
+					} else if ( commons.isAndroid() ) {
+						return driver
+						.back()
+						.sleep( 1000 );
+					}
+				} )
 
 				} else {
 					console.log( 'No Drafts to Save.'.red);
@@ -177,15 +204,6 @@ module.exports = function () {
 
 			} else if ( commons.isAndroid() ) {
 				return driver
-				.elementByNameIfExists( 'Space' )
-				.then( function ( keyboard ) {
-
-					if ( keyboard ) {
-						return driver
-						.hideKeyboard()
-						.sleep ( 200 );
-					}
-				} )
 				.waitForElementByName( elements.actionsScreen.drafts, 120000 )
 				.back()
 				.sleep( 1000 )
