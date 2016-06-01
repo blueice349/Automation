@@ -115,7 +115,7 @@ exports.driverLogins = {
 		'name'               : 'IOS Driver 1',
 		'userRole'           : 'driver',
 		'performJob'         : true,
-		'tagButton'          : true,
+		'tagButton'          : false,
 		'permissionGranted'  : false,
 		'clockInOption'      : true,
 		'truckOption'        : true	

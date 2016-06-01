@@ -200,10 +200,9 @@ Commons.prototype.afterEachDes = function () {
 			// console.log( 'App Restarted due to Failed test... App will not restart if a failed login test was performed'.green );
 			// return driver
 			.elementByNameIfExists( elements.formScreen.actions )
-			.isDisplayed()
 			.then( function ( actions ) {
 
-				if ( actions === true ) {
+				if ( actions ) {
 					if ( this.isIOS() ) {
 						return driver
 						.elementByName( elements.formScreen.back )

@@ -50,23 +50,6 @@ module.exports.jobsScreen = function ( jobsScreen ) {
 	console.log( 'No test case was selcected!' );
 };
 
-module.exports.newNodes = function ( newNodes ) {
-
-	switch ( newNodes ) {
-		case 'newNode'                :
-			return require( './common/NewNodes/newNodeHomeScreen.js' )();
-		case 'nodeToDrafts1'          :
-			return require( './common/NewNodes/newNodeToDrafts1.js' )();
-		case 'nodeToDrafts2'          :
-			return require( './common/NewNodes/newNodeToDrafts2.js' )();
-		case 'conditionallyRequired'  :
-			return require( './common/NewNodes/conditionallyRequired.js' )();
-		case 'required'               :
-			return require( './common/NewNodes/required.js' )();
-	}
-	console.log( 'No test case was selcected!' );
-};
-
 module.exports.actionsScreen = function ( actionsScreen ) {
 
 	switch ( actionsScreen ) {
@@ -119,6 +102,21 @@ module.exports.homeScreen = function ( homeScreen ) {
 			return require( './common/HomeScreen/homeScreenLogout.js' )();
 		case 'homeScreeItems' :
 			return require( './common/HomeScreen/homeScreenItems.js' )();
+	}
+	console.log( 'No test case was selcected!' );
+	
+	var newNode = homeScreen;
+	switch ( newNode ) {
+		case 'newNode'                :
+			return require( './common/HomeScreen/NewNodes/newNodeHomeScreen.js' )();
+		case 'nodeToDrafts1'          :
+			return require( './common/HomeScreen/NewNodes/newNodeToDrafts1.js' )();
+		case 'nodeToDrafts2'          :
+			return require( './common/HomeScreen/NewNodes/newNodeToDrafts2.js' )();
+		case 'conditionallyRequired'  :
+			return require( './common/HomeScreen/NewNodes/conditionallyRequired.js' )();
+		case 'required'               :
+			return require( './common/HomeScreen/NewNodes/required.js' )();
 	}
 	console.log( 'No test case was selcected!' );
 };

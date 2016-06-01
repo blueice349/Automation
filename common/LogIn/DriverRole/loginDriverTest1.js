@@ -11,7 +11,7 @@ module.exports = function () {
 	var elements = require( '../../../helpers/elements' );
 	var login    = require( '../../../helpers/loginTable' );
 	var Store    = require( '../../../helpers/Store' );
-	var driver = config.driver;
+	var driver   = config.driver;
 
 	var truckOption;
 	var clockInOption;
@@ -42,7 +42,7 @@ module.exports = function () {
 			config.loginTest = true;
 			return driver
 			.waitForElementByName( elements.loginScreen.client_account, 120000 )
-			.isDisplayed().should.eventually.be.false
+			.isDisplayed().should.eventually.be.true
 			.elementByName( elements.loginScreen.user_name )
 			.isDisplayed().should.eventually.be.true
 			.elementByName( elements.loginScreen.password )

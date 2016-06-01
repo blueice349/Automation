@@ -297,9 +297,9 @@ module.exports = function () {
 				} else if ( homeScreen === false ){
 					if ( commons.isIOS() ) {
 						return driver
-						.elementByName( elements.jobsScreen.back )
+						.elementByName( elements.jobsScreen.otherOptions.back )
 						.isDisplayed().should.eventually.be.true
-						.elementByName( elements.jobsScreen.back )
+						.elementByName( elements.jobsScreen.otherOptions.back )
 						.click()
 						.sleep( 1000 );
 

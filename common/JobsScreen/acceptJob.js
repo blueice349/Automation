@@ -160,9 +160,9 @@ module.exports = function () {
 					if ( commons.isIOS() ) {
 						console.log( 'isIOS app is at the jobsScreen.'.red ); 
 						return driver
-						.elementByName( elements.jobsScreen.back )
+						.elementByName( elements.jobsScreen.otherOptions.back )
 						.isDisplayed().should.eventually.be.true
-						.elementByName( elements.jobsScreen.back )
+						.elementByName( elements.jobsScreen.otherOptions.back )
 						.click()
 						.sleep( 1000 );
 

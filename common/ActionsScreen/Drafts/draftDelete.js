@@ -49,10 +49,9 @@ module.exports = function () {
 			.click()
 			.sleep( 800 )
 			.elementByNameIfExists( elements.draftsScreen.search )
-			.isDisplayed()
 			.then( function ( hideKeyboard ) {
 
-				if ( commons.isAndroid() && hideKeyboard === true ) {
+				if ( hideKeyboard && commons.isAndroid() ) {
 					return driver
 					.hideKeyboard()
 					.sleep ( 200 );
