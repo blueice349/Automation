@@ -3,10 +3,10 @@
 module.exports = function () {
 
 	require( 'colors' );
-	var config   = require( '../../helpers/Config' );
-	var elements = require( '../../helpers/elements' );
-	var commons  = require( '../../helpers/Commons' );
-	var Store    = require( '../../helpers/Store' );
+	var config   = require( '../../../helpers/Config' );
+	var elements = require( '../../../helpers/elements' );
+	var commons  = require( '../../../helpers/Commons' );
+	var Store    = require( '../../../helpers/Store' );
 
 	var driver = config.driver;
 

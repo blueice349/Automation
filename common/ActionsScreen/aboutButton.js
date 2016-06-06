@@ -19,6 +19,9 @@ module.exports = function () {
 			
 			return driver
 			.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
+			.isDisplayed().should.eventually.be.true
+			.elementByName( elements.homeScreen.actions )
+			.isDisplayed().should.eventually.be.true
 			.elementByName( elements.homeScreen.actions )
 			.click()
 			.sleep( 800 )
@@ -32,6 +35,8 @@ module.exports = function () {
 
 			return driver
 			.waitForElementByName( elements.actionsScreen.drafts, 20000 )
+			.isDisplayed().should.eventually.be.true
+			.elementByName( elements.actionsScreen.about )
 			.isDisplayed().should.eventually.be.true
 			.elementByName( elements.actionsScreen.about )
 			.click()

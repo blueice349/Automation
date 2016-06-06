@@ -25,6 +25,7 @@ module.exports = function () {
 
 			return driver
 			.waitForElementByName( elements.homeScreen.actions, 20000 )
+			.isDisplayed().should.eventually.be.true
 			.then( function () {
 				
 				config.currentTest = 'passed';
@@ -37,6 +38,8 @@ module.exports = function () {
 			if ( lastUser.userRole != 'client' && lastUser.userRole != 'AdminClient' ) {
 				return driver
 				.waitForElementByName( elements.homeScreen.jobs, 20000 )
+				.isDisplayed().should.eventually.be.true
+				.elementByName( elements.homeScreen.jobs )
 				.click()
 				.sleep( 800 )
 				.then( function ( isIOS ) {
@@ -106,6 +109,8 @@ module.exports = function () {
 						return openJobs
 						.click()
 						.waitForElementByName( elements.jobsScreen.updateStatusOptions.updateStatus, 10000 )
+						.isDisplayed().should.eventually.be.true
+						.elementByName( elements.jobsScreen.updateStatusOptions.updateStatus )
 						.click()
 						.sleep ( 800 )
 						.elementByNameIfExists( elements.jobsScreen.updateStatusOptions.driving )
@@ -143,6 +148,8 @@ module.exports = function () {
 											}
 										} ) 
 										.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
+										.isDisplayed().should.eventually.be.true
+										.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
 										.text()
 										.then( function ( textFieldCond ) {
 
@@ -153,6 +160,8 @@ module.exports = function () {
 												console.log( 'textFieldCond has the following data: ' + driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond ) );
 											}
 										} )
+										.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq )
+										.isDisplayed().should.eventually.be.true
 										.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq )
 										.text()
 										.then( function ( textFieldReq ) {
@@ -165,8 +174,12 @@ module.exports = function () {
 											}
 										} )
 										.elementByNameIfExists( elements.formScreen.actions )
+										.isDisplayed().should.eventually.be.true
+										.elementByNameIfExists( elements.formScreen.actions )
 										.click()
 										.sleep ( 100 )
+										.elementByName( elements.formScreen.save )
+										.isDisplayed().should.eventually.be.true
 										.elementByName( elements.formScreen.save )
 										.click()
 										.sleep( 1000 );
@@ -179,6 +192,8 @@ module.exports = function () {
 											if( updateFormInfo ) {
 												console.log( 'No updateStatus go to updateFormInfo'.red );
 												return driver
+												.elementByName( elements.alertButtons.yes )
+												.isDisplayed().should.eventually.be.true
 												.elementByName( elements.alertButtons.yes )
 												.click()
 												.sleep ( 1000 )
@@ -199,6 +214,8 @@ module.exports = function () {
 													}
 												} ) 
 												.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
+												.isDisplayed().should.eventually.be.true
+												.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
 												.text()
 												.then( function ( textFieldCond ) {
 
@@ -209,6 +226,8 @@ module.exports = function () {
 														console.log( 'textFieldCond has the following data: ' + driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond ) );
 													}
 												} )
+												.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq )
+												.isDisplayed().should.eventually.be.true
 												.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq )
 												.text()
 												.then( function ( textFieldReq ) {
@@ -221,8 +240,12 @@ module.exports = function () {
 													}
 												} )
 												.elementByNameIfExists( elements.formScreen.actions )
+												.isDisplayed().should.eventually.be.true
+												.elementByNameIfExists( elements.formScreen.actions )
 												.click()
 												.sleep ( 100 )
+												.elementByName( elements.formScreen.save )
+												.isDisplayed().should.eventually.be.true
 												.elementByName( elements.formScreen.save )
 												.click()
 												.sleep( 1000 );
@@ -230,6 +253,8 @@ module.exports = function () {
 											} else {
 												console.log( 'Current Job does not need to updated to "Driving to Job" Status'.red );
 												return driver
+												.elementByName( elements.alertButtons.cancel )
+												.isDisplayed().should.eventually.be.true
 												.elementByName( elements.alertButtons.cancel )
 												.click();
 											}
@@ -243,6 +268,8 @@ module.exports = function () {
 							if ( commons.isIOS() ) {
 								return driver
 								.waitForElementByName( elements.jobsScreen.otherOptions.back, 10000 )
+								.isDisplayed().should.eventually.be.true
+								.elementByName( elements.jobsScreen.otherOptions.back )
 								.click()
 								.sleep( 1000 );
 
@@ -258,6 +285,8 @@ module.exports = function () {
 						if ( commons.isIOS() ) {
 							return driver
 							.waitForElementByName( elements.jobsScreen.otherOptions.back, 10000 )
+							.isDisplayed().should.eventually.be.true
+							.elementByName( elements.jobsScreen.otherOptions.back )
 							.click()
 							.sleep( 1000 );
 
@@ -291,6 +320,8 @@ module.exports = function () {
 					.elementByName( elements.homeScreen.actions )
 					.isDisplayed().should.eventually.be.true
 					.waitForElementByName( elements.homeScreen.syncAllowed, 30000 )
+					.isDisplayed().should.eventually.be.true
+					.elementByName( elements.homeScreen.syncAllowed )
 					.click()
 					.sleep ( 2000 );
 
@@ -311,6 +342,7 @@ module.exports = function () {
 				}
 			} )
 			.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
+			.isDisplayed().should.eventually.be.true
 			.then( function () {
 				
 				config.currentTest = 'passed';

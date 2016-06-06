@@ -38,6 +38,8 @@ module.exports = function () {
 			if ( lastUser.userRole != 'client' && lastUser.userRole != 'AdminClient' ) {
 				return driver
 				.waitForElementByName( elements.homeScreen.jobs, 20000 )
+				.isDisplayed().should.eventually.be.true
+				.elementByName( elements.homeScreen.jobs )
 				.click()
 				.sleep( 800 )
 				.then( function ( isIOS ) {
@@ -105,12 +107,16 @@ module.exports = function () {
 						.click()
 						.sleep( 1000 )
 						.waitForElementByName( elements.jobsScreen.updateStatusOptions.acceptJob, 10000 )
+						.isDisplayed().should.eventually.be.true
+						.elementByName( elements.jobsScreen.updateStatusOptions.acceptJob )
 						.click().sleep( 1000 )
 						.then( function () {
 
 							if ( commons.isIOS() ) {
 								return driver
 								.waitForElementByName( elements.jobsScreen.otherOptions.back, 10000 )
+								.isDisplayed().should.eventually.be.true
+								.elementByName( elements.jobsScreen.otherOptions.back )
 								.click()
 								.sleep( 1000 )
 								.then( function () {
@@ -153,6 +159,8 @@ module.exports = function () {
 					.elementByName( elements.homeScreen.actions )
 					.isDisplayed().should.eventually.be.true
 					.waitForElementByName( elements.homeScreen.syncAllowed, 30000 )
+					.isDisplayed().should.eventually.be.true
+					.elementByName( elements.homeScreen.syncAllowed )
 					.click()
 					.sleep ( 2000 );
 
@@ -175,6 +183,7 @@ module.exports = function () {
 				}
 			} )
 			.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
+			.isDisplayed().should.eventually.be.true
 			.then( function () {
 				
 				config.currentTest = 'passed';

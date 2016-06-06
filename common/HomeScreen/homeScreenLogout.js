@@ -116,6 +116,8 @@ module.exports = function () {
 				console.log( 'Should ask user to post-Inspect'.red );
 				return commons.alertText( alerts.loginLogoutAlerts.doInspection )
 				.elementByName( elements.alertButtons.no )
+				.isDisplayed().should.eventually.be.true
+				.elementByName( elements.alertButtons.no )
 				.click()
 				.then( function () {
 
@@ -158,6 +160,8 @@ module.exports = function () {
 				console.log( 'Clock out + Logout'.red );
 				return driver
 				.elementByName( elements.alertButtons.clockOutLogout )
+				.isDisplayed().should.eventually.be.true
+				.elementByName( elements.alertButtons.clockOutLogout )
 				.click()
 				.then( function () {
 
@@ -166,6 +170,8 @@ module.exports = function () {
 			} else {
 				console.log( 'Logout Now'.red );
 				return driver
+				.elementByName( elements.alertButtons.logout )
+				.isDisplayed().should.eventually.be.true
 				.elementByName( elements.alertButtons.logout )
 				.click()
 				.then( function () {

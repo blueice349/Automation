@@ -23,6 +23,9 @@ module.exports = function () {
 			
 			return driver
 			.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
+			.isDisplayed().should.eventually.be.true
+			.elementByName( elements.homeScreen.actions )
+			.isDisplayed().should.eventually.be.true
 			.elementByName( elements.homeScreen.actions )
 			.click()
 			.sleep( 800 )
@@ -41,12 +44,16 @@ module.exports = function () {
 				console.log( 'Clock In Button'.red );
 				return driver
 				.elementByName( elements.actionsScreen.clockIn )
+				.isDisplayed().should.eventually.be.true
+				.elementByName( elements.actionsScreen.clockIn )
 				.click()
 				.sleep( 2000 )
 				.then( function () {
 						
 					return commons.alertText( alerts.actionsScreenAlerts.timeCard.clockin );
 				} )
+				.elementByName( elements.alertButtons.clockIn )
+				.isDisplayed().should.eventually.be.true
 				.elementByName( elements.alertButtons.clockIn )
 				.click()
 				.sleep( 2000 )

@@ -3,9 +3,9 @@
 module.exports = function () {
 
 	require( 'colors' );
-	var config   = require( '../../helpers/Config' );
-	var elements = require( '../../helpers/elements' );
-	var commons  = require( '../../helpers/Commons' );
+	var config   = require( '../../../helpers/Config' );
+	var elements = require( '../../../helpers/elements' );
+	var commons  = require( '../../../helpers/Commons' );
 
 
 	var driver = config.driver;

@@ -3,14 +3,14 @@
 module.exports = function () {
 
 	require( 'colors' );
-	require( '../../helpers/setup' );
-	var alerts    = require( '../../helpers/alerts' );
-	var caps      = require( '../../helpers/caps' );
-	var config    = require( '../../helpers/Config' );
-	var commons   = require( '../../helpers/Commons' );
-	var elements  = require( '../../helpers/elements' );
-	var login     = require( '../../helpers/loginTable' );
-	var Store     = require( '../../helpers/Store' );
+	require( '../../../helpers/setup' );
+	var alerts    = require( '../../../helpers/alerts' );
+	var caps      = require( '../../../helpers/caps' );
+	var config    = require( '../../../helpers/Config' );
+	var commons   = require( '../../../helpers/Commons' );
+	var elements  = require( '../../../helpers/elements' );
+	var login     = require( '../../../helpers/loginTable' );
+	var Store     = require( '../../../helpers/Store' );
 	var driver    = config.driver;
 	var canCreate = false;
 

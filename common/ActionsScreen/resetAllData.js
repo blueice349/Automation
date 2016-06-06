@@ -23,6 +23,7 @@ module.exports = function () {
 		it( 'should wait for syncAllowed.'.green, function () {
 			return driver
 			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
+			.isDisplayed().should.eventually.be.true
 			.then( function () {
 
 				config.currentTest = 'passed';
@@ -32,7 +33,9 @@ module.exports = function () {
 		it( 'Should go to Actions Screen'.green, function() {
 			
 			return driver
-			.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
+			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
+			.elementByName( elements.homeScreen.actions )
+			.isDisplayed().should.eventually.be.true
 			.elementByName( elements.homeScreen.actions )
 			.click()
 			.sleep( 800 )
@@ -52,6 +55,8 @@ module.exports = function () {
 				if ( resetData === false ) {
 					return driver
 					.elementByName( elements.actionsScreen.about )
+					.isDisplayed().should.eventually.be.true
+					.elementByName( elements.actionsScreen.about )
 					.getLocation()
 					.then( function ( loc ) {
 
@@ -65,12 +70,16 @@ module.exports = function () {
 			} )
 			.sleep ( 1000 )
 			.elementByName( elements.actionsScreen.resetData )
+			.isDisplayed().should.eventually.be.true
+			.elementByName( elements.actionsScreen.resetData )
 			.click()
 			.sleep( 800 )
 			.then( function () {
 
 				return commons.alertText( alerts.actionsScreenAlerts.resetAllData.resetAllDataHeader );
 			} )
+			.elementByName( elements.alertButtons.deleteIt )
+			.isDisplayed().should.eventually.be.true
 			.elementByName( elements.alertButtons.deleteIt )
 			.click()
 			.then( function () {

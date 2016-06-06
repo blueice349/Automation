@@ -23,16 +23,20 @@ module.exports = function () {
 		it( 'should wait for syncAllowed.'.green, function () {
 			return driver
 			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
+			.isDisplayed().should.eventually.be.true
 			.then( function () {
 
 				config.currentTest = 'passed';
 			} );
 		} );
 		
-		it( 'Should go to Actions Screen'.green, function() {
+		it( 'Should go to Actions Screen from homeScreen'.green, function() {
 			
 			return driver
 			.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
+			.isDisplayed().should.eventually.be.true
+			.elementByName( elements.homeScreen.actions )
+			.isDisplayed().should.eventually.be.true
 			.elementByName( elements.homeScreen.actions )
 			.click()
 			.sleep( 800 )
@@ -45,6 +49,8 @@ module.exports = function () {
 		it( 'Should go to the drafts Screen from the actions screen.'.green, function () {
 
 			return driver
+			.elementByName( elements.actionsScreen.drafts )
+			.isDisplayed().should.eventually.be.true
 			.elementByName( elements.actionsScreen.drafts )
 			.click()
 			.sleep( 800 )
@@ -63,7 +69,7 @@ module.exports = function () {
 			} );
 		} );
 
-		it( 'Should edit draft(s) from actions screen --> drafts screen.'.green, function () {
+		it( 'Should edit a saved draft from actions screen --> drafts screen.'.green, function () {
 
 			return driver
 			.elementByNameIfExists( commons.getItem( elements.draftsScreen.draft, 0 ) )
@@ -74,6 +80,10 @@ module.exports = function () {
 					.click()
 					.sleep( 1000 )
 					.waitForElementByName( elements.draftsScreen.edit, 10000 )
+					.isDisplayed().should.eventually.be.true
+					.elementByName( elements.draftsScreen.edit )
+					.isDisplayed().should.eventually.be.true
+					.elementByName( elements.draftsScreen.edit )
 					.click()
 					.sleep( 2000 )
 					.then( function () {
@@ -109,6 +119,8 @@ module.exports = function () {
 						}
 					} )
 					.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
+					.isDisplayed().should.eventually.be.true
+					.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
 					.text()
 					.then( function ( textFieldCond ) {
 
@@ -119,6 +131,8 @@ module.exports = function () {
 							console.log( 'textFieldCond has the following data: ' + driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond ) );
 						}
 					} )
+					.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq )
+					.isDisplayed().should.eventually.be.true
 					.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq )
 					.text()
 					.then( function ( textFieldReq ) {
@@ -143,34 +157,59 @@ module.exports = function () {
 		it( 'Should save draft and/or go back to the actionsScreen from draftsScreen.'.green, function () {
 			
 			return driver
+			.sleep( 2000 )
 			.elementByNameIfExists( elements.formScreen.actions )
 			.then( function ( formScreenActions ) {
 
-				if( formScreenActions ) {
+				if ( formScreenActions ) {
 					return driver
+					.elementByName( elements.formScreen.actions )
+					.isDisplayed().should.eventually.be.true
 					.elementByName( elements.formScreen.actions )
 					.click()
 					.elementByName( elements.formScreen.save )
+					.isDisplayed().should.eventually.be.true
+					.elementByName( elements.formScreen.save )
 					.click()
+					.sleep( 1000 )
 					.then( function () {
 
 						if ( commons.isIOS() ) {
 							return driver
 							.elementByName( elements.draftsScreen.back )
+							.isDisplayed().should.eventually.be.true
+							.elementByName( elements.draftsScreen.back )
 							.click()
 							.sleep( 1000 );
 
-					} else if ( commons.isAndroid() ) {
-						return driver
-						.back()
-						.sleep( 1000 );
-					}
-				} )
+						} else if ( commons.isAndroid() ) {
+							return driver
+							.elementByNameIfExists( elements.draftsScreen.search )
+							.then( function ( draftsSearch ) {
+
+								if ( draftsSearch === true ) {
+									return draftsSearch
+									.isDisplayed().should.eventually.be.true
+									.hideKeyboard()
+									.sleep( 100 )
+									.back()
+									.sleep( 1000 );
+								} else if ( draftsSearch === false ) {
+									return driver
+									.sleep( 1000 )
+									.back()
+									.sleep( 1000 );
+								}
+							} )
+						}
+					} )
 
 				} else {
 					console.log( 'No Drafts to Save.'.red);
 					if ( commons.isIOS() ) {
 						return driver
+						.elementByName( elements.draftsScreen.back )
+						.isDisplayed().should.eventually.be.true
 						.elementByName( elements.draftsScreen.back )
 						.click()
 						.sleep( 1000 );
@@ -193,6 +232,9 @@ module.exports = function () {
 			if ( commons.isIOS() ) {
 				return driver
 				.waitForElementByName( elements.actionsScreen.drafts, 120000 )
+				.isDisplayed().should.eventually.be.true
+				.elementByName( elements.actionsScreen.back )
+				.isDisplayed().should.eventually.be.true
 				.elementByName( elements.actionsScreen.back )
 				.click()
 				.sleep( 1000 )
@@ -204,6 +246,7 @@ module.exports = function () {
 			} else if ( commons.isAndroid() ) {
 				return driver
 				.waitForElementByName( elements.actionsScreen.drafts, 120000 )
+				.isDisplayed().should.eventually.be.true
 				.back()
 				.sleep( 1000 )
 				.then( function () {
@@ -217,31 +260,27 @@ module.exports = function () {
 
 			return driver
 			.waitForElementByName( elements.homeScreen.syncAllowed, 30000 )
-			.then( function ( sync ) {
+			.elementByName( elements.homeScreen.syncAllowed )
+			.click()
+			.sleep ( 2000 )
+			.elementByNameIfExists( elements.homeScreen.actions )
+			.isDisplayed()
+			.then( function ( homeScreen ) {
 
-				if ( sync ) {
-					return driver
-					.elementByName( elements.homeScreen.syncAllowed )
-					.click()
-					.sleep ( 2000 )
-					.elementByNameIfExists( elements.homeScreen.actions )
-					.isDisplayed()
-					.then( function ( homeScreen ) {
+				if ( homeScreen === false ) {
+					if ( commons.isIOS() ) {
+						return driver
+						.waitForElementByName( elements.jobsScreen.otherOptions.back, 10000 )
+						.isDisplayed().should.eventually.be.true
+						.elementByName( elements.jobsScreen.otherOptions.back )
+						.click()
+						.sleep( 1000 );
 
-						if ( homeScreen === false ) {
-							if ( commons.isIOS() ) {
-								return driver
-								.waitForElementByName( elements.jobsScreen.otherOptions.back, 10000 )
-								.click()
-								.sleep( 1000 );
-
-							} else if ( commons.isAndroid() ) {
-								return driver
-								.back()
-								.sleep( 1000 );
-							}
-						}
-					} );
+					} else if ( commons.isAndroid() ) {
+						return driver
+						.back()
+						.sleep( 1000 );
+					}
 				}
 			} )
 			.then( function () {

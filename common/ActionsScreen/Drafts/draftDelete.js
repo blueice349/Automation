@@ -23,6 +23,7 @@ module.exports = function () {
 		it( 'should wait for syncAllowed.'.green, function () {
 			return driver
 			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
+			.isDisplayed().should.eventually.be.true
 			.then( function () {
 
 				config.currentTest = 'passed';
@@ -33,6 +34,9 @@ module.exports = function () {
 			
 			return driver
 			.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
+			.isDisplayed().should.eventually.be.true
+			.elementByName( elements.homeScreen.actions )
+			.isDisplayed().should.eventually.be.true
 			.elementByName( elements.homeScreen.actions )
 			.click()
 			.sleep( 800 )
@@ -45,6 +49,8 @@ module.exports = function () {
 		it( 'Should go to the drafts Screen from the actions screen.'.green, function () {
 
 			return driver
+			.elementByName( elements.actionsScreen.drafts )
+			.isDisplayed().should.eventually.be.true
 			.elementByName( elements.actionsScreen.drafts )
 			.click()
 			.sleep( 800 )
@@ -74,6 +80,8 @@ module.exports = function () {
 				.click()
 				.sleep( 1000 )
 				.waitForElementByName( elements.alertButtons.deleteRecord, 10000 )
+				.isDisplayed().should.eventually.be.true
+				.elementByName( elements.alertButtons.deleteRecord )
 				.click()
 				.sleep( 2000 )
 				.then( function () {
@@ -92,6 +100,8 @@ module.exports = function () {
 			
 			if ( commons.isIOS() ) {
 				return driver
+				.elementByName( elements.draftsScreen.back )
+				.isDisplayed().should.eventually.be.true
 				.elementByName( elements.draftsScreen.back )
 				.click()
 				.sleep( 1000 )
@@ -120,6 +130,8 @@ module.exports = function () {
 				if ( commons.isIOS() ) {
 					return driver
 					.elementByName( elements.actionsScreen.back )
+					.isDisplayed().should.eventually.be.true
+					.elementByName( elements.actionsScreen.back )
 					.click()
 					.sleep( 1000 )
 					.then( function () {
@@ -130,6 +142,7 @@ module.exports = function () {
 				} else if ( commons.isAndroid() ) {
 					return driver
 					.waitForElementByName( elements.actionsScreen.drafts, 3000 )
+					.isDisplayed().should.eventually.be.true
 					.sleep( 200 )
 					.back()
 					.sleep( 1000 )

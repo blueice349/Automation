@@ -24,6 +24,9 @@ module.exports = function () {
 			
 			return driver
 			.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
+			.isDisplayed().should.eventually.be.true
+			.elementByName( elements.homeScreen.actions )
+			.isDisplayed().should.eventually.be.true
 			.elementByName( elements.homeScreen.actions )
 			.click()
 			.sleep( 800 )
@@ -64,6 +67,8 @@ module.exports = function () {
 			if ( lastUser.truckOption === true && lastUser.userRole != 'client' && config.isInVehicle === true ) {
 				console.log( 'user should perfom inspection'.red );
 				return commons.alertText( alerts.actionsScreenAlerts.companyVehicle.postInspection )
+				.elementByName( elements.alertButtons.no )
+				.isDisplayed().should.eventually.be.true
 				.elementByName( elements.alertButtons.no )
 				.click()
 				.then( function () {

@@ -234,12 +234,13 @@ exports.settingsScreen = {
 }
 
 exports.draftsScreen = {
-	'back'   : 'draftsBack_Button.',   //'//UIAApplication[1]/UIAWindow[1]/UIAToolbar[1]/UIAButton[1]',
-	'delete' : 'Delete',
-	'draft'  : 'draft_', //Make sure you use getItem() from the commons.
-	'edit'   : 'Edit',
-	'search' : 'draftSearch.',
-	'view'   : 'View'
+	'back'     : 'draftsBack_Button.',   //'//UIAApplication[1]/UIAWindow[1]/UIAToolbar[1]/UIAButton[1]',
+	'delete'   : 'Delete',
+	'draft'    : 'draft_', //Make sure you use getItem() from the commons.
+	'edit'     : 'Edit',
+	'noDrafts' : 'No drafts have been saved',
+	'search'   : 'draftSearch.',
+	'view'     : 'View'
 	
 }
 
