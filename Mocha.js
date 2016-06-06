@@ -182,6 +182,7 @@ describe( 'Automation Test in Progress!'.green, function () {
 			run.logins( 'client2' );
 			run.logins( 'homeScreenCheck' );
 			run.homeScreen( 'homeScreenItems' );
+			run.newNodes( 'clientDoNotTow' );
 			run.homeScreen( 'logout' );
 	} );
 } );

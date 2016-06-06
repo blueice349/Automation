@@ -157,7 +157,7 @@ module.exports = function () {
 		it( 'Should save draft and/or go back to the actionsScreen from draftsScreen.'.green, function () {
 			
 			return driver
-			.sleep( 2000 )
+			.sleep( 1000 )
 			.elementByNameIfExists( elements.formScreen.actions )
 			.then( function ( formScreenActions ) {
 
@@ -184,24 +184,10 @@ module.exports = function () {
 
 						} else if ( commons.isAndroid() ) {
 							return driver
-							.elementByNameIfExists( elements.draftsScreen.search )
-							.then( function ( draftsSearch ) {
-
-								if ( draftsSearch === true ) {
-									return draftsSearch
-									.isDisplayed().should.eventually.be.true
-									.hideKeyboard()
-									.sleep( 100 )
-									.back()
-									.sleep( 1000 );
-								} else if ( draftsSearch === false ) {
-									return driver
-									.sleep( 1000 )
-									.back()
-									.sleep( 1000 );
-								}
-							} )
-						}
+							.sleep( 1000 )
+							.back()
+							.sleep( 1000 );
+						}	
 					} )
 
 				} else {
