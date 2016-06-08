@@ -111,3 +111,13 @@ module.exports.newNodes = function ( newNodes ) {
 	console.log( 'No test case was selcected!' );
 };
 
+module.exports.recentScreen = function ( recentScreen ) {
+
+	switch ( recentScreen ) {
+		case 'recentScreenCheckOptions'         :
+			return require( './common/RecentScreen/recentScreenCheckScreen.js' )();
+		case 'recentScreenViewNode'      :
+			return require( './common/RecentScreen/recentScreenViewNode.js' )();	
+	}
+	console.log( 'No test case was selcected!' );
+};

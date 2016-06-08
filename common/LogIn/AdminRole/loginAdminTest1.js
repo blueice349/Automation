@@ -32,15 +32,15 @@ module.exports = function () {
 
 			config.loginTest = true;
 			return driver
-			.waitForElementByName( elements.loginScreen.client_account, 120000 )
+			.waitForElementByName( elements.loginScreen.clientAccount, 120000 )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.loginScreen.user_name )
+			.elementByName( elements.loginScreen.userName )
 			.isDisplayed().should.eventually.be.true
 			.elementByName( elements.loginScreen.password )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.loginScreen.login_button )
+			.elementByName( elements.loginScreen.loginButton )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.loginScreen.accept_terms )
+			.elementByName( elements.loginScreen.acceptTerms )
 			.isDisplayed().should.eventually.be.true
 			.then( function () {
 
@@ -48,10 +48,10 @@ module.exports = function () {
 			} );
 		} );
 
-		it( 'should set user information and enter client_account '.green, function () {
+		it( 'should set user information and enter clientAccount '.green, function () {
 
 			return driver
-			.elementByName( elements.loginScreen.client_account )
+			.elementByName( elements.loginScreen.clientAccount )
 			.then( function ( el ) { 
 
 				if ( commons.isIOS() ){
@@ -62,7 +62,16 @@ module.exports = function () {
 					name              = login.adminLogins.admin1.name;
 					performJob        = login.adminLogins.admin1.performJob;
 					tagButton         = login.adminLogins.admin1.tagButton;
-					return commons.sendKeys( el, login.adminLogins.admin1.client_account );
+					return el.text()
+					.then( function ( text ) {
+
+						if ( text === login.adminLogins.admin1.clientAccount ) {
+							console.log( 'clientAccount is already set.'.red );
+							return;
+						} else {
+							return commons.sendKeys( el, login.adminLogins.admin1.clientAccount );
+						}
+					} )
 
 				} else if ( commons.isAndroid() ) {
 					truckOption       = login.adminLogins.admin2.truckOption;
@@ -72,7 +81,16 @@ module.exports = function () {
 					name              = login.adminLogins.admin2.name;
 					performJob        = login.adminLogins.admin2.performJob;
 					tagButton         = login.adminLogins.admin2.tagButton;
-					return commons.sendKeys(el, login.adminLogins.admin2.client_account );
+					return el.text()
+					.then( function ( text ) {
+
+						if ( text === login.adminLogins.admin2.clientAccount ) {
+							console.log( 'clientAccount is already set.'.red );
+							return;
+						} else {
+							return commons.sendKeys( el, login.adminLogins.admin2.clientAccount );
+						}
+					} )
 				}
 			} )
 			.then( function () {
@@ -84,14 +102,32 @@ module.exports = function () {
 		it( 'should enter username and password'.green, function () {
 
 			return driver
-			.elementByName( elements.loginScreen.user_name )
+			.elementByName( elements.loginScreen.userName )
 			.then( function ( el ) {
-
+				
 				if ( commons.isIOS() ) {
-					return commons.sendKeys( el, login.adminLogins.admin1.username );
+					return el.text()
+					.then( function ( text ) {
+
+						if ( text === login.adminLogins.admin1.username ) {
+							console.log( 'username is already set.'.red );
+							return;
+						} else {
+							return commons.sendKeys( el, login.adminLogins.admin1.username );
+						}
+					} )
 
 				} else if ( commons.isAndroid() ) {
-					return commons.sendKeys( el, login.adminLogins.admin2.username );
+					return el.text()
+					.then( function ( text ) {
+
+						if ( text === login.adminLogins.admin2.username ) {
+							console.log( 'username is already set.'.red );
+							return;
+						} else {
+							return commons.sendKeys( el, login.adminLogins.admin2.username );
+						}
+					} )
 				}
 			} )
 			.elementByName( elements.loginScreen.password )
@@ -110,13 +146,13 @@ module.exports = function () {
 			} );
 		} );
 
-		it( 'Should check client_account and username'.green, function () {
+		it( 'Should check clientAccount and username'.green, function () {
 
 			if ( commons.isIOS() ) {
 				return driver
-				.elementByName( elements.loginScreen.client_account )
-				.text().should.eventually.become( login.adminLogins.admin1.client_account )
-				.elementByName( elements.loginScreen.user_name )
+				.elementByName( elements.loginScreen.clientAccount )
+				.text().should.eventually.become( login.adminLogins.admin1.clientAccount )
+				.elementByName( elements.loginScreen.userName )
 				.text().should.eventually.become( login.adminLogins.admin1.username )
 				.then( function () {
 
@@ -125,9 +161,9 @@ module.exports = function () {
 
 			} else if ( commons.isAndroid() ) {
 				return driver
-				.elementByName( elements.loginScreen.client_account )
-				.text().should.eventually.become( login.adminLogins.admin2.client_account )
-				.elementByName( elements.loginScreen.user_name )
+				.elementByName( elements.loginScreen.clientAccount )
+				.text().should.eventually.become( login.adminLogins.admin2.clientAccount )
+				.elementByName( elements.loginScreen.userName )
 				.text().should.eventually.become( login.adminLogins.admin2.username )
 				.then( function () {
 
@@ -136,13 +172,13 @@ module.exports = function () {
 			}
 		} );
 
-		it( 'should click accept_terms and login_button'.green, function () {
+		it( 'should click acceptTerms and loginButton'.green, function () {
 
 			config.loginTest = true;
 			return driver
-			.elementByName( elements.loginScreen.accept_terms )
+			.elementByName( elements.loginScreen.acceptTerms )
 			.click()
-			.elementByName( elements.loginScreen.login_button )
+			.elementByName( elements.loginScreen.loginButton )
 			.click()
 			.sleep( 3000 )
 			.then( function () {

@@ -16,16 +16,16 @@ module.exports = function () {
 		it( 'should not login'.green, function () {
 
 			return driver
-			.waitForElementByName( elements.loginScreen.client_account, 200000 )
+			.waitForElementByName( elements.loginScreen.clientAccount, 200000 )
 			.then( function ( el ) {
 
 				if ( commons.isIOS() ){
-					return commons.sendKeys(el, elements.logins.iosSim1.client_account );
+					return commons.sendKeys(el, elements.logins.iosSim1.clientAccount );
 				} else if ( commons.isAndroid() ) {
-					return commons.sendKeys(el, elements.logins.androidDriver.client_account );
+					return commons.sendKeys(el, elements.logins.androidDriver.clientAccount );
 				}
 			})
-			.elementByName( elements.loginScreen.user_name )
+			.elementByName( elements.loginScreen.userName )
 			.then( function ( el ) {
 
 				if ( commons.isIOS() ){
@@ -43,15 +43,15 @@ module.exports = function () {
 					return commons.sendKeys( el, elements.logins.androidDriver.password );
 				}
 			})
-			.elementByName( elements.loginScreen.accept_terms )
+			.elementByName( elements.loginScreen.acceptTerms )
 				.click()
-			.elementByName( elements.loginScreen.login_button )
+			.elementByName( elements.loginScreen.loginButton )
 				.click()
 				.sleep( 3000 )
 			.waitForElementByName( elements.alertButtons.ok, 120000 )
 				.click()
 				.sleep( 1000 )
-			.elementByName( elements.loginScreen.user_name )
+			.elementByName( elements.loginScreen.userName )
 			.then( function ( el ) {
 
 				if ( commons.isIOS() ){
@@ -69,24 +69,24 @@ module.exports = function () {
 					return commons.sendKeys( el, 'Wrong Password' );
 				}
 			})
-			.elementByName( elements.loginScreen.accept_terms )
+			.elementByName( elements.loginScreen.acceptTerms )
 				.click()
-			.elementByName( elements.loginScreen.login_button )
+			.elementByName( elements.loginScreen.loginButton )
 				.click()
 				.sleep( 3000 )
 			.waitForElementByName( elements.alertButtons.ok, 120000 )
 				.click()
 				.sleep( 1000 )
-			.waitForElementByName( elements.loginScreen.client_account, 200000 )
+			.waitForElementByName( elements.loginScreen.clientAccount, 200000 )
 			.then( function ( el ) {
 
 				if ( commons.isIOS() ){
-					return commons.sendKeys(el, elements.logins.iosSim1.client_account );
+					return commons.sendKeys(el, elements.logins.iosSim1.clientAccount );
 				} else if ( commons.isAndroid() ) {
-					return commons.sendKeys(el, elements.logins.androidDriver.client_account );
+					return commons.sendKeys(el, elements.logins.androidDriver.clientAccount );
 				}
 			})
-			.elementByName( elements.loginScreen.user_name )
+			.elementByName( elements.loginScreen.userName )
 			.then( function ( el ) {
 
 				if ( commons.isIOS() ){
@@ -104,7 +104,7 @@ module.exports = function () {
 					return commons.sendKeys( el, elements.logins.androidDriver.password );
 				}
 			})
-			.elementByName( elements.loginScreen.login_button )
+			.elementByName( elements.loginScreen.loginButton )
 				.click()
 				.sleep( 3000 )
 			.waitForElementByName( elements.alertButtons.ok, 120000 )

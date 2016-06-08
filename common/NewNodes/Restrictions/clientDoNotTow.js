@@ -3,6 +3,8 @@
 module.exports = function () {
 
 	require( 'colors' );
+	require( '../../../helpers/setup' );
+	var assert   = require( 'assert' );
 	var config   = require( '../../../helpers/Config' );
 	var elements = require( '../../../helpers/elements' );
 	var commons  = require( '../../../helpers/Commons' );
@@ -17,6 +19,7 @@ module.exports = function () {
 		commons.afterEachDes();
 
 		it( 'Should wait for syncAllowed.'.green, function () {
+
 			var lastUser = Store.get( 'lastUser' );
 			return driver
 			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
@@ -29,6 +32,7 @@ module.exports = function () {
 
 		it( 'Should check lastUser permissons and create a new doNotTow.'.green, function () {
 
+			var lastUser = Store.get( 'lastUser' );	
 			if ( lastUser.userRole === 'AdminClient' ) {
 				console.log( 'User is Allowed to add a New Redord'.red );
 				return driver
@@ -44,15 +48,42 @@ module.exports = function () {
 					config.canCreate   = true;
 					config.currentTest = 'passed';
 				} );
-			} else {
+			} else if ( lastUser.userRole === 'client' ) {
 				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
+				return driver
+				.elementByNameIfExists( elements.doNotTow.doNotTow )
+				.then( function ( doNotTow ) {
+					
+					if ( doNotTow ) {
+						assert.fail( 'User ' + lastUser.userName + ' Should not have access to ' + doNotTow + ' and should not exit' );
+					} else {
+						return;
+					}
+				} )
+				.elementByNameIfExists( elements.doNotTow.doNotTow + elements.homeScreen.plusButton )
+				.then( function ( doNotTowPlus ) {
+					
+					if ( doNotTowPlus ) {
+						assert.fail( 'User ' + lastUser.userName + ' Should not have access to ' + doNotTowPlus + ' and should not exit' );
+					} else {
+						return;
+					}
+				} )
+				.then( function () {
+
+					config.canCreate  = false;
+					config.currentTest = 'passed';
+				} );
+			} else {
+				console.log( 'Current is not a client account'.red );
 				config.canCreate  = false;
-				onfig.currentTest = 'passed';
+				config.currentTest = 'passed';
 			}
 		} );
 
 		it( 'Should add text into the licensePlate field.'.green, function () {
 			
+			var lastUser = Store.get( 'lastUser' );
 			if ( config.canCreate === true ) {
 				return driver
 				.elementByName( elements.doNotTow.otherFields.licensePlate )
@@ -61,12 +92,12 @@ module.exports = function () {
 				.then( function ( textField ) {
 
 					if ( textField ) {
-						return commons.sendKeys( textField, lastUser.userName + ' restrictPlate' )
+						return commons.sendKeys( textField, lastUser.userName  )
 						.sleep ( 1000 );
 					}
 				} )
 				.elementByName( elements.doNotTow.otherFields.licensePlate )
-				.text().should.eventually.become( lastUser.userName + ' restrictPlate' )
+				.text().should.eventually.become( lastUser.userName )
 				.sleep( 1000 )
 				.then( function () {
 
@@ -75,7 +106,7 @@ module.exports = function () {
 			} else {
 				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
 				config.canCreate  = false;
-				onfig.currentTest = 'passed';
+				config.currentTest = 'passed';
 			}
 		} );
 
@@ -101,7 +132,7 @@ module.exports = function () {
 			} else {
 				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
 				config.canCreate  = false;
-				onfig.currentTest = 'passed';
+				config.currentTest = 'passed';
 			}
 		} );
 

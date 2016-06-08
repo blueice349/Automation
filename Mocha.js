@@ -157,6 +157,9 @@ describe( 'Automation Test in Progress!'.green, function () {
 			  /* Company Vehicle test */
 			run.actionsScreen( 'removeVehicle' );
 			run.actionsScreen( 'selectVehicle' );
+			  /* Recent Screen Test */
+			run.recentScreen(  'recentScreenCheckOptions' );  
+			run.recentScreen(  'recentScreenViewNode' ); 
 			  /* Clock in and out test */
 			run.actionsScreen( 'clockout' );
 			run.actionsScreen( 'clockin' );
@@ -170,6 +173,8 @@ describe( 'Automation Test in Progress!'.green, function () {
 			run.logins( 'selectVehicle' );
 			run.logins( 'homeScreenCheck' );
 			run.homeScreen( 'homeScreenItems' );
+			run.recentScreen(  'recentScreenCheckOptions' ); 
+			run.recentScreen(  'recentScreenViewNode' );  
 			run.newNodes( 'newTag;' );
 			run.actionsScreen( 'resetAllData' );
 			run.actionsScreen( 'clockout' );
@@ -182,6 +187,7 @@ describe( 'Automation Test in Progress!'.green, function () {
 			run.logins( 'client2' );
 			run.logins( 'homeScreenCheck' );
 			run.homeScreen( 'homeScreenItems' );
+			run.recentScreen(  'recentScreenCheckOptions' );  
 			run.newNodes( 'clientDoNotTow' );
 			run.homeScreen( 'logout' );
 	} );

@@ -1,7 +1,7 @@
 exports.adminLogins = {
 	'admin1' : {
 		'default OS'         : 'IOS',
-		'client_account'     : 'automobile',
+		'clientAccount'      : 'automobile',
 		'username'           : 'admin1',
 		'password'           : 'test',
 		'name'               : 'IOS Admin 1',
@@ -14,7 +14,7 @@ exports.adminLogins = {
 	},
 	'admin2' : {
 		'default OS'         : 'Android',
-		'client_account'     : 'automobile',
+		'clientAccount'      : 'automobile',
 		'username'           : 'admin2',
 		'password'           : 'test',
 		'name'               : 'Android Admin 2',
@@ -27,7 +27,7 @@ exports.adminLogins = {
 	},
 	'admin3' : {
 		'default OS'         : 'IOS',
-		'client_account'     : 'automobile',
+		'clientAccount'      : 'automobile',
 		'username'           : 'admin3',
 		'password'           : 'test',
 		'name'               : 'IOS Admin 3',
@@ -40,7 +40,7 @@ exports.adminLogins = {
 	},
 	'admin4' : {
 		'default OS'         : 'Android',
-		'client_account'     : 'automobile',
+		'clientAccount'      : 'automobile',
 		'username'           : 'admin4',
 		'password'           : 'test',	
 		'name'               : 'IOS Admin 4',
@@ -55,7 +55,7 @@ exports.adminLogins = {
 exports.clientLogins = {
 	'client1' : {
 		'default OS'         : 'IOS',
-		'client_account'     : 'automobile',
+		'clientAccount'      : 'automobile',
 		'username'           : 'client1',
 		'password'           : 'test',
 		'name'               : 'Client1',
@@ -68,7 +68,7 @@ exports.clientLogins = {
 	},
 	'client2'  : {
 		'default OS'         : 'Android',
-		'client_account'     : 'automobile',
+		'clientAccount'      : 'automobile',
 		'username'           : 'client2',
 		'password'           : 'test',
 		'name'               : 'Client2',
@@ -81,7 +81,7 @@ exports.clientLogins = {
 	},
 	'client3'  : {
 		'default OS'         : 'IOS',
-		'client_account'     : 'automobile',
+		'clientAccount'      : 'automobile',
 		'username'           : 'client3',
 		'password'           : 'test',
 		'name'               : 'Client3',
@@ -94,7 +94,7 @@ exports.clientLogins = {
 	},
 	'client4'  : {
 		'default OS'         : 'Android',
-		'client_account'     : 'automobile',
+		'clientAccount'      : 'automobile',
 		'username'           : 'client4',
 		'password'           : 'test',
 		'name'               : 'Client4',
@@ -109,7 +109,7 @@ exports.clientLogins = {
 exports.driverLogins = {
 	'driver1' : {
 		'default OS'         : 'IOS',
-		'client_account'     : 'automobile',
+		'clientAccount'      : 'automobile',
 		'username'           : 'driver1',
 		'password'           : 'test',
 		'name'               : 'IOS Driver 1',
@@ -122,7 +122,7 @@ exports.driverLogins = {
 	},
 	'driver2'  : {
 		'default OS'         : 'Android',
-		'client_account'     : 'automobile',
+		'clientAccount'      : 'automobile',
 		'username'           : 'driver2',
 		'password'           : 'test',
 		'name'               : 'Android Driver 2',
@@ -135,7 +135,7 @@ exports.driverLogins = {
 	},
 	'driver3'  : {
 		'default OS'         : 'IOS',
-		'client_account'     : 'automobile',
+		'clientAccount'      : 'automobile',
 		'username'           : 'driver3',
 		'password'           : 'test',
 		'name'               : 'IOS Driver 3',
@@ -148,7 +148,7 @@ exports.driverLogins = {
 	},
 	'driver4'  : {
 		'default OS'         : 'Android',
-		'client_account'     : 'automobile',
+		'clientAccount'      : 'automobile',
 		'username'           : 'driver4',
 		'password'           : 'test',
 		'name'               : 'Android Driver 4',

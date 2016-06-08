@@ -21,7 +21,7 @@ module.exports = function () {
 				if ( lastUser.userRole != 'client' && lastUser.userRole != 'AdminClient' ) {
 					console.log( 'User is Has form View Permissions'.red );
 					return driver
-					.elementByName( elements.mobile_MikeRecord.mobileMike + '_Button.' )
+					.elementByName( elements.mobile_MikeRecord.mobileMike + 'Button.' )
 					.click()
 					.sleep( 1000 )
 					.elementByName( elements.itemListScreen.newRecord )

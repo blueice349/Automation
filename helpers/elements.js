@@ -1,28 +1,28 @@
  exports.loginScreen = {
-	'client_account' : 'clientAccount.',
-	'user_name'      : 'userName.',
-	'password'       : 'password.',
-	'accept_terms'   : 'acceptTermsCheckBox.',
-	'login_button'   : 'logInButton.'
+	'clientAccount' : 'clientAccount.',
+	'userName'      : 'userName.',
+	'password'      : 'password.',
+	'acceptTerms'   : 'acceptTermsCheckBox.',
+	'loginButton'   : 'logInButton.'
 }	
 
 //Run commands...
 //mocha run.js -os androidDriver -time 500000
 
 // exports.standardFields = {
-// 	'extraPriceAutocomplete'   : 'Field Name_Field_#.'
-// 	'extraPriceSelect'         : 'Field Name_Field_#.' & 'Undefinded for IOS'
-// 	'extraPriceDetails'        : 'Field Name_Details_#.'
-// 	'extraPricePrice'          : 'Field Name_Price_#.'
-// 	'extraPriceQty'            : 'Field Name_Qty_#.'
-// 	'extraPriceTotal'          : 'Field Name_Total_#.'
-//     'buttons'                  : 'Field Name_Button.'
-//     'checkbox'                 : 'Field Name_chkbox.'
-//     'textFields'               : 'Field Name_Field_#.'
-//     'autoComplete'             : 'Field Name_Field_#.'
-//     'selectList'               : 'Field Name_Field_#.'
-//     'multiSelect'              : 'Field Name_Field.'
-//     'userSelect'               : 'Field Name_Field.' & 'Undefinded for IOS'
+// 	'extraPriceAutocomplete'   : 'Field NameField#.'
+// 	'extraPriceSelect'         : 'Field NameField#.' & 'Undefinded for IOS'
+// 	'extraPriceDetails'        : 'Field NameDetails#.'
+// 	'extraPricePrice'          : 'Field NamePrice#.'
+// 	'extraPriceQty'            : 'Field NameQty#.'
+// 	'extraPriceTotal'          : 'Field NameTotal#.'
+//     'buttons'                  : 'Field NameButton.'
+//     'checkbox'                 : 'Field NameCheckbox.'
+//     'textFields'               : 'Field NameField#.'
+//     'autoComplete'             : 'Field NameField#.'
+//     'selectList'               : 'Field NameField#.'
+//     'multiSelect'              : 'Field NameField.'
+//     'userSelect'               : 'Field NameField.' & 'Undefinded for IOS'
 // }
 
 exports.alertButtons = {
@@ -75,65 +75,65 @@ exports.companyVehicle = {
 }	
 
 exports.homeScreen = {
-	'actions'          : 'actions_Button.',
-	'clockOut'         : 'mainMenuClockOut_Button',
-	'clockIn'          : 'mainMenuClockIn_Button',
-	'logout'           : 'logOut_Button.',
+	'actions'          : 'homeActionsButton.',
+	'clockOut'         : 'homeClockOutButton',
+	'clockIn'          : 'homeClockInButton',
+	'logout'           : 'homeLogOutButton.',
 	'sync'             : 'refreshSync.',
 	'name'             : 'userLoggedIn.',
-	'plusButton'       : '_PlusButton.',
-	'alerts'           : 'alerts_Button.',
-	'jobs'             : 'jobs_Button.',
-	'recent'           : 'recent_Button.',
+	'plusButton'       : 'PlusButton.',
+	'alerts'           : 'alertsButton.',
+	'jobs'             : 'jobsButton.',
+	'recent'           : 'recentButton.',
 	'syncStatus'       : 'syncProgress.',
 	'syncAllowed'      : 'syncAllowed.',
 	'syncInProgress'   : 'syncInProgress.',
-	'expiredTags'      : 'tagsReady_Button.'
+	'expiredTags'      : 'tagsReadyButton.'
 }
 
 exports.formScreen = {
-	'actions'         : 'formActions_Button.',
-	'back'            : 'formBack_Button.',
+	'actions'         : 'formActionsButton.',
+	'back'            : 'formBackButton.',
 	'cancel'          : 'Cancel',
-	'comments'        : 'comments_Tab.',
-	'dispatch'        : 'dispatch_Tab.',
-	'newComment'      : 'newComment_Button.',
+	'comments'        : 'commentsTab.',
+	'dispatch'        : 'dispatchTab.',
+	'newComment'      : 'newCommentButton.',
 	'save'            : 'Save',	
 	'saveAsDraft'      : 'Save as draft',
-	'showAll'         : 'showAll_Button.',	
-	'work'            : 'work_Tab.'
+	'showAll'         : 'formShowAllButton.',	
+	'work'            : 'workTab.'
 }	
 
 exports.itemListScreen = {
-	'back'       : 'itemListBack_Button.',
-	'item'       : 'itemList_', //+ tableIndex + '.'	
+	'back'       : 'itemListBackButton.',
+	'item'       : 'itemList', //+ tableIndex + '.'	
 	'titleLabel' : 'titleLabel.',
-	'map'        : 'map_Button.',
-	'nearMe'     : 'nearMe_Button.',
-	'newRecord'  : 'new_Button.',
+	'map'        : 'itemListMapButton.',
+	'nearMe'     : 'itemListNearMeButton.',
+	'newRecord'  : 'newRecordButton.',
 	'search'     : 'itemListSearch.',
-	'showAll'    : 'showAll_Button'
+	'showAll'    : 'itemListShowAllButton.'
 }
 
 exports.multiSelectScreen = {
-	'cancel' : 'cancel_Button.',
-	'done'   : 'done_Button.',
+	'cancel' : 'cancelButton.',
+	'done'   : 'doneButton.',
 	'header' : 'MultiSelect.',
-	'item'   : 'item_' //+ index++ + '.'
+	'item'   : 'item' //+ index++ + '.'
 }
 
 exports.itemMapScreen = {
-	'back'  : 'back_Button.'
+	'back'  : 'itemMapBackButton.'
 }	
 
 exports.nearMeScreen = {
-	'back'    : 'back_Button.',
-	'map'     : 'map_Button.',
-	'refresh' : 'refresh_Button.'
+	'back'    : 'nearMeBackButton.',
+	'map'     : 'nearMeMapButton.',
+	'refresh' : 'nearMeRefreshButton.'
 }
 
 exports.alertsScreen = {
-	'back'   : 'alertsBack_Button.'
+	'back'   : 'alertsBackButton.'
 
 }
 
@@ -157,42 +157,43 @@ exports.jobsScreen = {
     'newJobsTab'               : {
     	'newJobsHeader'        : 'newJobsHeader.', //This is used for intianl sync.
     	'newJobsLabel'         : 'newJobs.',
-		'newJobs'              : 'newJobs_', //+ index++ + '.'
-		'newJobsDiscontinued'  : 'newJobsDiscontinued_' //+ index++ + '.'
+		'newJobs'              : 'newJobs', //+ index++ + '.'
+		'newJobsDiscontinued'  : 'newJobsDiscontinued' //+ index++ + '.'
     },
 
     'openJobsTab'  : {
     	'currentJobsHeader'      : 'currentJobsHeader.',
-    	'dispatchJobsLabel'      : 'jobs_Button.',
-    	'openJobs'               : 'openJobs_', //+ index++ + '.'
-	    'openJobsDiscontinued'   : 'openJobsDiscontinued_' //+ index++ + '.'
+    	'dispatchJobsLabel'      : 'jobsButton.',
+    	'openJobs'               : 'openJobs', //+ index++ + '.'
+	    'openJobsDiscontinued'   : 'openJobsDiscontinued' //+ index++ + '.'
     },
 
     'otherOpenJobsTab'                : {
 
     	'otherOpenJobsHeader'         : 'otherOpenJobsHeader.',
-	    'otherOpenJobs'               : 'inProgressJobs_', //+ index++ + '.'
-	    'otherOpenJobsDiscontinued'   : 'inProgressJobsDiscontinued_' //+ index++ + '.'
+	    'otherOpenJobs'               : 'inProgressJobs', //+ index++ + '.'
+	    'otherOpenJobsDiscontinued'   : 'inProgressJobsDiscontinued' //+ index++ + '.'
     },
 
     'appointmentJobsTab' : {
     	'appointmentsHeader'          : 'appointmentsHeader.',
-        'appointmentJobs'             : 'appointmentJobs_', //+ index++ + '.'
-	    'appointmentJobsDiscontinued' : 'appointmentJobsDiscontinued_' //+ index++ + '.'
+        'appointmentJobs'             : 'appointmentJobs', //+ index++ + '.'
+	    'appointmentJobsDiscontinued' : 'appointmentJobsDiscontinued' //+ index++ + '.'
     },
 
     'otherOptions'  : {
-		'back'      : 'jobsBack_Button.'
+		'back'      : 'jobsBackButton.'
     }
 }
 
 exports.recentScreen = {
-	'back'        : 'recentBack_Button.',
-	'saved_Tab'   : 'recentSavedTab.',
-	// 'saved_Item'  : 
-	'viewed_Tab'  : 'recentViewed_Tab.',
-	// 'viewed_Item' : 
-	'search'      : 'recentSearch.'
+	'back'        : 'recentBackButton.',
+	'savedTab'    : 'recentSavedTab.',
+	'viewedTab'   : 'recentViewedTab.',
+	'recentNode'  : 'recentNode', // recentNode + # + .
+	'search'      : 'recentSearch.',
+	'view'        : 'View',
+	'viewOnline'  : 'View Online'
 }
 
 exports.expiredTagsScreen = {
@@ -201,42 +202,42 @@ exports.expiredTagsScreen = {
 
 exports.workFormScreen = {
 	// 'newRecord'		: 
-	// 'showAll'		:
+	// 'showAll'		: formShowAllButton
 	'search'			: 'search.'
 
 }
 
 exports.actionsScreen = {
-	'clockOut'       : 'clockout_Button.',
-	'clockIn'        : 'clockin_Button.',
-	'companyVehicle' : 'companyVehicles_Button.',
-	'back'           : 'actionsBack_Button.',
-	'drafts'         : 'drafts_Button.',  // x: 416, y: 848
-	'photos'         : 'photos_Button.',
-	'sync'           : 'refreshSync_Button.',
-	'logout'         : 'ActionsLogOut_Button.',
-	'about'          : 'about_Button.', // x: 416, y: 1914
-	'settings'       : 'settings_Button.',
-	'resetData'      : 'resetAllData_Button.',
-	'sendDebug'      : 'sendDebugData_Button.'
+	'clockOut'       : 'actionsClockoutButton.',
+	'clockIn'        : 'actionsClockinButton.',
+	'companyVehicle' : 'actionsCompanyVehiclesButton.',
+	'back'           : 'actionsBackButton.',
+	'drafts'         : 'draftsButton.',  // x: 416, y: 848
+	'photos'         : 'photosButton.',
+	'sync'           : 'refreshSyncButton.',
+	'logout'         : 'actionsLogoutButton.',
+	'about'          : 'aboutButton.', // x: 416, y: 1914
+	'settings'       : 'settingsButton.',
+	'resetData'      : 'resetAllDataButton.',
+	'sendDebug'      : 'sendDebugDataButton.'
 }
 
 exports.aboutScreen = {
-	'back'   : 'aboutBack_Button.',
-	'terms'  : 'termsOfService.'
+	'back'   : 'aboutBackButton.',
+	'terms'  : 'termsOfServiceButton.'
 }
 
 exports.settingsScreen = {
-	'allowVideo'    : 'allowVideoUploads_Button.',
-	'basicCamera'   : 'basicAndroidCamera_Button.',
-	'imageSize'     : 'resizeImages_Button.',
-	'backgroundGps' : 'backgroundGps_Button.'
+	'allowVideo'    : 'allowVideoUploadsButton.',
+	'basicCamera'   : 'basicAndroidCameraButton.',
+	'imageSize'     : 'resizeImagesButton.',
+	'backgroundGps' : 'backgroundGpsButton.'
 }
 
 exports.draftsScreen = {
-	'back'     : 'draftsBack_Button.',   //'//UIAApplication[1]/UIAWindow[1]/UIAToolbar[1]/UIAButton[1]',
+	'back'     : 'draftsBackButton.',   //'//UIAApplication[1]/UIAWindow[1]/UIAToolbar[1]/UIAButton[1]',
 	'delete'   : 'Delete',
-	'draft'    : 'draft_', //Make sure you use getItem() from the commons.
+	'draft'    : 'draft', //Make sure you use getItem() from the commons.
 	'edit'     : 'Edit',
 	'noDrafts' : 'No drafts have been saved',
 	'search'   : 'draftSearch.',
@@ -245,26 +246,26 @@ exports.draftsScreen = {
 }
 
 exports.inspectionRecord = {
-   'driver'         : 'Driver_Field.',
-   'truck'          : 'Truck_Field.',
-   'odometer'       : 'Odometer Reading_Field.',
-   'defectItems'    : 'Defective Items_Field.',
-   'remarks'        : 'Remarks_Field.',
-   'resoulution'    : 'Resolution_Field.',
+   'driver'         : 'DriverField.',
+   'truck'          : 'TruckField.',
+   'odometer'       : 'Odometer ReadingField.',
+   'defectItems'    : 'Defective ItemsField.',
+   'remarks'        : 'RemarksField.',
+   'resoulution'    : 'ResolutionField.',
    'safeToOperate'  : 'The vehicle is in safe operation condition.'
 }
 
 exports.bootRecord = {
-	'account'             : 'Account_Field.',
-	'bootTime'            : 'Boot Time_Field.',
-	'violations_select'   : 'Violations_Field.',
+	'account'             : 'AccountField.',
+	'bootTime'            : 'Boot TimeField.',
+	'violationsSelect'    : 'ViolationsField.',
 		// Violation Options
-	'violations_option1'  : 'Manager Request.',
-	'violations_option2'  : 'Timed Parking.',
-	'violations_option3'  : 'No Overnight Parking.',
+	'violationsOption1'   : 'Manager Request.',
+	'violationsOption2'   : 'Timed Parking.',
+	'violationsOption3'   : 'No Overnight Parking.',
 		//Violation Options Buttons
-	'violations_done'     : 'Done.',
-	'violations_cancel'   : 'Cancel.',
+	'violationsDone'      : 'Done.',
+	'violationsCancel'    : 'Cancel.',
 	'driver'              : 'Driver.',
 		// Driver Options
 	'driver1'             : '- None -.',
@@ -274,7 +275,7 @@ exports.bootRecord = {
 	'driver5'             : 'Luke Simulator.',
 	'driver6'             : 'Mike Android Other.',
 		// Driver Options Buttons.
-	'driver_cancel'       : 'Cancel.'
+	'driverCancel'        : 'Cancel.'
 }
 
 exports.genTowRecord = {
@@ -284,23 +285,23 @@ exports.genTowRecord = {
 exports.mobile_MikeRecord = {
    'mobileMike'        : 'Mobile_Mike',
    'propertyRef'       : {
-	   'property'      : 'Property_Field_',
+	   'property'      : 'PropertyField.',
     		'omadi'    : 'Omadi Inc'
     	},
 	'otherFields'       : {
    		'mobileMike'    : 'Mobile_Mike',
-   		'textFieldCond' : 'Text Field Cond_Field_0.',
-   		'textFieldReq'  : 'Text Field Req_Field_0.',
-   		'licensePlate'  : 'License Plate #_Field_',
-   		'licenseState'  : 'License Plate State_Field_.'
+   		'textFieldCond' : 'Text Field CondField0.',
+   		'textFieldReq'  : 'Text Field ReqField0.',
+   		'licensePlate'  : 'License Plate #Field',
+   		'licenseState'  : 'License Plate StateField.'
 	}
 }
 
 exports.doNotTow = {
 	'doNotTow'          : 'Do Not Tow',
 	'otherFields'       : {
-		'licensePlate'  : 'License Plate #_Field_0.',
-		'licenseState'  : 'License Plate State_Field_0.'
+		'licensePlate'  : 'License Plate #Field0.',
+		'licenseState'  : 'License Plate StateField0.'
 	} 
 }
 
@@ -327,12 +328,12 @@ exports.serviceRecord = {
 exports.tagRecord = {
 	'tag'               : 'Tag',
    'propertyRef'        : {
-   		'property'      : 'Account_Field_0.',
+   		'property'      : 'AccountField0.',
 			'omadi'     : 'Omadi Inc'
 	},
 	'otherFields'       : {
-		'licensePlate'  : 'License Plate #_Field_0.',
-		'licenseState'  : 'License Plate State_Field_0.'
+		'licensePlate'  : 'License Plate #Field0.',
+		'licenseState'  : 'License Plate StateField0.'
 	}
 }
 

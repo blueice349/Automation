@@ -227,7 +227,7 @@ Commons.prototype.afterEachDes = function () {
 					}
 				} else if ( config.logoutTest === true ) {
 					return driver
-					.elementByNameIfExists( elements.loginScreen.client_account )
+					.elementByNameIfExists( elements.loginScreen.clientAccount )
 					.isDisplayed()
 					.then( function ( loginScreen ) {
 
