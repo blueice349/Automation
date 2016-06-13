@@ -68,6 +68,8 @@ exports.alertButtons = {
 
 exports.companyVehicle = {
 	'vehicle1'  : 'Truck 1',
+	'vehicle2'  : 'Truck 2',
+	'vehicle3'  : 'truck 3',
 	'review'    : 'Review',
 	'no'        : 'No',
 	'noVehicle' : '- No Vehicle -',
@@ -76,6 +78,7 @@ exports.companyVehicle = {
 
 exports.homeScreen = {
 	'actions'          : 'homeActionsButton.',
+	'button'           : 'Button.',
 	'clockOut'         : 'homeClockOutButton',
 	'clockIn'          : 'homeClockInButton',
 	'logout'           : 'homeLogOutButton.',
@@ -188,8 +191,8 @@ exports.jobsScreen = {
 
 exports.recentScreen = {
 	'back'        : 'recentBackButton.',
-	'savedTab'    : 'recentSavedTab.',
-	'viewedTab'   : 'recentViewedTab.',
+	'savedTab'    : 'Recently Saved',
+	'viewedTab'   : 'Recently Viewed',
 	'recentNode'  : 'recentNode', // recentNode + # + .
 	'search'      : 'recentSearch.',
 	'view'        : 'View',
@@ -235,13 +238,14 @@ exports.settingsScreen = {
 }
 
 exports.draftsScreen = {
-	'back'     : 'draftsBackButton.',   //'//UIAApplication[1]/UIAWindow[1]/UIAToolbar[1]/UIAButton[1]',
-	'delete'   : 'Delete',
-	'draft'    : 'draft', //Make sure you use getItem() from the commons.
-	'edit'     : 'Edit',
-	'noDrafts' : 'No drafts have been saved',
-	'search'   : 'draftSearch.',
-	'view'     : 'View'
+	'back'       : 'draftsBackButton.',
+	'cancel'     : 'Cancel',
+	'delete'     : 'Delete',
+	'draft'      : 'draft', //Make sure you use getItem() from the commons.
+	'edit'       : 'Edit',
+	'noDrafts'   : 'No drafts have been saved',
+	'search'     : 'draftSearch.',
+	'view'       : 'View',
 	
 }
 
@@ -283,22 +287,25 @@ exports.genTowRecord = {
 }
 
 exports.mobile_MikeRecord = {
-   'mobileMike'        : 'Mobile_Mike',
+   'mobileMike'        : 'Mobile_Mike', // + elements.homeScreen.button OR  + elements.homeScreen.plusButton
    'propertyRef'       : {
 	   'property'      : 'PropertyField.',
     		'omadi'    : 'Omadi Inc'
     	},
 	'otherFields'       : {
-   		'mobileMike'    : 'Mobile_Mike',
-   		'textFieldCond' : 'Text Field CondField0.',
-   		'textFieldReq'  : 'Text Field ReqField0.',
-   		'licensePlate'  : 'License Plate #Field',
-   		'licenseState'  : 'License Plate StateField.'
+		'checkbox'         : 'CheckboxCheckbox.',
+		'integerFieldCond' : 'Integer Field CondField0.',
+   		'mobileMike'       : 'Mobile_Mike',
+   		'textFieldCond'    : 'Text Field CondField0.',
+   		'textFieldReq'     : 'Text Field ReqField0.',
+   		'licensePlate'     : 'License Plate #Field',
+   		'licenseState'     : 'License Plate StateField.'
+
 	}
 }
 
 exports.doNotTow = {
-	'doNotTow'          : 'Do Not Tow',
+	'doNotTow'          : 'Do Not Tow', // + elements.homeScreen.button OR  + elements.homeScreen.plusButton
 	'otherFields'       : {
 		'licensePlate'  : 'License Plate #Field0.',
 		'licenseState'  : 'License Plate StateField0.'
@@ -326,7 +333,7 @@ exports.serviceRecord = {
 }
 
 exports.tagRecord = {
-	'tag'               : 'Tag',
+	'tag'               : 'Tag', // + elements.homeScreen.button OR  + elements.homeScreen.plusButton
    'propertyRef'        : {
    		'property'      : 'AccountField0.',
 			'omadi'     : 'Omadi Inc'

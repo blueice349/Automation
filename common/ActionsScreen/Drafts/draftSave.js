@@ -81,6 +81,10 @@ module.exports = function () {
 					.sleep( 1000 )
 					.waitForElementByName( elements.draftsScreen.edit, 10000 )
 					.isDisplayed().should.eventually.be.true
+					.elementByName( elements.draftsScreen.view )
+					.isDisplayed().should.eventually.be.true
+					.elementByName( elements.draftsScreen.cancel )
+					.isDisplayed().should.eventually.be.true
 					.elementByName( elements.draftsScreen.edit )
 					.isDisplayed().should.eventually.be.true
 					.elementByName( elements.draftsScreen.edit )

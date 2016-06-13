@@ -10,32 +10,6 @@ var Commons = function () {
 	this.version = config.desired.platformVersion;
 };
 
-Commons.prototype.alertText = function ( alertText ) {
-
-	var driver   = config.driver;
-	var elements = config.elements;
-
-	if ( this.isIOS() ) {
-		return driver.alertText().should.eventually.contain( alertText );
-
-	} else if ( this.isAndroid() || this.isAndroid6() ) {
-		return driver.elementByName( alertText ).text().should.eventually.contain( alertText );
-	}
-};
-
-Commons.prototype.getItem = function ( name, num ) {
-
-	var value = name;
-
-	if ( !isNaN( num ) ) {
-		value = value + num; 
-	}
-
-	value = value + '.';
-
-	return value
-};
-
 Commons.prototype.isAndroid = function () {
 
 	if ( this.os == 'Android' ) {
@@ -61,6 +35,32 @@ Commons.prototype.isIOS = function () {
 	} 
 
 		return false;
+};
+
+Commons.prototype.alertText = function ( alertText ) {
+
+	var driver   = config.driver;
+	var elements = config.elements;
+
+	if ( this.isIOS() ) {
+		return driver.alertText().should.eventually.contain( alertText );
+
+	} else if ( this.isAndroid() || this.isAndroid6() ) {
+		return driver.elementByName( alertText ).text().should.eventually.contain( alertText );
+	}
+};
+
+Commons.prototype.getItem = function ( name, num ) {
+
+	var value = name;
+
+	if ( !isNaN( num ) ) {
+		value = value + num; 
+	}
+
+	value = value + '.';
+
+	return value
 };
 
 Commons.prototype.sendKeys = function ( el, keys ) {
@@ -247,7 +247,7 @@ Commons.prototype.afterEachDes = function () {
 		} else if ( config.currentTest === 'passed' ) {
 			console.log( 'Tested Passed will start next test.....'.green );
 		}
-	}.bind( this ) );
+	} );
 };
 
 Commons.prototype.afterEachIt = function () {

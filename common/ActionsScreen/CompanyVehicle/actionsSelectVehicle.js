@@ -67,9 +67,9 @@ module.exports = function () {
 			if ( lastUser.truckOption === true && lastUser.userRole != 'client' && config.isInVehicle === false ) {
 					console.log( 'Not logged into a vehicle. Will log into a vehicle'.red );
 					return driver
-					.elementByName( elements.companyVehicle.vehicle1 )
+					.elementByName( elements.companyVehicle.vehicle2 )
 					.isDisplayed().should.eventually.be.true
-					.elementByName( elements.companyVehicle.vehicle1 )
+					.elementByName( elements.companyVehicle.vehicle2 )
 					.click()
 					.sleep( 100 )
 					.then( function () {

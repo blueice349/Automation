@@ -12,7 +12,7 @@ module.exports = function () {
 
 	var driver   = config.driver;
 
-	describe( 'Start Create New Mobile Mike Node with required field blank and try to save'.green, function () {
+	describe( 'Start Create New Mobile Mike Node with Condition required filed and save'.green, function () {
 
 		commons.beforeEachDes();
 		commons.beforeEachIt();
@@ -37,6 +37,7 @@ module.exports = function () {
 				&& lastUser.userRole != 'admin'
 				) {
 				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
+				config.canCreate   = false;
 				config.currentTest = 'passed';	
 
 			} else if ( lastUser.userRole === 'driver'
@@ -93,6 +94,60 @@ module.exports = function () {
 			}
 		} );
 
+		it( 'Should add text in textFieldReq & textFieldCond.'.green, function () {
+
+			var lastUser = Store.get( 'lastUser' );
+
+			if ( config.canCreate != true ) {
+				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
+				config.currentTest = 'passed';
+
+			} else if ( config.canCreate === true ) {
+				console.log( 'User should enter text into textFieldReq'.red );
+				return driver
+				.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq )
+				.isDisplayed().should.eventually.be.true
+				.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq )
+				.then( function ( textFieldReq ) {
+					
+					return commons.sendKeys( textFieldReq, lastUser.userName + ' Required Field' );
+				} )
+				.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
+				.isDisplayed().should.eventually.be.true
+				.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
+				.then( function ( textFieldCond ) {
+					
+					return commons.sendKeys( textFieldCond, lastUser.userName + ' Conditional Field' );
+				} )
+				.then( function () {
+
+					config.currentTest = 'passed';
+				} );
+			}
+		} );
+
+		it( 'Should check the checkbox field.'.green, function () {
+
+			var lastUser = Store.get( 'lastUser' );
+
+			if ( config.canCreate != true ) {
+				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
+				config.currentTest = 'passed';
+
+			} else if ( config.canCreate === true ) {
+				console.log( 'User should check the checkboxField'.red );
+				return driver
+				.elementByName( elements.mobile_MikeRecord.otherFields.checkbox )
+				.isDisplayed().should.eventually.be.true
+				.elementByName( elements.mobile_MikeRecord.otherFields.checkbox )
+				.click()
+				.then( function () {
+
+					config.currentTest = 'passed';
+				} );
+			}
+		} );
+
 		it( 'Should click Actions --> Save for the first time.'.green, function () {
 
 			if ( config.canCreate != true ) {
@@ -100,7 +155,7 @@ module.exports = function () {
 				config.currentTest = 'passed';
 			
 			} else if ( config.canCreate === true  ) {
-				console.log( 'User should have click actions --> save 1st time'.red );
+				console.log( 'User should have click actions --> save'.red );
 				return driver
 				.elementByName( elements.formScreen.actions )
 				.isDisplayed().should.eventually.be.true
@@ -120,15 +175,15 @@ module.exports = function () {
 			}
 		} );
 
-		it( 'Should Make sure Alert for textFieldReq Field shows and click Ok.'.green, function () {
+		it( 'Should Make sure Alert for Conditional Required Integer Field shows and click Ok.'.green, function () {
 
 			if ( config.canCreate != true ) {
 				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
 				config.currentTest = 'passed';
 
 			} else if ( config.canCreate === true  ) {
-				console.log( 'User should get a alertText about the textFieldReq reguried field'.red );
-				return commons.alertText( alerts.nodeEditScreenAlerts.requiredFields.required )
+				console.log( 'User should get a alertText about the condition reguried field'.red );
+				return commons.alertText( alerts.nodeEditScreenAlerts.requiredFields.condition2 )
 				.elementByName( elements.alertButtons.ok )
 				.isDisplayed().should.eventually.be.true
 				.elementByName( elements.alertButtons.ok )
@@ -140,10 +195,9 @@ module.exports = function () {
 			}
 		} );
 
-		it( 'Should add text in textFieldReq and textFieldCond.'.green, function () {
+		it( 'Should add #\'s in integraFieldCond.'.green, function () {
 
 			var lastUser = Store.get( 'lastUser' );
-
 			if ( config.canCreate != true ) {
 				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
 				config.currentTest = 'passed';
@@ -151,19 +205,12 @@ module.exports = function () {
 			} else if ( config.canCreate === true ) {
 				console.log( 'User should enter text into textFieldReq'.red );
 				return driver
-				.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq )
+				.elementByName( elements.mobile_MikeRecord.otherFields.integerFieldCond )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
-				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq )
-				.then( function ( textFieldReq ) {
+				.elementByName( elements.mobile_MikeRecord.otherFields.integerFieldCond )
+				.then( function ( integerFieldCond ) {
 					
-					return commons.sendKeys( textFieldReq, lastUser.userName + ' Required Field' );
-				} )
-				.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
-				.then( function ( textFieldCond ) {
-					
-					return commons.sendKeys( textFieldCond, lastUser.userName + ' Conditional Field' );
+					return commons.sendKeys( integerFieldCond, '1234' );
 				} )
 				.then( function () {
 
@@ -172,14 +219,14 @@ module.exports = function () {
 			}
 		} );
 
-		it( 'Should click Actions --> Save for the 2nd time.'.green, function () {
+		it( 'Should click Actions --> Save for the second time.'.green, function () {
 
 			if ( config.canCreate != true ) {
 				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
 				config.currentTest = 'passed';
 
 			} else if ( config.canCreate === true  ) {
-				console.log( 'User should have click Actions --> Save 3rd time'.red );
+				console.log( 'User should have click Actions --> Save'.red );
 				return driver
 				.elementByName( elements.formScreen.actions )
 				.isDisplayed().should.eventually.be.true

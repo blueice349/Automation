@@ -5,6 +5,8 @@ module.exports.actionsScreen = function ( actionsScreen ) {
 	switch ( actionsScreen ) {
 		case 'draftDelete'   :
 			return require( './common/ActionsScreen/Drafts/draftDelete.js' )();
+		case 'daftView'      :
+			return require( './common/ActionsScreen/Drafts/draftView.js' )();
 		case 'draftSave'     :
 			return require( './common/ActionsScreen/Drafts/draftSave.js' )();
 		case 'resetAllData'  :
@@ -103,8 +105,10 @@ module.exports.newNodes = function ( newNodes ) {
 			return require( './common/NewNodes/Restrictions/restrictionLicensePlate.js' )();
 		case 'clientDoNotTow'         :
 			return require( './common/NewNodes/Restrictions/clientDoNotTow.js' )();	
-		case 'conditionallyRequired'  :
-			return require( './common/NewNodes/RequiredFields/conditionallyRequired.js' )();
+		case 'conditionRequiredTextFieldFilled'  :
+			return require( './common/NewNodes/ConditionallyRequiredFields/textFieldFilled.js' )();
+		case 'conditionRequiredCheckboxChecked'  :
+			return require( './common/NewNodes/ConditionallyRequiredFields/checkboxIsChecked.js' )();	
 		case 'required'               :
 			return require( './common/NewNodes/RequiredFields/required.js' )();
 	}
@@ -116,8 +120,10 @@ module.exports.recentScreen = function ( recentScreen ) {
 	switch ( recentScreen ) {
 		case 'recentScreenCheckOptions'         :
 			return require( './common/RecentScreen/recentScreenCheckScreen.js' )();
-		case 'recentScreenViewNode'      :
-			return require( './common/RecentScreen/recentScreenViewNode.js' )();	
+		case 'recentViewedTabViewNode'      :
+			return require( './common/RecentScreen/recentViewedTabViewNode.js' )();
+		case 'recentSavedTabViewNode'      :
+			return require( './common/RecentScreen/recentSavedTabViewNode.js' )();	
 	}
 	console.log( 'No test case was selcected!' );
 };

@@ -13,7 +13,7 @@ module.exports = function () {
 
 	var driver = config.driver;
 
-	describe( 'Start recentScreen Process'.green, function () {
+	describe( 'Start view node on recentScreeen from the recentSavedTab Process'.green, function () {
 
 		commons.beforeEachDes();
 		commons.beforeEachIt();
@@ -34,7 +34,7 @@ module.exports = function () {
 			}
 		} );
 
-		it( 'Should go to Recent Tab from homeScreen'.green, function() {
+		it( 'Should go to recentScreen from homeScreen'.green, function() {
 			
 			var lastUser = Store.get( 'lastUser' );
 			if ( config.canView === true ) {
@@ -71,137 +71,6 @@ module.exports = function () {
 			}
 		} );
 
-		it( 'Should go to viewedTab on the recentScreen.'.green, function () {
-
-			if ( config.canView === true ) {
-				console.log( 'User has access to recentTab.'.red );
-				return driver
-				.elementByName( elements.recentScreen.viewedTab )
-				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.recentScreen.viewedTab )
-				.click()
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
-			
-			} else if ( config.canView === false ) {
-				console.log( 'User does "NOT" have access to recentTab.'.red );
-				return driver
-				.elementByNameIfExists( elements.recentScreen.viewedTab )
-				.then( function ( viewedTab ) {
-
-					if ( viewedTab ) {
-						assert.fai( 'User should not have access to viewedTab located in the recent tab'.red );
-					} else if ( !viewedTab ) {
-						config.currentTest = 'passed';
-					}
-				} );
-			} 	
-		} );
-
-		it( 'Should click on first Node on viewedTab.'.green, function () {
-
-			if ( config.canView === true ) {
-				console.log( 'User has access to recentTab.'.red );
-				return driver
-				.elementByNameIfExists( elements.recentScreen.recentNode + 0 + '.' )
-				.then( function ( viewedNode ) {
-					
-					if ( viewedNode ) {
-						console.log( 'User should click on the first node in the view.'.red );
-						config.recentNode = true;
-						return viewedNode
-						.click()
-						.elementByName( elements.recentScreen.viewOnline )
-						.isDisplayed().should.eventually.be.true
-						.elementByName( elements.recentScreen.view )
-						.isDisplayed().should.eventually.be.true
-					} else {
-						console.log( 'There is no Nodes to view in in viewedTab.'.red );
-						config.recentNode = false;
-						return;
-					}
-				} )
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
-			
-			} else if ( config.canView === false ) {
-				console.log( 'User does "NOT" have access to recentTab.'.red );
-				return driver
-				.elementByNameIfExists( elements.recentScreen.search )
-				.then( function ( resentSearch ) {
-
-					if ( resentSearch ) {
-						assert.fai( 'User should not have access to resentSearch located in the recent tab'.red );
-					
-					} else if ( !resentSearch ) {
-						config.currentTest = 'passed';
-					}
-				} );
-			} 	
-		} );
-
-		it( 'Should click on "View" from the Node options on viewedTab.'.green, function () {
-
-			if ( config.canView === true && config.recentNode === true ) {
-				console.log( 'User should click on "View".'.red );
-				return driver
-				.elementByNameIfExists( elements.recentScreen.recentNode + 0 + '.' )
-				.click()
-				.sleep( 100 )
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
-			
-			} else if ( config.canView === false || config.recentNode === false ) {
-				console.log( 'User does "NOT" have access to recentTab.'.red );
-				return driver
-				.elementByNameIfExists( elements.recentScreen.search )
-				.then( function ( resentSearch ) {
-
-					if ( resentSearch ) {
-						assert.fai( 'User should not have access to resentSearch located in the recent tab'.red );
-					
-					} else if ( !resentSearch ) {
-						config.currentTest = 'passed';
-					}
-				} );
-			} 	
-		} );
-
-		it( 'Should go back to recentScreen.'.green, function () {
-			
-			if ( commons.isIOS() && config.recentNode === true && config.canView === true ) {
-				console.log( 'iOS - User should go back to recentScreen from node view.'.red );
-				return driver
-				.elementByName( elements.formScreen.back )
-				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.formScreen.back )
-				.click()
-				.sleep( 1000 )
-				.then( function () {
-
-					config.currentTest = 'passed'
-					config.recentNode  = false;
-				} );
-
-			} else if ( commons.isAndroid() && config.recentNode === true && config.canView === true ) {
-				console.log( 'Android - User should go back to recentScreen from node view.'.red );
-				return driver
-				.back()
-				.sleep( 100 )
-				.then( function () {
-
-					config.currentTest = 'passed'
-					config.recentNode  = false;
-				} );
-			}
-		} );
-
 		it( 'Should go to savedTab on the recentScreen.'.green, function () {
 
 			if ( config.canView === true ) {
@@ -223,7 +92,7 @@ module.exports = function () {
 				.then( function ( savedTab ) {
 
 					if ( savedTab ) {
-						assert.fai( 'User should not have access to savedTab located in the recent tab'.red );
+						assert.fail( 'User should not have access to savedTab located in the recent tab'.red );
 					} else if ( !savedTab ) {
 						config.currentTest = 'passed';
 					}
@@ -236,7 +105,7 @@ module.exports = function () {
 			if ( config.canView === true ) {
 				console.log( 'User has access to recentTab.'.red );
 				return driver
-				.elementByNameIfExists( elements.recentScreen.recentNode + 0 + '.' )
+				.elementByNameIfExists( elements.recentScreen.recentNode + '0.' )
 				.then( function ( viewedNode ) {
 					
 					if ( viewedNode ) {
@@ -266,7 +135,40 @@ module.exports = function () {
 				.then( function ( resentSearch ) {
 
 					if ( resentSearch ) {
-						assert.fai( 'User should not have access to resentSearch located in the recent tab'.red );
+						assert.fail( 'User should not have access to resentSearch located in the recent tab'.red );
+					
+					} else if ( !resentSearch ) {
+						config.currentTest = 'passed';
+					}
+				} );
+			} 	
+		} );
+
+		it( 'Should Make sure View and viewOnline is visibile on first Node clicked on savedTab.'.green, function () {
+
+			if ( config.canView === true && config.recentNode === true ) {
+				console.log( 'User has access to recentTab and a node has been clicked.'.red );
+				return driver
+				.elementByName( elements.recentScreen.viewOnline )
+				.isDisplayed().should.eventually.be.true
+				.elementByName( elements.recentScreen.view )
+				.isDisplayed().should.eventually.be.true
+				.then( function () {
+
+					config.currentTest = 'passed';
+				} );
+			} else if ( config.canView === true && config.recentNode === false ) {
+				console.log( 'There is no Nodes to view in savedTab.'.red );
+				config.currentTest = 'passed';
+
+			} else if ( config.canView === false ) {
+				console.log( 'User does "NOT" have access to recentTab.'.red );
+				return driver
+				.elementByNameIfExists( elements.recentScreen.search )
+				.then( function ( resentSearch ) {
+
+					if ( resentSearch ) {
+						assert.fail( 'User should not have access to resentSearch located in the recent tab'.red );
 					
 					} else if ( !resentSearch ) {
 						config.currentTest = 'passed';
@@ -280,27 +182,37 @@ module.exports = function () {
 			if ( config.canView === true && config.recentNode === true ) {
 				console.log( 'User should click on "View".'.red );
 				return driver
-				.elementByNameIfExists( elements.recentScreen.recentNode + 0 + '.' )
-				.click()
-				.sleep( 100 )
+				.elementByNameIfExists( elements.recentScreen.recentNode + '0.' )
+				.then( function ( el ) {
+
+					if ( el ) {
+						return el
+						.click()
+						.sleep( 100 );
+					} 
+				} )
 				.then( function () {
 
 					config.currentTest = 'passed';
 				} );
+			} else if ( config.recentNode === false && config.canView === true ) {
+				console.log( 'User there is no node to view on viewedTab.'.red );
+				config.currentTest = 'passed';
 			
-			} else if ( config.canView === false || config.recentNode === false ) {
+			} else if ( config.canView === false ) {
 				console.log( 'User does "NOT" have access to recentTab.'.red );
 				return driver
 				.elementByNameIfExists( elements.recentScreen.search )
 				.then( function ( resentSearch ) {
 
 					if ( resentSearch ) {
-						assert.fai( 'User should not have access to resentSearch located in the recent tab'.red );
+						assert.fail( 'User should not have access to resentSearch located in the recent tab'.red );
 					
 					} else if ( !resentSearch ) {
 						config.currentTest = 'passed';
 					}
 				} );
+
 			} 	
 		} );
 
@@ -330,6 +242,14 @@ module.exports = function () {
 					config.currentTest = 'passed'
 					config.recentNode  = false;
 				} );
+			
+			} else if ( config.canView === true && config.recentNode === false ) {
+				console.log( 'User should already be on the recent page.'.red );
+				config.currentTest = 'passed';
+			
+			} else if ( config.canView === false ) {
+				console.log( 'User does not have access to recentScreen and should be on the homeScreen.'.red );
+				config.currentTest = 'passed';
 			}
 		} );
 
@@ -355,8 +275,9 @@ module.exports = function () {
 
 					config.currentTest = 'passed';
 				} );
+			
 			} else if ( config.canView === false ) {
-				console.log( 'user is a client and should already be on homeScreen.'.red );
+				console.log( 'User does not have access to recentScreen and should already be on homeScreen.'.red );
 				return driver
 				.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
 				.isDisplayed().should.eventually.be.true
@@ -369,7 +290,7 @@ module.exports = function () {
 		
 		it( 'should set currentTest to "passed".'.green, function ( done ) {
 			
-			console.log( 'go to recentScreen test has Completed....'.green );
+			console.log( 'View node from recentSavedTab test has Completed....'.green );
 			config.currentTest = 'passed';
 			config.canView     = false;
 			done();

@@ -124,71 +124,95 @@ describe( 'Automation Test in Progress!'.green, function () {
 
 		var run = require( './TestFiles.js' );
 
-			/* Driver login with truck and clockin options */
+			/* Driver1 iOS Test && Driver2 Android Test */	
 
-			run.logins( 'driver1' );
-			run.logins( 'clockin' );
-			run.logins( 'selectVehicle' );
-			run.logins( 'homeScreenCheck' );
-			       /* jobs test */
-			run.homeScreen( 'homeScreenItems' );
-			run.jobsScreen( 'acceptJob' );
-			run.jobsScreen( 'drivingToJob' );
-			run.jobsScreen( 'arrivedAtJob' );
-			run.jobsScreen( 'towingJob' );
-			run.jobsScreen( 'arrivedDestination' );
-			run.jobsScreen( 'jobComplete' );
-			// run.newNodes( 'restrictLicensePlate' );
-			run.newNodes( 'required' );
-			//run.newNodes( 'newTag;' );
-			run.newNodes( 'conditionallyRequired' );
-			        /* drafts */
-			run.newNodes( 'newDraft1' );
-			run.actionsScreen( 'draftSave' );
-			run.newNodes( 'newDraft2' );
-			run.actionsScreen( 'draftSave' );
-			run.newNodes( 'newDraft3' );
-			run.actionsScreen( 'draftSave' );
-			run.newNodes( 'newDraft4' );
-			run.actionsScreen( 'draftSave' );
-			run.newNodes( 'newDraft1' );
-			run.actionsScreen( 'draftDelete' );
-			run.actionsScreen( 'resetAllData' );
-			  /* Company Vehicle test */
-			run.actionsScreen( 'removeVehicle' );
-			run.actionsScreen( 'selectVehicle' );
-			  /* Recent Screen Test */
-			run.recentScreen(  'recentScreenCheckOptions' );  
-			run.recentScreen(  'recentScreenViewNode' ); 
-			  /* Clock in and out test */
-			run.actionsScreen( 'clockout' );
-			run.actionsScreen( 'clockin' );
-			run.actionsScreen( 'aboutButton' );
-			run.homeScreen( 'logout' );
+				/* Driver login with truck and clockin options */
+					run.logins( 'driver1' );
+					run.logins( 'clockin' );
+					run.logins( 'selectVehicle' );
+					run.logins( 'homeScreenCheck' );
 
-			// /* Client1 && Client2 login */
+		       /* jobs test */
+					run.homeScreen( 'homeScreenItems' );
+					run.jobsScreen( 'acceptJob' );
+					run.jobsScreen( 'drivingToJob' );
+					run.jobsScreen( 'arrivedAtJob' );
+					run.jobsScreen( 'towingJob' );
+					run.jobsScreen( 'arrivedDestination' );
+					run.jobsScreen( 'jobComplete' );
 
-			run.logins( 'client1' );
-			run.logins( 'clockin' );
-			run.logins( 'selectVehicle' );
-			run.logins( 'homeScreenCheck' );
-			run.homeScreen( 'homeScreenItems' );
-			run.recentScreen(  'recentScreenCheckOptions' ); 
-			run.recentScreen(  'recentScreenViewNode' );  
-			run.newNodes( 'newTag;' );
-			run.actionsScreen( 'resetAllData' );
-			run.actionsScreen( 'clockout' );
-			run.actionsScreen( 'aboutButton' );
-			run.newNodes( 'clientDoNotTow' );
-			run.actionsScreen( 'logout' );
+				/* New nodes Test */
+					// run.newNodes( 'restrictLicensePlate' );
+					//run.newNodes( 'newTag;' );
+					run.newNodes( 'required' );
+					run.newNodes( 'conditionRequiredTextFieldFilled' );
+					run.newNodes( 'conditionRequiredCheckboxChecked' );
 
-			// /* Client3 && Client4 login */
+		        /* draft Test*/
+					run.newNodes( 'newDraft1' );
+					run.actionsScreen( 'draftView' );
+					run.actionsScreen( 'draftSave' );
+					run.newNodes( 'newDraft2' );
+					run.actionsScreen( 'draftSave' );
+					run.newNodes( 'newDraft3' );
+					run.actionsScreen( 'draftSave' );
+					run.newNodes( 'newDraft4' );
+					run.actionsScreen( 'draftSave' );
+					run.newNodes( 'newDraft1' );
+					run.actionsScreen( 'draftDelete' );
+					run.actionsScreen( 'resetAllData' );
 
-			run.logins( 'client2' );
-			run.logins( 'homeScreenCheck' );
-			run.homeScreen( 'homeScreenItems' );
-			run.recentScreen(  'recentScreenCheckOptions' );  
-			run.newNodes( 'clientDoNotTow' );
-			run.homeScreen( 'logout' );
+			  	/* Company Vehicle test */
+					run.actionsScreen( 'removeVehicle' );
+					run.actionsScreen( 'selectVehicle' );
+
+			  	/* Recent Screen Test */
+					run.recentScreen(  'recentScreenCheckOptions' );  
+					run.recentScreen(  'recentScreenViewNode' ); 
+
+			  	/* Clock in and out test */
+					run.actionsScreen( 'clockout' );
+					run.actionsScreen( 'clockin' );
+					run.actionsScreen( 'aboutButton' );
+					run.homeScreen( 'logout' );
+
+			/* Client1 iOS Test && Client2 Android Test */
+			
+				/* Client login, clock in & vehicle check */
+					run.logins( 'client1' );
+					run.logins( 'clockin' );
+					run.logins( 'selectVehicle' );
+
+				/* HomeScreen Test */
+					run.logins( 'homeScreenCheck' );
+					run.homeScreen( 'homeScreenItems' );
+
+				/* recentScreen Test */
+					run.recentScreen(  'recentScreenCheckOptions' ); 
+					run.recentScreen(  'recentViewedTabViewNode' ); 
+					run.recentScreen(  'recentSavedTabViewNode' ); 
+
+				/* New Nodes Test */
+					run.newNodes( 'newTag;' );
+					run.newNodes( 'clientDoNotTow' );
+
+				/* Actions Test */
+					run.actionsScreen( 'clockout' );
+					run.actionsScreen( 'resetAllData' );
+					run.actionsScreen( 'aboutButton' );
+
+				/* Logout test */
+
+					run.actionsScreen( 'logout' );
+
+			/* Client3 iOS Test && Client4 Android Test */
+
+				run.logins( 'client2' );
+				run.logins( 'homeScreenCheck' );
+				run.homeScreen( 'homeScreenItems' );
+				run.actionsScreen( 'draftView' );
+				run.recentScreen(  'recentScreenCheckOptions' );  
+				run.newNodes( 'clientDoNotTow' );
+				run.homeScreen( 'logout' );
 	} );
 } );

@@ -36,7 +36,7 @@ module.exports = function () {
 			if ( lastUser.userRole === 'AdminClient' ) {
 				console.log( 'User is Allowed to add a New Redord'.red );
 				return driver
-				.elementByName( elements.doNotTow.doNotTow )
+				.elementByName( elements.doNotTow.doNotTow + elements.homeScreen.button )
 				.isDisplayed().should.eventually.be.true
 				.elementByName( elements.doNotTow.doNotTow + elements.homeScreen.plusButton )
 				.isDisplayed().should.eventually.be.true
@@ -51,7 +51,7 @@ module.exports = function () {
 			} else if ( lastUser.userRole === 'client' ) {
 				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
 				return driver
-				.elementByNameIfExists( elements.doNotTow.doNotTow )
+				.elementByNameIfExists( elements.doNotTow.doNotTow + elements.homeScreen.button )
 				.then( function ( doNotTow ) {
 					
 					if ( doNotTow ) {
@@ -71,12 +71,12 @@ module.exports = function () {
 				} )
 				.then( function () {
 
-					config.canCreate  = false;
+					config.canCreate   = false;
 					config.currentTest = 'passed';
 				} );
 			} else {
 				console.log( 'Current is not a client account'.red );
-				config.canCreate  = false;
+				config.canCreate   = false;
 				config.currentTest = 'passed';
 			}
 		} );

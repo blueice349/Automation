@@ -153,7 +153,7 @@ module.exports = function () {
 
 			} else if ( config.canCreate === true  ) {
 				console.log( 'User should get a alertText about the condition reguried field'.red );
-				return commons.alertText( alerts.nodeEditScreenAlerts.requiredFields.condition )
+				return commons.alertText( alerts.nodeEditScreenAlerts.requiredFields.condition1 )
 				.elementByName( elements.alertButtons.ok )
 				.isDisplayed().should.eventually.be.true
 				.elementByName( elements.alertButtons.ok )
