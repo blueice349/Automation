@@ -146,6 +146,7 @@ describe( 'Automation Test in Progress!'.green, function () {
 					//run.newNodes( 'newTag;' );
 					run.newNodes( 'required' );
 					run.newNodes( 'conditionRequiredTextFieldFilled' );
+					run.newNodes( 'conditionRequiredTextFieldEmpty' );
 					run.newNodes( 'conditionRequiredCheckboxChecked' );
 
 		        /* draft Test*/

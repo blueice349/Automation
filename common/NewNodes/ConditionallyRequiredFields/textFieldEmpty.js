@@ -57,7 +57,7 @@ module.exports = function () {
 			}
 		} );
 
-		it( 'Should hideKeyboard on Android if open.'.green, function () {
+		it( 'Should hideKeyboard on Android if cant see a field.'.green, function () {
 	
 			if ( config.canCreate != true ) {
 				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
@@ -118,7 +118,7 @@ module.exports = function () {
 			}
 		} );
 
-		it( 'Should add text in textAreaCondReg.'.green, function () {
+		it( 'Should add text in textFieldCond.'.green, function () {
 
 			var lastUser = Store.get( 'lastUser' );
 
@@ -129,12 +129,12 @@ module.exports = function () {
 			} else if ( config.canCreate === true ) {
 				console.log( 'User should add text in the textFieldCond field'.red );
 				return driver
-				.elementByName( elements.mobile_MikeRecord.otherFields.textAreaCondReg )
+				.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.mobile_MikeRecord.otherFields.textAreaCondReg )
-				.then( function ( textAreaCondReg ) {
+				.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
+				.then( function ( textFieldCond ) {
 					
-					return commons.sendKeys( textAreaCondReg, lastUser.userName + ' Text Area Conditional Field' );
+					return commons.sendKeys( textFieldCond, lastUser.userName + ' Conditional Field' );
 				} )
 				.then( function () {
 
@@ -170,7 +170,7 @@ module.exports = function () {
 			}
 		} );
 
-		it( 'Should Make sure Alert for Conditional Required Field shows and click Ok.'.green, function () {
+		it( 'Should Make sure Alert for Text Area Cond Reg shows and click Ok.'.green, function () {
 
 			if ( config.canCreate != true ) {
 				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
@@ -178,7 +178,7 @@ module.exports = function () {
 
 			} else if ( config.canCreate === true  ) {
 				console.log( 'User should get a alertText about the condition reguried field'.red );
-				return commons.alertText( alerts.nodeEditScreenAlerts.requiredFields.condition1 )
+				return commons.alertText( alerts.nodeEditScreenAlerts.requiredFields.condition3 )
 				.elementByName( elements.alertButtons.ok )
 				.isDisplayed().should.eventually.be.true
 				.elementByName( elements.alertButtons.ok )
@@ -190,7 +190,7 @@ module.exports = function () {
 			}
 		} );
 
-		it( 'Should add text in textFieldCond.'.green, function () {
+		it( 'Should add text in textAreaCondReg.'.green, function () {
 
 			var lastUser = Store.get( 'lastUser' );
 
@@ -201,12 +201,12 @@ module.exports = function () {
 			} else if ( config.canCreate === true ) {
 				console.log( 'User should add text in the textFieldCond field'.red );
 				return driver
-				.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
+				.elementByName( elements.mobile_MikeRecord.otherFields.textAreaCondReg )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
-				.then( function ( textFieldCond ) {
+				.elementByName( elements.mobile_MikeRecord.otherFields.textAreaCondReg )
+				.then( function ( textAreaCondReg ) {
 					
-					return commons.sendKeys( textFieldCond, lastUser.userName + ' Conditional Field' );
+					return commons.sendKeys( textAreaCondReg, lastUser.userName + ' Text Area Conditional Field' );
 				} )
 				.then( function () {
 

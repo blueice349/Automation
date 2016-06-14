@@ -102,8 +102,8 @@ module.exports = function () {
 			} )
 		} );
 
-		it( 'Should check for text in required and conditionally required fields and add text where needed.'.green, function() {
-
+		it( 'should hideKeyboard if needed,'.green, function () {
+			
 			var lastUser = Store.get( 'lastUser' );
 			return driver
 			.elementByNameIfExists( elements.formScreen.actions )
@@ -119,22 +119,33 @@ module.exports = function () {
 						if ( commons.isAndroid() && keyboard != true ) {
 							console.log( 'keyboard is visible.'.red );
 							return driver
-							.hideKeyboard();
-						}
-					} )
-					.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
-					.isDisplayed().should.eventually.be.true
-					.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
-					.text()
-					.then( function ( textFieldCond ) {
+							.hideKeyboard()
+							.then( function () {
 
-						if ( textFieldCond === '' ) {
-							 return commons.sendKeys( driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond ), lastUser.userName + ' Conditional Field' );
-
+								config.currentTest = 'passed';
+							} );
 						} else {
-							console.log( 'textFieldCond has the following data: ' + driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond ) );
+							console.log( 'Keyboard does not need to be hidden at this time.'.red );
+							config.currentTest = 'passed';
 						}
-					} )
+					} );
+				} else {
+					console.log( 'Keyboard does not need to be hidden at this time.'.red );
+					config.currentTest = 'passed';
+				}
+			} );
+		} );
+
+		it( 'Should check for text in textFieldReq and add text where needed.'.green, function() {
+
+			var lastUser = Store.get( 'lastUser' );
+			return driver
+			.elementByNameIfExists( elements.formScreen.actions )
+			.then( function ( actions ) {
+
+				if ( actions ) {
+					return driver
+					.sleep( 1000 )
 					.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq )
 					.isDisplayed().should.eventually.be.true
 					.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq )
@@ -148,6 +159,72 @@ module.exports = function () {
 							console.log( 'textFieldReq has the following data: ' + driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq ) );
 						}
 					} );
+				} else {
+					console.log( 'Not in a draft edit screen.'.red );
+				}
+			} )
+			.then( function () {
+
+				config.currentTest = 'passed';
+			} );
+		} );
+
+		it( 'Should check for text in textFieldCond and add text where needed.'.green, function() {
+
+			var lastUser = Store.get( 'lastUser' );
+			return driver
+			.elementByNameIfExists( elements.formScreen.actions )
+			.then( function ( actions ) {
+
+				if ( actions ) {
+					return driver
+					.sleep( 1000 )
+					.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
+					.isDisplayed().should.eventually.be.true
+					.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
+					.text()
+					.then( function ( textFieldCond ) {
+
+						if ( textFieldCond === '' ) {
+							 return commons.sendKeys( driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond ), lastUser.userName + ' Conditional Field' );
+
+						} else {
+							console.log( 'textFieldCond has the following data: ' + driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond ) );
+						}
+					} )
+				} else {
+					console.log( 'Not in a draft edit screen.'.red );
+				}
+			} )
+			.then( function () {
+
+				config.currentTest = 'passed';
+			} );
+		} );
+
+		it( 'Should check for text in textAreaCondReg and add text where needed.'.green, function() {
+
+			var lastUser = Store.get( 'lastUser' );
+			return driver
+			.elementByNameIfExists( elements.formScreen.actions )
+			.then( function ( actions ) {
+
+				if ( actions ) {
+					return driver
+					.sleep( 1000 )
+					.elementByName( elements.mobile_MikeRecord.otherFields.textAreaCondReg )
+					.isDisplayed().should.eventually.be.true
+					.elementByName( elements.mobile_MikeRecord.otherFields.textAreaCondReg )
+					.text()
+					.then( function ( textAreaCondReg ) {
+
+						if ( textAreaCondReg === '' ) {
+							 return commons.sendKeys( driver.elementByName( elements.mobile_MikeRecord.otherFields.textAreaCondReg ), lastUser.userName + ' Text Area Conditional Field' );
+
+						} else {
+							console.log( 'textAreaCondReg has the following data: ' + driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond ) );
+						}
+					} )
 				} else {
 					console.log( 'Not in a draft edit screen.'.red );
 				}

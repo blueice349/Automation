@@ -107,10 +107,12 @@ module.exports.newNodes = function ( newNodes ) {
 			return require( './common/NewNodes/Restrictions/clientDoNotTow.js' )();	
 		case 'conditionRequiredTextFieldFilled'  :
 			return require( './common/NewNodes/ConditionallyRequiredFields/textFieldFilled.js' )();
+		case 'conditionRequiredTextFieldEmpty'  :
+			return require( './common/NewNodes/ConditionallyRequiredFields/textFieldEmpty.js' )();
 		case 'conditionRequiredCheckboxChecked'  :
 			return require( './common/NewNodes/ConditionallyRequiredFields/checkboxIsChecked.js' )();	
 		case 'required'               :
-			return require( './common/NewNodes/RequiredFields/required.js' )();
+			return require( './common/NewNodes/RequiredFields/textFieldRequired.js' )();
 	}
 	console.log( 'No test case was selcected!' );
 };

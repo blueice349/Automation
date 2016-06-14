@@ -296,6 +296,7 @@ exports.mobile_MikeRecord = {
 		'checkbox'         : 'CheckboxCheckbox.',
 		'integerFieldCond' : 'Integer Field CondField0.',
    		'mobileMike'       : 'Mobile_Mike',
+   		'textAreaCondReg'  : 'Text Area Cond ReqField0.',
    		'textFieldCond'    : 'Text Field CondField0.',
    		'textFieldReq'     : 'Text Field ReqField0.',
    		'licensePlate'     : 'License Plate #Field',

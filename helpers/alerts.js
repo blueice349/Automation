@@ -41,6 +41,7 @@ exports.nodeEditScreenAlerts = {
 	'requiredFields' : {
 		'condition1': 'Text Field Cond is required.',
 		'condition2': 'Integer Field Cond is required.',
+		'condition3': 'Text Area Cond Req is required.',
 		'required'  : 'Text Field Req is required.'
 	}
 } 

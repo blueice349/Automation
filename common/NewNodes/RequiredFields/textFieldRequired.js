@@ -93,6 +93,56 @@ module.exports = function () {
 			}
 		} );
 
+		it( 'Should add text in textAreaCondReg.'.green, function () {
+
+			var lastUser = Store.get( 'lastUser' );
+
+			if ( config.canCreate != true ) {
+				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
+				config.currentTest = 'passed';
+
+			} else if ( config.canCreate === true ) {
+				console.log( 'User should add text in the textFieldCond field'.red );
+				return driver
+				.elementByName( elements.mobile_MikeRecord.otherFields.textAreaCondReg )
+				.isDisplayed().should.eventually.be.true
+				.elementByName( elements.mobile_MikeRecord.otherFields.textAreaCondReg )
+				.then( function ( textAreaCondReg ) {
+					
+					return commons.sendKeys( textAreaCondReg, lastUser.userName + ' Text Area Conditional Field' );
+				} )
+				.then( function () {
+
+					config.currentTest = 'passed';
+				} );
+			}
+		} );
+
+		it( 'Should add text in textFieldCond.'.green, function () {
+
+			var lastUser = Store.get( 'lastUser' );
+
+			if ( config.canCreate != true ) {
+				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
+				config.currentTest = 'passed';
+
+			} else if ( config.canCreate === true ) {
+				console.log( 'User should add text in the textFieldCond field'.red );
+				return driver
+				.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
+				.isDisplayed().should.eventually.be.true
+				.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
+				.then( function ( textFieldCond ) {
+					
+					return commons.sendKeys( textFieldCond, lastUser.userName + ' Conditional Field' );
+				} )
+				.then( function () {
+
+					config.currentTest = 'passed';
+				} );
+			}
+		} );
+
 		it( 'Should click Actions --> Save for the first time.'.green, function () {
 
 			if ( config.canCreate != true ) {
@@ -140,7 +190,7 @@ module.exports = function () {
 			}
 		} );
 
-		it( 'Should add text in textFieldReq and textFieldCond.'.green, function () {
+		it( 'Should add text in textFieldReq.'.green, function () {
 
 			var lastUser = Store.get( 'lastUser' );
 
@@ -153,17 +203,10 @@ module.exports = function () {
 				return driver
 				.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
-				.isDisplayed().should.eventually.be.true
 				.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq )
 				.then( function ( textFieldReq ) {
 					
 					return commons.sendKeys( textFieldReq, lastUser.userName + ' Required Field' );
-				} )
-				.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
-				.then( function ( textFieldCond ) {
-					
-					return commons.sendKeys( textFieldCond, lastUser.userName + ' Conditional Field' );
 				} )
 				.then( function () {
 
