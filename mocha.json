@@ -1,0 +1,21 @@
+{
+  "stats": {
+    "suites": 5,
+    "tests": 1,
+    "passes": 1,
+    "pending": 0,
+    "failures": 0,
+    "start": "2016-06-17T16:05:47.075Z",
+    "end": "2016-06-17T16:05:57.209Z",
+    "duration": 10134
+  },
+  "failures": [],
+  "passes": [
+    {
+      "title": "\u001b[32mcheck for updates\u001b[39m",
+      "fullTitle": "\u001b[32mAutomation Test in Progress!\u001b[39m \u001b[31mRunning automation test, Please wait for all test to complete!\u001b[39m \u001b[31mRunning \"SourceCode Check\" Test.\u001b[39m \u001b[32mOmadi Mobile Git Pull Request\u001b[39m \u001b[32mUpdate source code\u001b[39m \u001b[32mcheck for updates\u001b[39m",
+      "duration": 376
+    }
+  ],
+  "skipped": []
+}

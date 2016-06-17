@@ -30,10 +30,11 @@ for ( var i in args ) {
 
 				config.set( {
 					'os'      : args[ i + 1 ],
-					'desired' : desired
+					'desired' : desired,
+					'sim'     : true
 				} );
 			// config.set( {
-			// 	'simulator' : true
+			// 	'sim' : true
 			// } );
 			}
 
@@ -67,7 +68,8 @@ for ( var i in args ) {
 
 				config.set( {
 					'os'      : args[ i + 1 ],
-					'desired' : desired
+					'desired' : desired,
+					'sim'     : false
 				} );
 				if ( config.os === 'Android' ){
 					androidDevice = true;
@@ -106,7 +108,7 @@ var driver = wd.promiseChainRemote( serverConfigs.local );
 config.set( {
 	'driver'   : driver,
 	'elements' : elements
-} );;
+} );
 
 describe( 'Automation Test in Progress!'.green, function () {
 
@@ -122,8 +124,16 @@ describe( 'Automation Test in Progress!'.green, function () {
 
 	describe( 'Running automation test, Please wait for all test to complete!'.red, function () {
 
-		var run = require( './TestFiles.js' );
-
+		describe( 'Running "SourceCode Check and SourceCode updates" Test.'.red, function () {
+			
+			var run = require( './TestFiles.js' );
+				run.sourceCodeCheck( 'gitPullCheck' );
+				//run.sourceCodeCheck( 'buildUpdates' );
+		} );
+		
+		describe( 'Running "Driver1 iOS Test && Driver2 Android Test"'.red, function () {
+			
+			var run = require( './TestFiles.js' );
 			/* Driver1 iOS Test && Driver2 Android Test */	
 
 				/* Driver login with truck and clockin options */
@@ -141,25 +151,26 @@ describe( 'Automation Test in Progress!'.green, function () {
 					run.jobsScreen( 'arrivedDestination' );
 					run.jobsScreen( 'jobComplete' );
 
-				/* New nodes Test */
-					// run.newNodes( 'restrictLicensePlate' );
-					//run.newNodes( 'newTag;' );
-					run.newNodes( 'required' );
-					run.newNodes( 'conditionRequiredTextFieldFilled' );
-					run.newNodes( 'conditionRequiredTextFieldEmpty' );
-					run.newNodes( 'conditionRequiredCheckboxChecked' );
+				/* Node(s) Test */
+					// run.restrictionNodes( 'restrictLicensePlate' );
+					//run.otherNodes( 'newTag;' );
+					run.requiredNodes( 'required' );
+					run.conditionRequiredNodes( 'conditionRequiredTextFieldFilled' );
+					run.conditionRequiredNodes( 'conditionRequiredTextFieldEmpty' );
+					run.conditionRequiredNodes( 'conditionRequiredCheckboxChecked' );
+					run.conditionNotMetNodes( 'textAreaFieldConditionNotMet' );
 
 		        /* draft Test*/
-					run.newNodes( 'newDraft1' );
+					run.draftNodes( 'newDraft1' );
 					run.actionsScreen( 'draftView' );
 					run.actionsScreen( 'draftSave' );
-					run.newNodes( 'newDraft2' );
+					run.draftNodes( 'newDraft2' );
 					run.actionsScreen( 'draftSave' );
-					run.newNodes( 'newDraft3' );
+					run.draftNodes( 'newDraft3' );
 					run.actionsScreen( 'draftSave' );
-					run.newNodes( 'newDraft4' );
+					run.draftNodes( 'newDraft4' );
 					run.actionsScreen( 'draftSave' );
-					run.newNodes( 'newDraft1' );
+					run.draftNodes( 'newDraft1' );
 					run.actionsScreen( 'draftDelete' );
 					run.actionsScreen( 'resetAllData' );
 
@@ -167,7 +178,7 @@ describe( 'Automation Test in Progress!'.green, function () {
 					run.actionsScreen( 'removeVehicle' );
 					run.actionsScreen( 'selectVehicle' );
 
-			  	/* Recent Screen Test */
+			  	 /* Recent Screen Test */
 					run.recentScreen(  'recentScreenCheckOptions' );  
 					run.recentScreen(  'recentScreenViewNode' ); 
 
@@ -176,7 +187,11 @@ describe( 'Automation Test in Progress!'.green, function () {
 					run.actionsScreen( 'clockin' );
 					run.actionsScreen( 'aboutButton' );
 					run.homeScreen( 'logout' );
+		} );
 
+		describe( ' Running "Client1 iOS Test && Client2 Android Test"'.red, function () {
+			
+			var run = require( './TestFiles.js' );
 			/* Client1 iOS Test && Client2 Android Test */
 			
 				/* Client login, clock in & vehicle check */
@@ -194,8 +209,8 @@ describe( 'Automation Test in Progress!'.green, function () {
 					run.recentScreen(  'recentSavedTabViewNode' ); 
 
 				/* New Nodes Test */
-					run.newNodes( 'newTag;' );
-					run.newNodes( 'clientDoNotTow' );
+					run.otherNodes( 'newTag;' );
+					run.clientNodes( 'clientDoNotTow' );
 
 				/* Actions Test */
 					run.actionsScreen( 'clockout' );
@@ -205,7 +220,11 @@ describe( 'Automation Test in Progress!'.green, function () {
 				/* Logout test */
 
 					run.actionsScreen( 'logout' );
+		} );
 
+		describe( 'Running Client3 iOS Test && Client4 Android Test'.red, function () {
+			
+			var run = require( './TestFiles.js' );
 			/* Client3 iOS Test && Client4 Android Test */
 
 				run.logins( 'client2' );
@@ -213,7 +232,8 @@ describe( 'Automation Test in Progress!'.green, function () {
 				run.homeScreen( 'homeScreenItems' );
 				run.actionsScreen( 'draftView' );
 				run.recentScreen(  'recentScreenCheckOptions' );  
-				run.newNodes( 'clientDoNotTow' );
+				run.clientNodes( 'clientDoNotTow' );
 				run.homeScreen( 'logout' );
+		} );
 	} );
 } );

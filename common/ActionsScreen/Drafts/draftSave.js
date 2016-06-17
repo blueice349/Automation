@@ -156,7 +156,7 @@ module.exports = function () {
 							 return commons.sendKeys( driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq ), lastUser.userName + ' Conditional Field' );
 
 						} else {
-							console.log( 'textFieldReq has the following data: ' + driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq ) );
+							console.log( 'textFieldReq has the following data: ' + textFieldReq );
 						}
 					} );
 				} else {
@@ -189,7 +189,7 @@ module.exports = function () {
 							 return commons.sendKeys( driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond ), lastUser.userName + ' Conditional Field' );
 
 						} else {
-							console.log( 'textFieldCond has the following data: ' + driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond ) );
+							console.log( 'textFieldCond has the following data: ' + textFieldCond );
 						}
 					} )
 				} else {
@@ -202,7 +202,7 @@ module.exports = function () {
 			} );
 		} );
 
-		it( 'Should check for text in textAreaCondReg and add text where needed.'.green, function() {
+		it( 'Should check for text in integerFieldCond and add text where needed.'.green, function() {
 
 			var lastUser = Store.get( 'lastUser' );
 			return driver
@@ -212,17 +212,17 @@ module.exports = function () {
 				if ( actions ) {
 					return driver
 					.sleep( 1000 )
-					.elementByName( elements.mobile_MikeRecord.otherFields.textAreaCondReg )
+					.elementByName( elements.mobile_MikeRecord.otherFields.integerFieldCond )
 					.isDisplayed().should.eventually.be.true
-					.elementByName( elements.mobile_MikeRecord.otherFields.textAreaCondReg )
+					.elementByName( elements.mobile_MikeRecord.otherFields.integerFieldCond )
 					.text()
-					.then( function ( textAreaCondReg ) {
+					.then( function ( integerFieldCond ) {
 
-						if ( textAreaCondReg === '' ) {
-							 return commons.sendKeys( driver.elementByName( elements.mobile_MikeRecord.otherFields.textAreaCondReg ), lastUser.userName + ' Text Area Conditional Field' );
+						if ( integerFieldCond === '' ) {
+							 return commons.sendKeys( driver.elementByName( elements.mobile_MikeRecord.otherFields.integerFieldCond ), lastUser.userName + ' integerFieldCond Filled.' );
 
 						} else {
-							console.log( 'textAreaCondReg has the following data: ' + driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond ) );
+							console.log( 'integerFieldCond has the following data: ' + integerFieldCond );
 						}
 					} )
 				} else {

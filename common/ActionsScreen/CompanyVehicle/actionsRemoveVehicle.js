@@ -38,7 +38,6 @@ module.exports = function () {
 			} );
 		} );
 
-
 		it( 'should log out of a vehicle from actions screen.'.green, function () {
 
 			var lastUser = Store.get( 'lastUser' );

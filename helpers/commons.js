@@ -77,7 +77,15 @@ Commons.prototype.sendKeys = function ( el, keys ) {
 		config.driver.elementByName( 'space' ).isDisplayed().should.eventually.be.true
 		return el
 		.clear()
-		.sendKeys( keys );
+		.sendKeys( keys )
+		.elementByNameIfExists( 'Done' )
+		.then( function ( keyboardDone ) {
+			if ( keyboardDone && config.loginTest != true ) {
+				console.log( '"Done" button is visibile will click Done after typing data in!'.red );
+				return keyboardDone
+				.click();
+			}
+		} );
 	}
 };
 
