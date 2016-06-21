@@ -1,4 +1,5 @@
 'use strict';
+require( 'colors' );
 require( './setup' );
 var assert   = require( 'assert' );
 var config   = require( './Config' );
@@ -21,7 +22,9 @@ Commons.prototype.isAndroid = function () {
 
 Commons.prototype.isAndroid6 = function () {
 
-	if ( this.os == 'Android' && this.version == '6.0' ) {
+	if ( this.os == 'Android' 
+		&& this.version == '6.0' 
+	) {
 		return true;
 	}
 	
@@ -37,16 +40,34 @@ Commons.prototype.isIOS = function () {
 		return false;
 };
 
-Commons.prototype.alertText = function ( alertText ) {
-
-	var driver   = config.driver;
+Commons.prototype.sendKeys = function ( el, keys ) {
+	
 	var elements = config.elements;
 
-	if ( this.isIOS() ) {
-		return driver.alertText().should.eventually.contain( alertText );
-
-	} else if ( this.isAndroid() || this.isAndroid6() ) {
-		return driver.elementByName( alertText ).text().should.eventually.contain( alertText );
+	if ( this.isAndroid() ) {
+		return el
+		.click()
+		.clear()
+		.sendKeys( keys )
+		.hideKeyboard();
+	
+	} else if ( this.isIOS() ) {
+		el
+		.click()
+		config.driver.elementByName( 'space' ).isDisplayed().should.eventually.be.true
+		return el
+		.clear()
+		.sendKeys( keys )
+		.elementByNameIfExists( elements.alertButtons.done )
+		.then( function ( keyboardDone ) {
+			if ( keyboardDone 
+				&& config.loginTest != true 
+			) {
+				console.log( '"Done" button is visibile will click Done after typing data in!'.red );
+				return keyboardDone
+				.click();
+			}
+		} );
 	}
 };
 
@@ -63,73 +84,100 @@ Commons.prototype.getItem = function ( name, num ) {
 	return value
 };
 
-Commons.prototype.sendKeys = function ( el, keys ) {
+Commons.prototype.alertText = function ( alertText ) {
 
-	if ( this.isAndroid() ) {
-		return el
-		.click()
-		.clear()
-		.sendKeys( keys )
-		.hideKeyboard();
-	} else if ( this.isIOS() ) {
-		el
-		.click()
-		config.driver.elementByName( 'space' ).isDisplayed().should.eventually.be.true
-		return el
-		.clear()
-		.sendKeys( keys )
-		.elementByNameIfExists( 'Done' )
-		.then( function ( keyboardDone ) {
-			if ( keyboardDone && config.loginTest != true ) {
-				console.log( '"Done" button is visibile will click Done after typing data in!'.red );
-				return keyboardDone
-				.click();
-			}
-		} );
+	var driver   = config.driver;
+	var elements = config.elements;
+
+	if ( this.isIOS() ) {
+		return driver.alertText().should.eventually.contain( alertText );
+
+	} else if ( this.isAndroid() || this.isAndroid6() ) {
+		return driver.elementByName( alertText ).text().should.eventually.contain( alertText );
 	}
 };
 
 Commons.prototype.whereAmI = function () {
 
+	require( 'colors' );
 	var driver   = config.driver;
 	var elements = config.elements;
 
 	return driver
+	.sleep( 3000 )
 	.elementByNameIfExists( elements.formScreen.actions )
 	.isDisplayed()
-	.then( function ( actions ) {
+	.then( function ( nodeEdit ) {
 
-		if ( actions === true ) {
+		if ( nodeEdit ) {
 			if ( this.isIOS() ) {
-				driver
+				return driver
 				.elementByName( elements.formScreen.back )
 				.click()
 				.sleep ( 1000 );
 
 			} else if ( this.isAndroid() ) { 
-				driver
+				return driver
 				.back()
 				.sleep( 1000 );
 			}
-		}
-		return driver
-		.waitForElementByName( elements.homeScreen.syncAllowed, 180000 )
-		.then( function () {
 		
-			console.log( 'Made sure test is back on the homeScreen'.green );
-			//assert.error( this.currentTest.state );
-		} )
+		} else {
+
+			console.log( 'App is not on a node edit screen.'.red );
+			return;
+		}
 	} )
+	.elementByNameIfExists( elements.jobsScreen.newJobsHeader )
+	.isDisplayed()
+	.then( function ( jobsScreen ) {
+
+		if ( jobsScreen ) {
+			if ( this.isIOS() ) {
+				return driver
+				.elementByName( elements.jobsScreen.back )
+				.click()
+				.sleep ( 1000 );
+
+			} else if ( this.isAndroid() ) { 
+				return driver
+				.back()
+				.sleep( 1000 );
+			}
+		} else {
+			console.log( 'App is not on the jobsScreen.'.red );
+			return;
+		}
+	} )
+	.elementByNameIfExists( elements.loginScreen.clientAccount )
+	.isDisplayed()
+	.then ( function ( loginScreen ) {
+
+		if ( loginScreen ) {
+
+			assert.fail( 'App is on the loginScreen can not contiune the process.'.red );
+		} else {
+
+			return driver
+			.waitForElementByName( elements.homeScreen.syncAllowed, 180000 )
+			.then( function ( syncAllowed ) {
+		
+				if ( syncAllowed ) {
+					console.log( 'App should be on homeScreen after a restart.'.green );
+				}
+			} );
+		}
+	} );
 };
 
 Commons.prototype.beforeAll = function () {
 
 	before( function () {
 
-		var elements = config.elements;
-		var driver   = config.driver;
-		var desired  = config.desired;
 		console.log( 'BEFORE All Test....'.red );
+		var elements       = config.elements;
+		var driver         = config.driver;
+		var desired        = config.desired;
 		config.loginTest   = false;
 		config.currentTest = 'notStarted';
 		return driver.init( desired );
@@ -140,9 +188,12 @@ Commons.prototype.beforeEachDes = function ( ) {
 
 	before( function () {
 		
-		console.log( 'beforeEachDes '.red + config.currentTest + ' ' + config.loginTest );
-		if ( config.currentTest != 'passed' && config.loginTest === true ) {
-			console.log( 'Next test was skipped do to login failed test '.red );
+		console.log( 'beforeEachDes...'.red );
+		if ( config.currentTest != 'passed' 
+			&& config.loginTest === true 
+			|| config.skip === true
+		) {
+			console.log( 'Next test was skipped do to login failed test or your app is not up-to-date with current source code.'.red );
 			this.skip();
 
 		} else if ( config.currentTest === 'passed' ) {
@@ -155,12 +206,18 @@ Commons.prototype.beforeEachDes = function ( ) {
 Commons.prototype.beforeEachIt = function ( ) {
 
 	beforeEach( function () {
-		console.log( 'beforeEachIt '.red + 'Curent Test Status ' + config.currentTest + ' Current test Login? ' + config.loginTest );
-		if ( config.currentTest != 'passed' && config.loginTest === true || config.currentTest === 'testStarted' ) {
+		console.log( 'beforeEachIt.......'.red );
+		if ( config.currentTest != 'passed' 
+			&& config.loginTest === true 
+			|| config.currentTest === 'testStarted' 
+			|| config.skip === true 
+		) {
 			console.log( 'Next test was skipped'.red );
 			this.skip();
 
-		} else if ( config.currentTest === 'passed' || config.currentTest === 'notStarted' ) {
+		} else if ( config.currentTest === 'passed' 
+					|| config.currentTest === 'notStarted' 
+		) {
 			config.currentTest = 'testStarted';
 		}
 	} );
@@ -170,9 +227,9 @@ Commons.prototype.afterAll = function () {
 	
 	after( function () {
 
+		console.log( 'AFTER ALL....'.red );
 		var driver   = config.driver;
 		var elements = config.elements;
-		console.log( 'AFTER ALL....'.red );
 		return driver.quit();
 	} );
 };
@@ -180,90 +237,134 @@ Commons.prototype.afterAll = function () {
 Commons.prototype.afterEachDes = function () {
 
 	after( function () {
-
+		
+		var allPassed;
+		var assert   = require( 'assert' );
+		var commons  = require( './Commons.js' );     
 		var driver   = config.driver;
 		var elements = config.elements;
-		var allPassed;
-		console.log( 'afterEachDes '.red  + config.currentTest );
+		var lastUser = Store.get( 'lastUser' );
+
+		console.log( 'afterEachDes...'.red );
 		allPassed = allPassed && this.currentTest.state === 'passed';
 		
-		if ( config.currentTest != 'passed' && config.loginTest != true || config.currentTest != 'passed' && config.logoutTest === true  ) {
+		if ( config.currentTest != 'passed' 
+			&& config.loginTest != true 
+		) {
 			config.currentTest = 'notStarted';
 			return driver
 			.resetApp()
-			.then( function () {
-
-				config.resetApp = true;
-			} )
-			.sleep ( 1000 )
-			// .then( function () {
-
-			// 	var lastLogin = Store.get( 'lastLogin' );
-
-			// 	if ( lastLogin && lastLogin.loginTest ) {
-			// 		require( lastLogin.loginTest )();
-			// 	}
-			// } );
-			
-			// console.log( 'App Restarted due to Failed test... App will not restart if a failed login test was performed'.green );
-			// return driver
+			.sleep( 3000 )
 			.elementByNameIfExists( elements.formScreen.actions )
-			.then( function ( actions ) {
+			.then( function ( isNodeEdit ) {
 
-				if ( actions ) {
-					if ( this.isIOS() ) {
+				if ( isNodeEdit ) {
+					console.log( 'ON NODE EDIT SCREEN...'.red );
+					config.nodeEdit = true;
+					if ( commons.isIOS() ) {
 						return driver
 						.elementByName( elements.formScreen.back )
 						.click()
 						.sleep ( 1000 )
-						.waitForElementByName( elements.homeScreen.syncAllowed, 180000 )
-						.then( function () {
+						.elementByNameIfExists( elements.alertButtons.exit )
+						.then( function ( exitDialog ) {
 
-							config.isAtHomeScreen = true;
-							console.log( 'Made sure test is back on the homeScreen'.green );
-						} );
-					} else if ( this.isAndroid() ) {
+							if ( exitDialog ) {
+								return exitDialog
+								.click()
+								.sleep( 1000 );
+							}
+						} )
+
+					} else if ( commons.isAndroid() ) { 
 						return driver
 						.back()
 						.sleep( 1000 )
-						.waitForElementByName( elements.homeScreen.syncAllowed, 180000 )
-						.then( function () {
+						.elementByNameIfExists( elements.alertButtons.exit )
+						.then( function ( exitDialog ) {
 
-							config.isAtHomeScreen = true;
-							console.log( 'Made sure test is back on the homeScreen'.green );
-						} );
+							if ( exitDialog ) {
+								return exitDialog
+								.click()
+								.sleep( 1000 );
+							}
+						} )
 					}
-				} else if ( config.logoutTest === true ) {
-					return driver
-					.elementByNameIfExists( elements.loginScreen.clientAccount )
-					.isDisplayed()
-					.then( function ( loginScreen ) {
+				
+				} else {
+					console.log( 'App is not on a node edit screen.'.red );
+					config.isNodeEdit = false;
+				}
+			} )
+			.elementByNameIfExists( elements.jobsScreen.newJobsTab.newJobsHeader )
+			.then( function ( isJobsScreen ) {
 
-						if( loginScreen === true ) {
-							console.log( 'Test is at loginScreen after a resetApp was performed'.red );
-						} else {
-							console.log( 'Test was unable to locate current location' );
-							this.skip();
-						}
+				if ( isJobsScreen 
+					&& config.isNodeEdit != true 
+					&&  lastUser.userRole != 'client' 
+					&&  lastUser.userRole != 'AdminClient' 
+				) {
+					console.log( 'APP is on jobsScreen.'.red );
+					config.isJobsScreen = false;
+					if ( commons.isIOS() ) {
+						return driver
+						.elementByName( elements.jobsScreen.otherOptions.back )
+						.click()
+						.sleep ( 1000 );
+
+					} else if ( commons.isAndroid() ) { 
+						return driver
+						.back()
+						.sleep( 1000 );
+					}
+				
+				} else {
+					console.log( 'App is not on the jobsScreen.'.red );
+					config.isJobsScreen = false;
+				}
+			} )
+			.elementByNameIfExists( elements.loginScreen.clientAccount )
+			.isDisplayed()
+			.then ( function ( isLoginScreen ) {
+
+				if ( isLoginScreen === true 
+					&& config.isJobsScreen != true 
+					&& config.loginTest != true 
+				) {
+					config.skip = true;
+					assert.fail( 'App is on the loginScreen can not contiune the process.' );
+				
+				} else if ( loginScreen === true 
+					       && config.isJobsScreen != true
+					       && config.loginTest === true 
+		       	) {
+					config.skip = false;
+					console.log( 'App will try and resume the test being a loginTest failed and app is on the loginScreen.'.red );
+				
+				} else {
+					return driver
+					.waitForElementByName( elements.homeScreen.syncAllowed, 180000 )
+					.then( function () {
+
+						console.log( 'App should be on homeScreen after a restart.'.green );
 					} );
 				}
 			} );
 
-		} else if ( config.loginTest === true && config.currentTest != 'passed' ) {
-				console.log( 'Automation could not resert and comeplete due to a login failed test. '.red );
+		} else if ( config.loginTest === true 
+					&& config.currentTest != 'passed' 
+		) {
+			console.log( 'Automation could not resert and comeplete due to a login failed test. '.red );
 	
 		} else if ( config.currentTest === 'passed' ) {
-			console.log( 'Tested Passed will start next test.....'.green );
+			console.log( 'Tested Passed will start next test...'.green );
 		}
-	} );
+	}.bind( this ) );
 };
 
 Commons.prototype.afterEachIt = function () {
 	
 	afterEach( function () {
-		console.log( 'afterEachIt #1: ' + config.currentTest );
-		config.currentTest = 'passed';
-		console.log( 'afterEachIt #2: ' + config.currentTest );
 	} );
 };
 
