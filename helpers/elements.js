@@ -254,8 +254,12 @@ exports.actionsScreen = {
 }
 
 exports.aboutScreen = {
-	'back'   : 'aboutBackButton.',
-	'terms'  : 'termsOfServiceButton.'
+	'appVersion' : '3.4.11.',
+	'back'       : 'aboutBackButton.',
+	'logo'       : 'aboutScreenLogo.',
+	'signedInto' : 'SignedIntoLabel.',
+	'syncTime'   : 'lastSyncText.',   
+	'terms'      : 'termsOfServiceButton.'
 }
 
 exports.settingsScreen = {

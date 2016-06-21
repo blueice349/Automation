@@ -1,6 +1,7 @@
 exports.adminLogins = {
 	'admin1' : {
 		'default OS'         : 'IOS',
+		'appVersion'         : '3.4.11.',
 		'clientAccount'      : 'automobile',
 		'username'           : 'admin1',
 		'password'           : 'test',
@@ -14,6 +15,7 @@ exports.adminLogins = {
 	},
 	'admin2' : {
 		'default OS'         : 'Android',
+		'appVersion'         : '3.4.11.',
 		'clientAccount'      : 'automobile',
 		'username'           : 'admin2',
 		'password'           : 'test',
@@ -27,6 +29,7 @@ exports.adminLogins = {
 	},
 	'admin3' : {
 		'default OS'         : 'IOS',
+		'appVersion'         : '3.4.11.',
 		'clientAccount'      : 'automobile',
 		'username'           : 'admin3',
 		'password'           : 'test',
@@ -40,6 +43,7 @@ exports.adminLogins = {
 	},
 	'admin4' : {
 		'default OS'         : 'Android',
+		'appVersion'         : '3.4.11.',
 		'clientAccount'      : 'automobile',
 		'username'           : 'admin4',
 		'password'           : 'test',	
@@ -55,6 +59,7 @@ exports.adminLogins = {
 exports.clientLogins = {
 	'client1' : {
 		'default OS'         : 'IOS',
+		'appVersion'         : '3.4.11.',
 		'clientAccount'      : 'automobile',
 		'username'           : 'client1',
 		'password'           : 'test',
@@ -68,6 +73,7 @@ exports.clientLogins = {
 	},
 	'client2'  : {
 		'default OS'         : 'Android',
+		'appVersion'         : '3.4.11.',
 		'clientAccount'      : 'automobile',
 		'username'           : 'client2',
 		'password'           : 'test',
@@ -81,6 +87,7 @@ exports.clientLogins = {
 	},
 	'client3'  : {
 		'default OS'         : 'IOS',
+		'appVersion'         : '3.4.11.',
 		'clientAccount'      : 'automobile',
 		'username'           : 'client3',
 		'password'           : 'test',
@@ -94,6 +101,7 @@ exports.clientLogins = {
 	},
 	'client4'  : {
 		'default OS'         : 'Android',
+		'appVersion'         : '3.4.11.',
 		'clientAccount'      : 'automobile',
 		'username'           : 'client4',
 		'password'           : 'test',
@@ -109,6 +117,7 @@ exports.clientLogins = {
 exports.driverLogins = {
 	'driver1' : {
 		'default OS'         : 'IOS',
+		'appVersion'         : '3.4.11.',
 		'clientAccount'      : 'automobile',
 		'username'           : 'driver1',
 		'password'           : 'test',
@@ -122,6 +131,7 @@ exports.driverLogins = {
 	},
 	'driver2'  : {
 		'default OS'         : 'Android',
+		'appVersion'         : '3.4.11.',
 		'clientAccount'      : 'automobile',
 		'username'           : 'driver2',
 		'password'           : 'test',
@@ -135,6 +145,7 @@ exports.driverLogins = {
 	},
 	'driver3'  : {
 		'default OS'         : 'IOS',
+		'appVersion'         : '3.4.11.',
 		'clientAccount'      : 'automobile',
 		'username'           : 'driver3',
 		'password'           : 'test',
@@ -148,6 +159,7 @@ exports.driverLogins = {
 	},
 	'driver4'  : {
 		'default OS'         : 'Android',
+		'appVersion'         : '3.4.11.',
 		'clientAccount'      : 'automobile',
 		'username'           : 'driver4',
 		'password'           : 'test',

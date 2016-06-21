@@ -34,8 +34,8 @@
 				return require( './common/ActionsScreen/TimeCard/actionsClockout.js' )();	
 			case 'logout'        :
 				return require( './common/ActionsScreen/actionsLogout.js' )();
-			case 'aboutButton'   :
-				return require( './common/ActionsScreen/aboutButton.js' )();
+			case 'actionsAbout'   :
+				return require( './common/ActionsScreen/AboutScreen/actionsAbout.js' )();
 		}
 		console.log( 'No test case was selcected!' );
 	};

@@ -47,6 +47,65 @@ module.exports = function () {
 			} );
 		} );
 
+		it( 'should check for "Omadi Logo" on aboutScreen.'.green, function () {
+
+			return driver
+			.elementByName( elements.actionsScreen.logo )
+			.isDisplayed().should.eventually.be.true
+			.then( function () {
+
+				config.currentTest = 'passed';
+			} );
+		} );
+
+		it( 'should check "App Version" on aboutScreen.'.green, function () {
+
+			var lastUser = Store.get( 'lastUser' );	
+			return driver
+			.elementByName( elements.actionsScreen.appVersion )
+			.isDisplayed().should.eventually.be.true
+			.elementByName( elements.actionsScreen.appVersion )
+			.should.eventually.become( lastUser.appVersion )
+			.then( function () {
+
+				config.currentTest = 'passed';
+			} );
+		} );
+
+		it( 'should check for "Singed into account as user" on aboutScreen.'.green, function () {
+
+			return driver
+			.elementByName( elements.actionsScreen.signedInto )
+			.isDisplayed().should.eventually.be.true
+			.then( function () {
+
+				config.currentTest = 'passed';
+			} );
+		} );
+
+		it( 'should check for "Last Synced Time" on aboutScreen.'.green, function () {
+
+			return driver
+			.elementByName( elements.actionsScreen.syncTime )
+			.isDisplayed().should.eventually.be.true
+			.then( function () {
+
+				config.currentTest = 'passed';
+			} );
+		} );
+
+		it( 'should check for "Terms of Service" on aboutScreen.'.green, function () {
+
+			return driver
+			.elementByName( elements.actionsScreen.terms )
+			.isDisplayed().should.eventually.be.true
+			.then( function () {
+
+				config.currentTest = 'passed';
+			} );
+		} );
+
+
 		it( 'should go back to the actionsScreen from aboutScreen.'.green, function () {
 
 			if ( commons.isIOS() ) {
