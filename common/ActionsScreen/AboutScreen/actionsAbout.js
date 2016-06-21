@@ -50,7 +50,7 @@ module.exports = function () {
 		it( 'should check for "Omadi Logo" on aboutScreen.'.green, function () {
 
 			return driver
-			.elementByName( elements.actionsScreen.logo )
+			.elementByName( elements.aboutScreen.logo )
 			.isDisplayed().should.eventually.be.true
 			.then( function () {
 
@@ -62,10 +62,8 @@ module.exports = function () {
 
 			var lastUser = Store.get( 'lastUser' );	
 			return driver
-			.elementByName( elements.actionsScreen.appVersion )
-			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.actionsScreen.appVersion )
-			.should.eventually.become( lastUser.appVersion )
+			.elementByName( elements.aboutScreen.appVersion )
+			.text().should.eventually.become( lastUser.appVersion )
 			.then( function () {
 
 				config.currentTest = 'passed';
@@ -75,7 +73,7 @@ module.exports = function () {
 		it( 'should check for "Singed into account as user" on aboutScreen.'.green, function () {
 
 			return driver
-			.elementByName( elements.actionsScreen.signedInto )
+			.elementByName( elements.aboutScreen.signedInto )
 			.isDisplayed().should.eventually.be.true
 			.then( function () {
 
@@ -86,7 +84,7 @@ module.exports = function () {
 		it( 'should check for "Last Synced Time" on aboutScreen.'.green, function () {
 
 			return driver
-			.elementByName( elements.actionsScreen.syncTime )
+			.elementByName( elements.aboutScreen.syncTime )
 			.isDisplayed().should.eventually.be.true
 			.then( function () {
 
@@ -97,7 +95,7 @@ module.exports = function () {
 		it( 'should check for "Terms of Service" on aboutScreen.'.green, function () {
 
 			return driver
-			.elementByName( elements.actionsScreen.terms )
+			.elementByName( elements.aboutScreen.terms )
 			.isDisplayed().should.eventually.be.true
 			.then( function () {
 

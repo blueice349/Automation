@@ -1,9 +1,14 @@
+ 
+var apps = require( './apps.js' );
+
  exports.loginScreen = {
+ 	'appVersion'    : apps.appVersion,    
 	'clientAccount' : 'clientAccount.',
 	'userName'      : 'userName.',
 	'password'      : 'password.',
 	'acceptTerms'   : 'acceptTermsCheckBox.',
-	'loginButton'   : 'logInButton.'
+	'loginButton'   : 'logInButton.',
+	'logo'          : 'loginLogo.'
 }
 
 exports.config = {
@@ -254,7 +259,8 @@ exports.actionsScreen = {
 }
 
 exports.aboutScreen = {
-	'appVersion' : '3.4.11.',
+
+	'appVersion' : apps.appVersion,
 	'back'       : 'aboutBackButton.',
 	'logo'       : 'aboutScreenLogo.',
 	'signedInto' : 'SignedIntoLabel.',

@@ -13,6 +13,7 @@ module.exports = function () {
 	var Store    = require( '../../../helpers/Store' );
 	var driver = config.driver;
 
+	var appVersion;
 	var truckOption;
 	var clockInOption;
 	var userRole;
@@ -55,6 +56,7 @@ module.exports = function () {
 			.then( function ( el ) { 
 
 				if ( commons.isIOS() ){
+					appVersion        = login.clientLogins.client1.appVersion;
 					truckOption       = login.clientLogins.client1.truckOption;
 					clockInOption     = login.clientLogins.client1.clockInOption;
 					userRole          = login.clientLogins.client1.userRole;
@@ -74,6 +76,7 @@ module.exports = function () {
 					} )
 
 				} else if ( commons.isAndroid() ) {
+					appVersion        = login.clientLogins.client2.appVersion;
 					truckOption       = login.clientLogins.client2.truckOption;
 					clockInOption     = login.clientLogins.client2.clockInOption;
 					userRole          = login.clientLogins.client2.userRole;
@@ -93,6 +96,17 @@ module.exports = function () {
 					} )
 				}
 			} )
+			.then( function () {
+
+				config.currentTest = 'passed';
+			} );
+		} );
+
+		it( 'should check appVersion on loginScreen.'.green, function () {
+			
+			return driver
+			.elementByName( elements.loginScreen.appVersion )
+			.text().should.eventually.become( appVersion )
 			.then( function () {
 
 				config.currentTest = 'passed';
@@ -189,6 +203,7 @@ module.exports = function () {
 
 			config.loginTest = true;
 			Store.set( 'lastUser', {
+				'appVersion'        : appVersion,
 				'truckOption'       : truckOption,
 				'clockInOption'     : clockInOption,
 				'userRole'          : userRole,

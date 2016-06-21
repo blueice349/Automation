@@ -334,7 +334,7 @@ Commons.prototype.afterEachDes = function () {
 					config.skip = true;
 					assert.fail( 'App is on the loginScreen can not contiune the process.' );
 				
-				} else if ( loginScreen === true 
+				} else if ( isLoginScreen === true 
 					       && config.isJobsScreen != true
 					       && config.loginTest === true 
 		       	) {
