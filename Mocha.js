@@ -188,7 +188,7 @@ describe( 'Automation Test in Progress!'.green, function () {
 			  	/* Clock in and out test */
 					run.actionsScreen( 'clockout' );
 					run.actionsScreen( 'clockin' );
-					run.actionsScreen( 'aboutButton' );
+					run.actionsScreen( 'actionsAbout' );
 					run.homeScreen( 'logout' );
 		} );
 
@@ -218,7 +218,7 @@ describe( 'Automation Test in Progress!'.green, function () {
 				/* Actions Test */
 					run.actionsScreen( 'clockout' );
 					run.actionsScreen( 'resetAllData' );
-					run.actionsScreen( 'aboutButton' );
+					run.actionsScreen( 'actionsAbout' );
 
 				/* Logout test */
 
