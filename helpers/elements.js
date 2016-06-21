@@ -4,7 +4,34 @@
 	'password'      : 'password.',
 	'acceptTerms'   : 'acceptTermsCheckBox.',
 	'loginButton'   : 'logInButton.'
-}	
+}
+
+exports.config = {
+	'currentTestOptions' : {
+
+		'currentTest' : 'currentTest',
+			'failed'      : 'failed',
+			'passed'      : 'passed',
+			'notStarted'  : 'notStarted'
+	},
+
+	'otherOptions' : {
+		
+		'appUpdated'   : 'appUpdated',
+		'canCreate'    : 'canCreate',
+		'canView'      : 'canView',
+		'gitPullData'  : 'gitPullData',
+		'isClockedin'  : 'isClockedin',
+		'isJobsScreen' : 'isJobsScreen',
+		'isNodeEdit'   : 'isNodeEdit',
+		'isInVehicle'  : 'sInVehicle',
+		'loginTest'    : 'loginTest',
+		'recentNode'   : 'recentNode',
+		'sim'          : 'sim',
+		'skip'         : 'skip'
+	}
+};
+
 
 //Run commands...
 //mocha run.js -os androidDriver -time 500000
@@ -56,6 +83,7 @@ exports.alertButtons = {
 	'readNow'         : 'Read Now',
 	'restart'         : 'Restart',
 	'retry'           : 'Retry',
+	'return'          : 'return',
 	'review'          : 'Review',
 	'saveAnyways'     : 'Save Anyway',
 	'skip'            : 'Skip',
