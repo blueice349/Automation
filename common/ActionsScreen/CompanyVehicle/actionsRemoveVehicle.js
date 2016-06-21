@@ -15,7 +15,7 @@ module.exports = function () {
 
 	var driver      = config.driver;
 
-	describe( 'Start Done with Vehicle Process'.green, function () {
+	describe( 'Start Done with Vehicle Process using "actionsRemoveVehicle.js"'.green, function () {
 		commons.beforeEachDes();
 		commons.beforeEachIt();
 		commons.afterEachDes();
@@ -41,7 +41,10 @@ module.exports = function () {
 		it( 'should log out of a vehicle from actions screen.'.green, function () {
 
 			var lastUser = Store.get( 'lastUser' );
-			if ( lastUser.truckOption === true && lastUser.userRole != 'client' && config.isInVehicle === true ) {
+			if ( lastUser.truckOption === true 
+				&& lastUser.userRole != 'client' 
+				&& config.isInVehicle === true 
+			) {
 				console.log( 'Logged into a vehicle. Will log out of current vehicle'.red );
 				return driver
 				.elementByName( elements.actionsScreen.companyVehicle )
@@ -53,8 +56,8 @@ module.exports = function () {
 					
 					config.currentTest = 'passed';
 				} )
+			
 			} else {
-				
 				console.log( 'Current User Does Not Have Vehicle Option Enabled'.red );
 				config.currentTest = 'passed';
 			}
@@ -63,7 +66,10 @@ module.exports = function () {
 		it( 'should Do Post-Inspection?.'.green, function () {
 
 			var lastUser = Store.get( 'lastUser' );
-			if ( lastUser.truckOption === true && lastUser.userRole != 'client' && config.isInVehicle === true ) {
+			if ( lastUser.truckOption === true 
+				&& lastUser.userRole != 'client' 
+				&& config.isInVehicle === true 
+			) {
 				console.log( 'user should perfom inspection'.red );
 				return commons.alertText( alerts.actionsScreenAlerts.companyVehicle.postInspection )
 				.elementByName( elements.alertButtons.no )
@@ -76,8 +82,8 @@ module.exports = function () {
 					config.currentTest = 'passed';
 					
 				} )
+			
 			} else {
-				
 				console.log( 'Current Does did not log into a vehicle'.red );
 				config.currentTest = 'passed';
 			}

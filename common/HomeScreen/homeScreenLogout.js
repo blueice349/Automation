@@ -12,7 +12,7 @@ module.exports = function () {
 	var Store    = require( '../../helpers/Store' );
 	var driver   = config.driver;
 
-	describe( 'Start logout Process'.green, function( ) {
+	describe( 'Start logout Process using homeScreenLogout.js'.green, function( ) {
 
 		commons.beforeEachDes();
 		commons.beforeEachIt();
@@ -33,7 +33,9 @@ module.exports = function () {
 
 			var lastUser = Store.get( 'lastUser' );
 			//Checks for buttons to be displayed on main menu after log on.
-			if ( lastUser.userRole == 'admin' || lastUser.userRole == 'driver' ) {
+			if ( lastUser.userRole == 'admin' 
+				|| lastUser.userRole == 'driver' 
+			) {
 				return driver
 				.elementByName( lastUser.name )
 				.text().should.eventually.become( lastUser.name )
@@ -58,7 +60,9 @@ module.exports = function () {
 					config.currentTest = 'passed';
 				} );
 
-			} else if ( lastUser.userRole === 'client' || lastUser.userRole === 'AdminClient' ) {
+			} else if ( lastUser.userRole === 'client' 
+					   || lastUser.userRole === 'AdminClient' 
+		   	) {
 				return driver
 				.elementByName( lastUser.name )
 				.text().should.become( lastUser.name )
@@ -136,13 +140,16 @@ module.exports = function () {
 		it( 'should check if user isClockedin'.green, function () {
 			
 			var lastUser = Store.get( 'lastUser' );
-			if ( lastUser.clockInOption === true && config.isClockedin === true ) {
+			if ( lastUser.clockInOption === true 
+				&& config.isClockedin === true 
+			) {
 				console.log( 'User isClockedin should check if current alert is visibile'.red );
 				return commons.alertText( alerts.actionsScreenAlerts.logOutNow.logOutClockout )
 				.then( function () {
 
 					config.currentTest = 'passed';
 				} );
+			
 			} else {
 				console.log( 'User is NOT clockedin should check if current alert is visibile'.red );
 				return commons.alertText( alerts.actionsScreenAlerts.logOutNow.logOut )
@@ -156,7 +163,9 @@ module.exports = function () {
 		it( 'should clockOut & logout or Clockout Now'.green, function () {
 			
 			var lastUser = Store.get( 'lastUser' );
-			if ( lastUser.clockInOption === true && config.isClockedin === true ) {
+			if ( lastUser.clockInOption === true 
+				&& config.isClockedin === true 
+			) {
 				console.log( 'Clock out + Logout'.red );
 				return driver
 				.elementByName( elements.alertButtons.clockOutLogout )
@@ -167,6 +176,7 @@ module.exports = function () {
 
 					config.currentTest = 'passed';
 				} );
+			
 			} else {
 				console.log( 'Logout Now'.red );
 				return driver

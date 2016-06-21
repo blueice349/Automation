@@ -13,7 +13,7 @@ module.exports = function () {
 
 	var driver = config.driver;
 
-	describe( 'Start view node on recentScreeen from the recentViewedTab Process'.green, function () {
+	describe( 'Start view node on recentScreeen from the recentViewedTab Process using "recentViewedTabViewNode.js"'.green, function () {
 
 		commons.beforeEachDes();
 		commons.beforeEachIt();
@@ -22,12 +22,16 @@ module.exports = function () {
 		it( 'Should check permissions for current user'.green, function() {
 			
 			var lastUser = Store.get( 'lastUser' );
-			if ( lastUser.userRole != 'client' && lastUser.userRole != 'AdminClient' ) {
+			if ( lastUser.userRole != 'client' 
+				&& lastUser.userRole != 'AdminClient' 
+			) {
 				console.log( 'User has access to recent tab.'.red );
 				config.canView     = true;
 				config.currentTest = 'passed';
 
-			} else if ( lastUser.userRole === 'client' || lastUser.userRole === 'AdminClient' ) {
+			} else if ( lastUser.userRole === 'client' 
+				      || lastUser.userRole === 'AdminClient' 
+	      	) {
 				console.log( 'User does "NOT" access to recent tab.'.red );
 				config.canView     = false;
 				config.currentTest = 'passed';
@@ -93,6 +97,7 @@ module.exports = function () {
 
 					if ( viewedTab ) {
 						assert.fail( 'User should not have access to viewedTab located in the recent tab'.red );
+					
 					} else if ( !viewedTab ) {
 						config.currentTest = 'passed';
 					}
@@ -121,6 +126,7 @@ module.exports = function () {
 							config.recentNode = true;
 							config.currentTest = 'passed';
 						} );
+					
 					} else {
 						console.log( 'There is no Nodes to view in in viewedTab.'.red );
 						config.recentNode  = false;
@@ -146,7 +152,9 @@ module.exports = function () {
 
 		it( 'Should Make sure View and viewOnline is visibile on first Node clicked on viewedTab.'.green, function () {
 
-			if ( config.canView === true && config.recentNode === true ) {
+			if ( config.canView === true 
+				&& config.recentNode === true 
+			) {
 				console.log( 'User has access to recentTab and a node has been clicked.'.red );
 				return driver
 				.elementByName( elements.recentScreen.viewOnline )
@@ -157,7 +165,10 @@ module.exports = function () {
 
 					config.currentTest = 'passed';
 				} );
-			} else if ( config.canView === true && config.recentNode === false ) {
+			
+			} else if ( config.canView === true 
+				      && config.recentNode === false 
+	      	) {
 				console.log( 'There is no Nodes to view in viewedTab.'.red );
 				config.currentTest = 'passed';
 
@@ -179,7 +190,9 @@ module.exports = function () {
 
 		it( 'Should click on "View" from the Node options on viewedTab.'.green, function () {
 
-			if ( config.canView === true && config.recentNode === true ) {
+			if ( config.canView === true 
+				&& config.recentNode === true 
+			) {
 				console.log( 'User should click on "View".'.red );
 				return driver
 				.elementByName( elements.recentScreen.view )
@@ -190,7 +203,9 @@ module.exports = function () {
 					config.currentTest = 'passed';
 				} );
 				
-			} else if ( config.recentNode === false && config.canView === true ) {
+			} else if ( config.recentNode === false 
+				      && config.canView === true 
+	      	) {
 				console.log( 'User there is no node to view on viewedTab.'.red );
 				config.currentTest = 'passed';
 
@@ -212,7 +227,10 @@ module.exports = function () {
 
 		it( 'Should go back to recentScreen.'.green, function () {
 			
-			if ( commons.isIOS() && config.recentNode === true && config.canView === true ) {
+			if ( commons.isIOS() 
+				&& config.recentNode === true 
+				&& config.canView === true 
+			) {
 				console.log( 'iOS - User should go back to recentScreen from node view.'.red );
 				return driver
 				.elementByName( elements.formScreen.back )
@@ -226,7 +244,10 @@ module.exports = function () {
 					config.recentNode  = false;
 				} );
 
-			} else if ( commons.isAndroid() && config.recentNode === true && config.canView === true ) {
+			} else if ( commons.isAndroid() 
+				      && config.recentNode === true 
+				      && config.canView === true 
+	      	) {
 				console.log( 'Android - User should go back to recentScreen from node view.'.red );
 				return driver
 				.back()
@@ -237,7 +258,9 @@ module.exports = function () {
 					config.recentNode  = false;
 				} );
 			
-			} else if ( config.canView === true && config.recentNode === false ) {
+			} else if ( config.canView === true 
+				      && config.recentNode === false 
+	      	) {
 				console.log( 'User should already be on the recent page.'.red );
 				config.currentTest = 'passed';
 			
@@ -249,7 +272,9 @@ module.exports = function () {
 
 		it( 'should go back to the homeScreen from recentTab.'.green, function () {
 
-			if ( commons.isIOS() && config.canView === true ) {
+			if ( commons.isIOS() 
+				&& config.canView === true 
+			) {
 				console.log( 'user is on a iOS device and should be on recentTab.'.red );
 				return driver
 				.waitForElementByName( elements.recentScreen.back, 120000 )
@@ -261,7 +286,9 @@ module.exports = function () {
 					config.currentTest = 'passed';
 				} );
 
-			} else if ( commons.isAndroid() && config.canView === true ) {
+			} else if ( commons.isAndroid() 
+				      && config.canView === true 
+	      	) {
 				console.log( 'user is on a Android device and should be on recentTab.'.red );
 				return driver
 				.back()

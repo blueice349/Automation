@@ -17,29 +17,39 @@ module.exports = function () {
 	        it( 'check for updates and build any changes'.green, function ( done ) {
 
 	            var output = "UPDATE THIS STRING WITH data";
-				if ( commons.isIOS() && config.appUpdated === false && config.sim === true ) {
+				if ( commons.isIOS() 
+					&& config.appUpdated === false 
+					&& config.sim === true 
+				) {
 					console.log( 'IOS SIM COMMAND'.red );
 					cmd.get( 'cd /Users/mikemeyer/Projects/omadi_mobile ; b i s', function ( data ) {
         			} );
         			done();
 
-    			} else if ( commons.isIOS() && config.appUpdated === false && config.sim === false ) {
+    			} else if ( commons.isIOS() 
+    				       && config.appUpdated === false 
+    				       && config.sim === false 
+		       	) {
 					console.log( 'IOS DEVICE COMMAND'.red );
 					cmd.get( 'cd /Users/mikemeyer/Projects/omadi_mobile ; b i', function ( data ) {
         			} );
         			console.log( data );
         			done();
 	            	
-	            } else if ( commons.isAndroid() && config.appUpdated === false && config.sim === true ) {
-	            	
+	            } else if ( commons.isAndroid() 
+	            	       && config.appUpdated === false 
+	            	       && config.sim === true 
+    	       	) {
 					console.log( 'ANDROID SIM COMMAND'.red );
 					cmd.get( 'cd /Users/mikemeyer/Projects/omadi_mobile ; b a s', function ( data ) {
         			} );
         			console.log( data );
         			done();
 				
-				} else if ( commons.isAndroid() && config.appUpdated === false && config.sim === true ) {
-	            	
+				} else if ( commons.isAndroid() 
+					       && config.appUpdated === false 
+					       && config.sim === true 
+		       	) {
 					console.log( 'ANDROID SIM COMMAND'.red );
 					cmd.get( 'cd /Users/mikemeyer/Projects/omadi_mobile ; b a', function ( data ) {
         			} );

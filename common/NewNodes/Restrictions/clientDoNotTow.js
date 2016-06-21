@@ -12,7 +12,7 @@ module.exports = function () {
 
 	var driver = config.driver;
 
-	describe( 'Start Create New Do Not Tow Node using licensePlate.'.green, function () {
+	describe( 'Start Create New Do Not Tow Node using licensePlate using "clientDoNotTow.js".'.green, function () {
 
 		commons.beforeEachDes();
 		commons.beforeEachIt();
@@ -48,6 +48,7 @@ module.exports = function () {
 					config.canCreate   = true;
 					config.currentTest = 'passed';
 				} );
+			
 			} else if ( lastUser.userRole === 'client' ) {
 				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
 				return driver
@@ -56,6 +57,7 @@ module.exports = function () {
 					
 					if ( doNotTow ) {
 						assert.fail( 'User ' + lastUser.userName + ' Should not have access to ' + doNotTow + ' and should not exit' );
+					
 					} else {
 						return;
 					}
@@ -65,6 +67,7 @@ module.exports = function () {
 					
 					if ( doNotTowPlus ) {
 						assert.fail( 'User ' + lastUser.userName + ' Should not have access to ' + doNotTowPlus + ' and should not exit' );
+					
 					} else {
 						return;
 					}
@@ -74,6 +77,7 @@ module.exports = function () {
 					config.canCreate   = false;
 					config.currentTest = 'passed';
 				} );
+			
 			} else {
 				console.log( 'Current is not a client account'.red );
 				config.canCreate   = false;
@@ -103,6 +107,7 @@ module.exports = function () {
 
 					config.currentTest = 'passed';
 				} );
+			
 			} else {
 				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
 				config.canCreate  = false;
@@ -129,6 +134,7 @@ module.exports = function () {
 
 					config.currentTest = 'passed';
 				} );
+			
 			} else {
 				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
 				config.canCreate  = false;

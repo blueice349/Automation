@@ -15,7 +15,7 @@ module.exports = function () {
 
 	var driver      = config.driver;
 
-	describe( 'Start Done with Vehicle Process'.green, function () {
+	describe( 'Start Done with Vehicle Process using "actionsSelectVehicle.js"'.green, function () {
 		commons.beforeEachDes();
 		commons.beforeEachIt();
 		commons.afterEachDes();
@@ -41,21 +41,23 @@ module.exports = function () {
 		it( 'should click on the "select vehicle button" from actions screen.'.green, function () {
 
 			var lastUser = Store.get( 'lastUser' );
-			if ( lastUser.truckOption === true && lastUser.userRole != 'client' && config.isInVehicle === false ) {
-					console.log( 'Not logged into a vehicle. Will log into a vehicle'.red );
-					return driver
-					.elementByName( elements.actionsScreen.companyVehicle )
-					.isDisplayed().should.eventually.be.ok
-					.elementByName( elements.actionsScreen.companyVehicle )
-					.click()
-					.then( function () {
+			if ( lastUser.truckOption === true 
+				&& lastUser.userRole != 'client' 
+				&& config.isInVehicle === false 
+			) {
+				console.log( 'Not logged into a vehicle. Will log into a vehicle'.red );
+				return driver
+				.elementByName( elements.actionsScreen.companyVehicle )
+				.isDisplayed().should.eventually.be.ok
+				.elementByName( elements.actionsScreen.companyVehicle )
+				.click()
+				.then( function () {
 
-						console.log( 'user is in a companyVehicle'.green );
-						config.currentTest = 'passed';
-					} );
+					console.log( 'user is in a companyVehicle'.green );
+					config.currentTest = 'passed';
+				} );
 
 			} else {
-				
 				console.log( 'Current User Does Not Have Vehicle Option Enabled'.red );
 				config.currentTest = 'passed';
 			}
@@ -64,22 +66,24 @@ module.exports = function () {
 		it( 'should Select a vehicle from actions screen.'.green, function () {
 
 			var lastUser = Store.get( 'lastUser' );
-			if ( lastUser.truckOption === true && lastUser.userRole != 'client' && config.isInVehicle === false ) {
-					console.log( 'Not logged into a vehicle. Will log into a vehicle'.red );
-					return driver
-					.elementByName( elements.companyVehicle.vehicle2 )
-					.isDisplayed().should.eventually.be.true
-					.elementByName( elements.companyVehicle.vehicle2 )
-					.click()
-					.sleep( 100 )
-					.then( function () {
+			if ( lastUser.truckOption === true 
+				&& lastUser.userRole != 'client' 
+				&& config.isInVehicle === false 
+			) {
+				console.log( 'Not logged into a vehicle. Will log into a vehicle'.red );
+				return driver
+				.elementByName( elements.companyVehicle.vehicle2 )
+				.isDisplayed().should.eventually.be.true
+				.elementByName( elements.companyVehicle.vehicle2 )
+				.click()
+				.sleep( 100 )
+				.then( function () {
 
-						console.log( 'user is in a companyVehicle'.green );
-						config.currentTest = 'passed';
-					} );
+					console.log( 'user is in a companyVehicle'.green );
+					config.currentTest = 'passed';
+				} );
 
 			} else {
-				
 				console.log( 'Current User Does Not Have Vehicle Option Enabled'.red );
 				config.currentTest = 'passed';
 			}
@@ -88,39 +92,41 @@ module.exports = function () {
 		it( 'Should Review Inspection.'.green, function () {
 			
 			var lastUser = Store.get( 'lastUser' );
-			if ( lastUser.truckOption === true && lastUser.userRole != 'client' && config.isInVehicle === false ) {
-					console.log( 'Will perform insoection'.red );
-					return driver
-					.elementByNameIfExists( elements.companyVehicle.review )
-					.then( function ( review ) {
+			if ( lastUser.truckOption === true 
+				&& lastUser.userRole != 'client' 
+				&& config.isInVehicle === false 
+			) {
+				console.log( 'Will perform insoection'.red );
+				return driver
+				.elementByNameIfExists( elements.companyVehicle.review )
+				.then( function ( review ) {
 
-						if ( review ) {
-							console.log( 'Review Inspection'.red );
-							return commons.alertText( alerts.actionsScreenAlerts.companyVehicle.reviewInspection )
-							.elementByName( elements.companyVehicle.review )
-							.isDisplayed().should.eventually.be.true
-							.elementByName( elements.companyVehicle.review )
-							.click()
-							.sleep( 1000 );
+					if ( review ) {
+						console.log( 'Review Inspection'.red );
+						return commons.alertText( alerts.actionsScreenAlerts.companyVehicle.reviewInspection )
+						.elementByName( elements.companyVehicle.review )
+						.isDisplayed().should.eventually.be.true
+						.elementByName( elements.companyVehicle.review )
+						.click()
+						.sleep( 1000 );
 
-						} else {
-							console.log( 'No inspection to review'.red );
-							return commons.alertText( alerts.loginLogoutAlerts.noInspectionReviewHeader )
-							.elementByName( elements.companyVehicle.ok )
-							.isDisplayed().should.eventually.be.true
-							.elementByName( elements.companyVehicle.ok )
-							.click()
-							.sleep ( 1000 );
-						}
-					} )
-					.then( function () {
+					} else {
+						console.log( 'No inspection to review'.red );
+						return commons.alertText( alerts.loginLogoutAlerts.noInspectionReviewHeader )
+						.elementByName( elements.companyVehicle.ok )
+						.isDisplayed().should.eventually.be.true
+						.elementByName( elements.companyVehicle.ok )
+						.click()
+						.sleep ( 1000 );
+					}
+				} )
+				.then( function () {
 
-						config.isInVehicle = true;
-						config.currentTest = 'passed';
-					} );
+					config.isInVehicle = true;
+					config.currentTest = 'passed';
+				} );
 
 			} else {
-				
 				console.log( 'Current User is not in a vehicle'.red );
 				config.currentTest = 'passed';
 			}

@@ -178,7 +178,7 @@ describe( 'Automation Test in Progress!'.green, function () {
 					run.actionsScreen( 'removeVehicle' );
 					run.actionsScreen( 'selectVehicle' );
 
-			  	 /* Recent Screen Test */
+			  	  /* Recent Screen Test */ 
 					run.recentScreen(  'recentScreenCheckOptions' );  
 					run.recentScreen(  'recentScreenViewNode' ); 
 

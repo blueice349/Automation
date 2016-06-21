@@ -10,7 +10,7 @@ module.exports = function () {
 
 	var driver = config.driver;
 
-	describe( 'Start Create New Mobile Mike Node and Save to Drafts'.green, function () {
+	describe( 'Start Create New Mobile Mike Node and Save to Drafts using "restrictionLicensePlate.js"'.green, function () {
 
 		it( 'Should Create New Node from homeScreen Save to Drafts'.green, function () {
 			var lastUser = Store.get( 'lastUser' );
@@ -18,7 +18,9 @@ module.exports = function () {
 			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
 			.then( function ( mobileMike ) {
 
-				if ( lastUser.userRole != 'client' && lastUser.userRole != 'AdminClient' ) {
+				if ( lastUser.userRole != 'client' 
+					&& lastUser.userRole != 'AdminClient' 
+				) {
 					console.log( 'User is Has form View Permissions'.red );
 					return driver
 					.elementByName( elements.mobile_MikeRecord.mobileMike + elements.homeScreen.button )
@@ -86,6 +88,7 @@ module.exports = function () {
 											.sleep( 1000 ); 
 										}
 									} );
+								
 								} else {
 									console.log( 'Vehicle not on Restriction'.red );
 									return driver;

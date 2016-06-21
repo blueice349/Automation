@@ -13,7 +13,7 @@ module.exports = function () {
 
 	var driver = config.driver;
 
-	describe( 'Start recentScreen Process'.green, function () {
+	describe( 'Start recentScreen Process using "recentScreenCheckScreen.js"'.green, function () {
 
 		commons.beforeEachDes();
 		commons.beforeEachIt();
@@ -22,12 +22,16 @@ module.exports = function () {
 		it( 'Should check permissions for current user'.green, function() {
 			
 			var lastUser = Store.get( 'lastUser' );
-			if ( lastUser.userRole != 'client' && lastUser.userRole != 'AdminClient' ) {
+			if ( lastUser.userRole != 'client' 
+				&& lastUser.userRole != 'AdminClient' 
+			) {
 				console.log( 'User has access to recent tab.'.red );
 				config.canView     = true;
 				config.currentTest = 'passed';
 
-			} else if ( lastUser.userRole === 'client' || lastUser.userRole === 'AdminClient' ) {
+			} else if ( lastUser.userRole === 'client' 
+				      || lastUser.userRole === 'AdminClient' 
+	      	) {
 				console.log( 'User does "NOT" access to recent tab.'.red );
 				config.canView     = false;
 				config.currentTest = 'passed';
@@ -123,6 +127,7 @@ module.exports = function () {
 
 					if ( viewedTab ) {
 						assert.fai( 'User should not have access to viewedTab located in the recent tab'.red );
+					
 					} else if ( !viewedTab ) {
 						config.currentTest = 'passed';
 					}
@@ -154,6 +159,7 @@ module.exports = function () {
 
 					if ( savedTab ) {
 						assert.fai( 'User should not have access to savedTab located in the recent tab'.red );
+					
 					} else if ( !savedTab ) {
 						config.currentTest = 'passed';
 					}
@@ -163,7 +169,9 @@ module.exports = function () {
 
 		it( 'should goo back to the homeScreen from recentTab.'.green, function () {
 
-			if ( commons.isIOS() && config.canView === true ) {
+			if ( commons.isIOS() 
+				&& config.canView === true 
+			) {
 				console.log( 'user is on a iOS device and should be on recentTab.'.red );
 				return driver
 				.waitForElementByName( elements.recentScreen.back, 120000 )
@@ -175,7 +183,9 @@ module.exports = function () {
 					config.currentTest = 'passed';
 				} );
 
-			} else if ( commons.isAndroid() && config.canView === true ) {
+			} else if ( commons.isAndroid() 
+				       && config.canView === true 
+	       	) {
 				console.log( 'user is on a Android device and should be on recentTab.'.red );
 				return driver
 				.back()
@@ -183,6 +193,7 @@ module.exports = function () {
 
 					config.currentTest = 'passed';
 				} );
+			
 			} else if ( config.canView === false ) {
 				console.log( 'user is a client and should already be on homeScreen.'.red );
 				return driver

@@ -1,7 +1,7 @@
 "use strict";
 
-var wd = require('wd'),
-    Q = require('q');
+var wd = require( 'wd' ),
+    Q  = require( 'q' );
 
 exports.swipe = function ( opts ) {
   var action = new wd.TouchAction();
@@ -13,7 +13,7 @@ exports.swipe = function ( opts ) {
   return this.performTouchAction(action);
 };
 
-exports.pinch = function (el) {
+exports.pinch = function ( el ) {
   return Q.all([
     el.getSize(),
     el.getLocation(),
@@ -26,7 +26,7 @@ exports.pinch = function (el) {
     };
     var a1 = new wd.TouchAction( this );
     a1.press( { el: el, x: center.x, y: center.y - 100 } ).moveTo( { el: el } ).release();
-    var a2 = new wd.TouchAction(this);
+    var a2 = new wd.TouchAction( this );
     a2.press( { el: el, x: center.x, y: center.y + 100 } ).moveTo( { el: el } ).release();
     var m  = new wd.MultiAction( this );
     m.add( a1, a2 );

@@ -12,7 +12,7 @@ module.exports = function () {
 
 	var driver   = config.driver;
 
-	describe( 'Start Create New Mobile Mike Node with Condition required filed and save'.green, function () {
+	describe( 'Start Create New Mobile Mike Node with Condition using "checkboxIsChecked.js"'.green, function () {
 
 		commons.beforeEachDes();
 		commons.beforeEachIt();
@@ -35,14 +35,14 @@ module.exports = function () {
 			console.log( 'userName: ' + lastUser.userName + ' userRole: ' + lastUser.userRole ); 
 			if ( lastUser.userRole != 'driver' 
 				&& lastUser.userRole != 'admin'
-				) {
+			) {
 				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
 				config.canCreate   = false;
 				config.currentTest = 'passed';	
 
 			} else if ( lastUser.userRole === 'driver'
 				|| lastUser.userRole === 'admin' 
-				) {
+			) {
 				console.log( lastUser.userRole + ': User is allowed to create new node'.red );
 				return driver
 				.elementByName( elements.mobile_MikeRecord.mobileMike + elements.homeScreen.plusButton )
@@ -87,10 +87,33 @@ module.exports = function () {
 							config.currentTest = 'passed';
 						}
 					} );
+				
 				} else {
 					console.log( 'isIOS'.red );
 					config.currentTest = 'passed';
 				}
+			}
+		} );
+
+		it( 'Should check the checkbox field.'.green, function () {
+
+			var lastUser = Store.get( 'lastUser' );
+
+			if ( config.canCreate != true ) {
+				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
+				config.currentTest = 'passed';
+
+			} else if ( config.canCreate === true ) {
+				console.log( 'User should check the checkboxField'.red );
+				return driver
+				.elementByName( elements.mobile_MikeRecord.otherFields.checkbox )
+				.isDisplayed().should.eventually.be.true
+				.elementByName( elements.mobile_MikeRecord.otherFields.checkbox )
+				.click()
+				.then( function () {
+
+					config.currentTest = 'passed';
+				} );
 			}
 		} );
 
@@ -162,28 +185,6 @@ module.exports = function () {
 					
 					return commons.sendKeys( textAreaCondReg, lastUser.userName + ' Text Area Conditional Field' );
 				} )
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
-			}
-		} );
-
-		it( 'Should check the checkbox field.'.green, function () {
-
-			var lastUser = Store.get( 'lastUser' );
-
-			if ( config.canCreate != true ) {
-				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
-				config.currentTest = 'passed';
-
-			} else if ( config.canCreate === true ) {
-				console.log( 'User should check the checkboxField'.red );
-				return driver
-				.elementByName( elements.mobile_MikeRecord.otherFields.checkbox )
-				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.mobile_MikeRecord.otherFields.checkbox )
-				.click()
 				.then( function () {
 
 					config.currentTest = 'passed';

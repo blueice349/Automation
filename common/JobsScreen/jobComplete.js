@@ -35,7 +35,9 @@ module.exports = function () {
 		it( 'should check userRole and go to jobsScreen'. green, function () {
 			
 			var lastUser = Store.get( 'lastUser' );
-			if ( lastUser.userRole != 'client' && lastUser.userRole != 'AdminClient' ) {
+			if ( lastUser.userRole != 'client' 
+				&& lastUser.userRole != 'AdminClient' 
+			) {
 				return driver
 				.waitForElementByName( elements.homeScreen.jobs, 20000 )
 				.isDisplayed().should.eventually.be.true
@@ -69,7 +71,9 @@ module.exports = function () {
 		it( 'should check tabs on jobsScreen are there'.green, function () {
 			
 			var lastUser = Store.get( 'lastUser' );		
-			if ( lastUser.userRole != 'client' &&  lastUser.userRole != 'AdminClient' ) {
+			if ( lastUser.userRole != 'client' 
+				&&  lastUser.userRole != 'AdminClient' 
+			) {
 				return driver
 				.elementByName( elements.jobsScreen.newJobsTab.newJobsHeader )
 				.isDisplayed().should.eventually.be.true
@@ -83,6 +87,7 @@ module.exports = function () {
 
 					config.currentTest = 'passed';
 				} );
+			
 			} else {
 				console.log( 'current user does not have the jobsScreen'.green );
 				return driver
@@ -99,7 +104,9 @@ module.exports = function () {
 		it( 'Sould look for jobs in "My open Jobs" and "Update Status" to "Job Complete"'.green, function () {
 			
 			var lastUser = Store.get( 'lastUser' );
-			if ( lastUser.userRole != 'client' &&  lastUser.userRole != 'AdminClient' ) {
+			if ( lastUser.userRole != 'client' 
+				&&  lastUser.userRole != 'AdminClient' 
+			) {
 				return driver
 				.elementByNameIfExists( commons.getItem( elements.jobsScreen.openJobsTab.openJobs, 0 ) )
 				.then( function ( openJobs ) {

@@ -14,7 +14,7 @@ module.exports = function () {
 	var Store    = require( '../../../helpers/Store' );
 	var driver = config.driver;
 
-	describe( 'Start View Draft(s) Process'.green, function () {
+	describe( 'Start View Draft(s) Process using "draftView.js"'.green, function () {
 
 		commons.beforeEachDes();
 		commons.beforeEachIt();
@@ -57,7 +57,9 @@ module.exports = function () {
 			.elementByNameIfExists( elements.draftsScreen.search )
 			.then( function ( hideKeyboard ) {
 
-				if ( hideKeyboard  && commons.isAndroid() ) {
+				if ( hideKeyboard  
+					&& commons.isAndroid() 
+				) {
 					return driver	
 					.hideKeyboard()
 					.sleep ( 200 );
@@ -111,6 +113,7 @@ module.exports = function () {
 
 					config.currentTest = 'passed';
 				} );
+			
 			} else {
 				console.log( 'No Drafts to view.'.red);
 				config.currentTest = 'passed';
@@ -128,6 +131,7 @@ module.exports = function () {
 
 					config.currentTest = 'passed';
 				} );
+			
 			} else {
 				console.log( 'No Drafts to view.'.red);
 				config.currentTest = 'passed';
@@ -136,7 +140,9 @@ module.exports = function () {
 
 		it( 'Should go back to the draftsScreen from nodeView.'.green, function () {
 			
-			if ( commons.isAndroid() && config.canView === true ) {
+			if ( commons.isAndroid() 
+				&& config.canView === true 
+			) {
 				return driver
 				.back()
 				.sleep( 1000 )
@@ -146,7 +152,9 @@ module.exports = function () {
 					config.currentTest = 'passed';
 				} )
 
-			} else if ( commons.isIOS() && config.canView === true ) {
+			} else if ( commons.isIOS() 
+					   && config.canView === true 
+			) {
 				return driver
 				.elementByName( elements.formScreen.back )
 				.isDisplayed().should.eventually.be.true

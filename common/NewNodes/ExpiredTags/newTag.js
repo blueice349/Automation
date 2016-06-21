@@ -14,7 +14,7 @@ module.exports = function () {
 	var driver    = config.driver;
 	var canCreate = false;
 
-	describe( 'Start Create New Tag Node and save'.green, function () {
+	describe( 'Start Create New Tag Node and save using "newTag.js"'.green, function () {
 
 		it( 'Should check userRole '.green, function () {
 
@@ -23,7 +23,9 @@ module.exports = function () {
 			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
 			.then( function () {
 
-				if ( lastUser.userRole === 'admin' || lastUser.userRole === 'driver'  ) {
+				if ( lastUser.userRole === 'admin' 
+					|| lastUser.userRole === 'driver'  
+				) {
 					console.log( 'User is Allowed to add a New Redord'.red );
 					canCreate = true;
 					config.currentTest = 'passed';
@@ -37,7 +39,7 @@ module.exports = function () {
 
 		it( 'Should create new tagRecord from homeScreen'.green, function () {
 			
-			if( canCreate === true ) {
+			if ( canCreate === true ) {
 				return driver
 				.elementByName( elements.tagRecord.tag + elements.homeScreen.plusButton )
 				.click()

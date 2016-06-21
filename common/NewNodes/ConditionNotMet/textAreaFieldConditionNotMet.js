@@ -13,7 +13,7 @@ module.exports = function () {
 
 	var driver   = config.driver;
 
-	describe( 'Start Create New Mobile Mike Node with Condition NOT required if integerFieldCond is empty and save'.green, function () {
+	describe( 'Start Create New Mobile Mike Node with Condition NOT Met using "textAreasFieldCoditionNotMet.js"'.green, function () {
 
 		commons.beforeEachDes();
 		commons.beforeEachIt();
@@ -36,13 +36,13 @@ module.exports = function () {
 			console.log( 'userName: ' + lastUser.userName + ' userRole: ' + lastUser.userRole ); 
 			if ( lastUser.userRole != 'driver' 
 				&& lastUser.userRole != 'admin'
-				) {
+			) {
 				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
 				config.currentTest = 'passed';	
 
 			} else if ( lastUser.userRole === 'driver'
-				|| lastUser.userRole === 'admin' 
-				) {
+					   || lastUser.userRole === 'admin' 
+			) {
 				console.log( lastUser.userRole + ': User is allowed to create new node'.red );
 				return driver
 				.elementByName( elements.mobile_MikeRecord.mobileMike + elements.homeScreen.plusButton )
@@ -87,6 +87,7 @@ module.exports = function () {
 							config.currentTest = 'passed';
 						}
 					} );
+				
 				} else {
 					console.log( 'isIOS'.red );
 					config.currentTest = 'passed';
@@ -166,7 +167,7 @@ module.exports = function () {
 				.elementByName( elements.mobile_MikeRecord.otherFields.integerFieldCond )
 				.then( function ( integerFieldCond ) {
 					
-					return commons.sendKeys( textFieldCond, lastUser.userName + ' integerFieldCond' );
+					return commons.sendKeys( integerFieldCond, '1234' );
 				} )
 				.then( function () {
 
@@ -216,6 +217,7 @@ module.exports = function () {
 
 					if ( alertButtons ) {
 						assert.fail( 'Should not be showing a alertButton "OK". Conditions was not met.'.red ); 
+					
 					} else {
 						return;
 					}

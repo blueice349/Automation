@@ -13,7 +13,7 @@ module.exports = function () {
 
 	var driver          = config.driver;
 
-	describe( 'Start clockout Process from actionsScreen'.green, function () {
+	describe( 'Start clockout Process from actionsScreen using "actionsClockout.js"'.green, function () {
 
 		commons.beforeEachDes();
 		commons.beforeEachIt();

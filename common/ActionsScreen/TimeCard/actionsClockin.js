@@ -13,7 +13,7 @@ module.exports = function () {
 
 	var driver          = config.driver;
 
-	describe( 'Start clock in process from actionsScreen'.green, function () {
+	describe( 'Start clock in process from actionsScreen using "actionsClockin.js"'.green, function () {
 
 		commons.beforeEachDes();
 		commons.beforeEachIt();

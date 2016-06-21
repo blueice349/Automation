@@ -14,7 +14,7 @@ module.exports = function () {
 	var Store    = require( '../../helpers/Store' );
 	var driver = config.driver;
 
-	describe( 'Start Reset All Data Process'.green, function () {
+	describe( 'Start Reset All Data Process using "resetAllData.js"'.green, function () {
 
 		commons.beforeEachDes();
 		commons.beforeEachIt();
