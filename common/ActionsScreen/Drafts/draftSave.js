@@ -14,7 +14,7 @@ module.exports = function () {
 	var Store    = require( '../../../helpers/Store' );
 	var driver = config.driver;
 
-	describe( 'Start Save Draft(s) Process'.green, function () {
+	describe( 'Start Save Draft(s) Process using "draftSave.js"'.green, function () {
 
 		commons.beforeEachDes();
 		commons.beforeEachIt();
@@ -57,7 +57,9 @@ module.exports = function () {
 			.elementByNameIfExists( elements.draftsScreen.search )
 			.then( function ( hideKeyboard ) {
 
-				if ( hideKeyboard  && commons.isAndroid() ) {
+				if ( hideKeyboard  
+					&& commons.isAndroid() 
+				) {
 					return driver	
 					.hideKeyboard()
 					.sleep ( 200 );
@@ -104,7 +106,8 @@ module.exports = function () {
 
 		it( 'should hideKeyboard if needed,'.green, function () {
 			
-			var lastUser = Store.get( 'lastUser' );
+			var alertDone = driver.elementByNameIfExists( elements.alertButtons.done ).isDisplayed()
+			var lastUser  = Store.get( 'lastUser' );
 			return driver
 			.elementByNameIfExists( elements.formScreen.actions )
 			.then( function ( actions ) {
@@ -116,10 +119,24 @@ module.exports = function () {
 					.isDisplayed()
 					.then( function ( keyboard ) {
 						
-						if ( commons.isAndroid() && keyboard != true ) {
-							console.log( 'keyboard is visible.'.red );
+						if ( commons.isAndroid() 
+							&& keyboard != true 
+						) {
+							console.log( 'Android keyboard is visible.'.red );
 							return driver
 							.hideKeyboard()
+							.then( function () {
+
+								config.currentTest = 'passed';
+							} );
+						
+						} else if ( commons.isIOS() 
+								   && alertDone === true 
+					   	) {
+							console.log( 'iOS keyboard is visible.'.red );
+							return driver
+							.elementByName( elements.alertButtons.done )
+							.click()
 							.then( function () {
 
 								config.currentTest = 'passed';
@@ -133,6 +150,40 @@ module.exports = function () {
 					console.log( 'Keyboard does not need to be hidden at this time.'.red );
 					config.currentTest = 'passed';
 				}
+			} );
+		} );
+
+		it( 'Should check for text in integerFieldCond and add text where needed.'.green, function() {
+
+			var lastUser = Store.get( 'lastUser' );
+			return driver
+			.elementByNameIfExists( elements.formScreen.actions )
+			.then( function ( actions ) {
+
+				if ( actions ) {
+					return driver
+					.sleep( 1000 )
+					.elementByName( elements.mobile_MikeRecord.otherFields.integerFieldCond )
+					.isDisplayed().should.eventually.be.true
+					.elementByName( elements.mobile_MikeRecord.otherFields.integerFieldCond )
+					.text()
+					.then( function ( integerFieldCond ) {
+
+						if ( integerFieldCond === '' ) {
+							 return commons.sendKeys( driver.elementByName( elements.mobile_MikeRecord.otherFields.integerFieldCond ), '12345' );
+						
+						} else {
+							console.log( 'integerFieldCond has the following data: ' + integerFieldCond );
+						}
+					} )
+				
+				} else {
+					console.log( 'Not in a draft edit screen.'.red );
+				}
+			} )
+			.then( function () {
+
+				config.currentTest = 'passed';
 			} );
 		} );
 
@@ -159,6 +210,7 @@ module.exports = function () {
 							console.log( 'textFieldReq has the following data: ' + textFieldReq );
 						}
 					} );
+				
 				} else {
 					console.log( 'Not in a draft edit screen.'.red );
 				}
@@ -192,39 +244,7 @@ module.exports = function () {
 							console.log( 'textFieldCond has the following data: ' + textFieldCond );
 						}
 					} )
-				} else {
-					console.log( 'Not in a draft edit screen.'.red );
-				}
-			} )
-			.then( function () {
-
-				config.currentTest = 'passed';
-			} );
-		} );
-
-		it( 'Should check for text in integerFieldCond and add text where needed.'.green, function() {
-
-			var lastUser = Store.get( 'lastUser' );
-			return driver
-			.elementByNameIfExists( elements.formScreen.actions )
-			.then( function ( actions ) {
-
-				if ( actions ) {
-					return driver
-					.sleep( 1000 )
-					.elementByName( elements.mobile_MikeRecord.otherFields.integerFieldCond )
-					.isDisplayed().should.eventually.be.true
-					.elementByName( elements.mobile_MikeRecord.otherFields.integerFieldCond )
-					.text()
-					.then( function ( integerFieldCond ) {
-
-						if ( integerFieldCond === '' ) {
-							 return commons.sendKeys( driver.elementByName( elements.mobile_MikeRecord.otherFields.integerFieldCond ), lastUser.userName + ' integerFieldCond Filled.' );
-
-						} else {
-							console.log( 'integerFieldCond has the following data: ' + integerFieldCond );
-						}
-					} )
+				
 				} else {
 					console.log( 'Not in a draft edit screen.'.red );
 				}
