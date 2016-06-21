@@ -73,9 +73,11 @@ for ( var i in args ) {
 				} );
 				if ( config.os === 'Android' ){
 					androidDevice = true;
+				
 				} else if ( config.os === 'iOS' ) {
 					iosDevice = true;
 				}
+			
 			} else {
 				throw 'You did not specify a os for -os';
 			}
@@ -92,16 +94,17 @@ wd.addPromiseChainMethod( 'inputKeys', function ( config, keys ) {
 
 	if ( config.desired.platformName == 'Android' ) {
 		return this
-			.click()
-			.clear()
-			.sendKeys( keys )
-			.hideKeyboard();
+		.click()
+		.clear()
+		.sendKeys( keys )
+		.hideKeyboard();
+	
 	} else if ( config.desired.platformName == 'IOS' ) {
 		return this
-			.click()
-			.elementByName( 'space' ).isDisplayed().should.eventually.be.true
-			.clear()
-			.sendKeys( keys );
+		.click()
+		.elementByName( 'space' ).isDisplayed().should.eventually.be.true
+		.clear()
+		.sendKeys( keys );
 	}
 } );
 var driver = wd.promiseChainRemote( serverConfigs.local );
