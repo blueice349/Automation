@@ -1,16 +1,26 @@
-//All app locations for ios, android and simulator.
 
 var homeDir = function () {
 
 	return process.env[ ( process.platform == 'win32' ) ? 'USERPROFILE' : 'HOME' ];
 };
 
-var home = homeDir();
+var home   = homeDir();
+var fs     = require( 'fs' );
+var xml2js = require( 'xml2js' );
+var parser = new xml2js.Parser();
+var OmadiAppVersion;
 
-exports.appVersion = '3.4.12.';
+fs.readFile( home + '/Projects/omadi_mobile/titanium_src/tiapp.xml', function ( err, data ) {
+    parser.parseString( data, function ( err, result ) {
 
-exports.androidApp = home + '/Projects/omadi_mobile/titanium_src/build/android/bin/Omadi.apk';
+    	OmadiAppVersion               = result['ti:app'].version[ 0 ]
+		exports.appVersion            = OmadiAppVersion + '.';
+		exports.appVersionTextAndroid = OmadiAppVersion;
+		exports.appVersionTextIOS     = OmadiAppVersion + '.';
+		console.log( 'Current APP Version: ' + OmadiAppVersion );
+    } );
+} );
 
-exports.iosSimApp = home + '/Projects/omadi_mobile/titanium_src/build/iphone/build/Products/Debug-iphonesimulator/Omadi.app';
-
+exports.androidApp   = home + '/Projects/omadi_mobile/titanium_src/build/android/bin/Omadi.apk';
+exports.iosSimApp    = home + '/Projects/omadi_mobile/titanium_src/build/iphone/build/Products/Debug-iphonesimulator/Omadi.app';
 exports.iosDeviceApp = home + '/Projects/omadi_mobile/titanium_src/build/iphone/build/Products/Debug-iphoneos/Omadi.ipa';
