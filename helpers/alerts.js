@@ -1,13 +1,13 @@
 exports.loginLogoutAlerts = {
-'iosNotification'           : '“Omadi” Would Like to Send You Notifications Notifications may include alerts, sounds, and icon badges. These can be configured in Settings.',
-'iosGps'                    : 'Allow “Omadi” to access your location even when you are not using the app? Allows detection of geofence breaches while the device is locked.',
-'androidGps'                : 'Allow Omadi to access this device\'s location?',
-'vehicle'                   : 'Which Vehicle Will You Drive?',
-'noInspectionReviewHeader'  : 'No inspection to review',
-'noInspectionReviewDetail'  : 'Somebody failed to do their post-shift inspection or it has not synced to this device.',
-'doInspection'              : 'Do Post-Shift Inspection?',
-'noInspection'              : 'No inspection to review',
-'clockin'                   : 'Clock In Now?'
+	'iosNotification'           : '“Omadi” Would Like to Send You Notifications Notifications may include alerts, sounds, and icon badges. These can be configured in Settings.',
+	'iosGps'                    : 'Allow “Omadi” to access your location even when you are not using the app? Allows detection of geofence breaches while the device is locked.',
+	'androidGps'                : 'Allow Omadi to access this device\'s location?',
+	'vehicle'                   : 'Which Vehicle Will You Drive?',
+	'noInspectionReviewHeader'  : 'No inspection to review',
+	'noInspectionReviewDetail'  : 'Somebody failed to do their post-shift inspection or it has not synced to this device.',
+	'doInspection'              : 'Do Post-Shift Inspection?',
+	'noInspection'              : 'No inspection to review',
+	'clockin'                   : 'Clock In Now?'
 
 }
 exports.actionsScreenAlerts = {
@@ -39,6 +39,15 @@ exports.jobScreenAlerts = {
 
 exports.nodeEditScreenAlerts = {
 	'requiredFields' : {
+		'condition1': 'Text Field Cond is required.',
+		'condition2': 'Integer Field Cond is required.',
+		'condition3': 'Text Area Cond Req is required.',
+		'required'  : 'Text Field Req is required.'
+	}
+} 
+
+exports.termsOfService = {
+	'introduction ' : {
 		'condition1': 'Text Field Cond is required.',
 		'condition2': 'Integer Field Cond is required.',
 		'condition3': 'Text Area Cond Req is required.',
