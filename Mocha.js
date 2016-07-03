@@ -5,7 +5,6 @@ require( './helpers/setup' );
 var wd            = require( 'wd' );
 var assert        = require( 'assert' );
 var serverConfigs = require( './helpers/appium-servers' );
-var apps          = require( './helpers/apps' );
 var args          = process.argv.slice( 2 );
 var config        = require( './helpers/Config' );
 var actions       = require( './helpers/actions' );
@@ -118,8 +117,6 @@ describe( 'Automation Test in Progress!'.green, function () {
 	this.timeout( timeout );
 	var allPassed = true;
 	require( './helpers/logging' ).configure( driver );
-
-	var tests = apps.runTests;
 
 	commons.beforeAll();
 	commons.afterAll();
