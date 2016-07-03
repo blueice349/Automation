@@ -12,7 +12,7 @@
 exports.iosSim1 = {
   'appium-version'  : '1.4',
   'platformName'    : 'iOS',
-  'platformVersion' : '9.2',
+  'platformVersion' : '9.3',
   'deviceName'      : 'iPhone 6 Plus'
 };
 
