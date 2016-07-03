@@ -19,9 +19,15 @@ module.exports = function () {
 
 	        it( 'check for updates using gitPullCheck.js'.green, function ( done ) {
 
+	        	var homeDir = function () {
+
+					return process.env[ ( process.platform == 'win32' ) ? 'USERPROFILE' : 'HOME' ];
+				};
+
+				var home = homeDir();
 	            var output = "UPDATE THIS STRING WITH data";
 
-	            cmd.get( 'cd /Users/mikemeyer/Projects/omadi_mobile ; git pull', function ( data ) {
+	            cmd.get( 'cd' + home + 'Projects/omadi_mobile ; git pull', function ( data ) {
 					
 					if ( data === 'Already up-to-date.\n' ) {
 						assert.equal( data, 'Already up-to-date.\n', 'Source Code is "Already up-to-date."' );
