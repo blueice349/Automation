@@ -3,6 +3,7 @@
 module.exports = function () {
 
 	require( 'colors' );
+	var apps     = require( '../../../helpers/apps' );
 	var config   = require( '../../../helpers/Config' );
 	var elements = require( '../../../helpers/elements' );
 	var commons  = require( '../../../helpers/Commons' );
@@ -62,8 +63,18 @@ module.exports = function () {
 
 			var lastUser = Store.get( 'lastUser' );	
 			return driver
-			.elementByName( elements.aboutScreen.appVersion )
-			.text().should.eventually.become( lastUser.appVersion )
+			.elementByName( apps.appVersion )
+			.then( function ( appVersion ) {
+
+				if ( commons.isAndroid() || commons.isAndroid6() ) {
+					return appVersion.text()
+					.should.eventually.become( apps.appVersionTextAndroid )
+				
+				} else if ( commons.isIOS() ) {
+					return appVersion.text()
+					.should.eventually.become( apps.appVersionTextIOS )
+				}
+			} )
 			.then( function () {
 
 				config.currentTest = 'passed';

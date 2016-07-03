@@ -5,6 +5,7 @@ module.exports = function () {
 	require( 'colors' );
 	require( '../../../helpers/setup' );
 	var alerts   = require( '../../../helpers/alerts' );
+	var apps     = require( '../../../helpers/apps' );
 	var caps     = require( '../../../helpers/caps' );
 	var config   = require( '../../../helpers/Config' );
 	var commons  = require( '../../../helpers/Commons' );
@@ -13,11 +14,12 @@ module.exports = function () {
 	var Store    = require( '../../../helpers/Store' );
 	var driver = config.driver;
 
-	var appVersion;
+	var clientAccount;
 	var truckOption;
 	var clockInOption;
 	var userRole;
 	var userName;
+	var password;
 	var name;
 	var permissionGranted;
 	var performJob;
@@ -28,6 +30,27 @@ module.exports = function () {
 		commons.beforeEachDes();
 		commons.beforeEachIt();
 		commons.afterEachDes();
+
+		it( 'should check appVersion on loginScreen.'.green, function () {
+			
+			return driver
+			.elementByName( apps.appVersion )
+			.then( function ( appVersion ) {
+
+				if ( commons.isAndroid() || commons.isAndroid6() ) {
+					return appVersion.text()
+					.should.eventually.become( apps.appVersionTextAndroid )
+				
+				} else if ( commons.isIOS() ) {
+					return appVersion.text()
+					.should.eventually.become( apps.appVersionTextIOS )
+				}
+			} )
+			.then( function () {
+
+				config.currentTest = 'passed';
+			} );
+		} );
 
 		it( 'should check fields on loginScreen'.green, function() {
 
@@ -56,42 +79,45 @@ module.exports = function () {
 			.then( function ( el ) { 
 
 				if ( commons.isIOS() ){
-					appVersion        = login.clientLogins.client3.appVersion;
+					clientAccount     = login.clientLogins.client3.clientAccount;
 					truckOption       = login.clientLogins.client3.truckOption;
 					clockInOption     = login.clientLogins.client3.clockInOption;
 					userRole          = login.clientLogins.client3.userRole;
 					userName          = login.clientLogins.client3.username;
+					password          = login.clientLogins.client3.password;
 					name              = login.clientLogins.client3.name;
 					performJob        = login.clientLogins.client3.performJob;
 					tagButton         = login.clientLogins.client3.tagButton;
 					return el.text()
 					.then( function ( text ) {
 
-						if ( text === login.clientLogins.client3.clientAccount ) {
+						if ( text === clientAccount ) {
 							console.log( 'clientAccount is already set.'.red );
 							return;
 						} else {
-							return commons.sendKeys( el, login.clientLogins.client3.clientAccount ); 
+							return commons.sendKeys( el, clientAccount ); 
 						}
 					} )
 
 				} else if ( commons.isAndroid() ) {
-					appVersion        = login.clientLogins.client4.appVersion;
+					clientAccount     = login.clientLogins.client4.clientAccount;
 					truckOption       = login.clientLogins.client4.truckOption;
 					clockInOption     = login.clientLogins.client4.clockInOption;
 					userRole          = login.clientLogins.client4.userRole;
 					userName          = login.clientLogins.client4.username;
+					password          = login.clientLogins.client1.password;
 					name              = login.clientLogins.client4.name;
 					performJob        = login.clientLogins.client4.performJob;
 					tagButton         = login.clientLogins.client4.tagButton;
 					return el.text()
 					.then( function ( text ) {
 
-						if ( text === login.clientLogins.client4.clientAccount ) {
+						if ( text === login.clientAccount ) {
 							console.log( 'clientAccount is already set.'.red );
 							return;
+						
 						} else {
-							return commons.sendKeys( el, login.clientLogins.client4.clientAccount ); 
+							return commons.sendKeys( el, clientAccount ); 
 						}
 					} )
 				}
@@ -102,15 +128,22 @@ module.exports = function () {
 			} );
 		} );
 
-		it( 'should check appVersion on loginScreen.'.green, function () {
-			
-			return driver
-			.elementByName( elements.loginScreen.appVersion )
-			.text().should.eventually.become( appVersion )
-			.then( function () {
+		it( 'should store current user information'.green, function () {
 
-				config.currentTest = 'passed';
+			config.loginTest = true;
+			Store.set( 'lastUser', {
+				'clientAccount'     : clientAccount,
+				'truckOption'       : truckOption,
+				'clockInOption'     : clockInOption,
+				'userRole'          : userRole,
+				'userName'          : userName,
+				'password'          : password,
+				'name'              : name,
+				'permissionGranted' : permissionGranted,
+				'performJob'        : performJob,
+				'tagButton'         : tagButton
 			} );
+			config.currentTest = 'passed';
 		} );
 
 		it( 'should enter username and password'.green, function () {
@@ -119,40 +152,21 @@ module.exports = function () {
 			.elementByName( elements.loginScreen.userName )
 			.then( function ( el ) {
 
-				if ( commons.isIOS() ) {
-					return el.text()
-					.then( function ( text ) {
+				return el.text()
+				.then( function ( text ) {
 
-						if ( text === login.clientLogins.client3.username ) {
-							console.log( 'userName is already set.'.red );
-							return;
-						} else {
-							return commons.sendKeys( el, login.clientLogins.client3.username );
-						}
-					} )
-
-				} else if ( commons.isAndroid() ) {
-					return el.text()
-					.then( function ( text ) {
-
-						if ( text === login.clientLogins.client4.username ) {
-							console.log( 'userName is already set.'.red );
-							return;
-						} else {
-							return commons.sendKeys( el, login.clientLogins.client4.username );
-						}
-					} )
-				}
+					if ( text === userName ) {
+						console.log( 'userName is already set.'.red );
+						return;
+					} else {
+						return commons.sendKeys( el, userName );
+					}
+				} )
 			} )
 			.elementByName( elements.loginScreen.password )
 			.then( function ( el ) {
 				
-				if ( commons.isIOS() ) {
-					return commons.sendKeys( el, login.clientLogins.client3.password );
-
-				} else if ( commons.isAndroid() ) {
-					return commons.sendKeys( el, login.clientLogins.client4.password );
-				}
+				return commons.sendKeys( el, password );
 			} )
 			.then( function () {
 
@@ -162,28 +176,15 @@ module.exports = function () {
 
 		it( 'Should check clientAccount and username'.green, function () {
 
-			if ( commons.isIOS() ) {
-				return driver
-				.elementByName( elements.loginScreen.clientAccount )
-				.text().should.eventually.become( login.clientLogins.client3.clientAccount )
-				.elementByName( elements.loginScreen.userName )
-				.text().should.eventually.become( login.clientLogins.client3.username )
-				.then( function () {
+			return driver
+			.elementByName( elements.loginScreen.clientAccount )
+			.text().should.eventually.become( clientAccount )
+			.elementByName( elements.loginScreen.userName )
+			.text().should.eventually.become( userName )
+			.then( function () {
 
-					config.currentTest = 'passed';
-				} );
-
-			} else if ( commons.isAndroid() ) {
-				return driver
-				.elementByName( elements.loginScreen.clientAccount )
-				.text().should.eventually.become( login.clientLogins.client4.clientAccount )
-				.elementByName( elements.loginScreen.userName )
-				.text().should.eventually.become( login.clientLogins.client4.username )
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
-			}
+				config.currentTest = 'passed';
+			} );
 		} );
 
 		it( 'should click acceptTerms and loginButton'.green, function () {
@@ -199,23 +200,6 @@ module.exports = function () {
 
 				config.currentTest = 'passed';
 			} );
-		} );
-
-		it( 'should store current user information'.green, function () {
-
-			config.loginTest = true;
-			Store.set( 'lastUser', {
-				'appVersion'        : appVersion,
-				'truckOption'       : truckOption,
-				'clockInOption'     : clockInOption,
-				'userRole'          : userRole,
-				'userName'          : userName,
-				'name'              : name,
-				'permissionGranted' : permissionGranted,
-				'performJob'        : performJob,
-				'tagButton'         : tagButton
-			} );
-			config.currentTest = 'passed';
 		} );
 
 		it( 'should check for permissions'.green, function () {
