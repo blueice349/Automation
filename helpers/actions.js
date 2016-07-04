@@ -4,20 +4,23 @@ var wd = require( 'wd' ),
     Q  = require( 'q' );
 
 exports.swipe = function ( opts ) {
+
   var action = new wd.TouchAction();
   action
     .press( { x: opts.startX, y: opts.startY } )
     .wait( opts.duration )
     .moveTo( { x: opts.endX, y: opts.endY } )
     .release();
-  return this.performTouchAction(action);
+  return this.performTouchAction( action );
 };
 
 exports.pinch = function ( el ) {
-  return Q.all([
+
+  return Q.all( [
     el.getSize(),
     el.getLocation(),
-  ]).then(function ( res ) {
+  ] ).then( function ( res ) {
+
     var size   = res[ 0 ];
     var loc    = res[ 1 ];
     var center = {
@@ -35,10 +38,12 @@ exports.pinch = function ( el ) {
 };
 
 exports.zoom = function ( el ) {
+
   return Q.all( [
     this.getWindowSize(),
     this.getLocation( el ),
   ] ).then( function ( res ) {
+    
     var size   = res[ 0 ];
     var loc    = res[ 1 ];
     var center = {
