@@ -1,4 +1,10 @@
 exports.loginLogoutAlerts = {
+	'blankClientAccount'        : 'You must enter a valid client account in the top box.',
+	'blankUserName'             : 'A valid username is required.',
+	'blankPassword'             : 'A valid password is required.',
+	'blankTermsOfService'       : 'You must to agree to the Terms of Service before using the app.',
+	'wrongClientAccount'        : 'Client Account is incorrect',
+	'wrongUserNamePassword'     : 'Make sure username and password are correct.',
 	'iosNotification'           : '“Omadi” Would Like to Send You Notifications Notifications may include alerts, sounds, and icon badges. These can be configured in Settings.',
 	'iosGps'                    : 'Allow “Omadi” to access your location even when you are not using the app? Allows detection of geofence breaches while the device is locked.',
 	'androidGps'                : 'Allow Omadi to access this device\'s location?',
