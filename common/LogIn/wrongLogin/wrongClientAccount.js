@@ -3,7 +3,7 @@
 module.exports = function () {
 
 	require( 'colors' );
-	var alert    = require( '../../../helpers/alerts' );
+	var alerts   = require( '../../../helpers/alerts' );
 	var config   = require( '../../../helpers/Config' );
 	var elements = require( '../../../helpers/elements' );
 	var commons  = require( '../../../helpers/Commons' );
@@ -14,13 +14,18 @@ module.exports = function () {
 
 	describe( 'Start try login with wrong clientAccount process using wrongClientAccount.js'.green, function() {
 
+		commons.beforeEachDes();
+		commons.beforeEachIt();
+		commons.afterEachDes();
+
 		it( 'Should enter wrong clientAccount'.green, function () {
 
+			config.loginTest = true;
 			return driver
 			.waitForElementByName( elements.loginScreen.clientAccount, 200000 )
 			.then( function ( el ) {
 
-					return commons.sendKeys(el, 'Wrong account!' );
+					return commons.sendKeys(el, 'Wrong_clientAccount!' );
 			} )
 			.then( function () {
 
@@ -30,6 +35,7 @@ module.exports = function () {
 
 		it( 'Should enter a good userName'.green, function () {
 
+			config.loginTest = true;
 			return driver
 			.elementByName( elements.loginScreen.userName )
 			.then( function ( el ) {
@@ -49,6 +55,7 @@ module.exports = function () {
 
 		it( 'Should enter a good password.'.green, function () {
 
+			config.loginTest = true;
 			return driver
 			.elementByName( elements.loginScreen.password )
 			.then( function ( el ) {
@@ -68,6 +75,7 @@ module.exports = function () {
 
 		it( 'Should acceptTerms.'.green, function () {
 
+			config.loginTest = true;
 			return driver
 			.elementByName( elements.loginScreen.acceptTerms )
 			.click()
@@ -79,6 +87,7 @@ module.exports = function () {
 
 		it( 'Should click the loginButton.'.green, function () {
 
+			config.loginTest = true;
 			return driver
 			.elementByName( elements.loginScreen.loginButton )
 			.click()
@@ -90,12 +99,14 @@ module.exports = function () {
 
 		it( 'should get alert for incorrect clientAccount'.green, function () {
 
+			config.loginTest = true;
 			return driver
 			.waitForElementByName( elements.alertButtons.ok, 120000 )
 			.then( function ( el ) {
 
-				return commons.alertText( alerts.loginLogoutAlerts.wrongClientAccount );
-				el.click()
+				commons.alertText( alerts.loginLogoutAlerts.wrongClientAccount )
+				return el
+				.click()
 				.sleep( 1000 )
 			} )
 			.then( function () {
@@ -106,6 +117,7 @@ module.exports = function () {
 
 		it( 'should set currentTest to "passed".'.green, function ( done ) {
 			
+			config.loginTest = true;
 			console.log( 'wrongClientAccount test has Completed....'.green );
 			config.currentTest = 'passed';
 			done();

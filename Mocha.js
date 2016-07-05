@@ -130,6 +130,18 @@ describe( 'Automation Test in Progress!'.green, function () {
 				run.sourceCodeCheck( 'gitPullCheck' );
 				//run.sourceCodeCheck( 'buildUpdates' );
 		} );
+
+		describe( 'Running wrong login test'.red, function () {
+
+			var run = require( './TestFiles.js' );
+			run.logins( 'wrongClientAccount' );
+			run.logins( 'wrongUserName' );		
+			run.logins( 'wrongPassword' );
+			run.logins( 'blankClientAccount' );
+			run.logins( 'blankUserName' );
+			//run.logins( 'blankPassword' ); Can't test blankPassword or termsNotAccepted.
+			//run.logins( 'termsNotAccepted' );
+		} );
 		
 		describe( 'Running "Driver1 iOS Test && Driver2 Android Test"'.red, function () {
 			
