@@ -17,6 +17,7 @@ module.exports = function () {
 		commons.beforeEachDes();
 		commons.beforeEachIt();
 		commons.afterEachDes();
+		commons.afterEachIt();
 
 		it( 'Should wait for syncAllowed.'.green, function () {
 
@@ -24,10 +25,6 @@ module.exports = function () {
 			return driver
 			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
 			.isDisplayed().should.eventually.be.true
-			.then( function () {
-
-				config.currentTest = 'passed';
-			} );
 		} );
 
 		it( 'Should check lastUser permissons and create a new doNotTow.'.green, function () {
@@ -45,8 +42,7 @@ module.exports = function () {
 				.sleep( 1000 )
 				.then( function () {
 
-					config.canCreate   = true;
-					config.currentTest = 'passed';
+					config.canCreate = true;
 				} );
 			
 			} else if ( lastUser.userRole === 'client' ) {
@@ -74,14 +70,12 @@ module.exports = function () {
 				} )
 				.then( function () {
 
-					config.canCreate   = false;
-					config.currentTest = 'passed';
+					config.canCreate = false;
 				} );
 			
 			} else {
 				console.log( 'Current is not a client account'.red );
-				config.canCreate   = false;
-				config.currentTest = 'passed';
+				config.canCreate = false;
 			}
 		} );
 
@@ -103,15 +97,10 @@ module.exports = function () {
 				.elementByName( elements.doNotTow.otherFields.licensePlate )
 				.text().should.eventually.become( lastUser.userName )
 				.sleep( 1000 )
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
 			
 			} else {
 				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
-				config.canCreate  = false;
-				config.currentTest = 'passed';
+				config.canCreate = false;
 			}
 		} );
 
@@ -130,15 +119,10 @@ module.exports = function () {
 				.elementByName( elements.formScreen.save )
 				.click()
 				.sleep( 1000 )
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
 			
 			} else {
 				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
-				config.canCreate  = false;
-				config.currentTest = 'passed';
+				config.canCreate = false;
 			}
 		} );
 
@@ -149,19 +133,13 @@ module.exports = function () {
 			.isDisplayed().should.eventually.be.true
 			.elementByName( elements.homeScreen.syncAllowed )
 			.click()
-			.sleep ( 2000 )			
-			.then( function () {
-
-				console.log( 'Adding a restrictedPlate has Completed....'.green );
-				config.currentTest = 'passed';
-		 	} );
+			.sleep ( 2000 )
 		} );
 
 		it( 'should set currentTest to "passed".'.green, function ( done ) {
 			
 			config.loginTest = true;	
 			console.log( 'clientDoNotTow test has Completed....'.green );
-			config.currentTest = 'passed';
 			done();
 		} );
 	} );

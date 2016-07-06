@@ -16,9 +16,11 @@ module.exports = function () {
 	var driver      = config.driver;
 
 	describe( 'Start Done with Vehicle Process using "actionsSelectVehicle.js"'.green, function () {
+
 		commons.beforeEachDes();
 		commons.beforeEachIt();
 		commons.afterEachDes();
+		commons.afterEachIt();
 
 		it( 'Should go to Actions Screen'.green, function() {
 			
@@ -32,10 +34,6 @@ module.exports = function () {
 			.sleep( 800 )
 			.elementByName( elements.actionsScreen.drafts )
 			.isDisplayed().should.eventually.be.true
-			.then( function () {
-
-				config.currentTest = 'passed';
-			} );
 		} );
 
 		it( 'should click on the "select vehicle button" from actions screen.'.green, function () {
@@ -51,15 +49,9 @@ module.exports = function () {
 				.isDisplayed().should.eventually.be.ok
 				.elementByName( elements.actionsScreen.companyVehicle )
 				.click()
-				.then( function () {
-
-					console.log( 'user is in a companyVehicle'.green );
-					config.currentTest = 'passed';
-				} );
 
 			} else {
 				console.log( 'Current User Does Not Have Vehicle Option Enabled'.red );
-				config.currentTest = 'passed';
 			}
 		} );		
 
@@ -77,15 +69,9 @@ module.exports = function () {
 				.elementByName( elements.companyVehicle.vehicle2 )
 				.click()
 				.sleep( 100 )
-				.then( function () {
-
-					console.log( 'user is in a companyVehicle'.green );
-					config.currentTest = 'passed';
-				} );
 
 			} else {
 				console.log( 'Current User Does Not Have Vehicle Option Enabled'.red );
-				config.currentTest = 'passed';
 			}
 		} );
 
@@ -123,12 +109,10 @@ module.exports = function () {
 				.then( function () {
 
 					config.isInVehicle = true;
-					config.currentTest = 'passed';
 				} );
 
 			} else {
 				console.log( 'Current User is not in a vehicle'.red );
-				config.currentTest = 'passed';
 			}
 		} );
 
@@ -140,25 +124,16 @@ module.exports = function () {
 				.isDisplayed().should.eventually.be.ok
 				.elementByName( elements.actionsScreen.back )
 				.click()
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
 
 			} else if ( commons.isAndroid() ) {
 				return driver
 				.back()
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
 			}
 		} );
 
 		it( 'should set currentTest to "passed".'.green, function ( done ) {
 			
 			console.log( 'Clocked in or out has Completed....'.green );
-			config.currentTest = 'passed';
 			done();
 		} );
 	} );

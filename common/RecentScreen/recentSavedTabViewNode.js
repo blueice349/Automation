@@ -18,6 +18,7 @@ module.exports = function () {
 		commons.beforeEachDes();
 		commons.beforeEachIt();
 		commons.afterEachDes();
+		commons.afterEachIt();
 
 		it( 'Should check permissions for current user'.green, function() {
 			
@@ -26,15 +27,13 @@ module.exports = function () {
 				&& lastUser.userRole != 'AdminClient' 
 			) {
 				console.log( 'User has access to recent tab.'.red );
-				config.canView     = true;
-				config.currentTest = 'passed';
+				config.canView = true;
 
 			} else if ( lastUser.userRole === 'client' 
 				       || lastUser.userRole === 'AdminClient' 
 	       	) {
 				console.log( 'User does "NOT" access to recent tab.'.red );
-				config.canView     = false;
-				config.currentTest = 'passed';
+				config.canView = false;
 			}
 		} );
 
@@ -51,10 +50,6 @@ module.exports = function () {
 				.elementByName( elements.homeScreen.recent )
 				.click()
 				.sleep( 800 )
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
 
 			} else if ( config.canView === false ) {
 				console.log( 'User does "NOT" access to recent tab.'.red );
@@ -68,8 +63,7 @@ module.exports = function () {
 						assert.fail( lastUser.userName + ' has a userRole '.red + lastUser.userRole + ' and should not see the recentTab.'.red );
 					
 					} else if ( !recentTab ) {
-						config.currentTest = 'passed';
-						config.canView     = false;
+						config.canView = false;
 					}
 				} );
 			}
@@ -84,10 +78,6 @@ module.exports = function () {
 				.isDisplayed().should.eventually.be.true
 				.elementByName( elements.recentScreen.savedTab )
 				.click()
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
 			
 			} else if ( config.canView === false ) {
 				console.log( 'User does "NOT" have access to recentTab.'.red );
@@ -97,9 +87,6 @@ module.exports = function () {
 
 					if ( savedTab ) {
 						assert.fail( 'User should not have access to savedTab located in the recent tab'.red );
-					
-					} else if ( !savedTab ) {
-						config.currentTest = 'passed';
 					}
 				} );
 			} 	
@@ -128,10 +115,6 @@ module.exports = function () {
 						config.recentNode = false;
 						return;
 					}
-				} )
-				.then( function () {
-
-					config.currentTest = 'passed';
 				} );
 			
 			} else if ( config.canView === false ) {
@@ -142,9 +125,6 @@ module.exports = function () {
 
 					if ( resentSearch ) {
 						assert.fail( 'User should not have access to resentSearch located in the recent tab'.red );
-					
-					} else if ( !resentSearch ) {
-						config.currentTest = 'passed';
 					}
 				} );
 			} 	
@@ -161,16 +141,11 @@ module.exports = function () {
 				.isDisplayed().should.eventually.be.true
 				.elementByName( elements.recentScreen.view )
 				.isDisplayed().should.eventually.be.true
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
 			
 			} else if ( config.canView === true 
 				       && config.recentNode === false 
 			) {
 				console.log( 'There is no Nodes to view in savedTab.'.red );
-				config.currentTest = 'passed';
 
 			} else if ( config.canView === false ) {
 				console.log( 'User does "NOT" have access to recentTab.'.red );
@@ -180,9 +155,6 @@ module.exports = function () {
 
 					if ( resentSearch ) {
 						assert.fail( 'User should not have access to resentSearch located in the recent tab'.red );
-					
-					} else if ( !resentSearch ) {
-						config.currentTest = 'passed';
 					}
 				} );
 			} 	
@@ -203,17 +175,12 @@ module.exports = function () {
 						.click()
 						.sleep( 100 );
 					} 
-				} )
-				.then( function () {
-
-					config.currentTest = 'passed';
 				} );
 			
 			} else if ( config.recentNode === false 
 				       && config.canView === true 
 	       	) {
 				console.log( 'User there is no node to view on viewedTab.'.red );
-				config.currentTest = 'passed';
 			
 			} else if ( config.canView === false ) {
 				console.log( 'User does "NOT" have access to recentTab.'.red );
@@ -223,9 +190,6 @@ module.exports = function () {
 
 					if ( resentSearch ) {
 						assert.fail( 'User should not have access to resentSearch located in the recent tab'.red );
-					
-					} else if ( !resentSearch ) {
-						config.currentTest = 'passed';
 					}
 				} );
 
@@ -247,8 +211,7 @@ module.exports = function () {
 				.sleep( 1000 )
 				.then( function () {
 
-					config.currentTest = 'passed'
-					config.recentNode  = false;
+					config.recentNode = false;
 				} );
 
 			} else if ( commons.isAndroid() 
@@ -261,8 +224,7 @@ module.exports = function () {
 				.sleep( 100 )
 				.then( function () {
 
-					config.currentTest = 'passed'
-					config.recentNode  = false;
+					config.recentNode = false;
 				} );
 			
 			} else if ( config.canView === true 
@@ -273,7 +235,6 @@ module.exports = function () {
 			
 			} else if ( config.canView === false ) {
 				console.log( 'User does not have access to recentScreen and should be on the homeScreen.'.red );
-				config.currentTest = 'passed';
 			}
 		} );
 
@@ -288,10 +249,6 @@ module.exports = function () {
 				.isDisplayed().should.eventually.be.true
 				.elementByName( elements.recentScreen.back )
 				.click()
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
 
 			} else if ( commons.isAndroid() 
 				       && config.canView === true 
@@ -299,28 +256,19 @@ module.exports = function () {
 				console.log( 'user is on a Android device and should be on recentTab.'.red );
 				return driver
 				.back()
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
 			
 			} else if ( config.canView === false ) {
 				console.log( 'User does not have access to recentScreen and should already be on homeScreen.'.red );
 				return driver
 				.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
 				.isDisplayed().should.eventually.be.true
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
 			}
 		} );
 		
 		it( 'should set currentTest to "passed".'.green, function ( done ) {
 			
 			console.log( 'View node from recentSavedTab test has Completed....'.green );
-			config.currentTest = 'passed';
-			config.canView     = false;
+			config.canView = false;
 			done();
 		} );
 	} );

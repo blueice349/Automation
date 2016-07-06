@@ -30,6 +30,7 @@ module.exports = function () {
 		commons.beforeEachDes();
 		commons.beforeEachIt();
 		commons.afterEachDes();
+		commons.afterEachIt();
 
 		it( 'should check fields on loginScreen'.green, function() {
 			
@@ -57,17 +58,12 @@ module.exports = function () {
 			.isDisplayed().should.eventually.be.true
 			.elementByName( elements.loginScreen.acceptTerms )
 			.isDisplayed().should.eventually.be.true
-			.then( function () {
-
-				config.currentTest = 'passed';
-			} );
 		} );
 		
 		it( 'should set currentTest to "passed".'.green, function ( done ) {
 			
 			config.loginTest = true;	
 			console.log( 'appVersion check test has Completed....'.green );
-			config.currentTest = 'passed';
 			done();
 		} );
 	} );

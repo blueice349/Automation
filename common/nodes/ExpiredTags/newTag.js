@@ -16,6 +16,11 @@ module.exports = function () {
 
 	describe( 'Start Create New Tag Node and save using "newTag.js"'.green, function () {
 
+		commons.beforeEachDes();
+		commons.beforeEachIt();
+		commons.afterEachDes();
+		commons.afterEachIt();
+
 		it( 'Should check userRole '.green, function () {
 
 			var lastUser = Store.get( 'lastUser' );
@@ -28,11 +33,9 @@ module.exports = function () {
 				) {
 					console.log( 'User is Allowed to add a New Redord'.red );
 					canCreate = true;
-					config.currentTest = 'passed';
 
 				} else {
 					console.log( 'Current User Does Not Have The Option to Add a New Tag'.red );
-					config.currentTest = 'passed';
 				}
 			} );
 		} );
@@ -79,21 +82,15 @@ module.exports = function () {
 					}
 				} )
 				.sleep( 80 )
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
 
 			} else {
 				console.log( 'User does not have access to create a tagRecord'.red );
-				config.currentTest = 'passed';
 			}
 		} );
 
 		it( 'should set currentTest to "passed"'.green, function ( done ) {
 		
 			console.log( 'Create New tagRecord test has Passed....'.green );
-			config.currentTest = 'passed';
 			done();
 		} );
 	} );

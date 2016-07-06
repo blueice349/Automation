@@ -15,6 +15,7 @@ module.exports = function () {
 		commons.beforeEachDes();
 		commons.beforeEachIt();
 		commons.afterEachDes();
+		commons.afterEachIt();
 
 		it( 'Should go to Actions Screen from homeScreen'.green, function() {
 			
@@ -26,10 +27,6 @@ module.exports = function () {
 			.elementByName( elements.homeScreen.actions )
 			.click()
 			.sleep( 800 )
-			.then( function () {
-
-				config.currentTest = 'passed';
-			} );
 		} );
 
 		it( 'should go to aboutScreen from actions screen.'.green, function () {
@@ -42,10 +39,6 @@ module.exports = function () {
 			.elementByName( elements.actionsScreen.about )
 			.click()
 			.sleep( 1000 )
-			.then( function () {
-
-				config.currentTest = 'passed';
-			} );
 		} );
 
 		it( 'should check for "Omadi Logo" on aboutScreen.'.green, function () {
@@ -53,10 +46,6 @@ module.exports = function () {
 			return driver
 			.elementByName( elements.aboutScreen.logo )
 			.isDisplayed().should.eventually.be.true
-			.then( function () {
-
-				config.currentTest = 'passed';
-			} );
 		} );
 
 		it( 'should check "App Version" on aboutScreen.'.green, function () {
@@ -74,10 +63,6 @@ module.exports = function () {
 					return appVersion.text()
 					.should.eventually.become( apps.appVersionTextIOS )
 				}
-			} )
-			.then( function () {
-
-				config.currentTest = 'passed';
 			} );
 		} );
 
@@ -86,10 +71,6 @@ module.exports = function () {
 			return driver
 			.elementByName( elements.aboutScreen.signedInto )
 			.isDisplayed().should.eventually.be.true
-			.then( function () {
-
-				config.currentTest = 'passed';
-			} );
 		} );
 
 		it( 'should check for "Last Synced Time" on aboutScreen.'.green, function () {
@@ -97,10 +78,6 @@ module.exports = function () {
 			return driver
 			.elementByName( elements.aboutScreen.syncTime )
 			.isDisplayed().should.eventually.be.true
-			.then( function () {
-
-				config.currentTest = 'passed';
-			} );
 		} );
 
 		it( 'should check for "Terms of Service" on aboutScreen.'.green, function () {
@@ -108,10 +85,6 @@ module.exports = function () {
 			return driver
 			.elementByName( elements.aboutScreen.terms )
 			.isDisplayed().should.eventually.be.true
-			.then( function () {
-
-				config.currentTest = 'passed';
-			} );
 		} );
 
 
@@ -123,20 +96,12 @@ module.exports = function () {
 				.isDisplayed().should.eventually.be.true
 				.elementByName( elements.aboutScreen.back )
 				.click()
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
 
 			} else if ( commons.isAndroid() ) {
 				return driver
 				.back()
 				.waitForElementByName( elements.actionsScreen.drafts, 20000 )
 				.isDisplayed().should.eventually.be.true
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
 			}
 		} );
 
@@ -148,20 +113,12 @@ module.exports = function () {
 				.isDisplayed().should.eventually.be.true
 				.elementByName( elements.actionsScreen.back )
 				.click()
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
 
 			} else if ( commons.isAndroid() ) {
 				return driver
 				.waitForElementByName( elements.actionsScreen.drafts, 20000 )
 				.isDisplayed().should.eventually.be.true
 				.back().sleep( 100 )
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
 			}
 		} );
 		
@@ -169,7 +126,6 @@ module.exports = function () {
 		it( 'should set currentTest to "passed".'.green, function ( done ) {
 			
 			console.log( 'go to aboutScreen test has Completed....'.green );
-			config.currentTest = 'passed';
 			done();
 		} );
 	} );

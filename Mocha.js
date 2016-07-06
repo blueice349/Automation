@@ -134,8 +134,8 @@ describe( 'Automation Test in Progress!'.green, function () {
 		describe( 'Running wrong login and other login test'.red, function () {
 
 			var run = require( './TestFiles.js' );
-			run.logins( 'loginAppVersionCheck' );
-			run.logins( 'loginElementCheck' );
+			run.logins( 'loginScreenAppVersionCheck' );
+			run.logins( 'loginScreenElementCheck' );
 			run.logins( 'wrongClientAccount' );
 			run.logins( 'wrongUserName' );		
 			run.logins( 'wrongPassword' );
@@ -201,8 +201,9 @@ describe( 'Automation Test in Progress!'.green, function () {
 					run.actionsScreen( 'clockout' );
 					run.actionsScreen( 'clockin' );
 					run.actionsScreen( 'actionsAbout' );
+					run.actionsScreen( 'refreshSync' );
 					run.homeScreen( 'logout' );
-					run.logins( 'loginElementCheck' );
+					run.logins( 'loginScreenElementCheck' );
 					run.logins( 'loginAppVersionCheck' );
 		} );
 

@@ -20,16 +20,13 @@ module.exports = function () {
 		commons.beforeEachDes();
 		commons.beforeEachIt();
 		commons.afterEachDes();
+		commons.afterEachIt();
 		
 		it( 'Should wait for actions button on homeScreen'.green, function () {
 			
 			
 			return driver
 			.waitForElementByName( elements.homeScreen.actions, 20000 )
-			.then( function () {
-				
-				config.currentTest = 'passed';
-			} );
 		} );
 
 		it( 'should check userRole and go to jobsScreen'. green, function () {
@@ -51,20 +48,12 @@ module.exports = function () {
 						.elementByName( elements.jobsScreen.otherOptions.back )
 						.isDisplayed().should.eventually.be.true;
 					}
-				} )
-				.then( function () {
-					
-					config.currentTest = 'passed';
 				} );
 				
 			} else {
 				console.log( 'user does not have acces to Jobs Screen'.red );
 				return driver
 				.sleep( 60 )
-				.then( function () {
-					
-					config.currentTest = 'passed';
-				} );
 			}
 		} );
 
@@ -96,31 +85,21 @@ module.exports = function () {
 								.elementByName( elements.jobsScreen.otherOptions.back )
 								.click()
 								.sleep( 1000 )
-								.then( function () {
-
-									config.currentTest = 'passed';
-								} );
 
 							} else if ( commons.isAndroid() ) {
 								return driver
 								.back()
 								.sleep( 1000 )
-								.then( function () {
-
-									config.currentTest = 'passed';
-								} );
 							}
 						} )
 						
 					} else {
 						console.log( 'user does not have a newJob'.red );
-						config.currentTest = 'passed';
 					}
 				} );
 			
 			} else {
 				console.log( 'user does not have need to performJob'.red );
-				config.currentTest = 'passed';
 			}
 		} );
 
@@ -162,16 +141,11 @@ module.exports = function () {
 			} )
 			.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
 			.isDisplayed().should.eventually.be.true
-			.then( function () {
-				
-				config.currentTest = 'passed';
-			} );
 		} );
 
 		it( 'should set currentTest to "passed"'.green, function ( done ) {
 			
 			console.log( 'Accepted a Job has Psssed....'.green );
-			config.currentTest = 'passed';
 			done();
 		} );
 	} );

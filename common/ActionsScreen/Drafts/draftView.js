@@ -19,15 +19,12 @@ module.exports = function () {
 		commons.beforeEachDes();
 		commons.beforeEachIt();
 		commons.afterEachDes();
+		commons.afterEachIt();
 
 		it( 'should wait for syncAllowed.'.green, function () {
 			return driver
 			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
 			.isDisplayed().should.eventually.be.true
-			.then( function () {
-
-				config.currentTest = 'passed';
-			} );
 		} );
 		
 		it( 'Should go to Actions Screen from homeScreen'.green, function() {
@@ -40,10 +37,6 @@ module.exports = function () {
 			.elementByName( elements.homeScreen.actions )
 			.click()
 			.sleep( 800 )
-			.then( function () {
-
-				config.currentTest = 'passed';
-			} );
 		} );
 
 		it( 'Should go to the drafts Screen from the actions screen.'.green, function () {
@@ -64,10 +57,6 @@ module.exports = function () {
 					.hideKeyboard()
 					.sleep ( 200 );
 				}
-			} )
-			.then( function () {
-
-				config.currentTest = 'passed';
 			} );
 		} );
 
@@ -83,14 +72,12 @@ module.exports = function () {
 					.sleep( 1000 )
 					.then( function () {
 						
-						config.canView     = true; 
-						config.currentTest = 'passed';
+						config.canView = true;
 					} );
 
 				} else {
 					console.log( 'No Drafts to view.'.red);
-					config.canView     = false;
-					config.currentTest = 'passed';
+					config.canView = false;
 				}
 			} )
 		} );
@@ -109,14 +96,9 @@ module.exports = function () {
 				.elementByName( elements.draftsScreen.edit )
 				.isDisplayed().should.eventually.be.true
 				.sleep( 2000 )
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
 			
 			} else {
 				console.log( 'No Drafts to view.'.red);
-				config.currentTest = 'passed';
 			}
 		} );
 
@@ -127,14 +109,9 @@ module.exports = function () {
 				return driver
 				.elementByName( elements.draftsScreen.view )
 				.click()
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
 			
 			} else {
 				console.log( 'No Drafts to view.'.red);
-				config.currentTest = 'passed';
 			}
 		} );
 
@@ -148,8 +125,7 @@ module.exports = function () {
 				.sleep( 1000 )
 				.then( function () {
 
-					config.canView     = false
-					config.currentTest = 'passed';
+					config.canView = false
 				} )
 
 			} else if ( commons.isIOS() 
@@ -169,8 +145,7 @@ module.exports = function () {
 
 			} else {
 				console.log( 'No drafts to view. User should already be on the draftsScreen'.red );
-				config.canView     = false
-				config.currentTest = 'passed';
+				config.canView = false
 			}
 		} );
 
@@ -183,20 +158,12 @@ module.exports = function () {
 				.elementByName( elements.actionsScreen.back )
 				.isDisplayed().should.eventually.be.true
 				.sleep( 1000 )
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
 
 			} else if ( commons.isAndroid() ) {
 				return driver
 				.waitForElementByName( elements.actionsScreen.drafts, 120000 )
 				.isDisplayed().should.eventually.be.true
 				.sleep( 1000 )
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
 			}
 		} );
 
@@ -207,19 +174,11 @@ module.exports = function () {
 				.elementByName( elements.actionsScreen.back )
 				.click()
 				.sleep( 1000 )
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
 
 			} else if ( commons.isAndroid() ) {
 				return driver
 				.back()
 				.sleep( 1000 )
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
 			}
 		} );
 			
@@ -249,17 +208,12 @@ module.exports = function () {
 						.sleep( 1000 );
 					}
 				}
-			} )
-			.then( function () {
-
-				config.currentTest = 'passed';
 			} );
 		} );	
 
 		it( 'should set currentTest to "passed"'.green, function ( done ) {
 			
 			console.log( 'Save A Draft has Psssed....'.green );
-			config.currentTest = 'passed';
 			done();
 		} );
 	} );

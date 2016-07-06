@@ -18,26 +18,20 @@ module.exports = function () {
 		commons.beforeEachDes();
 		commons.beforeEachIt();
    		commons.afterEachDes();
+   		commons.afterEachIt();
    		
 		it( 'should wait for syncAllowed.'.green, function () {
 			var lastUser = Store.get( 'lastUser' );
 			return driver
 			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
-			.then( function () {
-
-				config.currentTest = 'passed';
-			} );
 		} );
 
 		it( 'should go to actionsScreen from homeScreen'.green, function () {
 
 			return driver
 			.elementByName( elements.homeScreen.actions )
-			.click().sleep( 1000 )
-			.then( function () {
-
-				config.currentTest = 'passed';
-			} );
+			.click()
+			.sleep( 1000 )
 		} );
 
 		it( 'should click on the logoutButton from actionsScreen'.green, function () {
@@ -45,10 +39,6 @@ module.exports = function () {
 			return driver
 			.waitForElementByName( elements.actionsScreen.logout, 40000 )
 			.click()
-			.then( function () {
-
-				config.currentTest = 'passed';
-			} );
 		} );
 
 		it( 'should check for a Vehicle Inspection'.green, function () {
@@ -59,14 +49,9 @@ module.exports = function () {
 				return commons.alertText( alerts.loginLogoutAlerts.doInspection )
 				.elementByName( elements.alertButtons.no )
 				.click()
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
 
 			} else if ( lastUser.truckOption === false ) {
 				console.log( 'User does not have vehicle options!'.red );
-				config.currentTest = 'passed';
 
 			} else {
 				assert.fail( 'User truckOption is \'undefined\' and/or not set up!'.red );
@@ -80,19 +65,11 @@ module.exports = function () {
 				&& config.isClockedin === true 
 			) {
 				console.log( 'User isClockedin should check if current alert is visibile'.red );
-				return commons.alertText( alerts.actionsScreenAlerts.logOutNow.logOutClockout )
-				.then( function () {
+				return commons.alertText( alerts.actionsScreenAlerts.logOutNow.logOutClockout );
 
-					config.currentTest = 'passed';
-				} );
-			
 			} else {
 				console.log( 'User is NOT clockedin should check if current alert is visibile'.red );
-				return commons.alertText( alerts.actionsScreenAlerts.logOutNow.logOut )
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
+				return commons.alertText( alerts.actionsScreenAlerts.logOutNow.logOut );
 			}
 		} );
 
@@ -106,27 +83,18 @@ module.exports = function () {
 				return driver
 				.elementByName( elements.alertButtons.clockOutLogout )
 				.click()
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
 			
 			} else {
 				console.log( 'Logout Now'.red );
 				return driver
 				.elementByName( elements.alertButtons.logout )
 				.click()
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
 			}
 		} );
 
 		it( 'should set currentTest to "passed"'.green, function ( done ) {
 		
 			console.log( 'Logout from actionsScreen has completed Completed...'.green );
-			config.currentTest = 'passed';
 			done();
 		} );
 	} );

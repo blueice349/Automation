@@ -208,6 +208,7 @@ Commons.prototype.beforeEachDes = function ( ) {
 Commons.prototype.beforeEachIt = function ( ) {
 
 	beforeEach( function () {
+
 		console.log( 'beforeEachIt.......'.red );
 		if ( config.currentTest != 'passed' 
 			&& config.loginTest === true 
@@ -367,6 +368,7 @@ Commons.prototype.afterEachDes = function () {
 Commons.prototype.afterEachIt = function () {
 	
 	afterEach( function () {
+		config.currentTest = this.currentTest.state;
 	} );
 };
 

@@ -169,7 +169,6 @@ module.exports = function () {
 			.then( function () {
 
 				console.log( 'Adding a New Node on Restriction has Completed....'.green );
-				config.currentTest = 'passed';
 		 	} );
 		} );
 	} );

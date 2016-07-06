@@ -16,6 +16,7 @@ module.exports = function () {
 		commons.beforeEachDes();
 		commons.beforeEachIt();
 		commons.afterEachDes();
+		commons.afterEachIt();
 
 		it( 'should check if user is on homeScreen or jobsScreen'.green, function () {
 			
@@ -25,10 +26,6 @@ module.exports = function () {
 				return driver
 				.elementByName( elements.homeScreen.actions )
 				.isDisplayed().should.eventually.be.true
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
 
 			} else {
 				return driver
@@ -38,7 +35,7 @@ module.exports = function () {
 
 					if ( homeScreen === true ) {
 						console.log( lastUser.userRole.red + ' is on the homeScreen'.red );
-						config.currentTest    = 'passed';
+
 					} else if ( homeScreen != true ) {
 						console.log( lastUser.userRole.red + ' is NOT on the homeScreen'.red );
 						return driver
@@ -54,10 +51,6 @@ module.exports = function () {
 									.sleep( 100 )
 									.waitForElementByName( elements.homeScreen.actions, 30000 )
 									.isDisplayed().should.eventually.be.true
-									.then( function () {
-
-										config.currentTest = 'passed';
-									} );
 
 								} else if ( commons.isIOS() ) {
 									return driver
@@ -66,10 +59,6 @@ module.exports = function () {
 									.sleep( 100 )
 									.waitForElementByName( elements.homeScreen.actions, 30000 )
 									.isDisplayed().should.eventually.be.true
-									.then( function () {
-
-										config.currentTest = 'passed';
-									} );
 								}
 							}
 						} )
@@ -82,7 +71,6 @@ module.exports = function () {
 		it( 'should set currentTest to "passed".'.green, function ( done ) {
 			
 			console.log( 'App is on homeScreen test has Completed....'.green );
-			config.currentTest = 'passed';
 			done();
 		} );
 	} );

@@ -30,6 +30,7 @@ module.exports = function () {
 		commons.beforeEachDes();
 		commons.beforeEachIt();
 		commons.afterEachDes();
+		commons.afterEachIt();
 
 		it( 'should check appVersion on loginScreen.'.green, function () {
 			
@@ -45,10 +46,6 @@ module.exports = function () {
 					return appVersion.text()
 					.should.eventually.become( apps.appVersionTextIOS )
 				}
-			} )
-			.then( function () {
-
-				config.currentTest = 'passed';
 			} );
 		} );
 		
@@ -56,7 +53,6 @@ module.exports = function () {
 			
 			config.loginTest = true;	
 			console.log( 'appVersion check test has Completed....'.green );
-			config.currentTest = 'passed';
 			done();
 		} );
 	} );

@@ -18,6 +18,7 @@ module.exports = function () {
 		commons.beforeEachDes();
 		commons.beforeEachIt();
 		commons.afterEachDes();
+		commons.afterEachIt();
 		
 		it( 'should select a truck after intinal sync has completed'.green, function () {
 			
@@ -30,13 +31,11 @@ module.exports = function () {
 				.sleep( 1000 )
 				.then( function () {
 
-				config.currentTest = 'passed';
 				config.isInVehicle = true;
 				} );
 
 			} else {
 				console.log( 'User does not have vehcile selcect options enabled'.red );
-				config.currentTest = 'passed';
 			}
 		} );
 
@@ -49,46 +48,15 @@ module.exports = function () {
 				.waitForElementByName( elements.alertButtons.ok, 120000 )
 				.click()
 				.sleep( 1000 )
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
-				// .elementByName( elements.homeScreen.actions )
-				// .isDisplayed()
-				// .then( function ( homeScreen ) {
-
-				// 	if ( !homeScreen ) {
-				// 		if ( commons.isAndroid() ) {
-				// 			return driver
-				// 			.back()
-				// 			.click().then( function () {
-
-				// 				config.currentTest = 'passed';
-				// 			} );
-				// 		}
-				// 		else if ( commons.isIOS() ) {
-				// 			return driver
-				// 			.waitForElementByName( elements.jobsScreen.otherOptions.back, 10000 )
-				// 			.click().then( function () {
-
-				// 				config.currentTest = 'passed';
-				// 			} );
-				// 		}
-				// 	} else {
-				// 		console.log( 'App is at the homeScreen.'.red );
-				// 		config.currentTest = 'passed';
-				// 	}
-				// } )
+				
 			} else {
 				console.log( 'User does not have vehcile selcect options enabled'.red );
-				config.currentTest = 'passed';
 			}
 		} );
 
 		it( 'should set currentTest to "passed".'.green, function ( done ) {
 			
 			console.log( 'loginSelectVehicle and clockInOptions test has Completed....'.green );
-			config.currentTest = 'passed';
 			done();
 		} );
 	} );

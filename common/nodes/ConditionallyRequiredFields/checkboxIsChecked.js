@@ -17,16 +17,13 @@ module.exports = function () {
 		commons.beforeEachDes();
 		commons.beforeEachIt();
 		commons.afterEachDes();
+		commons.afterEachIt();
 
 		it( 'Should make sure lastUser is on homeScreen.'.green, function () {
 			
 			return driver
 			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
 			.isDisplayed().should.eventually.be.true
-			.then( function () {
-				
-				config.currentTest = 'passed';
-			} );
 		} );
 
 		it( 'Should check permissions & click on the mobileMike plusButton on homeScreen if lastUser has permissions.'.green, function () {
@@ -37,8 +34,7 @@ module.exports = function () {
 				&& lastUser.userRole != 'admin'
 			) {
 				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
-				config.canCreate   = false;
-				config.currentTest = 'passed';	
+				config.canCreate = false;
 
 			} else if ( lastUser.userRole === 'driver'
 				|| lastUser.userRole === 'admin' 
@@ -51,9 +47,8 @@ module.exports = function () {
 				.click()
 				.sleep( 1000 )
 				.then( function () {
-
-					config.currentTest = 'passed';	
-					config.canCreate   = true;
+	
+					config.canCreate = true;
 				} );
 			}
 		} );
@@ -62,7 +57,6 @@ module.exports = function () {
 	
 			if ( config.canCreate != true ) {
 				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
-				config.currentTest = 'passed';
 
 			} else if ( config.canCreate === true  ) {
 				console.log( 'Should check if textFieldReq field is visible, if not hideKeyboard.'.red );
@@ -77,20 +71,14 @@ module.exports = function () {
 							console.log( 'keyboard is visible.'.red );
 							return driver
 							.hideKeyboard()
-							.then( function () {
-
-								config.currentTest = 'passed';
-							} );
 
 						} else {
 							console.log( 'isDisplayed, no need to hideKeyboard.'.red );
-							config.currentTest = 'passed';
 						}
 					} );
 				
 				} else {
 					console.log( 'isIOS'.red );
-					config.currentTest = 'passed';
 				}
 			}
 		} );
@@ -101,7 +89,6 @@ module.exports = function () {
 
 			if ( config.canCreate != true ) {
 				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
-				config.currentTest = 'passed';
 
 			} else if ( config.canCreate === true ) {
 				console.log( 'User should check the checkboxField'.red );
@@ -110,10 +97,6 @@ module.exports = function () {
 				.isDisplayed().should.eventually.be.true
 				.elementByName( elements.mobile_MikeRecord.otherFields.checkbox )
 				.click()
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
 			}
 		} );
 
@@ -123,7 +106,6 @@ module.exports = function () {
 
 			if ( config.canCreate != true ) {
 				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
-				config.currentTest = 'passed';
 
 			} else if ( config.canCreate === true ) {
 				console.log( 'User should enter text into textFieldReq'.red );
@@ -134,10 +116,6 @@ module.exports = function () {
 				.then( function ( textFieldReq ) {
 					
 					return commons.sendKeys( textFieldReq, lastUser.userName + ' Required Field' );
-				} )
-				.then( function () {
-
-					config.currentTest = 'passed';
 				} );
 			}
 		} );
@@ -148,7 +126,6 @@ module.exports = function () {
 
 			if ( config.canCreate != true ) {
 				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
-				config.currentTest = 'passed';
 
 			} else if ( config.canCreate === true ) {
 				console.log( 'User should add text in the textFieldCond field'.red );
@@ -159,10 +136,6 @@ module.exports = function () {
 				.then( function ( textFieldCond ) {
 					
 					return commons.sendKeys( textFieldCond, lastUser.userName + ' Conditional Field' );
-				} )
-				.then( function () {
-
-					config.currentTest = 'passed';
 				} );
 			}
 		} );
@@ -173,7 +146,6 @@ module.exports = function () {
 
 			if ( config.canCreate != true ) {
 				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
-				config.currentTest = 'passed';
 
 			} else if ( config.canCreate === true ) {
 				console.log( 'User should add text in the textFieldCond field'.red );
@@ -184,10 +156,6 @@ module.exports = function () {
 				.then( function ( textAreaCondReg ) {
 					
 					return commons.sendKeys( textAreaCondReg, lastUser.userName + ' Text Area Conditional Field' );
-				} )
-				.then( function () {
-
-					config.currentTest = 'passed';
 				} );
 			}
 		} );
@@ -196,7 +164,6 @@ module.exports = function () {
 
 			if ( config.canCreate != true ) {
 				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
-				config.currentTest = 'passed';
 			
 			} else if ( config.canCreate === true  ) {
 				console.log( 'User should have click actions --> save'.red );
@@ -211,11 +178,6 @@ module.exports = function () {
 				.elementByName( elements.formScreen.save )
 				.click()
 				.sleep( 1000 )
-				.then( function () {
-					
-					console.log( 'currentTest passed'.red );
-					config.currentTest = 'passed';
-				} );
 			}
 		} );
 
@@ -223,7 +185,6 @@ module.exports = function () {
 
 			if ( config.canCreate != true ) {
 				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
-				config.currentTest = 'passed';
 
 			} else if ( config.canCreate === true  ) {
 				console.log( 'User should get a alertText about the condition reguried field'.red );
@@ -232,10 +193,6 @@ module.exports = function () {
 				.isDisplayed().should.eventually.be.true
 				.elementByName( elements.alertButtons.ok )
 				.click()
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
 			}
 		} );
 
@@ -244,7 +201,6 @@ module.exports = function () {
 			var lastUser = Store.get( 'lastUser' );
 			if ( config.canCreate != true ) {
 				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
-				config.currentTest = 'passed';
 
 			} else if ( config.canCreate === true ) {
 				console.log( 'User should enter text into textFieldReq'.red );
@@ -255,10 +211,6 @@ module.exports = function () {
 				.then( function ( integerFieldCond ) {
 					
 					return commons.sendKeys( integerFieldCond, '1234' );
-				} )
-				.then( function () {
-
-					config.currentTest = 'passed';
 				} );
 			}
 		} );
@@ -267,7 +219,6 @@ module.exports = function () {
 
 			if ( config.canCreate != true ) {
 				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
-				config.currentTest = 'passed';
 
 			} else if ( config.canCreate === true  ) {
 				console.log( 'User should have click Actions --> Save'.red );
@@ -282,11 +233,6 @@ module.exports = function () {
 				.elementByName( elements.formScreen.save )
 				.click()
 				.sleep( 2000 )
-				.then( function () {
-
-					console.log( 'Node data should have saved.'.red ) ;
-					config.currentTest = 'passed';
-				} );
 			}
 		} );
 
@@ -301,16 +247,11 @@ module.exports = function () {
 			.elementByName( elements.homeScreen.syncAllowed )
 			.click()
 			.sleep ( 2000 )
-			.then( function () {
-
-				config.currentTest = 'passed';
-			} );
 		} );
 
 		it( 'should set currentTest to "passed".'.green, function ( done ) {
 			
 			console.log( 'conditionallyRequired test has Completed....'.green );
-			config.currentTest = 'passed'
 			done();
 		} );
 	} );

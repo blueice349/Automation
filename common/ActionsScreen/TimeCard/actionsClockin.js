@@ -18,6 +18,7 @@ module.exports = function () {
 		commons.beforeEachDes();
 		commons.beforeEachIt();
 		commons.afterEachDes();
+		commons.afterEachIt();
 
 		it( 'Should go to Actions Screen'.green, function() {
 			
@@ -31,10 +32,6 @@ module.exports = function () {
 			.sleep( 800 )
 			.elementByName( elements.actionsScreen.drafts )
 			.isDisplayed().should.eventually.be.true
-			.then( function () {
-
-				config.currentTest = 'passed';
-			} );
 		} );
 
 		it( 'should clockin from actionsScreen.'.green, function () {
@@ -60,12 +57,10 @@ module.exports = function () {
 				.then( function () {
 
 					config.isClockedin = true;
-					config.currentTest = 'passed';
 				} )
 				
 			} else {
 				console.log( 'User does not have the clockin option'.red );
-				config.currentTest = 'passed';
 			}
 		} );
 		
@@ -77,25 +72,16 @@ module.exports = function () {
 				.isDisplayed().should.eventually.be.ok
 				.elementByName( elements.actionsScreen.back )
 				.click()
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
 
 			} else if ( commons.isAndroid() ) {
 				return driver
 				.back()
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
 			}
 		} );
 			
 		it( 'should set currentTest to "passed".'.green, function ( done ) {
 			
 			console.log( 'Clocked in or out has Completed....'.green );
-			config.currentTest = 'passed';
 			done();
 		} );
 	} );

@@ -18,6 +18,7 @@ module.exports = function () {
 		commons.beforeEachDes();
 		commons.beforeEachIt();
 		commons.afterEachDes();
+		commons.afterEachIt();
 		
 		it( 'Should make sure all buttons are visble on homeScreen after intinal sync'.green, function () {
 			var lastUser = Store.get( 'lastUser' );
@@ -43,10 +44,6 @@ module.exports = function () {
 						.elementByName( elements.homeScreen.expiredTags )
 						.isDisplayed().should.eventually.be.true
 					}
-				} )
-				.then( function () {
-
-					config.currentTest = 'passed';
 				} );
 
 			} else if ( lastUser.userRole === 'client' || lastUser.userRole === 'AdminClient' ) {
@@ -79,10 +76,6 @@ module.exports = function () {
 					if ( jobs ) {
 						assert.fail( 'The following element exist and should not exist '.red + alerts );
 					}
-				} )
-				.then( function () {
-
-					config.currentTest = 'passed';
 				} );
 			} else {
 				assert.fail( 'userRole needs to be updates.' );
@@ -92,7 +85,6 @@ module.exports = function () {
 		it( 'should set currentTest to "passed".'.green, function ( done ) {
 			
 			console.log( 'homeScreenItems test has Completed....'.green );
-			config.currentTest = 'passed';
 			done();
 		} );
 	} );

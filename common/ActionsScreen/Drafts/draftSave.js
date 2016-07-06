@@ -19,15 +19,12 @@ module.exports = function () {
 		commons.beforeEachDes();
 		commons.beforeEachIt();
 		commons.afterEachDes();
+		commons.afterEachIt();
 
 		it( 'should wait for syncAllowed.'.green, function () {
 			return driver
 			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
 			.isDisplayed().should.eventually.be.true
-			.then( function () {
-
-				config.currentTest = 'passed';
-			} );
 		} );
 		
 		it( 'Should go to Actions Screen from homeScreen'.green, function() {
@@ -40,10 +37,6 @@ module.exports = function () {
 			.elementByName( elements.homeScreen.actions )
 			.click()
 			.sleep( 800 )
-			.then( function () {
-
-				config.currentTest = 'passed';
-			} );
 		} );
 
 		it( 'Should go to the drafts Screen from the actions screen.'.green, function () {
@@ -64,10 +57,6 @@ module.exports = function () {
 					.hideKeyboard()
 					.sleep ( 200 );
 				}
-			} )
-			.then( function () {
-
-				config.currentTest = 'passed';
 			} );
 		} );
 
@@ -92,14 +81,9 @@ module.exports = function () {
 					.elementByName( elements.draftsScreen.edit )
 					.click()
 					.sleep( 2000 )
-					.then( function () {
-
-						config.currentTest = 'passed';
-					} );
 
 				} else {
 					console.log( 'No Drafts to edit.'.red);
-					config.currentTest = 'passed';
 				}
 			} )
 		} );
@@ -125,10 +109,6 @@ module.exports = function () {
 							console.log( 'Android keyboard is visible.'.red );
 							return driver
 							.hideKeyboard()
-							.then( function () {
-
-								config.currentTest = 'passed';
-							} );
 						
 						} else if ( commons.isIOS() 
 								   && alertDone === true 
@@ -137,18 +117,15 @@ module.exports = function () {
 							return driver
 							.elementByName( elements.alertButtons.done )
 							.click()
-							.then( function () {
 
-								config.currentTest = 'passed';
-							} );
 						} else {
 							console.log( 'Keyboard does not need to be hidden at this time.'.red );
 							config.currentTest = 'passed';
 						}
 					} );
+
 				} else {
 					console.log( 'Keyboard does not need to be hidden at this time.'.red );
-					config.currentTest = 'passed';
 				}
 			} );
 		} );
@@ -180,10 +157,6 @@ module.exports = function () {
 				} else {
 					console.log( 'Not in a draft edit screen.'.red );
 				}
-			} )
-			.then( function () {
-
-				config.currentTest = 'passed';
 			} );
 		} );
 
@@ -214,10 +187,6 @@ module.exports = function () {
 				} else {
 					console.log( 'Not in a draft edit screen.'.red );
 				}
-			} )
-			.then( function () {
-
-				config.currentTest = 'passed';
 			} );
 		} );
 
@@ -248,10 +217,6 @@ module.exports = function () {
 				} else {
 					console.log( 'Not in a draft edit screen.'.red );
 				}
-			} )
-			.then( function () {
-
-				config.currentTest = 'passed';
 			} );
 		} );
 
@@ -307,10 +272,6 @@ module.exports = function () {
 						.sleep( 1000 );
 					}
 				}
-			} )
-			.then( function () {
-
-				config.currentTest = 'passed';
 			} );
 		} );
 
@@ -325,10 +286,6 @@ module.exports = function () {
 				.elementByName( elements.actionsScreen.back )
 				.click()
 				.sleep( 1000 )
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
 
 			} else if ( commons.isAndroid() ) {
 				return driver
@@ -336,10 +293,6 @@ module.exports = function () {
 				.isDisplayed().should.eventually.be.true
 				.back()
 				.sleep( 1000 )
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
 			}
 		} );
 			
@@ -369,17 +322,12 @@ module.exports = function () {
 						.sleep( 1000 );
 					}
 				}
-			} )
-			.then( function () {
-
-				config.currentTest = 'passed';
 			} );
 		} );	
 
 		it( 'should set currentTest to "passed"'.green, function ( done ) {
 			
 			console.log( 'Save A Draft has Psssed....'.green );
-			config.currentTest = 'passed';
 			done();
 		} );
 	} );

@@ -25,8 +25,17 @@ exports.iosDevice1 = {
   'UDID'            : 'ad5ba59f4f71d4b444489a45701bd95dff70a016'
 };
 
-//Lukes iPohne
+//Mikes - iPhone 6Plus
 exports.iosDevice2 = {
+  'appium-version'  : '1.4',
+  'platformName'    : 'iOS',
+  'platformVersion' : '9.3',
+  'deviceName'      : 'Mike\'s iPhone 6 Plus',
+  'UDID'            : 'aae3470d1a553da7c3cd2f5c14fead0b1a900cad'
+};
+
+//Lukes iPohne
+exports.iosDevice3 = {
   'appium-version'  : '1.4',
   'platformName'    : 'iOS',
   'platformVersion' : '8.4',

@@ -71,7 +71,8 @@ for ( var i in args ) {
 					appium = childProcess.spawn( 'appium', [
 						'--app-pkg', 'com.omadi.crm',
 						'--app', homeDir() + '/Projects/omadi_mobile/titanium_src/build/iphone/build/Products/Debug-iphoneos/Omadi.ipa',
-						( config.get( 'reset' ) == true ? '--full-reset' : '--no-reset-' ),
+						//( config.get( 'reset' ) == true ? '--full-reset' : '--no-reset-' ),
+						'--full-reset',
 						'--dont-stop-app-on-reset',
 						'--command-timeout', '7200',
 						'--pre-launch',

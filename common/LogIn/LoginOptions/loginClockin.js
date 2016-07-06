@@ -18,13 +18,13 @@ module.exports = function () {
 		commons.beforeEachDes();
 		commons.beforeEachIt();
 		commons.afterEachDes();
+		commons.afterEachIt();
 
 		it( 'should check if current user has clockInOptions enabled'.green, function () {
 			
 			var lastUser = Store.get( 'lastUser' );
 			if ( lastUser.userRole === 'client' || lastUser.userRole === 'AdminClient' || lastUser.clockInOption === false ) {
-				console.log( lastUser.userRole.red + ' does not have clockInOptions'.red ); 
-				config.currentTest = 'passed';
+				console.log( lastUser.userRole.red + ' does not have clockInOptions'.red );
 
 			} else if ( lastUser.clockInOption === true && config.isClockedin != true ) {
 				console.log( lastUser.userRole.red + ' Has clockInOptions'.red );
@@ -34,7 +34,6 @@ module.exports = function () {
 			    .sleep( 1000 )
 				.then( function () {
 
-					config.currentTest = 'passed';
 					config.isClockedin = true;
 				} );
 			}
@@ -43,7 +42,6 @@ module.exports = function () {
 		it( 'should set currentTest to "passed".'.green, function ( done ) {
 			
 			console.log( 'LoginClockin test has Completed....'.green );
-			config.currentTest = 'passed';
 			done();
 		} );
 	} );

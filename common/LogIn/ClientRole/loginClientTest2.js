@@ -30,6 +30,7 @@ module.exports = function () {
 		commons.beforeEachDes();
 		commons.beforeEachIt();
 		commons.afterEachDes();
+		commons.afterEachIt();
 
 		it( 'should set user information and enter clientAccount '.green, function () {
 
@@ -80,10 +81,6 @@ module.exports = function () {
 						}
 					} )
 				}
-			} )
-			.then( function () {
-
-				config.currentTest = 'passed';
 			} );
 		} );
 
@@ -102,7 +99,6 @@ module.exports = function () {
 				'performJob'        : performJob,
 				'tagButton'         : tagButton
 			} );
-			config.currentTest = 'passed';
 		} );
 
 		it( 'should enter username and password'.green, function () {
@@ -126,10 +122,6 @@ module.exports = function () {
 			.then( function ( el ) {
 				
 				return commons.sendKeys( el, password );
-			} )
-			.then( function () {
-
-				config.currentTest = 'passed';
 			} );
 		} );
 
@@ -140,10 +132,6 @@ module.exports = function () {
 			.text().should.eventually.become( clientAccount )
 			.elementByName( elements.loginScreen.userName )
 			.text().should.eventually.become( userName )
-			.then( function () {
-
-				config.currentTest = 'passed';
-			} );
 		} );
 
 		it( 'should click acceptTerms and loginButton'.green, function () {
@@ -155,10 +143,6 @@ module.exports = function () {
 			.elementByName( elements.loginScreen.loginButton )
 			.click()
 			.sleep( 3000 )
-			.then( function () {
-
-				config.currentTest = 'passed';
-			} );
 		} );
 
 		it( 'should check for permissions'.green, function () {
@@ -185,11 +169,6 @@ module.exports = function () {
 						.elementByName( elements.alertButtons.allow )
 						.click();
 					}
-				} )
-				.then( function () {
-					
-					console.log( 'Permissions completed'.green );
-					config.currentTest = 'passed';
 				} );
 
 			} else if( commons.isIOS() && ( userRole === 'client' ||  userRole === 'AdminClient' ) ) {
@@ -212,12 +191,7 @@ module.exports = function () {
 		   				.elementByName( elements.alertButtons.ok )
 		   				.click();
 		   			}
-		   		} )
-		   		.then( function () {
-
-					console.log( 'Permissions completed'.green );
-					config.currentTest = 'passed';
-				} );
+		   		} );
 
 			 } else if ( commons.isAndroid6() ) {
 				console.log( 'Client or CRM user on a Android 6.0.x device'.green );
@@ -231,16 +205,10 @@ module.exports = function () {
 						.elementByName( elements.alertButtons.allow )
 						.click();
 					}
-				} )
-				.then( function () {
-
-					console.log( 'Permissions completed'.green );
-					config.currentTest = 'passed';
 				} );
 
 			 } else if ( commons.isAndroid() ) {
 			 	console.log( 'User on a Android that does not request permissons'.green );
-			 	config.currentTest = 'passed';
 			 }
 		} );
 		
@@ -254,50 +222,30 @@ module.exports = function () {
 				return driver
 				.waitForElementByName( elements.companyVehicle.vehicle1, 120000 )
 				.isDisplayed().should.eventually.be.true
-				.then( function ( vehicle ) {
-
-					config.currentTest = 'passed';
-				} );
 
 			} else if ( clockInOption === true && truckOption === false && config.isClockedin != true || clockInOption === true && truckOption === true && config.isClockedin != true ) {
 				console.log( 'User has clockin options, will wait for Clockin Options'.red );
 				return driver
 				.waitForElementByName( elements.alertButtons.clockIn, 120000 )
 				.isDisplayed().should.eventually.be.true
-				.then( function ( clockIn ) {
-
-					config.currentTest = 'passed';
-				} );
 
 			} else if ( clockInOption === true && truckOption === false && config.isClockedin === true ) {
 				console.log( 'User is clockedin Already, will wait for syncAllowed'.red );
 				return driver
 				.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
 				.isDisplayed().should.eventually.be.true
-				.then( function ( syncAllowed ) {
-
-					config.currentTest = 'passed';
-				} );
 
 			} else if ( clockInOption === true && truckOption === true && config.isClockedin === true ) {
 				console.log( 'User is clockedin and has truck options, will wait for Select Vehicle Options'.red );
 				return driver
 				.waitForElementByName( elements.companyVehicle.vehicle1, 120000 )
 				.isDisplayed().should.eventually.be.true
-				.then( function ( vehicle ) {
-
-					config.currentTest = 'passed';
-				} );
 
 			} else if( clockInOption === false && truckOption === false ) {
 				console.log( 'User has no truck or clock in options, will wait for syncAllowed'.red );
 				return driver
 				.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
 				.isDisplayed().should.eventually.be.true
-				.then( function ( syncAllowed ) {
-
-					config.currentTest = 'passed';
-				} );
 			}
 		} );
 		
@@ -305,7 +253,6 @@ module.exports = function () {
 			
 			config.loginTest = true;	
 			console.log( 'loginDriverTest1 test has Completed....'.green );
-			config.currentTest = 'passed';
 			done();
 		} );
 	} );

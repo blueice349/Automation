@@ -22,6 +22,8 @@
 				return require( './common/actionsScreen/drafts/draftView.js' )();
 			case 'draftSave'     :
 				return require( './common/actionsScreen/drafts/draftSave.js' )();
+			case 'refreshSync'  :
+				return require( './common/actionsScreen/otherActions/actionsRefreshSync.js' )();	
 			case 'resetAllData'  :
 				return require( './common/actionsScreen/otherActions/resetAllData.js' )();
 			case 'selectVehicle':
@@ -89,10 +91,10 @@
 	module.exports.logins = function ( login ) {
 
 		switch ( login ) {
-			case 'loginElementCheck'  :
+			case 'loginScreenElementCheck'  :
 				return require( './common/Login/otherLogin/loginScreenElements.js' )();
-			case 'loginAppVersionCheck'  :
-				return require( './common/Login/otherLogin/loginAppVersionCheck.js' )();	
+			case 'loginScreenAppVersionCheck'  :
+				return require( './common/Login/otherLogin/loginScreenAppVersionCheck.js' )();	
 			case 'admin1'             :
 				return require( './common/login/adminRole/loginAdminTest1.js' )();
 			case 'admin2'             :

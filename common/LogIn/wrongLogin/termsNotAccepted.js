@@ -17,6 +17,7 @@ module.exports = function () {
 		commons.beforeEachDes();
 		commons.beforeEachIt();
 		commons.afterEachDes();
+		commons.afterEachIt();
 
 		it( 'Should enter good clientAccount'.green, function () {
 
@@ -31,10 +32,6 @@ module.exports = function () {
 				} else {
 					return commons.sendKeys( el, login.driverLogins.driver2.clientAccount );
 				}
-			} )
-			.then( function () {
-
-				config.currentTest = 'passed';
 			} );
 		} );
 
@@ -51,10 +48,6 @@ module.exports = function () {
 				} else {
 					return commons.sendKeys( el, login.driverLogins.driver2.username );
 				}
-			} )
-			.then( function () {
-
-				config.currentTest = 'passed';
 			} );
 		} );
 
@@ -71,10 +64,6 @@ module.exports = function () {
 				} else {
 					return commons.sendKeys( el, login.driverLogins.driver2.password );
 				}
-			} )
-			.then( function () {
-
-				config.currentTest = 'passed';
 			} );
 		} );
 
@@ -84,10 +73,6 @@ module.exports = function () {
 			return driver
 			.elementByName( elements.loginScreen.loginButton )
 			.click()
-			.then( function () {
-
-				config.currentTest = 'passed';
-			} );
 		} );
 
 		it( 'should get alert for termsOfService not accepted.'.green, function () {
@@ -101,10 +86,6 @@ module.exports = function () {
 				return el
 				.click()
 				.sleep( 1000 )
-			} )
-			.then( function () {
-
-				config.currentTest = 'passed';
 			} );
 		} );
 
@@ -112,7 +93,6 @@ module.exports = function () {
 			
 			config.loginTest = true;
 			console.log( 'termsOfService not accepted test has Completed....'.green );
-			config.currentTest = 'passed';
 			done();
 		} );
 	});

@@ -14,7 +14,7 @@ module.exports = function () {
 	var Store    = require( '../../../helpers/Store' );
 	var driver = config.driver;
 
-	describe( 'Start Reset All Data Process using "resetAllData.js"'.green, function () {
+	describe( 'Start refresh sync data process using "actionsRefreshSync.js"'.green, function () {
 
 		commons.beforeEachDes();
 		commons.beforeEachIt();
@@ -38,14 +38,14 @@ module.exports = function () {
 			.sleep( 800 )
 		} );
 
-		it( 'should reset all data from actions screen.'.green, function () {
+		it( 'should refresh / sync data with server from actions screen.'.green, function () {
 
 			return driver
-			.elementByName( elements.actionsScreen.resetData )
+			.elementByName( elements.actionsScreen.sync )
 			.isDisplayed()
-			.then( function ( resetData ) {
+			.then( function ( sync ) {
 
-				if ( resetData === false ) {
+				if ( sync === false ) {
 					return driver
 					.elementByName( elements.actionsScreen.about )
 					.isDisplayed().should.eventually.be.true
@@ -62,19 +62,26 @@ module.exports = function () {
 				}
 			} )
 			.sleep ( 1000 )
-			.elementByName( elements.actionsScreen.resetData )
+			.elementByName( elements.actionsScreen.sync )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.actionsScreen.resetData )
+			.elementByName( elements.actionsScreen.sync )
 			.click()
 			.sleep( 800 )
-			.then( function () {
+		} );
 
-				return commons.alertText( alerts.actionsScreenAlerts.resetAllData.resetAllDataHeader );
-			} )
-			.elementByName( elements.alertButtons.deleteIt )
-			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.alertButtons.deleteIt )
-			.click()
+		it( 'should go back to homeScreen from actions screen.'.green, function () {
+		
+			if ( commons.isIOS() ) {
+				return driver
+				.elementByName( elements.actionsScreen.back )
+				.isDisplayed().should.eventually.be.ok
+				.elementByName( elements.actionsScreen.back )
+				.click()
+
+			} else if ( commons.isAndroid() ) {
+				return driver
+				.back()
+			}
 		} );
 
 		it( 'should be on homeScreen from actionsScreen and wait for syncAllowed.'.green, function () {
@@ -86,7 +93,7 @@ module.exports = function () {
 
 		it( 'should set currentTest to "passed"'.green, function ( done ) {
 			
-			console.log( 'resetAllData test has Psssed....'.green );
+			console.log( 'sync from actionsScreen test has Psssed....'.green );
 			done();
 		} );
 	} );

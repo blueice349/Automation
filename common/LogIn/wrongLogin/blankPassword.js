@@ -16,7 +16,8 @@ module.exports = function () {
 
 		commons.beforeEachDes();
 		commons.beforeEachIt();
-		commons.afterEachDes();		
+		commons.afterEachDes();
+		commons.afterEachIt();	
 
 		it( 'Should enter good clientAccount'.green, function () {
 
@@ -31,10 +32,6 @@ module.exports = function () {
 				} else {
 					return commons.sendKeys( el, login.driverLogins.driver2.clientAccount );
 				}
-			} )
-			.then( function () {
-
-				config.currentTest = 'passed';
 			} );
 		} );
 
@@ -51,10 +48,6 @@ module.exports = function () {
 				} else {
 					return commons.sendKeys( el, login.driverLogins.driver2.username );
 				}
-			} )
-			.then( function () {
-
-				config.currentTest = 'passed';
 			} );
 		} );
 
@@ -65,10 +58,6 @@ module.exports = function () {
 			.elementByName( elements.loginScreen.password )
 			.click()
 			.clear()
-			.then( function () {
-
-				config.currentTest = 'passed';
-			} );
 		} );
 
 		it( 'Should acceptTerms.'.green, function () {
@@ -77,10 +66,6 @@ module.exports = function () {
 			return driver
 			.elementByName( elements.loginScreen.acceptTerms )
 			.click()
-			.then( function () {
-
-				config.currentTest = 'passed';
-			} );
 		} );
 
 		it( 'Should click the loginButton.'.green, function () {
@@ -89,10 +74,6 @@ module.exports = function () {
 			return driver
 			.elementByName( elements.loginScreen.loginButton )
 			.click()
-			.then( function () {
-
-				config.currentTest = 'passed';
-			} );
 		} );
 
 		it( 'should get alert for blank password'.green, function () {
@@ -106,10 +87,6 @@ module.exports = function () {
 				return el
 				.click()
 				.sleep( 1000 )
-			} )
-			.then( function () {
-
-				config.currentTest = 'passed';
 			} );
 		} );
 
@@ -117,7 +94,6 @@ module.exports = function () {
 			
 			config.loginTest = true;
 			console.log( 'blankPassword test has Completed....'.green );
-			config.currentTest = 'passed';
 			done();
 		} );
 	});
