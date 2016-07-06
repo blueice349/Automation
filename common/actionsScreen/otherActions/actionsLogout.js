@@ -3,13 +3,13 @@
 module.exports = function () {
 
 	require( 'colors' );
-	require( '../../helpers/setup' );
-	var alerts   = require( '../../helpers/alerts' );
+	require( '../../../helpers/setup' );
+	var alerts   = require( '../../../helpers/alerts' );
 	var assert   = require( 'assert' );
-	var config   = require( '../../helpers/Config' );
-	var elements = require( '../../helpers/elements' );
-	var commons  = require( '../../helpers/Commons' );
-	var Store    = require( '../../helpers/Store' );
+	var config   = require( '../../../helpers/Config' );
+	var elements = require( '../../../helpers/elements' );
+	var commons  = require( '../../../helpers/Commons' );
+	var Store    = require( '../../../helpers/Store' );
 
 	var driver = config.driver;
 
@@ -121,35 +121,6 @@ module.exports = function () {
 					config.currentTest = 'passed';
 				} );
 			}
-		} );
-
-		it( 'should check for elements on loginScreen after being logged out'.green, function () {
-
-			return driver
-			.waitForElementByName( elements.loginScreen.clientAccount, 200000 )
-			.isDisplayed().should.eventually.be.true		
-			.then( function ( loginScreen ) {
-
-				if ( loginScreen ) {
-					return driver
-					.elementByName( elements.loginScreen.userName )
-					.isDisplayed().should.eventually.be.true
-					.elementByName( elements.loginScreen.password )
-					.isDisplayed().should.eventually.be.true
-					.elementByName( elements.loginScreen.loginButton )
-					.isDisplayed().should.eventually.be.true
-					.elementByName( elements.loginScreen.acceptTerms )
-					.isDisplayed().should.eventually.be.true
-
-				} else {
-					assert.fail( 'Can\'t find the ' + elements.loginScreen.clientAccount + ' element.' ); 
-				}
-			} )
-			.sleep( 1000 )
-			.then( function () {
-
-				config.currentTest = 'passed';
-		 	} );
 		} );
 
 		it( 'should set currentTest to "passed"'.green, function ( done ) {

@@ -191,35 +191,6 @@ module.exports = function () {
 			}
 		} );
 
-		it( 'should check for elements on loginScreen after being logged out'.green, function () {
-
-			return driver
-			.waitForElementByName( elements.loginScreen.clientAccount, 200000 )
-			.isDisplayed().should.eventually.be.true		
-			.then( function ( loginScreen ) {
-
-				if ( loginScreen ) {
-					return driver
-					.elementByName( elements.loginScreen.userName )
-					.isDisplayed().should.eventually.be.true
-					.elementByName( elements.loginScreen.password )
-					.isDisplayed().should.eventually.be.true
-					.elementByName( elements.loginScreen.loginButton )
-					.isDisplayed().should.eventually.be.true
-					.elementByName( elements.loginScreen.acceptTerms )
-					.isDisplayed().should.eventually.be.true
-
-				} else {
-					assert.fail( 'Can\'t find the ' + elements.loginScreen.clientAccount + ' element.' ); 
-				}
-			} )
-			.sleep( 1000 )
-			.then( function () {
-
-				config.currentTest = 'passed';
-		 	} );
-		} );
-
 		it( 'should set currentTest to "passed"'.green, function ( done ) {
 		
 			console.log( 'Logout from homeScreen has completed Completed...'.green );

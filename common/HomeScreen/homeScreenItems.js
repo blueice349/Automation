@@ -84,6 +84,8 @@ module.exports = function () {
 
 					config.currentTest = 'passed';
 				} );
+			} else {
+				assert.fail( 'userRole needs to be updates.' );
 			}
 		} );
 

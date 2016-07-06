@@ -39,48 +39,6 @@ module.exports = function () {
 		 	config.currentTest = 'passed';
 		} );
 
-		it( 'should check appVersion on loginScreen.'.green, function () {
-			
-			return driver
-			.elementByName( apps.appVersion )
-			.then( function ( appVersion ) {
-
-				if ( commons.isAndroid() || commons.isAndroid6() ) {
-					return appVersion.text()
-					.should.eventually.become( apps.appVersionTextAndroid )
-				
-				} else if ( commons.isIOS() ) {
-					return appVersion.text()
-					.should.eventually.become( apps.appVersionTextIOS )
-				}
-			} )
-			.then( function () {
-
-				config.currentTest = 'passed';
-			} );
-		} );
-
-		it( 'should check fields on loginScreen'.green, function() {
-			
-			console.log( 'Config.clockedIn 1 '.red + config.clockedIn );
-			config.loginTest = true;
-			return driver
-			.waitForElementByName( elements.loginScreen.clientAccount, 120000 )
-			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.loginScreen.userName )
-			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.loginScreen.password )
-			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.loginScreen.loginButton )
-			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.loginScreen.acceptTerms )
-			.isDisplayed().should.eventually.be.true
-			.then( function () {
-
-				config.currentTest = 'passed';
-			} );
-		} );
-
 		it( 'should set user information and enter clientAccount '.green, function () {
 
 			config.loginTest = true;

@@ -68,39 +68,6 @@ module.exports = function () {
 			}
 		} );
 
-		it( 'should check tabs on jobsScreen are there'.green, function () {
-			
-			var lastUser = Store.get( 'lastUser' );		
-			if ( lastUser.userRole != 'client' 
-				&&  lastUser.userRole != 'AdminClient' 
-			) {
-				return driver
-				.elementByName( elements.jobsScreen.newJobsTab.newJobsHeader )
-				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.jobsScreen.openJobsTab.currentJobsHeader )
-				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.jobsScreen.otherOpenJobsTab.otherOpenJobsHeader )
-				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.jobsScreen.appointmentJobsTab.appointmentsHeader )
-				.isDisplayed().should.eventually.be.true
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
-			
-			} else {
-				console.log( 'current user does not have the jobsScreen'.green );
-				return driver
-				.elementByName( elements.homeScreen.jobs )
-				.isDisplayed().should.eventually.be.false
-				.sleep( 10 )
-				.then( function () {
-
-					config.currentTest = 'passed';
-				} );
-			}
-		} );
-
 		it( 'Sould look for jobs in "My open Jobs" and "Update Status" to "Arrived at Destination"'.green, function () {
 			
 			var lastUser = Store.get( 'lastUser' );

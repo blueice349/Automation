@@ -3,15 +3,15 @@
 module.exports = function () {
 
 	require( 'colors' );
-	require( '../../helpers/setup' );
-	var alerts   = require( '../../helpers/alerts' );
+	require( '../../../helpers/setup' );
+	var alerts   = require( '../../../helpers/alerts' );
 	var assert   = require( 'assert' );
-	var caps     = require( '../../helpers/caps' );
-	var config   = require( '../../helpers/Config' );
-	var commons  = require( '../../helpers/Commons' );
-	var elements = require( '../../helpers/elements' );
-	var login    = require( '../../helpers/loginTable' );
-	var Store    = require( '../../helpers/Store' );
+	var caps     = require( '../../../helpers/caps' );
+	var config   = require( '../../../helpers/Config' );
+	var commons  = require( '../../../helpers/Commons' );
+	var elements = require( '../../../helpers/elements' );
+	var login    = require( '../../../helpers/loginTable' );
+	var Store    = require( '../../../helpers/Store' );
 	var driver = config.driver;
 
 	describe( 'Start Reset All Data Process using "resetAllData.js"'.green, function () {

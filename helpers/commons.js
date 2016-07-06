@@ -92,7 +92,9 @@ Commons.prototype.alertText = function ( alertText ) {
 	if ( this.isIOS() ) {
 		return driver.alertText().should.eventually.contain( alertText );
 
-	} else if ( this.isAndroid() || this.isAndroid6() ) {
+	} else if ( this.isAndroid() 
+			  || this.isAndroid6() 
+  	) {
 		return driver.elementByName( alertText ).text().should.eventually.contain( alertText );
 	}
 };

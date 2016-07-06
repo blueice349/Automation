@@ -17,25 +17,25 @@
 
 		switch ( actionsScreen ) {
 			case 'draftDelete'   :
-				return require( './common/ActionsScreen/Drafts/draftDelete.js' )();
+				return require( './common/actionsScreen/drafts/draftDelete.js' )();
 			case 'daftView'      :
-				return require( './common/ActionsScreen/Drafts/draftView.js' )();
+				return require( './common/actionsScreen/drafts/draftView.js' )();
 			case 'draftSave'     :
-				return require( './common/ActionsScreen/Drafts/draftSave.js' )();
+				return require( './common/actionsScreen/drafts/draftSave.js' )();
 			case 'resetAllData'  :
-				return require( './common/ActionsScreen/resetAllData.js' )();
+				return require( './common/actionsScreen/otherActions/resetAllData.js' )();
 			case 'selectVehicle':
-				return require( './common/ActionsScreen/CompanyVehicle/actionsSelectVehicle.js' )();
+				return require( './common/actionsScreen/companyVehicle/actionsSelectVehicle.js' )();
 			case 'removeVehicle':
-				return require( './common/ActionsScreen/CompanyVehicle/actionsRemoveVehicle.js' )();
+				return require( './common/actionsScreen/companyVehicle/actionsRemoveVehicle.js' )();
 			case 'clockin'      :
-				return require( './common/ActionsScreen/TimeCard/actionsClockin.js' )();
+				return require( './common/actionsScreen/timeCard/actionsClockin.js' )();
 			case 'clockout'      :
-				return require( './common/ActionsScreen/TimeCard/actionsClockout.js' )();	
+				return require( './common/actionsScreen/timeCard/actionsClockout.js' )();	
 			case 'logout'        :
-				return require( './common/ActionsScreen/actionsLogout.js' )();
+				return require( './common/actionsScreen/otherActions/actionsLogout.js' )();
 			case 'actionsAbout'   :
-				return require( './common/ActionsScreen/AboutScreen/actionsAbout.js' )();
+				return require( './common/actionsScreen/AboutScreen/actionsAbout.js' )();
 		}
 		console.log( 'No test case was selcected!' );
 	};
@@ -44,9 +44,9 @@
 
 		switch ( homeScreen ) {
 			case 'logout'        :
-				return require( './common/HomeScreen/homeScreenLogout.js' )();
+				return require( './common/homeScreen/homeScreenLogout.js' )();
 			case 'homeScreenItems' :
-				return require( './common/HomeScreen/homeScreenItems.js' )();
+				return require( './common/homeScreen/homeScreenItems.js' )();
 		}
 		console.log( 'No test case was selcected!' );
 	};
@@ -54,20 +54,20 @@
 	module.exports.jobsScreen = function ( jobsScreen ) {
 
 		switch ( jobsScreen ) {
+			case 'jobScreenCheck'         :
+				return require( './common/jobsScreen/jobScreenCheck.js' )();
 			case 'acceptJob'         :
-				return require( './common/JobsScreen/acceptJob.js' )();
+				return require( './common/jobsScreen/acceptJob.js' )();
 			case 'drivingToJob'      :
-				return require( './common/JobsScreen/drivingToJob.js' )();
+				return require( './common/jobsScreen/drivingToJob.js' )();
 			case 'jobComplete'       :
-				return require( './common/JobsScreen/jobComplete.js' )();
+				return require( './common/jobsScreen/jobComplete.js' )();
 			case 'arrivedAtJob'      :
-				return require( './common/JobsScreen/arrivedAtJob.js' )();
+				return require( './common/jobsScreen/arrivedAtJob.js' )();
 			case 'towingJob'         :
-				return require( './common/JobsScreen/towingJob.js' )();
+				return require( './common/jobsScreen/towingJob.js' )();
 			case 'arrivedDestination':
-				return require( './common/JobsScreen/arrivedDestination.js' )();
-			case 'badLogin'          :
-				return require( './common/LogIn/badLogin.js' )();	
+				return require( './common/jobsScreen/arrivedDestination.js' )();
 		}
 		console.log( 'No test case was selcected!' );
 	};
@@ -89,40 +89,44 @@
 	module.exports.logins = function ( login ) {
 
 		switch ( login ) {
+			case 'loginElementCheck'  :
+				return require( './common/Login/otherLogin/loginScreenElements.js' )();
+			case 'loginAppVersionCheck'  :
+				return require( './common/Login/otherLogin/loginAppVersionCheck.js' )();	
 			case 'admin1'             :
-				return require( './common/LogIn/AdminRole/loginAdminTest1.js' )();
+				return require( './common/login/adminRole/loginAdminTest1.js' )();
 			case 'admin2'             :
-				return require( './common/LogIn/AdminRole/loginAdminTest2.js' )();
+				return require( './common/login/adminRole/loginAdminTest2.js' )();
 			case 'client1'            :
-				return require( './common/LogIn/ClientRole/loginClientTest1.js' )();
+				return require( './common/login/clientRole/loginClientTest1.js' )();
 			case 'client2'            :
-				return require( './common/LogIn/ClientRole/loginClientTest2.js' )();
+				return require( './common/login/clientRole/loginClientTest2.js' )();
 			case 'driver1'            :
-				return require( './common/LogIn/DriverRole/loginDriverTest1.js' )();
+				return require( './common/login/driverRole/loginDriverTest1.js' )();
 			case 'driver2'            :
-				return require( './common/LogIn/DriverRole/loginDriverTest2.js' )();
+				return require( './common/login/driverRole/loginDriverTest2.js' )();
 			case 'wrongClientAccount' :
-				return require( './common/LogIn/wrongLogin/wrongClientAccount.js' )();
+				return require( './common/login/wrongLogin/wrongClientAccount.js' )();
 			case 'wrongUserName'      :
-				return require( './common/LogIn/wrongLogin/wrongUserName.js' )();	
+				return require( './common/login/wrongLogin/wrongUserName.js' )();	
 			case 'wrongPassword'      :
-				return require( './common/LogIn/wrongLogin/wrongPassword.js' )();
+				return require( './common/login/wrongLogin/wrongPassword.js' )();
 			case 'blankClientAccount' :
-				return require( './common/LogIn/wrongLogin/blankClientAccount.js' )();
+				return require( './common/login/wrongLogin/blankClientAccount.js' )();
 			case 'blankUserName'      :
-				return require( './common/LogIn/wrongLogin/blankUserName.js' )();
+				return require( './common/login/wrongLogin/blankUserName.js' )();
 			case 'blankPassword'      :
-				return require( './common/LogIn/wrongLogin/blankPassword.js' )();
+				return require( './common/login/wrongLogin/blankPassword.js' )();
 			case 'termsNotAccepted'   :
-				return require( './common/LogIn/wrongLogin/termsNotAccepted.js' )();
+				return require( './common/login/wrongLogin/termsNotAccepted.js' )();
 			case 'loginOptions'       :
-				return require( './common/LogIn/LoginOptions/loginOptions.js' )();
+				return require( './common/login/LoginOptions/loginOptions.js' )();
 			case 'selectVehicle'      :
-				return require( './common/LogIn/LoginOptions/loginSelectVehicle.js' )();
+				return require( './common/login/LoginOptions/loginSelectVehicle.js' )();
 			case 'clockin'            :
-				return require( './common/LogIn/LoginOptions/loginClockin.js' )();
+				return require( './common/login/LoginOptions/loginClockin.js' )();
 			case 'homeScreenCheck'    :
-				return require( './common/LogIn/LoginOptions/homeScreenCheck.js' )();
+				return require( './common/login/LoginOptions/homeScreenCheck.js' )();
 		}
 		console.log( 'No test case was selcected!' );
 	};
@@ -133,7 +137,7 @@
 
 		switch ( clientNodes ) {		
 			case 'clientDoNotTow'         :
-				return require( './common/NewNodes/Restrictions/clientDoNotTow.js' )();	
+				return require( './common/nodes/Restrictions/clientDoNotTow.js' )();	
 		}
 		console.log( 'No test case was selcected!' );
 	};
@@ -142,11 +146,11 @@
 
 		switch ( conditionRequiredNodes ) {
 			case 'conditionRequiredTextFieldFilled'  :
-				return require( './common/NewNodes/ConditionallyRequiredFields/textFieldFilled.js' )();
+				return require( './common/nodes/ConditionallyRequiredFields/textFieldFilled.js' )();
 			case 'conditionRequiredTextFieldEmpty'  :
-				return require( './common/NewNodes/ConditionallyRequiredFields/textFieldEmpty.js' )();
+				return require( './common/nodes/ConditionallyRequiredFields/textFieldEmpty.js' )();
 			case 'conditionRequiredCheckboxChecked'  :
-				return require( './common/NewNodes/ConditionallyRequiredFields/checkboxIsChecked.js' )();;
+				return require( './common/nodes/ConditionallyRequiredFields/checkboxIsChecked.js' )();;
 		}
 		console.log( 'No test case was selcected!' );
 	};
@@ -155,7 +159,7 @@
 
 		switch ( conditionNotMetNodes ) {
 			case 'textAreaFieldConditionNotMet'  :
-				return require( './common/NewNodes/ConditionNotMet/textAreaFieldConditionNotMet.js' )();
+				return require( './common/nodes/ConditionNotMet/textAreaFieldConditionNotMet.js' )();
 		}
 		console.log( 'No test case was selcected!' );
 	};
@@ -164,13 +168,13 @@
 
 		switch ( draftNodes ) {
 			case 'newDraft1'              :
-				return require( './common/NewNodes/Drafts/newDraft1.js' )();
+				return require( './common/nodes/drafts/newDraft1.js' )();
 			case 'newDraft2'              :
-				return require( './common/NewNodes/Drafts/newDraft2.js' )();
+				return require( './common/nodes/drafts/newDraft2.js' )();
 			case 'newDraft3'              :
-				return require( './common/NewNodes/Drafts/newDraft3.js' )();
+				return require( './common/nodes/drafts/newDraft3.js' )();
 			case 'newDraft4'              :
-				return require( './common/NewNodes/Drafts/newDraft4.js' )();
+				return require( './common/nodes/drafts/newDraft4.js' )();
 		}
 		console.log( 'No test case was selcected!' );
 	};
@@ -179,7 +183,7 @@
 
 		switch ( otherNodes ) {
 			case 'newTag'                 :
-				return require( './common/NewNodes/ExpiredTags/newTag.js' )();
+				return require( './common/nodes/ExpiredTags/newTag.js' )();
 		}
 		console.log( 'No test case was selcected!' );
 	};
@@ -188,7 +192,7 @@
 
 		switch ( restrictionNodes ) {		
 			case 'RestrictLicensePlate'   :
-				return require( './common/NewNodes/Restrictions/restrictionLicensePlate.js' )();
+				return require( './common/nodes/Restrictions/restrictionLicensePlate.js' )();
 		}
 		console.log( 'No test case was selcected!' );
 	};
@@ -197,7 +201,7 @@
 
 		switch ( newNodes ) {		
 			case 'required'               :
-				return require( './common/NewNodes/RequiredFields/textFieldRequired.js' )();
+				return require( './common/nodes/RequiredFields/textFieldRequired.js' )();
 		}
 		console.log( 'No test case was selcected!' );
 	};

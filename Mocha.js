@@ -131,9 +131,11 @@ describe( 'Automation Test in Progress!'.green, function () {
 				//run.sourceCodeCheck( 'buildUpdates' );
 		} );
 
-		describe( 'Running wrong login test'.red, function () {
+		describe( 'Running wrong login and other login test'.red, function () {
 
 			var run = require( './TestFiles.js' );
+			run.logins( 'loginAppVersionCheck' );
+			run.logins( 'loginElementCheck' );
 			run.logins( 'wrongClientAccount' );
 			run.logins( 'wrongUserName' );		
 			run.logins( 'wrongPassword' );
@@ -156,6 +158,7 @@ describe( 'Automation Test in Progress!'.green, function () {
 
 		       /* jobs test */
 					run.homeScreen( 'homeScreenItems' );
+					run.jobsScreen( 'jobScreenCheck' );
 					run.jobsScreen( 'acceptJob' );
 					run.jobsScreen( 'drivingToJob' );
 					run.jobsScreen( 'arrivedAtJob' );
@@ -199,6 +202,8 @@ describe( 'Automation Test in Progress!'.green, function () {
 					run.actionsScreen( 'clockin' );
 					run.actionsScreen( 'actionsAbout' );
 					run.homeScreen( 'logout' );
+					run.logins( 'loginElementCheck' );
+					run.logins( 'loginAppVersionCheck' );
 		} );
 
 		describe( ' Running "Client1 iOS Test && Client2 Android Test"'.red, function () {

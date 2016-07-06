@@ -15,7 +15,7 @@ module.exports = function () {
 
 	var driver   = config.driver;
 
-	describe( 'Start Accept New Job Process using "acceptJob.js"'.green, function () {
+	describe( 'Start check tabs on jobsScreen process using "jobScreenCheck.js"'.green, function () {
 
 		commons.beforeEachDes();
 		commons.beforeEachIt();
@@ -68,59 +68,34 @@ module.exports = function () {
 			}
 		} );
 
-		it( 'Sould look for jobs to accept and accept if job is present'.green, function () {
+		it( 'should check tabs on jobsScreen are there'.green, function () {
 			
-			var lastUser = Store.get( 'lastUser' );
+			var lastUser = Store.get( 'lastUser' );		
 			if ( lastUser.userRole != 'client' 
 				&&  lastUser.userRole != 'AdminClient' 
-				&& lastUser.performJob === true 
 			) {
 				return driver
-				.elementByNameIfExists( commons.getItem( elements.jobsScreen.newJobsTab.newJobs, 0 ) )
-				.then( function ( newJob ) {
+				.elementByName( elements.jobsScreen.newJobsTab.newJobsHeader )
+				.isDisplayed().should.eventually.be.true
+				.elementByName( elements.jobsScreen.openJobsTab.currentJobsHeader )
+				.isDisplayed().should.eventually.be.true
+				.elementByName( elements.jobsScreen.otherOpenJobsTab.otherOpenJobsHeader )
+				.isDisplayed().should.eventually.be.true
+				.elementByName( elements.jobsScreen.appointmentJobsTab.appointmentsHeader )
+				.isDisplayed().should.eventually.be.true
+				.then( function () {
 
-					if( newJob ) {
-						return newJob
-						.click()
-						.sleep( 1000 )
-						.waitForElementByName( elements.jobsScreen.updateStatusOptions.acceptJob, 10000 )
-						.isDisplayed().should.eventually.be.true
-						.elementByName( elements.jobsScreen.updateStatusOptions.acceptJob )
-						.click().sleep( 1000 )
-						.then( function () {
-
-							if ( commons.isIOS() ) {
-								return driver
-								.waitForElementByName( elements.jobsScreen.otherOptions.back, 10000 )
-								.isDisplayed().should.eventually.be.true
-								.elementByName( elements.jobsScreen.otherOptions.back )
-								.click()
-								.sleep( 1000 )
-								.then( function () {
-
-									config.currentTest = 'passed';
-								} );
-
-							} else if ( commons.isAndroid() ) {
-								return driver
-								.back()
-								.sleep( 1000 )
-								.then( function () {
-
-									config.currentTest = 'passed';
-								} );
-							}
-						} )
-						
-					} else {
-						console.log( 'user does not have a newJob'.red );
-						config.currentTest = 'passed';
-					}
+					config.currentTest = 'passed';
 				} );
 			
 			} else {
-				console.log( 'user does not have need to performJob'.red );
-				config.currentTest = 'passed';
+				console.log( 'curren user does not have the jobsScreen'.green );
+				return driver
+				sleep( 10 )
+				.then( function () {
+
+					config.currentTest = 'passed';
+				} );
 			}
 		} );
 
@@ -142,7 +117,7 @@ module.exports = function () {
 					.click()
 					.sleep ( 2000 );
 
-				} else if ( homeScreen === false ) {
+				} else {
 					if ( commons.isIOS() ) {
 						console.log( 'isIOS app is at the jobsScreen.'.red ); 
 						return driver
@@ -170,7 +145,7 @@ module.exports = function () {
 
 		it( 'should set currentTest to "passed"'.green, function ( done ) {
 			
-			console.log( 'Accepted a Job has Psssed....'.green );
+			console.log( 'jobScreenCheck test has Psssed....'.green );
 			config.currentTest = 'passed';
 			done();
 		} );
