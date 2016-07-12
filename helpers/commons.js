@@ -22,9 +22,8 @@ Commons.prototype.isAndroid = function () {
 
 Commons.prototype.isAndroid6 = function () {
 
-	if ( this.os == 'Android' 
-		&& this.version == '6.0' 
-	) {
+	if ( this.os == 'Android'
+		&& this.version == '6.0' ) {
 		return true;
 	}
 	
@@ -38,6 +37,18 @@ Commons.prototype.isIOS = function () {
 	} 
 
 		return false;
+};
+
+Commons.prototype.waitForButton = function ( el, button, time ) {
+
+	var driver = config.driver;
+
+	if ( this.isAndroid() ) {
+		return driver.waitForElementById( 'android:id/' + button, time );
+	
+	} else {
+		return driver.waitForElementById( el, time );
+	}
 };
 
 Commons.prototype.sendKeys = function ( el, keys ) {
@@ -84,6 +95,18 @@ Commons.prototype.getItem = function ( name, num ) {
 	return value
 };
 
+Commons.prototype.androidPermsAlertText = function ( alertText ) {
+
+	var driver   = config.driver;
+	var elements = config.elements;
+
+	if ( this.isAndroid()
+		|| this.isAndroid6() 
+  	) {
+		return driver.elementById( 'com.android.packageinstaller:id/' ).text().should.eventually.contain( alertText );
+	}
+};
+
 Commons.prototype.alertText = function ( alertText ) {
 
 	var driver   = config.driver;
@@ -92,10 +115,23 @@ Commons.prototype.alertText = function ( alertText ) {
 	if ( this.isIOS() ) {
 		return driver.alertText().should.eventually.contain( alertText );
 
-	} else if ( this.isAndroid() 
-			  || this.isAndroid6() 
+	} else if ( this.isAndroid()
+		|| this.isAndroid6() 
   	) {
-		return driver.elementByName( alertText ).text().should.eventually.contain( alertText );
+  		return driver
+  		.elementById( 'com.omadi.crm:id/alertTitle' )
+  		.text()
+		.then( function ( el ) {
+
+			if ( el === 'Alert'
+				|| el === '' 
+			) {
+				return driver.elementById( 'android:id/message' ).text().should.eventually.contain( alertText );
+			
+			} else {
+				return driver.elementById( 'com.omadi.crm:id/alertTitle' ).text().should.eventually.contain( alertText );
+			}
+		} )
 	}
 };
 

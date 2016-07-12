@@ -14,17 +14,6 @@ module.exports = function () {
 	var Store    = require( '../../../helpers/Store' );
 	var driver   = config.driver;
 
-	var clientAccount;
-	var truckOption;
-	var clockInOption;
-	var userRole;
-	var userName;
-	var password;
-	var name;
-	var permissionGranted;
-	var performJob;
-	var tagButton;
-
 	describe( 'Start appVersion Process using "loginAppVersionCheck.js"'.green, function () {
 
 		commons.beforeEachDes();
@@ -34,17 +23,16 @@ module.exports = function () {
 
 		it( 'should check appVersion on loginScreen.'.green, function () {
 			
+			config.loginTest = true;
 			return driver
 			.elementByName( apps.appVersion )
 			.then( function ( appVersion ) {
 
 				if ( commons.isAndroid() || commons.isAndroid6() ) {
-					return appVersion.text()
-					.should.eventually.become( apps.appVersionTextAndroid )
+					return appVersion.text().should.eventually.become( apps.appVersionTextAndroid )
 				
 				} else if ( commons.isIOS() ) {
-					return appVersion.text()
-					.should.eventually.become( apps.appVersionTextIOS )
+					return appVersion.text().should.eventually.become( apps.appVersionTextIOS )
 				}
 			} );
 		} );

@@ -24,15 +24,9 @@ module.exports = function () {
 			config.loginTest = true;
 			return driver
 			.waitForElementByName( elements.loginScreen.clientAccount, 200000 )
-			.then( function ( el ) {
+			.then( function ( clientAccount ) {
 
-				if ( commons.isIOS() ) {
-
-					return commons.sendKeys( el, login.driverLogins.driver1.clientAccount );
-
-				} else {
-					return commons.sendKeys( el, login.driverLogins.driver2.clientAccount );
-				}
+				return commons.sendKeys( clientAccount, 'automobile' );
 			} );
 		} );
 
@@ -41,9 +35,9 @@ module.exports = function () {
 			config.loginTest = true;
 			return driver
 			.elementByName( elements.loginScreen.userName )
-			.then( function ( el ) {
+			.then( function ( userName ) {
 
-				return commons.sendKeys( el, 'Wrong userName' );
+				return commons.sendKeys( userName, 'WrongUserName' );
 			} );
 		} );
 
@@ -52,13 +46,13 @@ module.exports = function () {
 			config.loginTest = true;
 			return driver
 			.elementByName( elements.loginScreen.password )
-			.then( function ( el ) {
+			.then( function ( password ) {
 
 				if ( commons.isIOS() ) {
-					return commons.sendKeys( el, login.driverLogins.driver1.password );
+					return commons.sendKeys( password, login.driverLogins.driver1.password );
 
 				} else {
-					return commons.sendKeys( el, login.driverLogins.driver2.password );
+					return commons.sendKeys( password, login.driverLogins.driver2.password );
 				}
 			} );
 		} );
@@ -69,6 +63,7 @@ module.exports = function () {
 			return driver
 			.elementByName( elements.loginScreen.acceptTerms )
 			.click()
+			.sleep( 1000 );
 		} );
 
 		it( 'Should click the loginButton.'.green, function () {
@@ -76,7 +71,7 @@ module.exports = function () {
 			config.loginTest = true;
 			return driver
 			.elementByName( elements.loginScreen.loginButton )
-			.click()
+			.click();
 		} );
 
 		it( 'should get alert for bad incorrect userName or password'.green, function () {
@@ -84,13 +79,13 @@ module.exports = function () {
 			config.loginTest = true;
 			return driver
 			.waitForElementByName( elements.alertButtons.ok, 120000 )
-			.then( function ( el ) {
+			.then( function () {
 
-				commons.alertText( alerts.loginLogoutAlerts.wrongUserNamePassword )
-				return el
-				.click()
-				.sleep( 1000 )
-			} );
+				return commons.alertText( alerts.loginLogoutAlerts.wrongUserNamePassword );
+			} )
+			.elementByName( elements.alertButtons.ok )
+			.click()
+			.sleep( 1000 );
 		} );
 
 		it( 'should set currentTest to "passed".'.green, function ( done ) {

@@ -1,5 +1,12 @@
  
-var apps = require( './apps.js' );
+var apps    = require( './apps.js' );
+var commons = require( './commons.js' );
+
+exports.androidCustomId = {
+	'button1' : 'android:id/button1',
+	'button2' : 'android:id/button2',
+	'button3' : 'android:id/button3'
+}
 
  exports.loginScreen = {
  	'appVersion'    : apps.appVersion,    
@@ -58,6 +65,7 @@ exports.config = {
 // }
 
 exports.alertButtons = {
+	'androidAllow'    : 'com.android.packageinstaller:id/',
 	'allow'           : 'Allow',
 	'back'            : 'Back',
 	'beginRoute'      : 'Begin route',
@@ -100,13 +108,14 @@ exports.alertButtons = {
 }
 
 exports.companyVehicle = {
-	'vehicle1'  : 'Truck 1',
-	'vehicle2'  : 'Truck 2',
-	'vehicle3'  : 'truck 3',
-	'review'    : 'Review',
-	'no'        : 'No',
-	'noVehicle' : '- No Vehicle -',
-	'ok'        : 'OK'
+	'androidVehicle'   : 'android:id/text1',
+	'vehicle1'         : 'Truck 1',
+	'vehicle2'         : 'Truck 2',
+	'vehicle3'         : 'truck 3',
+	'review'           : 'Review',
+	'no'               : 'No',
+	'noVehicle'        : '- No Vehicle -',
+	'ok'               : 'OK'
 }	
 
 exports.homeScreen = {
@@ -134,8 +143,8 @@ exports.formScreen = {
 	'comments'        : 'commentsTab.',
 	'dispatch'        : 'dispatchTab.',
 	'newComment'      : 'newCommentButton.',
-	'save'            : 'Save',	
-	'saveAsDraft'      : 'Save as draft',
+	'save'            : 'Save',
+	'saveAsDraft'     : 'Save as draft',
 	'showAll'         : 'formShowAllButton.',	
 	'work'            : 'workTab.'
 }	

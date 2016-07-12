@@ -24,13 +24,14 @@ module.exports = function () {
 			config.loginTest = true;
 			return driver
 			.waitForElementByName( elements.loginScreen.clientAccount, 200000 )
-			.then( function ( el ) {
+			.elementByName( elements.loginScreen.clientAccount )
+			.then( function ( clientAccount ) {
 
 				if ( commons.isIOS() ) {
-					return commons.sendKeys( el, login.driverLogins.driver1.clientAccount );
+					return commons.sendKeys( clientAccount, login.driverLogins.driver1.clientAccount );
 
 				} else {
-					return commons.sendKeys( el, login.driverLogins.driver2.clientAccount );
+					return commons.sendKeys( clientAccount, login.driverLogins.driver2.clientAccount );
 				}
 			} );
 		} );
@@ -40,13 +41,13 @@ module.exports = function () {
 			config.loginTest = true;
 			return driver
 			.elementByName( elements.loginScreen.userName )
-			.then( function ( el ) {
+			.then( function ( userName ) {
 
 				if ( commons.isIOS() ) {
-					return commons.sendKeys( el, login.driverLogins.driver1.username );
+					return commons.sendKeys( userName, login.driverLogins.driver1.username );
 
 				} else {
-					return commons.sendKeys( el, login.driverLogins.driver2.username );
+					return commons.sendKeys( userName, login.driverLogins.driver2.username );
 				}
 			} );
 		} );
@@ -56,13 +57,13 @@ module.exports = function () {
 			config.loginTest = true;
 			return driver
 			.elementByName( elements.loginScreen.password )
-			.then( function ( el ) {
+			.then( function ( password ) {
 				
 				if ( commons.isIOS() ) {
-					return commons.sendKeys( el, login.driverLogins.driver1.password );
+					return commons.sendKeys( password, login.driverLogins.driver1.password );
 
 				} else {
-					return commons.sendKeys( el, login.driverLogins.driver2.password );
+					return commons.sendKeys( password, login.driverLogins.driver2.password );
 				}
 			} );
 		} );
@@ -72,7 +73,7 @@ module.exports = function () {
 			config.loginTest = true;
 			return driver
 			.elementByName( elements.loginScreen.loginButton )
-			.click()
+			.click();
 		} );
 
 		it( 'should get alert for termsOfService not accepted.'.green, function () {
@@ -80,13 +81,13 @@ module.exports = function () {
 			config.loginTest = true;
 			return driver
 			.waitForElementByName( elements.alertButtons.ok, 120000 )
-			.then( function ( el ) {
+			.then( function () {
 
-				commons.alertText( alerts.loginLogoutAlerts.blankTermsOfService )
-				return el
-				.click()
-				.sleep( 1000 )
-			} );
+				return commons.alertText( alerts.loginLogoutAlerts.blankTermsOfService )
+			} )
+			.elementByName( elements.alertButtons.ok )
+			.click()
+			.sleep( 1000 );
 		} );
 
 		it( 'should set currentTest to "passed".'.green, function ( done ) {

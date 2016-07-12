@@ -14,10 +14,11 @@ fs.readFile( home + '/Projects/omadi_mobile/titanium_src/tiapp.xml', function ( 
 
     parser.parseString( data, function ( err, result ) {
 
-		OmadiAppVersion               = result['ti:app'].version[ 0 ]
-		exports.appVersion            = OmadiAppVersion + '.';
-		exports.appVersionTextAndroid = OmadiAppVersion;
-		exports.appVersionTextIOS     = OmadiAppVersion + '.';
+		OmadiAppVersion                          = result['ti:app'].version[ 0 ]
+		exports.appVersion                       = OmadiAppVersion + '.';
+		exports.appVersionTextAndroid            = OmadiAppVersion;
+		exports.appVersionTextIOS                = OmadiAppVersion + '.';
+		exports.aboutScreenAppVersionTextAndroid = 'App Version ' + OmadiAppVersion;
 		console.log( 'Current APP Version: ' + OmadiAppVersion );
     } );
 } );

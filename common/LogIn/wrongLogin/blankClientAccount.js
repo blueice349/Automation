@@ -24,6 +24,7 @@ module.exports = function () {
 			config.loginTest = true;
 			return driver
 			.waitForElementByName( elements.loginScreen.clientAccount, 200000 )
+			.elementByName( elements.loginScreen.clientAccount )
 			.click()
 			.clear()
 		} );
@@ -33,13 +34,13 @@ module.exports = function () {
 			config.loginTest = true;
 			return driver
 			.elementByName( elements.loginScreen.userName )
-			.then( function ( el ) {
+			.then( function ( userName ) {
 
 				if ( commons.isIOS() ) {
-					return commons.sendKeys( el, login.driverLogins.driver1.username );
+					return commons.sendKeys( userName, login.driverLogins.driver1.username );
 
 				} else {
-					return commons.sendKeys( el, login.driverLogins.driver2.username );
+					return commons.sendKeys( userName, login.driverLogins.driver2.username );
 				}
 			} );
 		} );
@@ -49,13 +50,13 @@ module.exports = function () {
 			config.loginTest = true;
 			return driver
 			.elementByName( elements.loginScreen.password )
-			.then( function ( el ) {
+			.then( function ( password ) {
 				
 				if ( commons.isIOS() ) {
-					return commons.sendKeys( el, login.driverLogins.driver1.password );
+					return commons.sendKeys( password, login.driverLogins.driver1.password );
 
 				} else {
-					return commons.sendKeys( el, login.driverLogins.driver2.password );
+					return commons.sendKeys( password, login.driverLogins.driver2.password );
 				}
 			} );
 		} );
@@ -81,10 +82,10 @@ module.exports = function () {
 			config.loginTest = true;
 			return driver
 			.waitForElementByName( elements.alertButtons.ok, 120000 )
-			.then( function ( el ) {
+			.then( function ( ok ) {
 
 				commons.alertText( alerts.loginLogoutAlerts.blankClientAccount )
-				return el
+				return ok
 				.click()
 				.sleep( 1000 )
 			} );

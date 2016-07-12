@@ -57,7 +57,7 @@ module.exports = function () {
 
 				if ( commons.isAndroid() || commons.isAndroid6() ) {
 					return appVersion.text()
-					.should.eventually.become( apps.appVersionTextAndroid )
+					.should.eventually.become( apps.aboutScreenAppVersionTextAndroid )
 				
 				} else if ( commons.isIOS() ) {
 					return appVersion.text()

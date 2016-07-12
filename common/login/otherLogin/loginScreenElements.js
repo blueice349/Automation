@@ -14,17 +14,6 @@ module.exports = function () {
 	var Store    = require( '../../../helpers/Store' );
 	var driver   = config.driver;
 
-	var clientAccount;
-	var truckOption;
-	var clockInOption;
-	var userRole;
-	var userName;
-	var password;
-	var name;
-	var permissionGranted;
-	var performJob;
-	var tagButton;
-
 	describe( 'Start check elements on loginScreen process using "loginScreenItems.js"'.green, function () {
 
 		commons.beforeEachDes();

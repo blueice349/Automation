@@ -171,9 +171,9 @@ module.exports = function () {
 						.elementByName( elements.alertButtons.allow )
 						.click();
 					}
-				} );
+				} )
 
-			} else if( commons.isIOS() && ( userRole === 'client' ||  userRole === 'AdminClient' ) ) {
+			} else if( commons.isIOS() && userRole != 'driver' && userRole != 'admin' ) {
 				console.log( 'Client user on a iOS device'.green );
 				return driver
 		   		.elementByNameIfExists( elements.alertButtons.allow )
@@ -193,25 +193,23 @@ module.exports = function () {
 		   				.elementByName( elements.alertButtons.ok )
 		   				.click();
 		   			}
-		   		} );
+		   		} )
 
-			 } else if ( commons.isAndroid6() ) {
+			} else if ( commons.isAndroid()
+				|| commons.isAndroid6() ) {
 				console.log( 'Client or CRM user on a Android 6.0.x device'.green );
 				return driver
 				.sleep( 4000 )
-				.elementByNameIfExists( elements.alertButtons.allow )
-				.then( function ( allow ) {
+				.elementByIdIfExists( elements.alertButtons.androidAllow )
+				.then( function ( androidAllow ) {
 
-					if ( allow ) {
-						return commons.alertText( alerts.loginLogoutAlerts.androidGps )
-						.elementByName( elements.alertButtons.allow )
+					if ( androidAllow ) {
+						return commons.androidPermsAlertText( alerts.loginLogoutAlerts.androidGps )
+						.elementById( elements.alertButtons.androidAllow )
 						.click();
 					}
 				} );
-
-			 } else if ( commons.isAndroid() ) {
-			 	console.log( 'User on a Android that does not request permissons'.green );
-			 }
+			}
 		} );
 		
 		it( 'should wait for sync to Complete'.green, function () {

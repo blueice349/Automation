@@ -34,6 +34,7 @@ module.exports = function () {
 			    .sleep( 1000 )
 				.then( function () {
 
+					console.log( 'Clock in made it to the end!' );
 					config.isClockedin = true;
 				} );
 			}

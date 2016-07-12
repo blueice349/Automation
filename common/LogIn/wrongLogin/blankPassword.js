@@ -24,13 +24,13 @@ module.exports = function () {
 			config.loginTest = true;
 			return driver
 			.waitForElementByName( elements.loginScreen.clientAccount, 200000 )
-			.then( function ( el ) {
+			.then( function ( clientAccount ) {
 
 				if ( commons.isIOS() ) {
-					return commons.sendKeys( el, login.driverLogins.driver1.clientAccount );
+					return commons.sendKeys( clientAccount, login.driverLogins.driver1.clientAccount );
 
 				} else {
-					return commons.sendKeys( el, login.driverLogins.driver2.clientAccount );
+					return commons.sendKeys( clientAccount, login.driverLogins.driver2.clientAccount );
 				}
 			} );
 		} );
@@ -40,13 +40,13 @@ module.exports = function () {
 			config.loginTest = true;
 			return driver
 			.elementByName( elements.loginScreen.userName )
-			.then( function ( el ) {
+			.then( function ( userName ) {
 
 				if ( commons.isIOS() ) {
-					return commons.sendKeys( el, login.driverLogins.driver1.username );
+					return commons.sendKeys( userName, login.driverLogins.driver1.username );
 
 				} else {
-					return commons.sendKeys( el, login.driverLogins.driver2.username );
+					return commons.sendKeys( userName, login.driverLogins.driver2.username );
 				}
 			} );
 		} );
@@ -81,13 +81,13 @@ module.exports = function () {
 			config.loginTest = true;
 			return driver
 			.waitForElementByName( elements.alertButtons.ok, 120000 )
-			.then( function ( el ) {
+			.then( function () {
 
-				commons.alertText( alerts.loginLogoutAlerts.blankPassword )
-				return el
-				.click()
-				.sleep( 1000 )
-			} );
+				return commons.alertText( alerts.loginLogoutAlerts.blankPassword )
+			} )
+			.elementByName( elements.alertButtons.ok )
+			.click()
+			.sleep( 1000 );
 		} );
 
 		it( 'should set currentTest to "passed".'.green, function ( done ) {

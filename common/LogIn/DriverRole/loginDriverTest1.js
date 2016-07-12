@@ -209,23 +209,21 @@ module.exports = function () {
 		   			}
 		   		} )
 
-			 } else if ( commons.isAndroid6() ) {
+			} else if ( commons.isAndroid()
+				|| commons.isAndroid6() ) {
 				console.log( 'Client or CRM user on a Android 6.0.x device'.green );
 				return driver
 				.sleep( 4000 )
-				.elementByNameIfExists( elements.alertButtons.allow )
-				.then( function ( allow ) {
+				.elementByIdIfExists( elements.alertButtons.androidAllow )
+				.then( function ( androidAllow ) {
 
-					if ( allow ) {
-						return commons.alertText( alerts.loginLogoutAlerts.androidGps )
-						.elementByName( elements.alertButtons.allow )
+					if ( androidAllow ) {
+						return commons.androidPermsAlertText( alerts.loginLogoutAlerts.androidGps )
+						.elementById( elements.alertButtons.androidAllow )
 						.click();
 					}
-				} )
-
-			 } else if ( commons.isAndroid() ) {
-			 	console.log( 'User on a Android that does not request permissons'.green );
-			 }
+				} );
+			}
 		} );
 		
 		it( 'should wait for sync to Complete'.green, function () {
@@ -235,28 +233,44 @@ module.exports = function () {
 			console.log( 'Before should wait for sync to Complete'.green );
 			if ( clockInOption === false && truckOption === true ) {
 				console.log( 'User does not have clock in options, but has truck options, will wait for Select Vehicle Options'.red );
-				return driver
-				.waitForElementByName( elements.companyVehicle.vehicle1, 120000 )
-				.isDisplayed().should.eventually.be.true
+				if ( commons.isIOS() ) {
+					return driver
+					.waitForElementByName( elements.companyVehicle.vehicle1, 120000 )
+					.isDisplayed().should.eventually.be.true
 
-			} else if ( clockInOption === true && truckOption === false && config.isClockedin != true || clockInOption === true && truckOption === true && config.isClockedin != true ) {
+				} else {
+					return driver
+					.waitForElementByName( elements.companyVehicle.androidVehicle, 120000 )
+					.isDisplayed().should.eventually.be.true
+				}
+
+			} else if ( clockInOption === true
+				&& truckOption === false && config.isClockedin != true
+				|| clockInOption === true && truckOption === true
+				&& config.isClockedin != true ) {
 				console.log( 'User has clockin options, will wait for Clockin Options'.red );
 				return driver
 				.waitForElementByName( elements.alertButtons.clockIn, 120000 )
 				.isDisplayed().should.eventually.be.true
 
-			} else if ( clockInOption === true && truckOption === false && config.isClockedin === true ) {
+			} else if ( clockInOption === true
+				&& truckOption === false
+				&& config.isClockedin === true ) {
 				console.log( 'User is clockedin Already, will wait for syncAllowed'.red );
 				return driver
 				.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
 				.isDisplayed().should.eventually.be.true
 
-			} else if ( clockInOption === true && truckOption === true && config.isClockedin === true ) {
-				console.log( 'User is clockedin and has truck options, will wait for Select Vehicle Options'.red );
+			} else if ( clockInOption === true
+				&& truckOption === true
+				&& config.isClockedin === true ) {
+				console.log( 'User is clockedin already, will wait for truckOption'.red ); 
 				return driver
 				.waitForElementByName( elements.companyVehicle.vehicle1, 120000 )
 				.isDisplayed().should.eventually.be.true
-			} else if ( clockInOption === false && truckOption === false ) {
+
+			} else if ( clockInOption === false
+				&& truckOption === false ) {
 				console.log( 'User has no truck or clock in options, will wait for syncAllowed'.red );
 				return driver
 				.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
