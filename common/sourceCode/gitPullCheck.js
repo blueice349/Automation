@@ -10,39 +10,39 @@ module.exports = function () {
 	var driver  = config.driver;
 
 	describe( 'Omadi Mobile Git Pull Request'.green, function () {
-	    
-	    describe('Update source code'.green, function () {
 	        
-	        commons.beforeEachDes();
-			commons.beforeEachIt();
-			commons.afterEachDes();
-			commons.afterEachIt();
+        commons.beforeEachDes();
+		commons.beforeEachIt();
+		commons.afterEachDes();
+		commons.afterEachIt();
 
-	        it( 'check for updates using gitPullCheck.js'.green, function ( done ) {
+        it( 'check for updates using gitPullCheck.js'.green, function () {
 
-	        	var homeDir = function () {
+        	config.loginTest = true;
 
-					return process.env[ ( process.platform == 'win32' ) ? 'USERPROFILE' : 'HOME' ];
-				};
+        	var homeDir = function () {
 
-				var home = homeDir();
-	            var output = "UPDATE THIS STRING WITH data";
+				return process.env[ ( process.platform == 'win32' ) ? 'USERPROFILE' : 'HOME' ];
+			};
 
-	            cmd.get( 'cd' + home + 'Projects/omadi_mobile ; git pull', function ( data ) {
-					
-					if ( data === 'Already up-to-date.\n' ) {
-						assert.equal( data, 'Already up-to-date.\n', 'Source Code is "Already up-to-date."' );
-	                	config.appUpdated  = true;
-	                	//config.currentTest = 'passed';
-	                	done();
-	                
-	                } else {
-	                	config.appUpdated  = false;
-	                	assert.equal( data, 'Already up-to-date.\n', 'Source Code is " NOT up-to-date."' );
-	                	done();
-	                }
-            	} );
-            } );
+			var home            = homeDir();
+			var projectLocation = 'Projects/omadi_mobile ; git pull'
+            var output          = 'Already up-to-date.\n';
+            var updated         = 'Source Code is "Already up-to-date."';
+            var noUpdated       = 'Source Code is "Already up-to-date."';
+
+            cmd.get( 'cd' + home + projectLocation, function ( data ) {
+				
+				if ( data ===  output ) {
+					assert.equal( data, output, updated  );
+                	config.appUpdated  = true;
+                	//config.currentTest = 'passed';
+                
+                } else {
+                	config.appUpdated  = false;
+                	assert.equal( data, output, noUpdated );
+                }
+        	} );
         } );
     } );
 };

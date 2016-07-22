@@ -25,4 +25,4 @@ fs.readFile( home + '/Projects/omadi_mobile/titanium_src/tiapp.xml', function ( 
 
 exports.androidApp   = home + '/Projects/omadi_mobile/titanium_src/build/android/bin/Omadi.apk';
 exports.iosSimApp    = home + '/Projects/omadi_mobile/titanium_src/build/iphone/build/Products/Debug-iphonesimulator/Omadi.app';
-exports.iosDeviceApp = home + '/Projects/omadi_mobile/titanium_src/build/iphone/build/Products/Debug-iphoneos/Omadi.ipa';
+exports.iosDeviceApp = home + '/Projects/omadi_mobile/titanium_src/build/iphone/build/Products/Debug-iphoneos/Omadi.app';

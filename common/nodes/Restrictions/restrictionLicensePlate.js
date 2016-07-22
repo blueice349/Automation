@@ -15,7 +15,7 @@ module.exports = function () {
 		it( 'Should Create New Node from homeScreen Save to Drafts'.green, function () {
 			var lastUser = Store.get( 'lastUser' );
 			driver
-			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
+			.waitForElementById( elements.homeScreen.syncAllowed, 20000 )
 			.then( function ( mobileMike ) {
 
 				if ( lastUser.userRole != 'client' 
@@ -23,27 +23,27 @@ module.exports = function () {
 				) {
 					console.log( 'User is Has form View Permissions'.red );
 					return driver
-					.elementByName( elements.mobile_MikeRecord.mobileMike + elements.homeScreen.button )
+					.elementById( elements.mobile_MikeRecord.mobileMike + elements.homeScreen.button )
 					.click()
 					.sleep( 1000 )
-					.elementByName( elements.itemListScreen.newRecord )
+					.elementById( elements.itemListScreen.newRecord )
 					.click()
-					.elementByNameIfExists( commons.getItem( elements.mobile_MikeRecord.propertyRef.property, 0 ) )
+					.elementByIdIfExists( commons.getItem( elements.mobile_MikeRecord.propertyRef.property, 0 ) )
 					.then( function ( propertyRef ) {
 
 						if ( propertyRef ) {
 							return driver
-							.elementByName( commons.getItem( elements.mobile_MikeRecord.propertyRef.property, 0 ) )
+							.elementById( commons.getItem( elements.mobile_MikeRecord.propertyRef.property, 0 ) )
 							.then( function ( property ) {
 		
 								return commons.sendKeys( property, 'Omadi Inc' );
 							} )
-							.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq )
+							.elementById( elements.mobile_MikeRecord.otherFields.textFieldReq )
 							.then( function ( textFieldReq ) {
 
 								return commons.sendKeys( textFieldReq, lastUser.userName + ' Required Field' );
 							} )
-							.elementByName( commons.getItem( elements.mobile_MikeRecord.otherFields.licensePlate, 0 ) )
+							.elementById( commons.getItem( elements.mobile_MikeRecord.otherFields.licensePlate, 0 ) )
 							.then( function ( licensePlate ) {
 
 								return commons.sendKeys( licensePlate, '1050' );
@@ -51,16 +51,16 @@ module.exports = function () {
 						}
 					} )
 					.sleep( 1000 )
-					.elementByName( elements.formScreen.actions )
+					.elementById( elements.formScreen.actions )
 					.click().sleep ( 100 )
-					.elementByNameIfExists( elements.formScreen.save )
+					.elementByXPathIfExists( commons.textToXPath( elements.formScreen.save ) )
 					.then( function ( save ) {
 
 						if ( save ) {
 							return save
 							.click()
 							.sleep( 1000 )
-							.elementByNameIfExists( elements.alertButtons.ok )
+							.elementByXPathIfExists( commons.textToXPath( elements.alertButtons.ok ) )
 							.then( function ( restriction ) {
 
 								if  ( restriction ) {
@@ -71,10 +71,10 @@ module.exports = function () {
 									.then( function () {
 										if ( commons.isIOS() ) {
 											return driver
-											.waitForElementByName( elements.formScreen.back, 10000 )
+											.waitForElementById( elements.formScreen.back, 10000 )
 											.click()
 											.sleep( 1000 )
-											.elementByName( elements.alertButtons.exit )
+											.elementByXPath( commons.textToXPath( elements.alertButtons.exit ) )
 											.click()
 											.sleep( 1000 ); 
 
@@ -83,7 +83,7 @@ module.exports = function () {
 											return driver
 											.back()
 											.sleep( 1000 )
-											.elementByName( elements.alertButtons.exit )
+											.elementByXPath( commons.textToXPath( elements.alertButtons.exit ) )
 											.click()
 											.sleep( 1000 ); 
 										}
@@ -98,7 +98,7 @@ module.exports = function () {
 							.then( function () {
 								if ( commons.isIOS() ) {
 									return driver
-									.waitForElementByName( elements.itemListScreen.back, 10000 )
+									.waitForElementById( elements.itemListScreen.back, 10000 )
 									.click()
 									.sleep( 1000 );
 
@@ -111,7 +111,7 @@ module.exports = function () {
 
 						} else {
 							return driver
-							.elementByName( elements.formScreen.cancel )
+							.elementByXPath( commons.textToXPath( elements.formScreen.cancel ) )
 							.click()
 							.sleep( 1000 );
 						}
@@ -121,14 +121,14 @@ module.exports = function () {
 				} else {
 					console.log( 'Current User Does Not Have The Option to Add a Node to Restriction'.red );
 				    driver
-				    .elementByNameIfExists( elements.homeScreen.syncAllowed )
+				    .elementByIdIfExists( elements.homeScreen.syncAllowed )
 				    .isDisplayed()
 					.then( function ( homeScreen ) {
 
 						if ( !homeScreen ) {
 							if ( commons.isIOS() ) {
 								return driver
-								.waitForElementByName( elements.formScreen.back, 10000 )
+								.waitForElementById( elements.formScreen.back, 10000 )
 								.click()
 								.sleep( 1000 );
 
@@ -146,7 +146,7 @@ module.exports = function () {
 
 			// 	if ( commons.isIOS() ) {
 			// 		return driver
-			// 		.waitForElementByName( elements.formScreen.back, 10000 )
+			// 		.waitForElementById( elements.formScreen.back, 10000 )
 			// 		.click()
 			// 		.sleep( 1000 );
 
@@ -156,11 +156,11 @@ module.exports = function () {
 			// 		.sleep( 1000 );
 			// 	}
 			// } )
-			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
+			.waitForElementById( elements.homeScreen.syncAllowed, 20000 )
 			.then( function ( sync ) {
 				if ( sync ) {
 					return driver
-					.elementByName( elements.homeScreen.syncAllowed )
+					.elementById( elements.homeScreen.syncAllowed )
 					.click()
 					.sleep ( 2000 );
 				}

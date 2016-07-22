@@ -23,7 +23,7 @@ module.exports = function () {
 
 			var lastUser = Store.get( 'lastUser' );
 			return driver
-			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
+			.waitForElementById( elements.homeScreen.syncAllowed, 20000 )
 			.isDisplayed().should.eventually.be.true
 		} );
 
@@ -33,11 +33,11 @@ module.exports = function () {
 			if ( lastUser.userRole === 'AdminClient' ) {
 				console.log( 'User is Allowed to add a New Redord'.red );
 				return driver
-				.elementByName( elements.doNotTow.doNotTow + elements.homeScreen.button )
+				.elementById( elements.doNotTow.doNotTow + elements.homeScreen.button )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.doNotTow.doNotTow + elements.homeScreen.plusButton )
+				.elementById( elements.doNotTow.doNotTow + elements.homeScreen.plusButton )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.doNotTow.doNotTow + elements.homeScreen.plusButton )
+				.elementById( elements.doNotTow.doNotTow + elements.homeScreen.plusButton )
 				.click()
 				.sleep( 1000 )
 				.then( function () {
@@ -48,7 +48,7 @@ module.exports = function () {
 			} else if ( lastUser.userRole === 'client' ) {
 				console.log( 'Current User Does Not Have The Option to Add a New Node'.red );
 				return driver
-				.elementByNameIfExists( elements.doNotTow.doNotTow + elements.homeScreen.button )
+				.elementByIdIfExists( elements.doNotTow.doNotTow + elements.homeScreen.button )
 				.then( function ( doNotTow ) {
 					
 					if ( doNotTow ) {
@@ -58,7 +58,7 @@ module.exports = function () {
 						return;
 					}
 				} )
-				.elementByNameIfExists( elements.doNotTow.doNotTow + elements.homeScreen.plusButton )
+				.elementByIdIfExists( elements.doNotTow.doNotTow + elements.homeScreen.plusButton )
 				.then( function ( doNotTowPlus ) {
 					
 					if ( doNotTowPlus ) {
@@ -84,9 +84,9 @@ module.exports = function () {
 			var lastUser = Store.get( 'lastUser' );
 			if ( config.canCreate === true ) {
 				return driver
-				.elementByName( elements.doNotTow.otherFields.licensePlate )
+				.elementById( elements.doNotTow.otherFields.licensePlate )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.doNotTow.otherFields.licensePlate )
+				.elementById( elements.doNotTow.otherFields.licensePlate )
 				.then( function ( textField ) {
 
 					if ( textField ) {
@@ -94,7 +94,7 @@ module.exports = function () {
 						.sleep ( 1000 );
 					}
 				} )
-				.elementByName( elements.doNotTow.otherFields.licensePlate )
+				.elementById( elements.doNotTow.otherFields.licensePlate )
 				.text().should.eventually.become( lastUser.userName )
 				.sleep( 1000 )
 			
@@ -108,15 +108,15 @@ module.exports = function () {
 
 			if ( config.canCreate === true ) {
 				return driver		
-				.elementByName( elements.formScreen.actions )
+				.elementById( elements.formScreen.actions )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.formScreen.actions )
+				.elementById( elements.formScreen.actions )
 				.click().sleep ( 100 )
-				.elementByName( elements.formScreen.save )
+				.elementByXPath( commons.textToXPath( elements.formScreen.save ) )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.formScreen.cancel )
+				.elementByXPath( commons.textToXPath( elements.formScreen.cancel ) )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.formScreen.save )
+				.elementByXPath( commons.textToXPath( elements.formScreen.save ) )
 				.click()
 				.sleep( 1000 )
 			
@@ -129,9 +129,9 @@ module.exports = function () {
 		it( 'Should wait for syncAllowed and sync currentTest data to server.'.green, function () {
 
 			return driver
-			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
+			.waitForElementById( elements.homeScreen.syncAllowed, 20000 )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.homeScreen.syncAllowed )
+			.elementById( elements.homeScreen.syncAllowed )
 			.click()
 			.sleep ( 2000 )
 		} );

@@ -25,13 +25,13 @@ module.exports = function () {
 			
 			config.loginTest = true;
 			return driver
-			.waitForElementByName( elements.loginScreen.clientAccount, 120000 )
+			.waitForElementById( elements.loginScreen.clientAccount, 120000 )
 			.isDisplayed()
 			.then( function ( el ) {
 
 				if ( el === true ) {
 					return driver
-					.elementByName( elements.loginScreen.clientAccount )
+					.elementById( elements.loginScreen.clientAccount )
 					.isDisplayed().should.eventually.be.true
 
 				} else {
@@ -39,13 +39,13 @@ module.exports = function () {
 					.sleep( 4000 )
 				}
 			} )
-			.elementByName( elements.loginScreen.userName )
+			.elementById( elements.loginScreen.userName )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.loginScreen.password )
+			.elementById( elements.loginScreen.password )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.loginScreen.loginButton )
+			.elementById( elements.loginScreen.loginButton )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.loginScreen.acceptTerms )
+			.elementById( elements.loginScreen.acceptTerms )
 			.isDisplayed().should.eventually.be.true
 		} );
 		

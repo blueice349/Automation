@@ -23,14 +23,14 @@ module.exports = function () {
 		it( 'Should go to Actions Screen'.green, function() {
 			
 			return driver
-			.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
+			.waitForElementById( elements.homeScreen.syncAllowed, 120000 )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.homeScreen.actions )
+			.elementById( elements.homeScreen.actions )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.homeScreen.actions )
+			.elementById( elements.homeScreen.actions )
 			.click()
 			.sleep( 800 )
-			.elementByName( elements.actionsScreen.drafts )
+			.elementById( elements.actionsScreen.drafts )
 			.isDisplayed().should.eventually.be.true
 		} );
 
@@ -40,18 +40,18 @@ module.exports = function () {
 			if ( lastUser.clockInOption === true && lastUser.userRole != 'client' && config.isClockedin === false ) {	
 				console.log( 'Clock In Button'.red );
 				return driver
-				.elementByName( elements.actionsScreen.clockIn )
+				.elementById( elements.actionsScreen.clockIn )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.actionsScreen.clockIn )
+				.elementById( elements.actionsScreen.clockIn )
 				.click()
 				.sleep( 2000 )
 				.then( function () {
-						
+
 					return commons.alertText( alerts.actionsScreenAlerts.timeCard.clockin );
 				} )
-				.elementByName( elements.alertButtons.clockIn )
+				.elementByXPath( commons.textToXPath( elements.alertButtons.clockIn ) )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.alertButtons.clockIn )
+				.elementByXPath( commons.textToXPath( elements.alertButtons.clockIn ) )
 				.click()
 				.sleep( 2000 )
 				.then( function () {
@@ -68,9 +68,9 @@ module.exports = function () {
 		
 			if ( commons.isIOS() ) {
 				return driver
-				.elementByName( elements.actionsScreen.back )
+				.elementById( elements.actionsScreen.back )
 				.isDisplayed().should.eventually.be.ok
-				.elementByName( elements.actionsScreen.back )
+				.elementById( elements.actionsScreen.back )
 				.click()
 
 			} else if ( commons.isAndroid() ) {

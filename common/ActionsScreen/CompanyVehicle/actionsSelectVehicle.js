@@ -25,14 +25,14 @@ module.exports = function () {
 		it( 'Should go to Actions Screen'.green, function() {
 			
 			return driver
-			.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
+			.waitForElementById( elements.homeScreen.syncAllowed, 120000 )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.homeScreen.actions )
+			.elementById( elements.homeScreen.actions )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.homeScreen.actions )
+			.elementById( elements.homeScreen.actions )
 			.click()
 			.sleep( 800 )
-			.elementByName( elements.actionsScreen.drafts )
+			.elementById( elements.actionsScreen.drafts )
 			.isDisplayed().should.eventually.be.true
 		} );
 
@@ -45,9 +45,9 @@ module.exports = function () {
 			) {
 				console.log( 'Not logged into a vehicle. Will log into a vehicle'.red );
 				return driver
-				.elementByName( elements.actionsScreen.companyVehicle )
+				.elementById( elements.actionsScreen.companyVehicle )
 				.isDisplayed().should.eventually.be.ok
-				.elementByName( elements.actionsScreen.companyVehicle )
+				.elementById( elements.actionsScreen.companyVehicle )
 				.click()
 
 			} else {
@@ -64,9 +64,9 @@ module.exports = function () {
 			) {
 				console.log( 'Not logged into a vehicle. Will log into a vehicle'.red );
 				return driver
-				.elementByName( elements.companyVehicle.vehicle2 )
+				.elementByXPath( commons.textToXPath( elements.companyVehicle.vehicle2 ) )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.companyVehicle.vehicle2 )
+				.elementByXPath( commons.textToXPath( elements.companyVehicle.vehicle2 ) )
 				.click()
 				.sleep( 100 )
 
@@ -84,24 +84,24 @@ module.exports = function () {
 			) {
 				console.log( 'Will perform insoection'.red );
 				return driver
-				.elementByNameIfExists( elements.companyVehicle.review )
+				.elementByXPathIfExists( commons.textToXPath( elements.companyVehicle.review ) )
 				.then( function ( review ) {
 
 					if ( review ) {
 						console.log( 'Review Inspection'.red );
 						return commons.alertText( alerts.actionsScreenAlerts.companyVehicle.reviewInspection )
-						.elementByName( elements.companyVehicle.review )
+						.elementByXPath( commons.textToXPath( elements.companyVehicle.review ) )
 						.isDisplayed().should.eventually.be.true
-						.elementByName( elements.companyVehicle.review )
+						.elementByXPath( commons.textToXPath( elements.companyVehicle.review ) )
 						.click()
 						.sleep( 1000 );
 
 					} else {
 						console.log( 'No inspection to review'.red );
 						return commons.alertText( alerts.loginLogoutAlerts.noInspectionReviewHeader )
-						.elementByName( elements.companyVehicle.ok )
+						.elementByXPath( commons.textToXPath( elements.companyVehicle.ok ) )
 						.isDisplayed().should.eventually.be.true
-						.elementByName( elements.companyVehicle.ok )
+						.elementByXPath( commons.textToXPath( elements.companyVehicle.ok ) )
 						.click()
 						.sleep ( 1000 );
 					}
@@ -120,9 +120,9 @@ module.exports = function () {
 		
 			if ( commons.isIOS() ) {
 				return driver
-				.elementByName( elements.actionsScreen.back )
+				.elementById( elements.actionsScreen.back )
 				.isDisplayed().should.eventually.be.ok
-				.elementByName( elements.actionsScreen.back )
+				.elementById( elements.actionsScreen.back )
 				.click()
 
 			} else if ( commons.isAndroid() ) {

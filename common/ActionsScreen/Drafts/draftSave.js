@@ -23,18 +23,18 @@ module.exports = function () {
 
 		it( 'should wait for syncAllowed.'.green, function () {
 			return driver
-			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
+			.waitForElementById( elements.homeScreen.syncAllowed, 20000 )
 			.isDisplayed().should.eventually.be.true
 		} );
 		
 		it( 'Should go to Actions Screen from homeScreen'.green, function() {
 			
 			return driver
-			.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
+			.waitForElementById( elements.homeScreen.syncAllowed, 120000 )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.homeScreen.actions )
+			.elementById( elements.homeScreen.actions )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.homeScreen.actions )
+			.elementById( elements.homeScreen.actions )
 			.click()
 			.sleep( 800 )
 		} );
@@ -42,12 +42,12 @@ module.exports = function () {
 		it( 'Should go to the drafts Screen from the actions screen.'.green, function () {
 
 			return driver
-			.elementByName( elements.actionsScreen.drafts )
+			.elementById( elements.actionsScreen.drafts )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.actionsScreen.drafts )
+			.elementById( elements.actionsScreen.drafts )
 			.click()
 			.sleep( 800 )
-			.elementByNameIfExists( elements.draftsScreen.search )
+			.elementByIdIfExists( elements.draftsScreen.search )
 			.then( function ( hideKeyboard ) {
 
 				if ( hideKeyboard  
@@ -63,22 +63,22 @@ module.exports = function () {
 		it( 'Should edit a saved draft from actions screen --> drafts screen.'.green, function () {
 
 			return driver
-			.elementByNameIfExists( commons.getItem( elements.draftsScreen.draft, 0 ) )
+			.elementByIdIfExists( commons.getItem( elements.draftsScreen.draft, 0 ) )
 			.then( function ( drafts ) {
 
 				if ( drafts ) {
 					return drafts
 					.click()
 					.sleep( 1000 )
-					.waitForElementByName( elements.draftsScreen.edit, 10000 )
+					.waitForElementByXPath( commons.textToXPath( elements.draftsScreen.edit ), 10000 )
 					.isDisplayed().should.eventually.be.true
-					.elementByName( elements.draftsScreen.view )
+					.elementByXPath( commons.textToXPath( elements.draftsScreen.view ) )
 					.isDisplayed().should.eventually.be.true
-					.elementByName( elements.draftsScreen.cancel )
+					.elementByXPath( commons.textToXPath( elements.draftsScreen.cancel ) )
 					.isDisplayed().should.eventually.be.true
-					.elementByName( elements.draftsScreen.edit )
+					.elementByXPath( commons.textToXPath( elements.draftsScreen.edit ) )
 					.isDisplayed().should.eventually.be.true
-					.elementByName( elements.draftsScreen.edit )
+					.elementByXPath( commons.textToXPath( elements.draftsScreen.edit ) )
 					.click()
 					.sleep( 2000 )
 
@@ -90,16 +90,16 @@ module.exports = function () {
 
 		it( 'should hideKeyboard if needed,'.green, function () {
 			
-			var alertDone = driver.elementByNameIfExists( elements.alertButtons.done ).isDisplayed()
+			var alertDone = driver.elementByXPathIfExists( commons.textToXPath( elements.alertButtons.done ) ).isDisplayed()
 			var lastUser  = Store.get( 'lastUser' );
 			return driver
-			.elementByNameIfExists( elements.formScreen.actions )
+			.elementByIdIfExists( elements.formScreen.actions )
 			.then( function ( actions ) {
 
 				if ( actions ) {
 					return driver
 					.sleep( 1000 )
-					.elementByNameIfExists( elements.mobile_MikeRecord.otherFields.textFieldCond )
+					.elementByIdIfExists( elements.mobile_MikeRecord.otherFields.textFieldCond )
 					.isDisplayed()
 					.then( function ( keyboard ) {
 						
@@ -115,7 +115,7 @@ module.exports = function () {
 					   	) {
 							console.log( 'iOS keyboard is visible.'.red );
 							return driver
-							.elementByName( elements.alertButtons.done )
+							.elementByXPath( commons.textToXPath( elements.alertButtons.done ) )
 							.click()
 
 						} else {
@@ -134,20 +134,20 @@ module.exports = function () {
 
 			var lastUser = Store.get( 'lastUser' );
 			return driver
-			.elementByNameIfExists( elements.formScreen.actions )
+			.elementByIdIfExists( elements.formScreen.actions )
 			.then( function ( actions ) {
 
 				if ( actions ) {
 					return driver
 					.sleep( 1000 )
-					.elementByName( elements.mobile_MikeRecord.otherFields.integerFieldCond )
+					.elementById( elements.mobile_MikeRecord.otherFields.integerFieldCond )
 					.isDisplayed().should.eventually.be.true
-					.elementByName( elements.mobile_MikeRecord.otherFields.integerFieldCond )
+					.elementById( elements.mobile_MikeRecord.otherFields.integerFieldCond )
 					.text()
 					.then( function ( integerFieldCond ) {
 
 						if ( integerFieldCond === '' ) {
-							 return commons.sendKeys( driver.elementByName( elements.mobile_MikeRecord.otherFields.integerFieldCond ), '12345' );
+							 return commons.sendKeys( driver.elementById( elements.mobile_MikeRecord.otherFields.integerFieldCond ), '12345' );
 						
 						} else {
 							console.log( 'integerFieldCond has the following data: ' + integerFieldCond );
@@ -164,20 +164,20 @@ module.exports = function () {
 
 			var lastUser = Store.get( 'lastUser' );
 			return driver
-			.elementByNameIfExists( elements.formScreen.actions )
+			.elementByIdIfExists( elements.formScreen.actions )
 			.then( function ( actions ) {
 
 				if ( actions ) {
 					return driver
 					.sleep( 1000 )
-					.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq )
+					.elementById( elements.mobile_MikeRecord.otherFields.textFieldReq )
 					.isDisplayed().should.eventually.be.true
-					.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq )
+					.elementById( elements.mobile_MikeRecord.otherFields.textFieldReq )
 					.text()
 					.then( function ( textFieldReq ) {
 
 						if ( textFieldReq === '' ) {
-							 return commons.sendKeys( driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq ), lastUser.userName + ' Conditional Field' );
+							 return commons.sendKeys( driver.elementById( elements.mobile_MikeRecord.otherFields.textFieldReq ), lastUser.userName + ' Conditional Field' );
 
 						} else {
 							console.log( 'textFieldReq has the following data: ' + textFieldReq );
@@ -194,20 +194,20 @@ module.exports = function () {
 
 			var lastUser = Store.get( 'lastUser' );
 			return driver
-			.elementByNameIfExists( elements.formScreen.actions )
+			.elementByIdIfExists( elements.formScreen.actions )
 			.then( function ( actions ) {
 
 				if ( actions ) {
 					return driver
 					.sleep( 1000 )
-					.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
+					.elementById( elements.mobile_MikeRecord.otherFields.textFieldCond )
 					.isDisplayed().should.eventually.be.true
-					.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
+					.elementById( elements.mobile_MikeRecord.otherFields.textFieldCond )
 					.text()
 					.then( function ( textFieldCond ) {
 
 						if ( textFieldCond === '' ) {
-							 return commons.sendKeys( driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond ), lastUser.userName + ' Conditional Field' );
+							 return commons.sendKeys( driver.elementById( elements.mobile_MikeRecord.otherFields.textFieldCond ), lastUser.userName + ' Conditional Field' );
 
 						} else {
 							console.log( 'textFieldCond has the following data: ' + textFieldCond );
@@ -224,27 +224,27 @@ module.exports = function () {
 			
 			return driver
 			.sleep( 1000 )
-			.elementByNameIfExists( elements.formScreen.actions )
+			.elementByIdIfExists( elements.formScreen.actions )
 			.then( function ( formScreenActions ) {
 
 				if ( formScreenActions ) {
 					return driver
-					.elementByName( elements.formScreen.actions )
+					.elementById( elements.formScreen.actions )
 					.isDisplayed().should.eventually.be.true
-					.elementByName( elements.formScreen.actions )
+					.elementById( elements.formScreen.actions )
 					.click()
-					.elementByName( elements.formScreen.save )
+					.elementByXPath( commons.textToXPath( elements.formScreen.save ) )
 					.isDisplayed().should.eventually.be.true
-					.elementByName( elements.formScreen.save )
+					.elementByXPath( commons.textToXPath( elements.formScreen.save ) )
 					.click()
 					.sleep( 1000 )
 					.then( function () {
 
 						if ( commons.isIOS() ) {
 							return driver
-							.elementByName( elements.draftsScreen.back )
+							.elementById( elements.draftsScreen.back )
 							.isDisplayed().should.eventually.be.true
-							.elementByName( elements.draftsScreen.back )
+							.elementById( elements.draftsScreen.back )
 							.click()
 							.sleep( 1000 );
 
@@ -260,9 +260,9 @@ module.exports = function () {
 					console.log( 'No Drafts to Save.'.red);
 					if ( commons.isIOS() ) {
 						return driver
-						.elementByName( elements.draftsScreen.back )
+						.elementById( elements.draftsScreen.back )
 						.isDisplayed().should.eventually.be.true
-						.elementByName( elements.draftsScreen.back )
+						.elementById( elements.draftsScreen.back )
 						.click()
 						.sleep( 1000 );
 
@@ -279,17 +279,17 @@ module.exports = function () {
 
 			if ( commons.isIOS() ) {
 				return driver
-				.waitForElementByName( elements.actionsScreen.drafts, 120000 )
+				.waitForElementById( elements.actionsScreen.drafts, 120000 )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.actionsScreen.back )
+				.elementById( elements.actionsScreen.back )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.actionsScreen.back )
+				.elementById( elements.actionsScreen.back )
 				.click()
 				.sleep( 1000 )
 
 			} else if ( commons.isAndroid() ) {
 				return driver
-				.waitForElementByName( elements.actionsScreen.drafts, 120000 )
+				.waitForElementById( elements.actionsScreen.drafts, 120000 )
 				.isDisplayed().should.eventually.be.true
 				.back()
 				.sleep( 1000 )
@@ -299,20 +299,20 @@ module.exports = function () {
 		it( 'Should wait for syncAllowed and press syncAllowed.'.green, function () {
 
 			return driver
-			.waitForElementByName( elements.homeScreen.syncAllowed, 30000 )
-			.elementByName( elements.homeScreen.syncAllowed )
+			.waitForElementById( elements.homeScreen.syncAllowed, 30000 )
+			.elementById( elements.homeScreen.syncAllowed )
 			.click()
 			.sleep ( 2000 )
-			.elementByNameIfExists( elements.homeScreen.actions )
+			.elementByIdIfExists( elements.homeScreen.actions )
 			.isDisplayed()
 			.then( function ( homeScreen ) {
 
 				if ( homeScreen === false ) {
 					if ( commons.isIOS() ) {
 						return driver
-						.waitForElementByName( elements.jobsScreen.otherOptions.back, 10000 )
+						.waitForElementById( elements.jobsScreen.otherOptions.back, 10000 )
 						.isDisplayed().should.eventually.be.true
-						.elementByName( elements.jobsScreen.otherOptions.back )
+						.elementById( elements.jobsScreen.otherOptions.back )
 						.click()
 						.sleep( 1000 );
 

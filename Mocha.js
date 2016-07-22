@@ -13,8 +13,6 @@ var elements      = require( './helpers/elements' );
 var desired;
 var timeout       = 180000;
 var simulator     = false;
-var androidDevice = false;
-var iosDevice     = false;
 wd.addPromiseChainMethod( 'swipe', actions.swipe );
 
 for ( var i in args ) {
@@ -32,9 +30,6 @@ for ( var i in args ) {
 					'desired' : desired,
 					'sim'     : true
 				} );
-			// config.set( {
-			// 	'sim' : true
-			// } );
 			}
 
 			break;
@@ -70,12 +65,6 @@ for ( var i in args ) {
 					'desired' : desired,
 					'sim'     : false
 				} );
-				if ( config.os === 'Android' ){
-					androidDevice = true;
-				
-				} else if ( config.os === 'iOS' ) {
-					iosDevice = true;
-				}
 			
 			} else {
 				throw 'You did not specify a os for -os';
@@ -89,23 +78,23 @@ for ( var i in args ) {
 
 var commons  = require( './helpers/Commons' );
 //wd.addPromiseChainMethod( 'inputKeys', commons.sendKeys );
-wd.addPromiseChainMethod( 'inputKeys', function ( config, keys ) {
+// wd.addPromiseChainMethod( 'inputKeys', function ( config, keys ) {
 
-	if ( config.desired.platformName == 'Android' ) {
-		return this
-		.click()
-		.clear()
-		.sendKeys( keys )
-		.hideKeyboard();
+// 	if ( config.desired.platformName == 'Android' ) {
+// 		return this
+// 		.click()
+// 		.clear()
+// 		.sendKeys( keys )
+// 		.hideKeyboard();
 	
-	} else if ( config.desired.platformName == 'IOS' ) {
-		return this
-		.click()
-		.elementByName( 'space' ).isDisplayed().should.eventually.be.true
-		.clear()
-		.sendKeys( keys );
-	}
-} );
+// 	} else if ( config.desired.platformName == 'IOS' ) {
+// 		return this
+// 		.click()
+// 		.elementByName( 'space' ).isDisplayed().should.eventually.be.true
+// 		.clear()
+// 		.sendKeys( keys );
+// 	}
+// } );
 var driver = wd.promiseChainRemote( serverConfigs.local );
 config.set( {
 	'driver'   : driver,
@@ -133,16 +122,25 @@ describe( 'Automation Test in Progress!'.green, function () {
 
 		describe( 'Running wrong login and other login test'.red, function () {
 
-			var run = require( './TestFiles.js' );
+			var devlopeApp = true;
+			var run        = require( './TestFiles.js' );
 			run.logins( 'loginScreenAppVersionCheck' );
 			run.logins( 'loginScreenElementCheck' );
-			run.logins( 'wrongClientAccount' );
-			run.logins( 'wrongUserName' );		
-			run.logins( 'wrongPassword' );
-			run.logins( 'blankClientAccount' );
-			run.logins( 'blankUserName' );
-			//run.logins( 'blankPassword' ); Can't test blankPassword or termsNotAccepted.
-			//run.logins( 'termsNotAccepted' );
+			if ( commons.isIOS() || commons.isAndroid() && config.sim != true || commons.isAndroid6() && config.sim != true ) {
+				run.logins( 'wrongClientAccount' );
+				run.logins( 'wrongUserName' );		
+				run.logins( 'wrongPassword' );
+				run.logins( 'blankClientAccount' );
+				run.logins( 'blankUserName' );
+			} else {
+				console.log( 'Unable to run the following test on androidSim: 1. wrongClientAccount 2. wrongUserName 3. wrongPassword 4. blankClientAccount 5. blankUserName'.red );
+			}
+			if ( devlopeApp != true ) { 
+				run.logins( 'blankPassword' );
+				run.logins( 'termsNotAccepted' );
+			} else {
+				console.log( 'Unable to run the following test because the app is in devlope mode: 1. blank password 2. termsNotAccepted.'.red );
+			}
 		} );
 		
 		describe( 'Running "Driver1 iOS Test && Driver2 Android Test"'.red, function () {
@@ -167,8 +165,8 @@ describe( 'Automation Test in Progress!'.green, function () {
 					run.jobsScreen( 'jobComplete' );
 
 				/* Node(s) Test */
-					// run.restrictionNodes( 'restrictLicensePlate' );
-					//run.otherNodes( 'newTag;' );
+					run.restrictionNodes( 'restrictLicensePlate' );
+					run.otherNodes( 'newTag;' );
 					run.requiredNodes( 'required' );
 					run.conditionRequiredNodes( 'conditionRequiredTextFieldFilled' );
 					run.conditionRequiredNodes( 'conditionRequiredTextFieldEmpty' );

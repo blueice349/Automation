@@ -43,20 +43,20 @@ module.exports = function () {
 			if ( config.canView === true ) {
 				console.log( 'User has access to recent tab.'.red );
 				return driver
-				.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
+				.waitForElementById( elements.homeScreen.syncAllowed, 120000 )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.homeScreen.recent )
+				.elementById( elements.homeScreen.recent )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.homeScreen.recent )
+				.elementById( elements.homeScreen.recent )
 				.click()
 				.sleep( 800 )
 
 			} else if ( config.canView === false ) {
 				console.log( 'User does "NOT" access to recent tab.'.red );
 				return driver
-				.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
+				.waitForElementById( elements.homeScreen.syncAllowed, 120000 )
 				.isDisplayed().should.eventually.be.true
-				.elementByNameIfExists( elements.homeScreen.recent )
+				.elementByIdIfExists( elements.homeScreen.recent )
 				.then( function ( recentTab ) {
 
 					if ( recentTab ) {
@@ -74,13 +74,13 @@ module.exports = function () {
 			if ( config.canView === true ) {
 				console.log( 'User has access to recentTab.'.red );
 				return driver
-				.elementByName( elements.recentScreen.search )
+				.elementById( elements.recentScreen.search )
 				.isDisplayed().should.eventually.be.true
 			
 			} else if ( config.canView === false ) {
 				console.log( 'User does "NOT" have access to recentTab.'.red );
 				return driver
-				.elementByNameIfExists( elements.recentScreen.search )
+				.elementByIdIfExists( elements.recentScreen.search )
 				.then( function ( resentSearch ) {
 
 					if ( resentSearch ) {
@@ -95,17 +95,19 @@ module.exports = function () {
 			if ( config.canView === true ) {
 				console.log( 'User has access to recentTab.'.red );
 				return driver
-				.elementByName( elements.recentScreen.viewedTab )
+				.elementById( elements.recentScreen.viewedTab )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.recentScreen.viewedTab )
+				.elementById( elements.recentScreen.viewedTab )
+				.text().should.eventually.contain( elements.recentScreen.viewedTabText )
+				.elementById( elements.recentScreen.viewedTab )
 				.click()
-				.elementByName( elements.recentScreen.search )
+				.elementById( elements.recentScreen.search )
 				.isDisplayed().should.eventually.be.true
 			
 			} else if ( config.canView === false ) {
 				console.log( 'User does "NOT" have access to recentTab.'.red );
 				return driver
-				.elementByNameIfExists( elements.recentScreen.viewedTab )
+				.elementByIdIfExists( elements.recentScreen.viewedTab )
 				.then( function ( viewedTab ) {
 
 					if ( viewedTab ) {
@@ -120,17 +122,19 @@ module.exports = function () {
 			if ( config.canView === true ) {
 				console.log( 'User has access to recentTab.'.red );
 				return driver
-				.elementByName( elements.recentScreen.savedTab )
+				.elementById( elements.recentScreen.savedTab )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.recentScreen.savedTab )
+				.elementById( elements.recentScreen.savedTab )
+				.text().should.eventually.contain( elements.recentScreen.savedTabText )
+				.elementById( elements.recentScreen.savedTab )
 				.click()
-				.elementByName( elements.recentScreen.search )
+				.elementById( elements.recentScreen.search )
 				.isDisplayed().should.eventually.be.true
 			
 			} else if ( config.canView === false ) {
 				console.log( 'User does "NOT" have access to recentTab.'.red );
 				return driver
-				.elementByNameIfExists( elements.recentScreen.savedTab )
+				.elementByIdIfExists( elements.recentScreen.savedTab )
 				.then( function ( savedTab ) {
 
 					if ( savedTab ) {
@@ -147,9 +151,9 @@ module.exports = function () {
 			) {
 				console.log( 'user is on a iOS device and should be on recentTab.'.red );
 				return driver
-				.waitForElementByName( elements.recentScreen.back, 120000 )
+				.waitForElementById( elements.recentScreen.back, 120000 )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.recentScreen.back )
+				.elementById( elements.recentScreen.back )
 				.click()
 
 			} else if ( commons.isAndroid() 
@@ -162,7 +166,7 @@ module.exports = function () {
 			} else if ( config.canView === false ) {
 				console.log( 'user is a client and should already be on homeScreen.'.red );
 				return driver
-				.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
+				.waitForElementById( elements.homeScreen.syncAllowed, 120000 )
 				.isDisplayed().should.eventually.be.true
 			}
 		} );

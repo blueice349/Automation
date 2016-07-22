@@ -23,7 +23,7 @@ module.exports = function () {
 
 			config.loginoutTest = true;
 			return driver
-			.waitForElementByName( elements.homeScreen.syncAllowed, 40000 )
+			.waitForElementById( elements.homeScreen.syncAllowed, 40000 )
 		} );
 
 		it( 'Should make sure all buttons are visble after syncAllowed'.green, function () {
@@ -34,21 +34,21 @@ module.exports = function () {
 				|| lastUser.userRole == 'driver' 
 			) {
 				return driver
-				.elementByName( lastUser.name )
+				.elementByXPath( commons.textToXPath( lastUser.name ) )
 				.text().should.eventually.become( lastUser.name )
-				.elementByName( elements.homeScreen.actions )
+				.elementById( elements.homeScreen.actions )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.homeScreen.logout )
+				.elementById( elements.homeScreen.logout )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.homeScreen.alerts )
+				.elementById( elements.homeScreen.alerts )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.homeScreen.jobs )
+				.elementById( elements.homeScreen.jobs )
 				.isDisplayed().should.eventually.be.true
 				.then( function () {
 
 					if ( lastUser.tagButton == true ) {
 						return driver
-						.elementByName( elements.homeScreen.expiredTags )
+						.elementById( elements.homeScreen.expiredTags )
 						.isDisplayed().should.eventually.be.true
 					}
 				} );
@@ -57,29 +57,29 @@ module.exports = function () {
 					   || lastUser.userRole === 'AdminClient' 
 		   	) {
 				return driver
-				.elementByName( lastUser.name )
-				.text().should.become( lastUser.name )
-				.elementByName( elements.homeScreen.actions )
+				.elementByXPath( commons.textToXPath( lastUser.name ) )
+				.text().should.eventually.become( lastUser.name )
+				.elementById( elements.homeScreen.actions )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.homeScreen.logout )
+				.elementById( elements.homeScreen.logout )
 				.isDisplayed().should.eventually.be.true
-				.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
+				.waitForElementById( elements.homeScreen.syncAllowed, 120000 )
 				.isDisplayed().should.eventually.be.true	
-				.elementByNameIfExists( elements.homeScreen.alerts )
+				.elementByIdIfExists( elements.homeScreen.alerts )
 				.then( function ( alerts ) {
 
 					if ( alerts ) {
 						assert.fail( 'The following element exist and should not exist '.red + alerts );
 					}
 				} )
-				.elementByNameIfExists( elements.homeScreen.expiredTags )
+				.elementByIdIfExists( elements.homeScreen.expiredTags )
 				.then( function ( expiredTags ) {
 
 					if ( expiredTags ) {
 						assert.fail( 'The following element exist and should not exist '.red + alerts );
 					}
 				} )
-				.elementByNameIfExists( elements.homeScreen.jobs )
+				.elementByIdIfExists( elements.homeScreen.jobs )
 				.then( function ( jobs ) {
 
 					if ( jobs ) {
@@ -92,9 +92,9 @@ module.exports = function () {
 		it( 'should click on the logoutButton from homeScreen'.green, function() {
 
 			return driver
-			.elementByName( elements.homeScreen.logout )
+			.elementById( elements.homeScreen.logout )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.homeScreen.logout )
+			.elementById( elements.homeScreen.logout )
 			.click()
 		} );
 
@@ -104,10 +104,10 @@ module.exports = function () {
 			if ( lastUser.truckOption === true ) {
 				console.log( 'Should ask user to post-Inspect'.red );
 				return commons.alertText( alerts.loginLogoutAlerts.doInspection )
-				.elementByName( elements.alertButtons.no )
+				.elementByXPath( commons.textToXPath( elements.alertButtons.no ) )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.alertButtons.no )
-				.click()
+				.elementByXPath( commons.textToXPath( elements.alertButtons.no ) )
+				.click();
 
 			} else if ( lastUser.truckOption === false ) {
 				console.log( 'User does not have vehicle options!'.red );
@@ -140,18 +140,18 @@ module.exports = function () {
 			) {
 				console.log( 'Clock out + Logout'.red );
 				return driver
-				.elementByName( elements.alertButtons.clockOutLogout )
+				.elementByXPath( commons.textToXPath( elements.alertButtons.clockOutLogout ) )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.alertButtons.clockOutLogout )
-				.click()
+				.elementByXPath( commons.textToXPath( elements.alertButtons.clockOutLogout ) )
+				.click();
 			
 			} else {
 				console.log( 'Logout Now'.red );
 				return driver
-				.elementByName( elements.alertButtons.logout )
+				.elementByXPath( commons.textToXPath( elements.alertButtons.logout ) )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.alertButtons.logout )
-				.click()
+				.elementByXPath( commons.textToXPath( elements.alertButtons.logout ) )
+				.click();
 			}
 		} );
 

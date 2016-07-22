@@ -26,7 +26,7 @@ module.exports = function () {
 			
 			
 			return driver
-			.waitForElementByName( elements.homeScreen.actions, 20000 )
+			.waitForElementById( elements.homeScreen.actions, 20000 )
 		} );
 
 		it( 'should check userRole and go to jobsScreen'. green, function () {
@@ -36,16 +36,16 @@ module.exports = function () {
 				&& lastUser.userRole != 'AdminClient' 
 			) {
 				return driver
-				.waitForElementByName( elements.homeScreen.jobs, 20000 )
+				.waitForElementById( elements.homeScreen.jobs, 20000 )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.homeScreen.jobs )
+				.elementById( elements.homeScreen.jobs )
 				.click()
 				.sleep( 800 )
 				.then( function ( isIOS ) {
 
 					if( commons.isIOS() ) {
 						return driver
-						.elementByName( elements.jobsScreen.otherOptions.back )
+						.elementById( elements.jobsScreen.otherOptions.back )
 						.isDisplayed().should.eventually.be.true;
 					}
 				} );
@@ -64,13 +64,13 @@ module.exports = function () {
 				&&  lastUser.userRole != 'AdminClient' 
 			) {
 				return driver
-				.elementByName( elements.jobsScreen.newJobsTab.newJobsHeader )
+				.elementById( elements.jobsScreen.newJobsTab.newJobsHeader )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.jobsScreen.openJobsTab.currentJobsHeader )
+				.elementById( elements.jobsScreen.openJobsTab.currentJobsHeader )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.jobsScreen.otherOpenJobsTab.otherOpenJobsHeader )
+				.elementById( elements.jobsScreen.otherOpenJobsTab.otherOpenJobsHeader )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.jobsScreen.appointmentJobsTab.appointmentsHeader )
+				.elementById( elements.jobsScreen.appointmentJobsTab.appointmentsHeader )
 				.isDisplayed().should.eventually.be.true
 			
 			} else {
@@ -82,18 +82,18 @@ module.exports = function () {
 		it( 'should go back to homeScreen'.green, function () {
 					
 			return driver
-			.elementByNameIfExists( elements.homeScreen.actions )
+			.elementByIdIfExists( elements.homeScreen.actions )
 			.isDisplayed()
 			.then( function ( homeScreen ) {
 
 				if ( homeScreen === true ) {
 					console.log( 'App is already at the homeScreen.'.red );
 					return driver
-					.elementByName( elements.homeScreen.actions )
+					.elementById( elements.homeScreen.actions )
 					.isDisplayed().should.eventually.be.true
-					.waitForElementByName( elements.homeScreen.syncAllowed, 30000 )
+					.waitForElementById( elements.homeScreen.syncAllowed, 30000 )
 					.isDisplayed().should.eventually.be.true
-					.elementByName( elements.homeScreen.syncAllowed )
+					.elementById( elements.homeScreen.syncAllowed )
 					.click()
 					.sleep ( 2000 );
 
@@ -101,21 +101,22 @@ module.exports = function () {
 					if ( commons.isIOS() ) {
 						console.log( 'isIOS app is at the jobsScreen.'.red ); 
 						return driver
-						.elementByName( elements.jobsScreen.otherOptions.back )
+						.elementById( elements.jobsScreen.otherOptions.back )
 						.isDisplayed().should.eventually.be.true
-						.elementByName( elements.jobsScreen.otherOptions.back )
+						.elementById( elements.jobsScreen.otherOptions.back )
 						.click()
 						.sleep( 1000 );
 
 					} else if ( commons.isAndroid() ) {
 						console.log( 'isAndroid app is at the jobsScreen.'.red ); 
 						return driver
+						.sleep( 100 )
 						.back()
 						.sleep( 1000 );
 					}
 				}
 			} )
-			.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
+			.waitForElementById( elements.homeScreen.syncAllowed, 120000 )
 			.isDisplayed().should.eventually.be.true
 		} );
 

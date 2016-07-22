@@ -23,7 +23,7 @@ module.exports = function () {
 
 			config.loginTest = true;
 			return driver
-			.waitForElementByName( elements.loginScreen.clientAccount, 200000 )
+			.waitForElementById( elements.loginScreen.clientAccount, 200000 )
 			.then( function ( clientAccount ) {
 				
 
@@ -40,7 +40,7 @@ module.exports = function () {
 
 			config.loginTest = true;
 			return driver
-			.elementByName( elements.loginScreen.userName )
+			.elementById( elements.loginScreen.userName )
 			.then( function ( userName ) {
 
 				if ( commons.isIOS() ) {
@@ -56,7 +56,7 @@ module.exports = function () {
 
 			config.loginTest = true;
 			return driver
-			.elementByName( elements.loginScreen.password )
+			.elementById( elements.loginScreen.password )
 			.then( function ( password ) {
 				
 				return commons.sendKeys( password, 'WrongPassword' );
@@ -67,7 +67,7 @@ module.exports = function () {
 
 			config.loginTest = true;
 			return driver
-			.elementByName( elements.loginScreen.acceptTerms )
+			.elementById( elements.loginScreen.acceptTerms )
 			.click()
 		} );
 
@@ -75,7 +75,7 @@ module.exports = function () {
 
 			config.loginTest = true;
 			return driver
-			.elementByName( elements.loginScreen.loginButton )
+			.elementById( elements.loginScreen.loginButton )
 			.click()
 		} );
 
@@ -83,14 +83,14 @@ module.exports = function () {
 
 			config.loginTest = true;
 			return driver
-			.waitForElementByName( elements.alertButtons.ok, 120000 )
-			.then( function () {
+			.waitForElementByXPath( commons.textToXPath( elements.alertButtons.ok ), 120000 )
+			.then( function ( el ) {
 
-				return commons.alertText( alerts.loginLogoutAlerts.wrongUserNamePassword );
+				commons.alertText( alerts.loginLogoutAlerts.wrongUserNamePassword )
+				return el
+				.click()
+				.sleep( 1000 );
 			} )
-			.elementByName( elements.alertButtons.ok )
-			.click()
-			.sleep( 1000 );
 		} );
 
 		it( 'should set currentTest to "passed".'.green, function ( done ) {

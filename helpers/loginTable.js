@@ -33,7 +33,7 @@ exports.adminLogins = {
 		'password'           : 'test',
 		'name'               : 'IOS Admin 3',
 		'userRole'           : 'admin',
-		'performJob'          : false,
+		'performJob'         : false,
 		'tagButton'          : false,
 		'permissionGranted'  : false,
 		'clockInOption'      : false,

@@ -25,7 +25,7 @@ module.exports = function () {
 		it( 'Should wait for actions button on homeScreen'.green, function () {
 
 			return driver
-			.waitForElementByName( elements.homeScreen.actions, 20000 )
+			.waitForElementById( elements.homeScreen.actions, 20000 )
 			.isDisplayed().should.eventually.be.true
 		} );
 
@@ -36,16 +36,16 @@ module.exports = function () {
 				&& lastUser.userRole != 'AdminClient' 
 			) {
 				return driver
-				.waitForElementByName( elements.homeScreen.jobs, 20000 )
+				.waitForElementById( elements.homeScreen.jobs, 20000 )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.homeScreen.jobs )
+				.elementById( elements.homeScreen.jobs )
 				.click()
 				.sleep( 800 )
 				.then( function ( isIOS ) {
 
 					if( commons.isIOS() ) {
 						return driver
-						.elementByName( elements.jobsScreen.otherOptions.back )
+						.elementById( elements.jobsScreen.otherOptions.back )
 						.isDisplayed().should.eventually.be.true;
 					}
 				} );
@@ -64,19 +64,19 @@ module.exports = function () {
 				&&  lastUser.userRole != 'AdminClient' 
 			) {
 				return driver
-				.elementByNameIfExists( commons.getItem( elements.jobsScreen.openJobsTab.openJobs, 0 ) )
+				.elementByIdIfExists( commons.getItem( elements.jobsScreen.openJobsTab.openJobs, 0 ) )
 				.then( function ( openJobs ) {
 
 					if ( openJobs ) {
 						console.log( 'Open Jobs found'.red );
 						return openJobs
 						.click()
-						.waitForElementByName( elements.jobsScreen.updateStatusOptions.updateStatus, 10000 )
+						.waitForElementByXPath( commons.textToXPath( elements.jobsScreen.updateStatusOptions.updateStatus ), 10000 )
 						.isDisplayed().should.eventually.be.true
-						.elementByName( elements.jobsScreen.updateStatusOptions.updateStatus )
+						.elementByXPath( commons.textToXPath( elements.jobsScreen.updateStatusOptions.updateStatus ) )
 						.click()
 						.sleep ( 800 )
-						.elementByNameIfExists( elements.jobsScreen.updateStatusOptions.jobComplete )
+						.elementByXPathIfExists( commons.textToXPath( elements.jobsScreen.updateStatusOptions.jobComplete ) )
 						.then( function ( jobComplete ) {
 
 							if ( jobComplete ) {
@@ -86,7 +86,7 @@ module.exports = function () {
 
 							} else {
 								return driver
-								.elementByNameIfExists( elements.jobsScreen.updateStatusOptions.jobCompletePlus )
+								.elementByXPathIfExists( commons.textToXPath( elements.jobsScreen.updateStatusOptions.jobCompletePlus ) )
 								.then( function ( jobCompletePlus ) {
 
 									if ( jobCompletePlus ) {
@@ -98,7 +98,7 @@ module.exports = function () {
 
 											if ( commons.isAndroid() ) {
 												return driver
-												.elementByNameIfExists( elements.mobile_MikeRecord.otherFields.textFieldCond )
+												.elementByIdIfExists( elements.mobile_MikeRecord.otherFields.textFieldCond )
 												.isDisplayed()
 												.then( function ( keyboard ) {
 													
@@ -110,61 +110,74 @@ module.exports = function () {
 												} )
 											}
 										} ) 
-										.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
+										.elementById( elements.mobile_MikeRecord.otherFields.textFieldCond )
 										.isDisplayed().should.eventually.be.true
-										.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
+										.elementById( elements.mobile_MikeRecord.otherFields.textFieldCond )
 										.text()
 										.then( function ( textFieldCond ) {
 
 											if ( textFieldCond === '' ) {
-												 return commons.sendKeys( driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond ), lastUser.userName + ' Conditional Field' );
+												 return commons.sendKeys( driver.elementById( elements.mobile_MikeRecord.otherFields.textFieldCond ), lastUser.userName + ' Conditional Field' );
 
 											} else {
-												console.log( 'textFieldCond has the following data: ' + driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond ) );
+												console.log( 'textFieldCond has the following data: ' + driver.elementById( elements.mobile_MikeRecord.otherFields.textFieldCond ).text() );
 											}
 										} )
-										.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq )
+										.elementById( elements.mobile_MikeRecord.otherFields.textFieldReq )
 										.isDisplayed().should.eventually.be.true
-										.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq )
+										.elementById( elements.mobile_MikeRecord.otherFields.textFieldReq )
 										.text()
 										.then( function ( textFieldReq ) {
 
 											if ( textFieldReq === '' ) {
-												 return commons.sendKeys( driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq ), lastUser.userName + ' Required Field' );
+												 return commons.sendKeys( driver.elementById( elements.mobile_MikeRecord.otherFields.textFieldReq ), lastUser.userName + ' Required Field' );
 
 											} else {
-												console.log( 'textFieldReq has the following data: ' + driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq ) );
+												console.log( 'textFieldReq has the following data: ' + driver.elementById( elements.mobile_MikeRecord.otherFields.textFieldReq ).text() );
 											}
 										} )
-										.elementByNameIfExists( elements.formScreen.actions )
+										.elementById( elements.mobile_MikeRecord.otherFields.integerFieldCond )
 										.isDisplayed().should.eventually.be.true
-										.elementByNameIfExists( elements.formScreen.actions )
+										.elementById( elements.mobile_MikeRecord.otherFields.integerFieldCond )
+										.text()
+										.then( function ( integerFieldCond ) {
+
+											if ( integerFieldCond === '' ) {
+												 return commons.sendKeys( driver.elementById( elements.mobile_MikeRecord.otherFields.integerFieldCond ), '1234' );
+
+											} else {
+												console.log( 'textFieldCond has the following data: ' + driver.elementById( elements.mobile_MikeRecord.otherFields.integerFieldCond ).text() );
+											}
+										} )
+										.elementByIdIfExists( elements.formScreen.actions )
+										.isDisplayed().should.eventually.be.true
+										.elementByIdIfExists( elements.formScreen.actions )
 										.click()
 										.sleep ( 100 )
-										.elementByName( elements.formScreen.save )
+										.elementByXPath( commons.textToXPath( elements.formScreen.save ) )
 										.isDisplayed().should.eventually.be.true
-										.elementByName( elements.formScreen.save )
+										.elementByXPath( commons.textToXPath( elements.formScreen.save ) )
 										.click()
 										.sleep( 1000 );
 
 									} else {
 										return driver
-										.elementByNameIfExists( alerts.jobScreenAlerts.openJobs.updateFormInfo )
+										.elementByXPathIfExists( commons.textToXPath( alerts.jobScreenAlerts.openJobs.updateFormInfo ) )
 										.then( function ( updateFormInfo ) {
 
 											if( updateFormInfo ) {
 												console.log( 'No updateStatus go to updateFormInfo'.red );
 												return driver
-												.elementByName( elements.alertButtons.yes )
+												.elementByXPath( commons.textToXPath( elements.alertButtons.yes ) )
 												.isDisplayed().should.eventually.be.true
-												.elementByName( elements.alertButtons.yes )
+												.elementByXPath( commons.textToXPath( elements.alertButtons.yes ) )
 												.click()
 												.sleep ( 1000 )
 												.then( function () {
 
 													if ( commons.isAndroid() ) {
 														return driver
-														.elementByNameIfExists( elements.mobile_MikeRecord.otherFields.textFieldCond )
+														.elementByIdIfExists( elements.mobile_MikeRecord.otherFields.textFieldCond )
 														.isDisplayed()
 														.then( function ( keyboard ) {
 															
@@ -176,49 +189,62 @@ module.exports = function () {
 														} )
 													}
 												} ) 
-												.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
+												.elementById( elements.mobile_MikeRecord.otherFields.textFieldCond )
 												.isDisplayed().should.eventually.be.true
-												.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
+												.elementById( elements.mobile_MikeRecord.otherFields.textFieldCond )
 												.text()
 												.then( function ( textFieldCond ) {
 
 													if ( textFieldCond == '' ) {
-														 return commons.sendKeys( driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond ), lastUser.userName + ' Conditional Field' );
+														 return commons.sendKeys( driver.elementById( elements.mobile_MikeRecord.otherFields.textFieldCond ), lastUser.userName + ' Conditional Field' );
 
 													} else {
-														console.log( 'textFieldCond has the following data: ' + driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond ) );
+														console.log( 'textFieldCond has the following data: ' + driver.elementById( elements.mobile_MikeRecord.otherFields.textFieldCond ).text() );
 													}
 												} )
-												.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq )
+												.elementById( elements.mobile_MikeRecord.otherFields.textFieldReq )
 												.isDisplayed().should.eventually.be.true
-												.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq )
+												.elementById( elements.mobile_MikeRecord.otherFields.textFieldReq )
 												.text()
 												.then( function ( textFieldReq ) {
 
 													if ( textFieldReq == '' ) {
-														 return commons.sendKeys( driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq ), lastUser.userName + ' Conditional Field' );
+														 return commons.sendKeys( driver.elementById( elements.mobile_MikeRecord.otherFields.textFieldReq ), lastUser.userName + ' Conditional Field' );
 
 													} else {
-														console.log( 'textFieldReq has the following data: ' + driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq ) );
+														console.log( 'textFieldReq has the following data: ' + driver.elementById( elements.mobile_MikeRecord.otherFields.textFieldReq ).text() );
 													}
 												} )
-												.elementByNameIfExists( elements.formScreen.actions )
+												.elementById( elements.mobile_MikeRecord.otherFields.integerFieldCond )
 												.isDisplayed().should.eventually.be.true
-												.elementByNameIfExists( elements.formScreen.actions )
+												.elementById( elements.mobile_MikeRecord.otherFields.integerFieldCond )
+												.text()
+												.then( function ( integerFieldCond ) {
+
+													if ( integerFieldCond === '' ) {
+														 return commons.sendKeys( driver.elementById( elements.mobile_MikeRecord.otherFields.integerFieldCond ), '1234' );
+
+													} else {
+														console.log( 'textFieldCond has the following data: ' + driver.elementById( elements.mobile_MikeRecord.otherFields.integerFieldCond ).text() );
+													}
+												} )
+												.elementByIdIfExists( elements.formScreen.actions )
+												.isDisplayed().should.eventually.be.true
+												.elementByIdIfExists( elements.formScreen.actions )
 												.click()
 												.sleep ( 100 )
-												.elementByName( elements.formScreen.save )
+												.elementByXPath( commons.textToXPath( elements.formScreen.save ) )
 												.isDisplayed().should.eventually.be.true
-												.elementByName( elements.formScreen.save )
+												.elementByXPath( commons.textToXPath( elements.formScreen.save ) )
 												.click()
 												.sleep( 1000 );
 
 											} else {
 												console.log( 'Current Job does not need to updated to "Job Complete" Status'.red );
 												return driver
-												.elementByName( elements.alertButtons.cancel )
+												.elementByXPath( commons.textToXPath( elements.alertButtons.cancel ) )
 												.isDisplayed().should.eventually.be.true
-												.elementByName( elements.alertButtons.cancel )
+												.elementByXPath( commons.textToXPath( elements.alertButtons.cancel ) )
 												.click();
 											}
 										} )
@@ -230,14 +256,15 @@ module.exports = function () {
 
 							if ( commons.isIOS() ) {
 								return driver
-								.waitForElementByName( elements.jobsScreen.otherOptions.back, 10000 )
+								.waitForElementById( elements.jobsScreen.otherOptions.back, 10000 )
 								.isDisplayed().should.eventually.be.true
-								.elementByName( elements.jobsScreen.otherOptions.back )
+								.elementById( elements.jobsScreen.otherOptions.back )
 								.click()
 								.sleep( 1000 );
 
 							} else if ( commons.isAndroid() ) {
 								return driver
+								.sleep( 100 )
 								.back()
 								.sleep( 1000 );
 							}
@@ -247,14 +274,15 @@ module.exports = function () {
 						console.log( 'No Open Jobs to Select.'.red);
 						if ( commons.isIOS() ) {
 							return driver
-							.waitForElementByName( elements.jobsScreen.otherOptions.back, 10000 )
+							.waitForElementById( elements.jobsScreen.otherOptions.back, 10000 )
 							.isDisplayed().should.eventually.be.true
-							.elementByName( elements.jobsScreen.otherOptions.back )
+							.elementById( elements.jobsScreen.otherOptions.back )
 							.click()
 							.sleep( 1000 );
 
 						} else if ( commons.isAndroid() ) {
 							return driver
+							.sleep( 100 )
 							.back()
 							.sleep( 1000 );
 						}
@@ -271,37 +299,38 @@ module.exports = function () {
 		it( 'should go back to homeScreen'.green, function () {
 					
 			return driver
-			.elementByNameIfExists( elements.homeScreen.actions )
+			.elementByIdIfExists( elements.homeScreen.actions )
 			.isDisplayed()
 			.then( function ( homeScreen ) {
 
 				if ( homeScreen === true ) {
 					return driver
-					.elementByName( elements.homeScreen.actions )
+					.elementById( elements.homeScreen.actions )
 					.isDisplayed().should.eventually.be.true
-					.waitForElementByName( elements.homeScreen.syncAllowed, 30000 )
+					.waitForElementById( elements.homeScreen.syncAllowed, 30000 )
 					.isDisplayed().should.eventually.be.true
-					.elementByName( elements.homeScreen.syncAllowed )
+					.elementById( elements.homeScreen.syncAllowed )
 					.click()
 					.sleep ( 2000 );
 
 				} else if ( homeScreen === false ) {
 					if ( commons.isIOS() ) {
 						return driver
-						.elementByName( elements.jobsScreen.otherOptions.back )
+						.elementById( elements.jobsScreen.otherOptions.back )
 						.isDisplayed().should.eventually.be.true
-						.elementByName( elements.jobsScreen.otherOptions.back )
+						.elementById( elements.jobsScreen.otherOptions.back )
 						.click()
 						.sleep( 1000 );
 
 					} else if ( commons.isAndroid() ) {
 						return driver
+						.sleep( 100 )
 						.back()
 						.sleep( 1000 );
 					}
 				}
 			} )
-			.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
+			.waitForElementById( elements.homeScreen.syncAllowed, 120000 )
 			.isDisplayed().should.eventually.be.true
 		} );
 

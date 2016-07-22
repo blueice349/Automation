@@ -23,13 +23,13 @@ module.exports = function () {
 		it( 'should wait for syncAllowed.'.green, function () {
 			var lastUser = Store.get( 'lastUser' );
 			return driver
-			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
+			.waitForElementById( elements.homeScreen.syncAllowed, 20000 )
 		} );
 
 		it( 'should go to actionsScreen from homeScreen'.green, function () {
 
 			return driver
-			.elementByName( elements.homeScreen.actions )
+			.elementById( elements.homeScreen.actions )
 			.click()
 			.sleep( 1000 )
 		} );
@@ -37,7 +37,7 @@ module.exports = function () {
 		it( 'should click on the logoutButton from actionsScreen'.green, function () {
 
 			return driver
-			.waitForElementByName( elements.actionsScreen.logout, 40000 )
+			.waitForElementById( elements.actionsScreen.logout, 40000 )
 			.click()
 		} );
 
@@ -47,7 +47,7 @@ module.exports = function () {
 			if ( lastUser.truckOption === true ) {
 				console.log( 'Should ask user to post-Inspect'.red );
 				return commons.alertText( alerts.loginLogoutAlerts.doInspection )
-				.elementByName( elements.alertButtons.no )
+				.elementByXPath( commons.textToXPath( elements.alertButtons.no ) )
 				.click()
 
 			} else if ( lastUser.truckOption === false ) {
@@ -81,13 +81,13 @@ module.exports = function () {
 			) {
 				console.log( 'Clock out + Logout'.red );
 				return driver
-				.elementByName( elements.alertButtons.clockOutLogout )
+				.elementByXPath( commons.textToXPath( elements.alertButtons.clockOutLogout ) )
 				.click()
 			
 			} else {
 				console.log( 'Logout Now'.red );
 				return driver
-				.elementByName( elements.alertButtons.logout )
+				.elementByXPath( commons.textToXPath( elements.alertButtons.logout ) )
 				.click()
 			}
 		} );

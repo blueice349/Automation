@@ -24,12 +24,12 @@ module.exports = function () {
 			if ( lastUser.userRole === 'client' || lastUser.userRole === 'AdminClient' ) {
 				console.log( lastUser.userRole.red + ' does not have jobsScreen'.red );
 				return driver
-				.elementByName( elements.homeScreen.actions )
+				.elementById( elements.homeScreen.actions )
 				.isDisplayed().should.eventually.be.true
 
 			} else {
 				return driver
-				.elementByNameIfExists( elements.homeScreen.actions )
+				.elementByIdIfExists( elements.homeScreen.actions )
 				.isDisplayed()
 				.then( function ( homeScreen ) {
 
@@ -39,7 +39,7 @@ module.exports = function () {
 					} else if ( homeScreen != true ) {
 						console.log( lastUser.userRole.red + ' is NOT on the homeScreen'.red );
 						return driver
-						.elementByName( elements.jobsScreen.newJobsTab.newJobsHeader )
+						.elementById( elements.jobsScreen.newJobsTab.newJobsHeader )
 						.isDisplayed()
 						.then( function ( jobsScreen ) {
 
@@ -49,15 +49,15 @@ module.exports = function () {
 									return driver
 									.back()
 									.sleep( 100 )
-									.waitForElementByName( elements.homeScreen.actions, 30000 )
+									.waitForElementById( elements.homeScreen.actions, 30000 )
 									.isDisplayed().should.eventually.be.true
 
 								} else if ( commons.isIOS() ) {
 									return driver
-									.elementByName( elements.jobsScreen.otherOptions.back )
+									.elementById( elements.jobsScreen.otherOptions.back )
 									.click()
 									.sleep( 100 )
-									.waitForElementByName( elements.homeScreen.actions, 30000 )
+									.waitForElementById( elements.homeScreen.actions, 30000 )
 									.isDisplayed().should.eventually.be.true
 								}
 							}

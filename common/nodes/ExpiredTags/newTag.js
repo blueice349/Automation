@@ -25,7 +25,7 @@ module.exports = function () {
 
 			var lastUser = Store.get( 'lastUser' );
 			return driver
-			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
+			.waitForElementById( elements.homeScreen.syncAllowed, 20000 )
 			.then( function () {
 
 				if ( lastUser.userRole === 'admin' 
@@ -44,10 +44,10 @@ module.exports = function () {
 			
 			if ( canCreate === true ) {
 				return driver
-				.elementByName( elements.tagRecord.tag + elements.homeScreen.plusButton )
+				.elementById( elements.tagRecord.tag + elements.homeScreen.plusButton )
 				.click()
 				.sleep( 1000 )
-				.elementByName( elements.tagRecord.propertyRef.property )
+				.elementById( elements.tagRecord.propertyRef.property )
 				.then( function ( property ) {
 
 					if ( textFieldReg ) {
@@ -55,7 +55,7 @@ module.exports = function () {
 						.sleep ( 1000 );
 					}
 				} )
-				.elementByName( elements.tagRecord.otherFields.licensePlate )
+				.elementById( elements.tagRecord.otherFields.licensePlate )
 				.then( function ( licensePlate ) {
 
 					if ( licensePlate ) {
@@ -64,9 +64,9 @@ module.exports = function () {
 					}
 				} )
 				.sleep( 1000 )
-				.elementByName( elements.formScreen.actions )
+				.elementById( elements.formScreen.actions )
 				.click().sleep ( 100 )
-				.elementByNameIfExists( elements.formScreen.save )
+				.elementByXPathIfExists( commons.textToXPath( elements.formScreen.save ) )
 				.then( function ( save ) {
 
 					if ( save ) {
@@ -76,7 +76,7 @@ module.exports = function () {
 
 					} else {
 						return driver
-						.elementByName( elements.formScreen.cancel )
+						.elementByXPath( commons.textToXPath( elements.formScreen.cancel ) )
 						.click()
 						.sleep( 1000 );
 					}

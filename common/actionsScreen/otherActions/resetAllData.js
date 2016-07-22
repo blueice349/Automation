@@ -23,17 +23,17 @@ module.exports = function () {
 
 		it( 'should wait for syncAllowed.'.green, function () {
 			return driver
-			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
+			.waitForElementById( elements.homeScreen.syncAllowed, 20000 )
 			.isDisplayed().should.eventually.be.true
 		} );
 
 		it( 'Should go to Actions Screen'.green, function() {
 			
 			return driver
-			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
-			.elementByName( elements.homeScreen.actions )
+			.waitForElementById( elements.homeScreen.syncAllowed, 20000 )
+			.elementById( elements.homeScreen.actions )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.homeScreen.actions )
+			.elementById( elements.homeScreen.actions )
 			.click()
 			.sleep( 800 )
 		} );
@@ -41,15 +41,15 @@ module.exports = function () {
 		it( 'should reset all data from actions screen.'.green, function () {
 
 			return driver
-			.elementByName( elements.actionsScreen.resetData )
+			.elementById( elements.actionsScreen.resetData )
 			.isDisplayed()
 			.then( function ( resetData ) {
 
 				if ( resetData === false ) {
 					return driver
-					.elementByName( elements.actionsScreen.about )
+					.elementById( elements.actionsScreen.about )
 					.isDisplayed().should.eventually.be.true
-					.elementByName( elements.actionsScreen.about )
+					.elementById( elements.actionsScreen.about )
 					.getLocation()
 					.then( function ( loc ) {
 
@@ -62,25 +62,25 @@ module.exports = function () {
 				}
 			} )
 			.sleep ( 1000 )
-			.elementByName( elements.actionsScreen.resetData )
+			.elementById( elements.actionsScreen.resetData )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.actionsScreen.resetData )
+			.elementById( elements.actionsScreen.resetData )
 			.click()
 			.sleep( 800 )
 			.then( function () {
 
 				return commons.alertText( alerts.actionsScreenAlerts.resetAllData.resetAllDataHeader );
 			} )
-			.elementByName( elements.alertButtons.deleteIt )
+			.elementByXPath( commons.textToXPath( elements.alertButtons.deleteIt ) )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.alertButtons.deleteIt )
+			.elementByXPath( commons.textToXPath( elements.alertButtons.deleteIt ) )
 			.click()
 		} );
 
 		it( 'should be on homeScreen from actionsScreen and wait for syncAllowed.'.green, function () {
 
 			return driver
-			.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
+			.waitForElementById( elements.homeScreen.syncAllowed, 120000 )
 			.isDisplayed().should.eventually.be.true
 		} );
 

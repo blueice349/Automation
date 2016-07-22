@@ -25,14 +25,14 @@ module.exports = function () {
 		it( 'Should go to Actions Screen'.green, function() {
 			
 			return driver
-			.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
+			.waitForElementById( elements.homeScreen.syncAllowed, 120000 )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.homeScreen.actions )
+			.elementById( elements.homeScreen.actions )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.homeScreen.actions )
+			.elementById( elements.homeScreen.actions )
 			.click()
 			.sleep( 800 )
-			.elementByName( elements.actionsScreen.drafts )
+			.elementById( elements.actionsScreen.drafts )
 			.isDisplayed().should.eventually.be.true
 		} );
 
@@ -45,9 +45,9 @@ module.exports = function () {
 			) {
 				console.log( 'Logged into a vehicle. Will log out of current vehicle'.red );
 				return driver
-				.elementByName( elements.actionsScreen.companyVehicle )
+				.elementById( elements.actionsScreen.companyVehicle )
 				.isDisplayed().should.eventually.be.ok
-				.elementByName( elements.actionsScreen.companyVehicle )
+				.elementById( elements.actionsScreen.companyVehicle )
 				.click()
 				.sleep( 1000 )
 			
@@ -65,9 +65,9 @@ module.exports = function () {
 			) {
 				console.log( 'user should perfom inspection'.red );
 				return commons.alertText( alerts.actionsScreenAlerts.companyVehicle.postInspection )
-				.elementByName( elements.alertButtons.no )
+				.elementByXPath( commons.textToXPath( elements.alertButtons.no ) )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.alertButtons.no )
+				.elementByXPath( commons.textToXPath( elements.alertButtons.no ) )
 				.click()
 				.then( function () {
 					
@@ -84,9 +84,9 @@ module.exports = function () {
 		
 			if ( commons.isIOS() ) {
 				return driver
-				.elementByName( elements.actionsScreen.back )
+				.elementById( elements.actionsScreen.back )
 				.isDisplayed().should.eventually.be.ok
-				.elementByName( elements.actionsScreen.back )
+				.elementById( elements.actionsScreen.back )
 				.click()
 
 			} else if ( commons.isAndroid() ) {

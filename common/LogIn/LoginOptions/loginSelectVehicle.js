@@ -26,12 +26,12 @@ module.exports = function () {
 			if ( lastUser.truckOption === true && lastUser.userRole != 'client' && lastUser.userRole != 'AdminClient' ) {
 				console.log( 'Select Vehicle'.red );
 				return driver
-				.waitForElementByName( elements.companyVehicle.vehicle1, 120000 )
+				.waitForElementByXPath( commons.textToXPath( elements.companyVehicle.vehicle1 ), 120000 )
 				.click()
 				.sleep( 1000 )
 				.then( function () {
 
-				config.isInVehicle = true;
+					config.isInVehicle = true;
 				} );
 
 			} else {
@@ -43,11 +43,10 @@ module.exports = function () {
 			
 			var lastUser = Store.get( 'lastUser' );
 			if ( lastUser.truckOption === true && lastUser.userRole != 'client' && lastUser.userRole != 'AdminClient' ) {
-				driver.sleep( 600 )
 				return commons.alertText( alerts.loginLogoutAlerts.noInspectionReviewHeader )
-				.waitForElementByName( elements.alertButtons.ok, 120000 )
+				.waitForElementByXPath( commons.textToXPath( elements.alertButtons.ok ), 120000 )
 				.click()
-				.sleep( 1000 )
+				.sleep( 1000 );
 				
 			} else {
 				console.log( 'User does not have vehcile selcect options enabled'.red );

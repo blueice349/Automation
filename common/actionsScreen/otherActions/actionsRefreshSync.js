@@ -23,17 +23,17 @@ module.exports = function () {
 
 		it( 'should wait for syncAllowed.'.green, function () {
 			return driver
-			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
+			.waitForElementById( elements.homeScreen.syncAllowed, 20000 )
 			.isDisplayed().should.eventually.be.true
 		} );
 
 		it( 'Should go to Actions Screen'.green, function() {
 			
 			return driver
-			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
-			.elementByName( elements.homeScreen.actions )
+			.waitForElementById( elements.homeScreen.syncAllowed, 20000 )
+			.elementById( elements.homeScreen.actions )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.homeScreen.actions )
+			.elementById( elements.homeScreen.actions )
 			.click()
 			.sleep( 800 )
 		} );
@@ -41,15 +41,15 @@ module.exports = function () {
 		it( 'should refresh / sync data with server from actions screen.'.green, function () {
 
 			return driver
-			.elementByName( elements.actionsScreen.sync )
+			.elementById( elements.actionsScreen.sync )
 			.isDisplayed()
 			.then( function ( sync ) {
 
 				if ( sync === false ) {
 					return driver
-					.elementByName( elements.actionsScreen.about )
+					.elementById( elements.actionsScreen.about )
 					.isDisplayed().should.eventually.be.true
-					.elementByName( elements.actionsScreen.about )
+					.elementById( elements.actionsScreen.about )
 					.getLocation()
 					.then( function ( loc ) {
 
@@ -62,9 +62,9 @@ module.exports = function () {
 				}
 			} )
 			.sleep ( 1000 )
-			.elementByName( elements.actionsScreen.sync )
+			.elementById( elements.actionsScreen.sync )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.actionsScreen.sync )
+			.elementById( elements.actionsScreen.sync )
 			.click()
 			.sleep( 800 )
 		} );
@@ -73,9 +73,9 @@ module.exports = function () {
 		
 			if ( commons.isIOS() ) {
 				return driver
-				.elementByName( elements.actionsScreen.back )
+				.elementById( elements.actionsScreen.back )
 				.isDisplayed().should.eventually.be.ok
-				.elementByName( elements.actionsScreen.back )
+				.elementById( elements.actionsScreen.back )
 				.click()
 
 			} else if ( commons.isAndroid() ) {
@@ -87,7 +87,7 @@ module.exports = function () {
 		it( 'should be on homeScreen from actionsScreen and wait for syncAllowed.'.green, function () {
 
 			return driver
-			.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
+			.waitForElementById( elements.homeScreen.syncAllowed, 120000 )
 			.isDisplayed().should.eventually.be.true
 		} );
 

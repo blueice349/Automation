@@ -29,12 +29,11 @@ module.exports = function () {
 			} else if ( lastUser.clockInOption === true && config.isClockedin != true ) {
 				console.log( lastUser.userRole.red + ' Has clockInOptions'.red );
 				return commons.alertText( alerts.loginLogoutAlerts.clockin )
-				.waitForElementByName( elements.alertButtons.clockIn, 120000 )
+				.waitForElementByXPath( commons.textToXPath( elements.alertButtons.clockIn ), 120000 )
 			    .click()
 			    .sleep( 1000 )
 				.then( function () {
 
-					console.log( 'Clock in made it to the end!' );
 					config.isClockedin = true;
 				} );
 			}

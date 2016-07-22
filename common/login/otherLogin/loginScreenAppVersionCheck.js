@@ -25,7 +25,7 @@ module.exports = function () {
 			
 			config.loginTest = true;
 			return driver
-			.elementByName( apps.appVersion )
+			.elementById( apps.appVersion )
 			.then( function ( appVersion ) {
 
 				if ( commons.isAndroid() || commons.isAndroid6() ) {

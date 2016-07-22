@@ -23,18 +23,18 @@ module.exports = function () {
 
 		it( 'should wait for syncAllowed.'.green, function () {
 			return driver
-			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
+			.waitForElementById( elements.homeScreen.syncAllowed, 20000 )
 			.isDisplayed().should.eventually.be.true
 		} );
 		
 		it( 'Should go to Actions Screen from homeScreen'.green, function() {
 			
 			return driver
-			.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
+			.waitForElementById( elements.homeScreen.syncAllowed, 120000 )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.homeScreen.actions )
+			.elementById( elements.homeScreen.actions )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.homeScreen.actions )
+			.elementById( elements.homeScreen.actions )
 			.click()
 			.sleep( 800 )
 		} );
@@ -42,12 +42,12 @@ module.exports = function () {
 		it( 'Should go to the drafts Screen from the actions screen.'.green, function () {
 
 			return driver
-			.elementByName( elements.actionsScreen.drafts )
+			.elementById( elements.actionsScreen.drafts )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.actionsScreen.drafts )
+			.elementById( elements.actionsScreen.drafts )
 			.click()
 			.sleep( 800 )
-			.elementByNameIfExists( elements.draftsScreen.search )
+			.elementByIdIfExists( elements.draftsScreen.search )
 			.then( function ( hideKeyboard ) {
 
 				if ( hideKeyboard  
@@ -63,7 +63,7 @@ module.exports = function () {
 		it( 'Should click on first draft from actions screen --> drafts screen.'.green, function () {
 
 			return driver
-			.elementByNameIfExists( commons.getItem( elements.draftsScreen.draft, 0 ) )
+			.elementByIdIfExists( commons.getItem( elements.draftsScreen.draft, 0 ) )
 			.then( function ( drafts ) {
 
 				if ( drafts ) {
@@ -87,13 +87,13 @@ module.exports = function () {
 			if ( config.canView === true ) {
 				console.log( 'User has a draft to view.'.red );
 				return driver
-				.waitForElementByName( elements.draftsScreen.view, 10000 )
+				.waitForElementByXPath( commons.textToXPath(  elements.draftsScreen.view ), 10000 )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.draftsScreen.edit )
+				.elementByXPath( commons.textToXPath( elements.draftsScreen.edit ) )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.draftsScreen.cancel )
+				.elementByXPath( commons.textToXPath( elements.draftsScreen.cancel ) )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.draftsScreen.edit )
+				.elementByXPath( commons.textToXPath(  elements.draftsScreen.edit ) )
 				.isDisplayed().should.eventually.be.true
 				.sleep( 2000 )
 			
@@ -107,7 +107,7 @@ module.exports = function () {
 			if ( config.canView === true ) {
 				console.log( 'User has a draft to view.'.red );
 				return driver
-				.elementByName( elements.draftsScreen.view )
+				.elementByXPath( commons.textToXPath( elements.draftsScreen.view ) )
 				.click()
 			
 			} else {
@@ -132,9 +132,9 @@ module.exports = function () {
 					   && config.canView === true 
 			) {
 				return driver
-				.elementByName( elements.formScreen.back )
+				.elementById( elements.formScreen.back )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.formScreen.back )
+				.elementById( elements.formScreen.back )
 				.click()
 				.sleep( 1000 )
 				.then( function () {
@@ -153,15 +153,15 @@ module.exports = function () {
 
 			if ( commons.isIOS() ) {
 				return driver
-				.waitForElementByName( elements.actionsScreen.drafts, 120000 )
+				.waitForElementById( elements.actionsScreen.drafts, 120000 )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.actionsScreen.back )
+				.elementById( elements.actionsScreen.back )
 				.isDisplayed().should.eventually.be.true
 				.sleep( 1000 )
 
 			} else if ( commons.isAndroid() ) {
 				return driver
-				.waitForElementByName( elements.actionsScreen.drafts, 120000 )
+				.waitForElementById( elements.actionsScreen.drafts, 120000 )
 				.isDisplayed().should.eventually.be.true
 				.sleep( 1000 )
 			}
@@ -171,7 +171,7 @@ module.exports = function () {
 
 			if ( commons.isIOS() ) {
 				return driver
-				.elementByName( elements.actionsScreen.back )
+				.elementById( elements.actionsScreen.back )
 				.click()
 				.sleep( 1000 )
 
@@ -185,20 +185,20 @@ module.exports = function () {
 		it( 'Should wait for syncAllowed and sync data.'.green, function () {
 
 			return driver
-			.waitForElementByName( elements.homeScreen.syncAllowed, 30000 )
-			.elementByName( elements.homeScreen.syncAllowed )
+			.waitForElementById( elements.homeScreen.syncAllowed, 30000 )
+			.elementById( elements.homeScreen.syncAllowed )
 			.click()
 			.sleep ( 2000 )
-			.elementByNameIfExists( elements.homeScreen.actions )
+			.elementByIdIfExists( elements.homeScreen.actions )
 			.isDisplayed()
 			.then( function ( homeScreen ) {
 
 				if ( homeScreen === false ) {
 					if ( commons.isIOS() ) {
 						return driver
-						.waitForElementByName( elements.jobsScreen.otherOptions.back, 10000 )
+						.waitForElementById( elements.jobsScreen.otherOptions.back, 10000 )
 						.isDisplayed().should.eventually.be.true
-						.elementByName( elements.jobsScreen.otherOptions.back )
+						.elementById( elements.jobsScreen.otherOptions.back )
 						.click()
 						.sleep( 1000 );
 

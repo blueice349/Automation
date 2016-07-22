@@ -20,7 +20,7 @@ module.exports = function () {
 		it( 'Should make sure lastUser is on homeScreen.'.green, function () {
 			
 			return driver
-			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
+			.waitForElementById( elements.homeScreen.syncAllowed, 20000 )
 			.isDisplayed().should.eventually.be.true
 		} );
 
@@ -38,9 +38,9 @@ module.exports = function () {
 			) {
 				console.log( lastUser.userRole + ': User is allowed to create new node'.red );
 				return driver
-				.elementByName( elements.mobile_MikeRecord.mobileMike + elements.homeScreen.plusButton )
+				.elementById( elements.mobile_MikeRecord.mobileMike + elements.homeScreen.plusButton )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.mobile_MikeRecord.mobileMike + elements.homeScreen.plusButton )
+				.elementById( elements.mobile_MikeRecord.mobileMike + elements.homeScreen.plusButton )
 				.click()
 				.sleep( 1000 )
 				.then( function () {
@@ -60,7 +60,7 @@ module.exports = function () {
 				if ( commons.isAndroid() ) {
 					return driver
 					.sleep( 1000 ) 
-					.elementByNameIfExists( elements.mobile_MikeRecord.otherFields.textFieldReq )
+					.elementByIdIfExists( elements.mobile_MikeRecord.otherFields.textFieldReq )
 					.isDisplayed()
 					.then( function ( keyboard ) {
 						
@@ -90,13 +90,13 @@ module.exports = function () {
 			} else if ( config.canCreate === true ) {
 				console.log( 'User should enter text into textFieldReq'.red );
 				return driver
-				.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq )
+				.elementById( elements.mobile_MikeRecord.otherFields.textFieldReq )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq )
+				.elementById( elements.mobile_MikeRecord.otherFields.textFieldReq )
 				.text()
 				.then( function ( textFieldReqText ) {
 					if ( textFieldReqText === '' ) {
-						var textFieldReq = driver.elementByName( elements.mobile_MikeRecord.otherFields.textFieldReq );
+						var textFieldReq = driver.elementById( elements.mobile_MikeRecord.otherFields.textFieldReq );
 						return commons.sendKeys( textFieldReq, lastUser.userName + ' Required Field' );
 					} else {
 						return
@@ -116,9 +116,9 @@ module.exports = function () {
 			} else if ( config.canCreate === true ) {
 				console.log( 'User should add text in the textFieldCond field'.red );
 				return driver
-				.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
+				.elementById( elements.mobile_MikeRecord.otherFields.textFieldCond )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.mobile_MikeRecord.otherFields.textFieldCond )
+				.elementById( elements.mobile_MikeRecord.otherFields.textFieldCond )
 				.then( function ( textFieldCond ) {
 					
 					return commons.sendKeys( textFieldCond, lastUser.userName + ' Conditional Field' );
@@ -134,14 +134,14 @@ module.exports = function () {
 			} else if ( config.canCreate === true  ) {
 				console.log( 'User should have click Actions --> Save 3rd time'.red );
 				return driver
-				.elementByName( elements.formScreen.actions )
+				.elementById( elements.formScreen.actions )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.formScreen.actions )
+				.elementById( elements.formScreen.actions )
 				.click()
 				.sleep ( 100 )
-				.elementByName( elements.formScreen.saveAsDraft )
+				.elementByXPath( commons.textToXPath( elements.formScreen.saveAsDraft ) )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.formScreen.saveAsDraft )
+				.elementByXPath( commons.textToXPath( elements.formScreen.saveAsDraft ) )
 				.click()
 				.sleep( 2000 )
 			}
@@ -151,11 +151,11 @@ module.exports = function () {
 
 			console.log( 'User should be at the homeScreen and wait for the syncAllowed.'.red );
 			return driver
-			.waitForElementByName( elements.homeScreen.syncAllowed, 30000 )
+			.waitForElementById( elements.homeScreen.syncAllowed, 30000 )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.homeScreen.actions )
+			.elementById( elements.homeScreen.actions )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.homeScreen.syncAllowed )
+			.elementById( elements.homeScreen.syncAllowed )
 			.click()
 			.sleep ( 2000 )
 		} );

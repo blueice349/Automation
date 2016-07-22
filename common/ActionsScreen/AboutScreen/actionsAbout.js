@@ -20,11 +20,11 @@ module.exports = function () {
 		it( 'Should go to Actions Screen from homeScreen'.green, function() {
 			
 			return driver
-			.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
+			.waitForElementById( elements.homeScreen.syncAllowed, 120000 )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.homeScreen.actions )
+			.elementById( elements.homeScreen.actions )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.homeScreen.actions )
+			.elementById( elements.homeScreen.actions )
 			.click()
 			.sleep( 800 )
 		} );
@@ -32,11 +32,11 @@ module.exports = function () {
 		it( 'should go to aboutScreen from actions screen.'.green, function () {
 
 			return driver
-			.waitForElementByName( elements.actionsScreen.drafts, 20000 )
+			.waitForElementById( elements.actionsScreen.drafts, 20000 )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.actionsScreen.about )
+			.elementById( elements.actionsScreen.about )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.actionsScreen.about )
+			.elementById( elements.actionsScreen.about )
 			.click()
 			.sleep( 1000 )
 		} );
@@ -44,7 +44,7 @@ module.exports = function () {
 		it( 'should check for "Omadi Logo" on aboutScreen.'.green, function () {
 
 			return driver
-			.elementByName( elements.aboutScreen.logo )
+			.elementById( elements.aboutScreen.logo )
 			.isDisplayed().should.eventually.be.true
 		} );
 
@@ -52,7 +52,7 @@ module.exports = function () {
 
 			var lastUser = Store.get( 'lastUser' );	
 			return driver
-			.elementByName( apps.appVersion )
+			.elementById( apps.appVersion )
 			.then( function ( appVersion ) {
 
 				if ( commons.isAndroid() || commons.isAndroid6() ) {
@@ -69,21 +69,21 @@ module.exports = function () {
 		it( 'should check for "Singed into account as user" on aboutScreen.'.green, function () {
 
 			return driver
-			.elementByName( elements.aboutScreen.signedInto )
+			.elementById( elements.aboutScreen.signedInto )
 			.isDisplayed().should.eventually.be.true
 		} );
 
 		it( 'should check for "Last Synced Time" on aboutScreen.'.green, function () {
 
 			return driver
-			.elementByName( elements.aboutScreen.syncTime )
+			.elementById( elements.aboutScreen.syncTime )
 			.isDisplayed().should.eventually.be.true
 		} );
 
 		it( 'should check for "Terms of Service" on aboutScreen.'.green, function () {
 
 			return driver
-			.elementByName( elements.aboutScreen.terms )
+			.elementById( elements.aboutScreen.terms )
 			.isDisplayed().should.eventually.be.true
 		} );
 
@@ -92,15 +92,15 @@ module.exports = function () {
 
 			if ( commons.isIOS() ) {
 				return driver
-				.waitForElementByName( elements.aboutScreen.back, 10000 )
+				.waitForElementById( elements.aboutScreen.back, 10000 )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.aboutScreen.back )
+				.elementById( elements.aboutScreen.back )
 				.click()
 
 			} else if ( commons.isAndroid() ) {
 				return driver
 				.back()
-				.waitForElementByName( elements.actionsScreen.drafts, 20000 )
+				.waitForElementById( elements.actionsScreen.drafts, 20000 )
 				.isDisplayed().should.eventually.be.true
 			}
 		} );
@@ -109,14 +109,14 @@ module.exports = function () {
 
 			if ( commons.isIOS() ) {
 				return driver
-				.waitForElementByName( elements.actionsScreen.back, 120000 )
+				.waitForElementById( elements.actionsScreen.back, 120000 )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.actionsScreen.back )
+				.elementById( elements.actionsScreen.back )
 				.click()
 
 			} else if ( commons.isAndroid() ) {
 				return driver
-				.waitForElementByName( elements.actionsScreen.drafts, 20000 )
+				.waitForElementById( elements.actionsScreen.drafts, 20000 )
 				.isDisplayed().should.eventually.be.true
 				.back().sleep( 100 )
 			}

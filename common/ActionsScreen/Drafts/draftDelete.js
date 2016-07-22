@@ -23,18 +23,18 @@ module.exports = function () {
 
 		it( 'should wait for syncAllowed.'.green, function () {
 			return driver
-			.waitForElementByName( elements.homeScreen.syncAllowed, 20000 )
+			.waitForElementById( elements.homeScreen.syncAllowed, 20000 )
 			.isDisplayed().should.eventually.be.true
 		} );
 		
 		it( 'Should go to Actions Screen'.green, function() {
 			
 			return driver
-			.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
+			.waitForElementById( elements.homeScreen.syncAllowed, 120000 )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.homeScreen.actions )
+			.elementById( elements.homeScreen.actions )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.homeScreen.actions )
+			.elementById( elements.homeScreen.actions )
 			.click()
 			.sleep( 800 )
 		} );
@@ -42,12 +42,12 @@ module.exports = function () {
 		it( 'Should go to the drafts Screen from the actions screen.'.green, function () {
 
 			return driver
-			.elementByName( elements.actionsScreen.drafts )
+			.elementById( elements.actionsScreen.drafts )
 			.isDisplayed().should.eventually.be.true
-			.elementByName( elements.actionsScreen.drafts )
+			.elementById( elements.actionsScreen.drafts )
 			.click()
 			.sleep( 800 )
-			.elementByNameIfExists( elements.draftsScreen.search )
+			.elementByIdIfExists( elements.draftsScreen.search )
 			.then( function ( hideKeyboard ) {
 
 				if ( hideKeyboard && commons.isAndroid() ) {
@@ -61,18 +61,18 @@ module.exports = function () {
 		it( 'Should delete draft(s) from actions screen --> drafts screen.'.green, function () {
 
 			return driver
-			.elementByNameIfExists( commons.getItem( elements.draftsScreen.draft, 0 ) )
+			.elementByIdIfExists( commons.getItem( elements.draftsScreen.draft, 0 ) )
 			.then( function ( drafts ) {
 
 				if ( drafts ) {
 					return drafts
 					.click()
 					.sleep( 1000 )
-					.waitForElementByName( elements.alertButtons.deleteRecord, 10000 )
+					.waitForElementByXPath( commons.textToXPath( elements.alertButtons.deleteRecord ), 10000 )
 					.isDisplayed().should.eventually.be.true
-					.elementByName( elements.alertButtons.deleteRecord )
+					.elementByXPath( commons.textToXPath( elements.alertButtons.deleteRecord ) )
 					.click()
-					.sleep( 2000 )
+					.sleep( 2000 );
 
 				} else {
 					console.log( 'No Drafts to Delete.'.red);
@@ -84,9 +84,9 @@ module.exports = function () {
 			
 			if ( commons.isIOS() ) {
 				return driver
-				.elementByName( elements.draftsScreen.back )
+				.elementById( elements.draftsScreen.back )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.draftsScreen.back )
+				.elementById( elements.draftsScreen.back )
 				.click()
 				.sleep( 1000 )
 
@@ -100,20 +100,20 @@ module.exports = function () {
 		it( 'Should go back to the homeScreen from actionsScreen.'.green, function() {
 
 			return driver
-			.waitForElementByName( elements.actionsScreen.drafts, 120000 )
+			.waitForElementById( elements.actionsScreen.drafts, 120000 )
 			.then( function () {
 
 				if ( commons.isIOS() ) {
 					return driver
-					.elementByName( elements.actionsScreen.back )
+					.elementById( elements.actionsScreen.back )
 					.isDisplayed().should.eventually.be.true
-					.elementByName( elements.actionsScreen.back )
+					.elementById( elements.actionsScreen.back )
 					.click()
 					.sleep( 1000 )
 
 				} else if ( commons.isAndroid() ) {
 					return driver
-					.waitForElementByName( elements.actionsScreen.drafts, 3000 )
+					.waitForElementById( elements.actionsScreen.drafts, 3000 )
 					.isDisplayed().should.eventually.be.true
 					.sleep( 200 )
 					.back()
@@ -121,22 +121,22 @@ module.exports = function () {
 				}
 			} )
 
-			.waitForElementByName( elements.homeScreen.syncAllowed )
+			.waitForElementById( elements.homeScreen.syncAllowed )
 			.then( function ( sync ) {
 
 				if ( sync ) {
 					return driver
-					.elementByName( elements.homeScreen.syncAllowed )
+					.elementById( elements.homeScreen.syncAllowed )
 					.click()
 					.sleep ( 2000 )
-					.elementByName( elements.homeScreen.actions )
+					.elementById( elements.homeScreen.actions )
 					.isDisplayed()
 					.then( function ( homeScreen ) {
 
 						if ( !homeScreen ) {
 							if ( commons.isIOS() ) {
 								return driver
-								.waitForElementByName( elements.jobsScreen.otherOptions.back, 10000 )
+								.waitForElementById( elements.jobsScreen.otherOptions.back, 10000 )
 								.click()
 								.sleep( 1000 );
 

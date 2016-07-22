@@ -25,52 +25,52 @@ module.exports = function () {
 	     	//Checks for buttons to be displayed on main menu after log on.
 			if ( lastUser.userRole == 'admin' || lastUser.userRole == 'driver' ) {
 				return driver
-				.elementByName( lastUser.name )
+				.elementByXPath( commons.textToXPath( lastUser.name ) )
 				.text().should.eventually.become( lastUser.name )
-				.elementByName( elements.homeScreen.actions )
+				.elementById( elements.homeScreen.actions )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.homeScreen.logout )
+				.elementById( elements.homeScreen.logout )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.homeScreen.syncAllowed )
+				.elementById( elements.homeScreen.syncAllowed )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.homeScreen.alerts )
+				.elementById( elements.homeScreen.alerts )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.homeScreen.jobs )
+				.elementById( elements.homeScreen.jobs )
 				.isDisplayed().should.eventually.be.true
 				.then( function () {
 
 					if ( lastUser.tagButton == true ) {
 						return driver
-						.elementByName( elements.homeScreen.expiredTags )
+						.elementById( elements.homeScreen.expiredTags )
 						.isDisplayed().should.eventually.be.true
 					}
 				} );
 
 			} else if ( lastUser.userRole === 'client' || lastUser.userRole === 'AdminClient' ) {
 				return driver
-				.elementByName( lastUser.name )
+				.elementByXPath( commons.textToXPath( lastUser.name ) )
 				.text().should.eventually.become( lastUser.name )
-				.elementByName( elements.homeScreen.actions )
+				.elementById( elements.homeScreen.actions )
 				.isDisplayed().should.eventually.be.true
-				.elementByName( elements.homeScreen.logout )
+				.elementById( elements.homeScreen.logout )
 				.isDisplayed().should.eventually.be.true
-				.waitForElementByName( elements.homeScreen.syncAllowed, 120000 )
+				.waitForElementById( elements.homeScreen.syncAllowed, 120000 )
 				.isDisplayed().should.eventually.be.true	
-				.elementByNameIfExists( elements.homeScreen.alerts )
+				.elementByIdIfExists( elements.homeScreen.alerts )
 				.then( function ( alerts ) {
 
 					if ( alerts ) {
 						assert.fail( 'The following element exist and should not exist '.red + alerts );
 					}
 				} )
-				.elementByNameIfExists( elements.homeScreen.expiredTags )
+				.elementByIdIfExists( elements.homeScreen.expiredTags )
 				.then( function ( expiredTags ) {
 
 					if ( expiredTags ) {
 						assert.fail( 'The following element exist and should not exist '.red + alerts );
 					}
 				} )
-				.elementByNameIfExists( elements.homeScreen.jobs )
+				.elementByIdIfExists( elements.homeScreen.jobs )
 				.then( function ( jobs ) {
 
 					if ( jobs ) {

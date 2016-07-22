@@ -10,7 +10,7 @@
 
 //ios Simulator #1
 exports.iosSim1 = {
-  'appium-version'  : '1.4',
+  'appium-version'  : '1.5.3',
   'platformName'    : 'iOS',
   'platformVersion' : '9.3',
   'deviceName'      : 'iPhone 6 Plus'
@@ -18,7 +18,7 @@ exports.iosSim1 = {
 
 //Omadi - iPhone 6Plus
 exports.iosDevice1 = {
-  'appium-version'  : '1.4',
+  'appium-version'  : '1.5.3',
   'platformName'    : 'iOS',
   'platformVersion' : '9.2',
   'deviceName'      : 'Automation iPhone 6Plus',
@@ -27,7 +27,7 @@ exports.iosDevice1 = {
 
 //Mikes - iPhone 6Plus
 exports.iosDevice2 = {
-  'appium-version'  : '1.4',
+  'appium-version'  : '1.5.3',
   'platformName'    : 'iOS',
   'platformVersion' : '9.3',
   'deviceName'      : 'Mike\'s iPhone 6 Plus',
@@ -36,7 +36,7 @@ exports.iosDevice2 = {
 
 //Lukes iPohne
 exports.iosDevice3 = {
-  'appium-version'  : '1.4',
+  'appium-version'  : '1.5.3',
   'platformName'    : 'iOS',
   'platformVersion' : '8.4',
   'deviceName'      : 'Luke’s iPhone',
@@ -44,7 +44,7 @@ exports.iosDevice3 = {
 };
 
 exports.androidSim1 = {
-  'appium-version'  : '1.4',
+  'appium-version'  : '1.5.3',
   'platformName'    : 'Android',
   'platformVersion' : '6.0',
   'deviceName'      : 'Google Nexus 9 - 6.0.0 - API 23 - 1536x2048'
@@ -52,7 +52,7 @@ exports.androidSim1 = {
 
 //Omadi LG Phone
 exports.androidDevice1 = {
-	'appium-version'  : '1.4',
+	'appium-version'  : '1.5.3',
 	'platformName'    : 'Android',
 	'platformVersion' : '5.1',
 	'deviceName'      : 'LGH810e6f02f08'
@@ -60,7 +60,7 @@ exports.androidDevice1 = {
 
 //Mikes Note
 exports.androidDevice2 = {
-	'appium-version'  : '1.4',
+	'appium-version'  : '1.5.3',
 	'platformName'    : 'Android',
 	'platformVersion' : '5.0',
 	'deviceName'      : '13a44a71'
@@ -68,7 +68,7 @@ exports.androidDevice2 = {
 
 //Omadi Samsung Galaxy S6
 exports.androidDevice3 = {
-  'appium-version'  : '1.4',
+  'appium-version'  : '1.5.3',
   'platformName'    : 'Android',
   'platformVersion' : '5.1.1',
   'deviceName'      : 'SM-G920T'
@@ -76,8 +76,8 @@ exports.androidDevice3 = {
 
 //Omadi Samsun Galaxy S7 Edge
 exports.androidDevice4 = {
-  'appium-version'  : '1.4',
+  'appium-version'  : '1.5.3',
   'platformName'    : 'Android',
-  'platformVersion' : '6.0',
+  'platformVersion' : '6.0.1',
   'deviceName'      : 'SM-G935V'
 };

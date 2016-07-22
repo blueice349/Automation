@@ -1,6 +1,5 @@
  
 var apps    = require( './apps.js' );
-var commons = require( './commons.js' );
 
 exports.androidCustomId = {
 	'button1' : 'android:id/button1',
@@ -9,13 +8,14 @@ exports.androidCustomId = {
 }
 
  exports.loginScreen = {
- 	'appVersion'    : apps.appVersion,    
-	'clientAccount' : 'clientAccount.',
-	'userName'      : 'userName.',
-	'password'      : 'password.',
-	'acceptTerms'   : 'acceptTermsCheckBox.',
-	'loginButton'   : 'logInButton.',
-	'logo'          : 'loginLogo.'
+ 	'appVersion'         : apps.appVersion,    
+	'clientAccount'      : 'clientAccount.',
+	'userName'           : 'userName.',
+	'password'           : 'password.',
+	'agreedToTerms'      : 'agreedToTermsCheckBox.',
+	'needToAgreeToTerms' : 'notAgreedToTermsCheckBox.',
+	'loginButton'        : 'logInButton.',
+	'logo'               : 'loginLogo.'
 }
 
 exports.config = {
@@ -232,13 +232,15 @@ exports.jobsScreen = {
 }
 
 exports.recentScreen = {
-	'back'        : 'recentBackButton.',
-	'savedTab'    : 'Recently Saved',
-	'viewedTab'   : 'Recently Viewed',
-	'recentNode'  : 'recentNode', // recentNode + # + .
-	'search'      : 'recentSearch.',
-	'view'        : 'View',
-	'viewOnline'  : 'View Online'
+	'back'          : 'recentBackButton.',
+	'savedTab'      : 'recentSavedTab.',
+	'savedTabText'  : 'Recently Saved',
+	'viewedTab'     : 'recentViewedTab.',
+	'viewedTabText' : 'Recently Viewed',
+	'recentNode'    : 'recentNode', // recentNode + # + .
+	'search'        : 'recentSearch.',
+	'view'          : 'View',
+	'viewOnline'    : 'View Online'
 }
 
 exports.expiredTagsScreen = {

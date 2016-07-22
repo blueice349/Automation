@@ -9,11 +9,17 @@ exports.configure = function ( driver ) {
 
   driver.on( 'command', function ( meth, path, data ) {
 
-    console.log( ' > ' + meth.yellow, path.magenta, data || '' );
+    var timestamp   = require( 'console-timestamp' );
+    var currentTime = timestamp( 'MM-DD hh:mm:ss:iii' );
+
+    console.log( ' > '.yellow + currentTime.yellow + ' ' + meth.yellow, path.magenta, data || '' );
   } );
 
   driver.on( 'http', function ( meth, path, data ) {
 
-    console.log( ' > ' + meth.magenta, path.cyan, (data || '' ).cyan );
+    var timestamp   = require( 'console-timestamp' );
+    var currentTime = timestamp( 'MM-DD hh:mm:ss:iii' );
+
+    console.log( ' > '.magenta + currentTime.magenta + ' ' + meth.magenta, path.cyan, ( data || '' ).cyan );
   } );
 };
