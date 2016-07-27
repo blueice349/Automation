@@ -74,15 +74,15 @@ module.exports = function () {
 			if ( config.canView === true ) {
 				console.log( 'User has access to recentTab.'.red );
 				return driver
-				.elementById( elements.recentScreen.savedTab )
+				.elementByXPath( commons.textToXPath( elements.recentScreen.savedTabText ) )
 				.isDisplayed().should.eventually.be.true
-				.elementById( elements.recentScreen.savedTab )
+				.elementByXPath( commons.textToXPath( elements.recentScreen.savedTabText ) )
 				.click()
 			
 			} else if ( config.canView === false ) {
 				console.log( 'User does "NOT" have access to recentTab.'.red );
 				return driver
-				.elementByIdIfExists( elements.recentScreen.savedTab )
+				.elementByXPathIfExists( commons.textToXPath( elements.recentScreen.savedTabText ) )
 				.then( function ( savedTab ) {
 
 					if ( savedTab ) {

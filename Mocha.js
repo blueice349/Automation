@@ -74,8 +74,7 @@ for ( var i in args ) {
 	}
 }
 
-
-var commons  = require( './helpers/Commons' );
+var commons = require( './helpers/Commons' );
 	//wd.addPromiseChainMethod( 'inputKeys', commons.sendKeys );
 	// wd.addPromiseChainMethod( 'inputKeys', function ( config, keys ) {
 

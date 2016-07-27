@@ -95,11 +95,11 @@ module.exports = function () {
 			if ( config.canView === true ) {
 				console.log( 'User has access to recentTab.'.red );
 				return driver
-				.elementById( elements.recentScreen.viewedTab )
+				.elementByXPath( commons.textToXPath( elements.recentScreen.viewedTabText ) )
 				.isDisplayed().should.eventually.be.true
-				.elementById( elements.recentScreen.viewedTab )
+				.elementByXPath( commons.textToXPath( elements.recentScreen.viewedTabText ) )
 				.text().should.eventually.contain( elements.recentScreen.viewedTabText )
-				.elementById( elements.recentScreen.viewedTab )
+				.elementByXPath( commons.textToXPath( elements.recentScreen.viewedTabText ) )
 				.click()
 				.elementById( elements.recentScreen.search )
 				.isDisplayed().should.eventually.be.true
@@ -107,7 +107,7 @@ module.exports = function () {
 			} else if ( config.canView === false ) {
 				console.log( 'User does "NOT" have access to recentTab.'.red );
 				return driver
-				.elementByIdIfExists( elements.recentScreen.viewedTab )
+				.elementByXPathIfExists( commons.textToXPath( elements.recentScreen.viewedTabText ) )
 				.then( function ( viewedTab ) {
 
 					if ( viewedTab ) {
@@ -122,11 +122,11 @@ module.exports = function () {
 			if ( config.canView === true ) {
 				console.log( 'User has access to recentTab.'.red );
 				return driver
-				.elementById( elements.recentScreen.savedTab )
+				.elementByXPath( commons.textToXPath( elements.recentScreen.savedTabText ) )
 				.isDisplayed().should.eventually.be.true
-				.elementById( elements.recentScreen.savedTab )
+				.elementByXPath( commons.textToXPath( elements.recentScreen.savedTabText ) )
 				.text().should.eventually.contain( elements.recentScreen.savedTabText )
-				.elementById( elements.recentScreen.savedTab )
+				.elementByXPath( commons.textToXPath( elements.recentScreen.savedTabText ) )
 				.click()
 				.elementById( elements.recentScreen.search )
 				.isDisplayed().should.eventually.be.true
@@ -134,7 +134,7 @@ module.exports = function () {
 			} else if ( config.canView === false ) {
 				console.log( 'User does "NOT" have access to recentTab.'.red );
 				return driver
-				.elementByIdIfExists( elements.recentScreen.savedTab )
+				.elementByXPathIfExists( commons.textToXPath( elements.recentScreen.savedTabText ) )
 				.then( function ( savedTab ) {
 
 					if ( savedTab ) {
