@@ -1,5 +1,5 @@
  
-var apps    = require( './apps.js' );
+var apps = require( './apps.js' );
 
 exports.androidCustomId = {
 	'button1' : 'android:id/button1',

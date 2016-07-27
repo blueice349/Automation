@@ -66,8 +66,22 @@ module.exports = function () {
 
 			config.loginTest = true;
 			return driver
-			.elementById( elements.loginScreen.acceptTerms )
-			.click()		} );
+			.elementByIdIfExists( elements.loginScreen.needToAgreeToTerms )
+			.then( function ( el ) {
+
+				if ( el ) {
+					return el
+					.click()
+					.sleep( 1000 );
+
+				} else {
+					console.log( 'Terms are already acceppted.'.red );
+					return driver
+					.elementById( elements.loginScreen.agreedToTerms )
+					.isDisplayed().should.eventually.be.true;
+				}
+			} );
+		} );
 
 		it( 'Should click the loginButton.'.green, function () {
 

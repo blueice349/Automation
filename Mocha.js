@@ -9,10 +9,9 @@ var args          = process.argv.slice( 2 );
 var config        = require( './helpers/Config' );
 var actions       = require( './helpers/actions' );
 var elements      = require( './helpers/elements' );
-
-var desired;
 var timeout       = 180000;
 var simulator     = false;
+var desired;
 wd.addPromiseChainMethod( 'swipe', actions.swipe );
 
 for ( var i in args ) {
@@ -77,24 +76,24 @@ for ( var i in args ) {
 
 
 var commons  = require( './helpers/Commons' );
-//wd.addPromiseChainMethod( 'inputKeys', commons.sendKeys );
-// wd.addPromiseChainMethod( 'inputKeys', function ( config, keys ) {
+	//wd.addPromiseChainMethod( 'inputKeys', commons.sendKeys );
+	// wd.addPromiseChainMethod( 'inputKeys', function ( config, keys ) {
 
-// 	if ( config.desired.platformName == 'Android' ) {
-// 		return this
-// 		.click()
-// 		.clear()
-// 		.sendKeys( keys )
-// 		.hideKeyboard();
-	
-// 	} else if ( config.desired.platformName == 'IOS' ) {
-// 		return this
-// 		.click()
-// 		.elementByName( 'space' ).isDisplayed().should.eventually.be.true
-// 		.clear()
-// 		.sendKeys( keys );
-// 	}
-// } );
+	// 	if ( config.desired.platformName == 'Android' ) {
+	// 		return this
+	// 		.click()
+	// 		.clear()
+	// 		.sendKeys( keys )
+	// 		.hideKeyboard();
+		
+	// 	} else if ( config.desired.platformName == 'IOS' ) {
+	// 		return this
+	// 		.click()
+	// 		.elementByName( 'space' ).isDisplayed().should.eventually.be.true
+	// 		.clear()
+	// 		.sendKeys( keys );
+	// 	}
+	// } );
 var driver = wd.promiseChainRemote( serverConfigs.local );
 config.set( {
 	'driver'   : driver,

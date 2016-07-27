@@ -152,12 +152,12 @@ module.exports = function () {
 
 			config.loginTest = true;
 			return driver
-			.elementByIdIfExist( elements.loginScreen.needToAgreeToTerms )
+			.elementByIdIfExists( elements.loginScreen.needToAgreeToTerms )
 			.then( function ( needToAgreeToTerms ) {
 				
 				if ( needToAgreeToTerms ) {
 					return needToAgreeToTerms
-					.isDisplayed().should.eventually.become.true
+					.isDisplayed().should.eventually.be.true
 					.elementById( elements.loginScreen.needToAgreeToTerms )
 					.click()
 					.elementById( elements.loginScreen.loginButton )
@@ -167,11 +167,12 @@ module.exports = function () {
 					return driver
 					.elementById( elements.loginScreen.agreedToTerms )
 					.isDisplayed()
-					.should.eventually.become.true
+					.should.eventually.be.true
 					.elementById( elements.loginScreen.loginButton )
 					.click()
 					.sleep( 3000 );
 				}
+			} );
 		} );
 
 		it( 'should check for permissions'.green, function () {

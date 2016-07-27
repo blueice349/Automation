@@ -25,34 +25,34 @@ module.exports = function () {
 			
 			config.loginTest = true;
 			return driver
-			.waitForElementById( elements.loginScreen.clientAccount, 120000 )
-			.isDisplayed()
-			.then( function ( el ) {
-
-				if ( el === true ) {
-					return driver
-					.elementById( elements.loginScreen.clientAccount )
-					.isDisplayed().should.eventually.be.true
-
-				} else {
-					return driver
-					.sleep( 4000 )
-				}
-			} )
+			.sleep( 2000 )
+			.elementById( elements.loginScreen.clientAccount )
+			.isDisplayed().should.eventually.be.true
 			.elementById( elements.loginScreen.userName )
 			.isDisplayed().should.eventually.be.true
 			.elementById( elements.loginScreen.password )
 			.isDisplayed().should.eventually.be.true
 			.elementById( elements.loginScreen.loginButton )
 			.isDisplayed().should.eventually.be.true
-			.elementById( elements.loginScreen.acceptTerms )
-			.isDisplayed().should.eventually.be.true
+			.elementByIdIfExists( elements.loginScreen.needToAgreeToTerms )
+			.then( function ( el ) {
+
+				if ( el ) {
+					return el 
+					.isDisplayed().should.eventually.be.true;
+
+				} else {
+					return driver
+					.elementById( elements.loginScreen.agreedToTerms )
+					.isDisplayed().should.eventually.be.true;
+				}
+			} );
 		} );
 		
 		it( 'should set currentTest to "passed".'.green, function ( done ) {
 			
 			config.loginTest = true;	
-			console.log( 'appVersion check test has Completed....'.green );
+			console.log( 'loginScreenElement check test has Completed....'.green );
 			done();
 		} );
 	} );

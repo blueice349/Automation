@@ -25,14 +25,14 @@ module.exports = function () {
 			
 			config.loginTest = true;
 			return driver
-			.elementById( apps.appVersion )
+			.waitForElementById( apps.appVersion, 30000 )
 			.then( function ( appVersion ) {
 
-				if ( commons.isAndroid() || commons.isAndroid6() ) {
-					return appVersion.text().should.eventually.become( apps.appVersionTextAndroid )
+				 if ( commons.isIOS() ) {
+					return appVersion.text().should.eventually.become( apps.appVersionTextIOS );
 				
-				} else if ( commons.isIOS() ) {
-					return appVersion.text().should.eventually.become( apps.appVersionTextIOS )
+				} else {
+					return appVersion.text().should.eventually.become( apps.appVersionTextAndroid );
 				}
 			} );
 		} );
