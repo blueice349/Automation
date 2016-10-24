@@ -123,7 +123,7 @@ exports.homeScreen = {
 	'button'           : 'Button.',
 	'clockOut'         : 'homeClockOutButton',
 	'clockIn'          : 'homeClockInButton',
-	'logout'           : 'homeLogOutButton.',
+	'homeScreen'       : 'homeScreenButton.',
 	'sync'             : 'refreshSync.',
 	'name'             : 'userLoggedIn.',
 	'plusButton'       : 'PlusButton.',
@@ -134,6 +134,27 @@ exports.homeScreen = {
 	'syncAllowed'      : 'syncAllowed.',
 	'syncInProgress'   : 'syncInProgress.',
 	'expiredTags'      : 'tagsReadyButton.'
+}
+
+exports.newHomeScreen = {
+	'syncStatus'             : 'syncProgress.',
+	'syncAllowed'            : 'syncAllowed.',
+	'syncInProgress'         : 'syncInProgress.',
+	'homeScreen'             : 'homeScreenButton.',
+	'actions'                : 'homeActionsButton.',
+	'name'                   : 'userLoggedIn.',
+	'button'                 : 'Button.',
+	'plusButton'             : 'PlusButton.',
+	'clockOut'               : 'homeClockOutButton',
+	'clockIn'                : 'homeClockInButton',
+	'alertsSelected'         : 'alertsButtonSelected.',
+	'alertsNotSelected'      : 'alertsButtonNotSelected.',
+	'jobsSelected'           : 'jobsButtonSelected.',
+	'jobsNotSelected'        : 'jobsButtonNotSelected.',
+	'recentSelected'         : 'recentButtonSelected.',
+	'recentNotSelected'      : 'recentButtonNotSelected.',
+	'expiredTagsSelected'    : 'tagsReadyButtonSelected.',
+	'expiredTagsNotSelected' : 'tagsReadyButtonNotSelected.'
 }
 
 exports.formScreen = {

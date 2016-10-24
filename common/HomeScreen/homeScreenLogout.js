@@ -31,14 +31,12 @@ module.exports = function () {
 			var lastUser = Store.get( 'lastUser' );
 			//Checks for buttons to be displayed on main menu after log on.
 			if ( lastUser.userRole == 'admin' 
-				|| lastUser.userRole == 'driver' 
-			) {
+			||   lastUser.userRole == 'driver' ) {
+
 				return driver
 				.elementByXPath( commons.textToXPath( lastUser.name ) )
 				.text().should.eventually.become( lastUser.name )
 				.elementById( elements.homeScreen.actions )
-				.isDisplayed().should.eventually.be.true
-				.elementById( elements.homeScreen.logout )
 				.isDisplayed().should.eventually.be.true
 				.elementById( elements.homeScreen.alerts )
 				.isDisplayed().should.eventually.be.true
@@ -54,14 +52,12 @@ module.exports = function () {
 				} );
 
 			} else if ( lastUser.userRole === 'client' 
-					   || lastUser.userRole === 'AdminClient' 
-		   	) {
+				||      lastUser.userRole === 'AdminClient' ) {
+
 				return driver
 				.elementByXPath( commons.textToXPath( lastUser.name ) )
 				.text().should.eventually.become( lastUser.name )
 				.elementById( elements.homeScreen.actions )
-				.isDisplayed().should.eventually.be.true
-				.elementById( elements.homeScreen.logout )
 				.isDisplayed().should.eventually.be.true
 				.waitForElementById( elements.homeScreen.syncAllowed, 120000 )
 				.isDisplayed().should.eventually.be.true	
@@ -89,15 +85,24 @@ module.exports = function () {
 			}
 		} );
 
-		it( 'should click on the logoutButton from homeScreen'.green, function() {
+		it( 'should click on the actionsScree from homeScreen'.green, function() {
 
 			return driver
-			.elementById( elements.homeScreen.logout )
+			.elementById( elements.homeScreen.actions )
 			.isDisplayed().should.eventually.be.true
-			.elementById( elements.homeScreen.logout )
+			.elementById( elements.homeScreen.actions )
 			.click()
 		} );
 
+		it( 'should click on the logoutButton from actionsScreen'.green, function() {
+
+			return driver
+			.elementById( elements.actionsScreen.logout )
+			.isDisplayed().should.eventually.be.true
+			.elementById( elements.actionsScreen.logout )
+			.click()
+		} );
+		
 		it( 'should check for a Vehicle Inspection'.green, function () {
 			
 			var lastUser = Store.get( 'lastUser' );	
@@ -121,8 +126,8 @@ module.exports = function () {
 			
 			var lastUser = Store.get( 'lastUser' );
 			if ( lastUser.clockInOption === true 
-				&& config.isClockedin === true 
-			) {
+			&&   config.isClockedin === true ) {
+
 				console.log( 'User isClockedin should check if current alert is visibile'.red );
 				return commons.alertText( alerts.actionsScreenAlerts.logOutNow.logOutClockout )
 			
@@ -136,8 +141,8 @@ module.exports = function () {
 			
 			var lastUser = Store.get( 'lastUser' );
 			if ( lastUser.clockInOption === true 
-				&& config.isClockedin === true 
-			) {
+			&&   config.isClockedin === true ) {
+
 				console.log( 'Clock out + Logout'.red );
 				return driver
 				.elementByXPath( commons.textToXPath( elements.alertButtons.clockOutLogout ) )

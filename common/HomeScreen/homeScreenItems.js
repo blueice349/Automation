@@ -25,23 +25,23 @@ module.exports = function () {
 	     	//Checks for buttons to be displayed on main menu after log on.
 			if ( lastUser.userRole == 'admin' || lastUser.userRole == 'driver' ) {
 				return driver
+				.elementById( elements.homeScreen.actions )
+				.click().sleep( 1000 )
 				.elementByXPath( commons.textToXPath( lastUser.name ) )
 				.text().should.eventually.become( lastUser.name )
-				.elementById( elements.homeScreen.actions )
+				.elementById( elements.newHomeScreen.actions )
 				.isDisplayed().should.eventually.be.true
-				.elementById( elements.homeScreen.logout )
+				.elementById( elements.newHomeScreen.syncAllowed )
 				.isDisplayed().should.eventually.be.true
-				.elementById( elements.homeScreen.syncAllowed )
+				.elementById( elements.newHomeScreen.alerts )
 				.isDisplayed().should.eventually.be.true
-				.elementById( elements.homeScreen.alerts )
-				.isDisplayed().should.eventually.be.true
-				.elementById( elements.homeScreen.jobs )
+				.elementById( elements.newHomeScreen.jobs )
 				.isDisplayed().should.eventually.be.true
 				.then( function () {
 
 					if ( lastUser.tagButton == true ) {
 						return driver
-						.elementById( elements.homeScreen.expiredTags )
+						.elementById( elements.newHomeScreen.expiredTags )
 						.isDisplayed().should.eventually.be.true
 					}
 				} );
@@ -50,27 +50,25 @@ module.exports = function () {
 				return driver
 				.elementByXPath( commons.textToXPath( lastUser.name ) )
 				.text().should.eventually.become( lastUser.name )
-				.elementById( elements.homeScreen.actions )
+				.elementById( elements.newHomeScreen.actions )
 				.isDisplayed().should.eventually.be.true
-				.elementById( elements.homeScreen.logout )
-				.isDisplayed().should.eventually.be.true
-				.waitForElementById( elements.homeScreen.syncAllowed, 120000 )
+				.waitForElementById( elements.newHomeScreen.syncAllowed, 120000 )
 				.isDisplayed().should.eventually.be.true	
-				.elementByIdIfExists( elements.homeScreen.alerts )
+				.elementByIdIfExists( elements.newHomeScreen.alerts )
 				.then( function ( alerts ) {
 
 					if ( alerts ) {
 						assert.fail( 'The following element exist and should not exist '.red + alerts );
 					}
 				} )
-				.elementByIdIfExists( elements.homeScreen.expiredTags )
+				.elementByIdIfExists( elements.newHomeScreen.expiredTags )
 				.then( function ( expiredTags ) {
 
 					if ( expiredTags ) {
 						assert.fail( 'The following element exist and should not exist '.red + alerts );
 					}
 				} )
-				.elementByIdIfExists( elements.homeScreen.jobs )
+				.elementByIdIfExists( elements.newHomeScreen.jobs )
 				.then( function ( jobs ) {
 
 					if ( jobs ) {
