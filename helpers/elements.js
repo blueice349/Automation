@@ -118,7 +118,7 @@ exports.companyVehicle = {
 	'ok'               : 'OK'
 }	
 
-exports.homeScreen = {
+exports.oldHomeScreen = {
 	'actions'          : 'homeActionsButton.',
 	'button'           : 'Button.',
 	'clockOut'         : 'homeClockOutButton',
@@ -136,17 +136,34 @@ exports.homeScreen = {
 	'expiredTags'      : 'tagsReadyButton.'
 }
 
+exports.dashboard = {
+	'userRealName'           : 'dashboardUserRealNameLabel.',
+	'userImage'              : 'dasboardUserImage.',
+	'userRoles'              : 'dashboardUserRoles.',
+	'editShortcuts'          : 'dashboardEditShortcuts.',
+	'clockIn'                : 'dashboardClockIn.',
+	'clockOut'               : 'dashboardClockOut.',
+	'clockInOutText'         : 'dashboardClockText.',
+	'clockInOutImage'        : 'dashboardClockInOutImage.',
+	'vehicleImage'           : 'dashboardVehicleImage.',
+	'vehicleName'            : 'dashboardVehicleName.',
+	'selectCompanyVehicle'   : 'dashboardSelectVehicle.',
+	'doneWithCompanyVehicle' : 'dashboardDoneWithVehicle.',
+}
+
 exports.newHomeScreen = {
 	'syncStatus'             : 'syncProgress.',
 	'syncAllowed'            : 'syncAllowed.',
 	'syncInProgress'         : 'syncInProgress.',
-	'homeScreen'             : 'homeScreenButton.',
+	'hambu'                  : 'homeHamburgerButton.'
 	'actions'                : 'homeActionsButton.',
 	'name'                   : 'userLoggedIn.',
 	'button'                 : 'Button.',
 	'plusButton'             : 'PlusButton.',
 	'clockOut'               : 'homeClockOutButton',
 	'clockIn'                : 'homeClockInButton',
+	'dashBoardSelected'      : 'dashboardButtonSelected.',
+	'dashBoardNotSelected'   : 'dashboardButtonNotSelected.',
 	'alertsSelected'         : 'alertsButtonSelected.',
 	'alertsNotSelected'      : 'alertsButtonNotSelected.',
 	'jobsSelected'           : 'jobsButtonSelected.',
@@ -220,35 +237,87 @@ exports.jobsScreen = {
         'cancel'           : 'Cancel'
     },
 
-    'newJobsTab'               : {
-    	'newJobsHeader'        : 'newJobsHeader.', //This is used for intianl sync.
-    	'newJobsLabel'         : 'newJobs.',
-		'newJobs'              : 'newJobs', //+ index++ + '.'
-		'newJobsDiscontinued'  : 'newJobsDiscontinued' //+ index++ + '.'
+	'myPendingJobsTab' : {
+		'pendingJobsHeader'   : 'myPendingJobsHeader.', 
+    	'pendingJobsLabel'    : 'myPendingJobs.',
+		'pendingJobs'         : 'myPendingJobs', //+ index++ + '.'
+		'pendingDiscontinued' : 'myPendingdJobsDiscontinued.' //+ index++ + '.'
+	},
+
+	'myAssignedJobsTab' : {  
+    	'assignedJobsHeader'       : 'myAssignedJobsHeader.', //This is used for intianl sync.
+    	'assignedJobsLabel'        : 'myAssignedJobs.',
+		'assignedJobs'             : 'myAssignedJobs', //+ index++ + '.'
+		'assignedJobsDiscontinued' : 'myAssignedJobsDiscontinued.', //+ index++ + '.'
+		'assignedJobsDiscontinue'  : 'myAssignedJobsDiscontinueButton.', //+ index++ + '.'
+		'assignedJobsAccept'       : 'myAssignedJobsAcceptButton.', //+ index++ + '.'
+		'assignedJobsUndo'         : 'myAssignedJobsUndoButton.' //+ index++ + '.'
+	},
+
+	'myOpenJobsTab'  : {
+    	'openJobsHeader'       : 'myOpenJobsHeader.',
+    	'openJobsLabel'        : 'myOpenJobsLabel.',
+    	'openJobs'             : 'myOpenJobs', //+ index++ + '.'
+	    'openJobsDiscontinued' : 'myOpenJobsDiscontinued.', //+ index++ + '.'
+	    'openJobsDiscontinue'  : 'myOpenJobsDiscontiuneButton.', //+ index++ + '.'
+		'openJobsUpdateStatue' : 'myOpenJobsUpdateStatusButton.', //+ index++ + '.'
+	},
+
+	'myFutureJobsTab' : {
+    	'futureHeader'           : 'myFutureHeader.',
+        'futureJobs'             : 'myFutureJobs', //+ index++ + '.'
+	    'futureJobsDiscontinued' : 'myFutureJobsDiscontinued.', //+ index++ + '.'
+	    'futureJobsDiscontinue'  : 'myFutureJobsDiscontinueButton.', //+ index++ + '.'
+		'futureJobsAccept'       : 'myFutureJobsAcceptButton.' //+ index++ + '.'
+	},
+
+	'allDispatchJobsTab' : { 
+		'newDispatch'             : 'jobsNewDispatchButton.',
+		'dispatchJobsHeader'      : 'allDispatcjJobsHeader.', 
+    	'dispatchJobsLabel'       : 'allDispatchJobs.',
+		'dispatchJobs'            : 'allDispatchJobs', //+ index++ + '.'
+		'dispatchDiscontinued'    : 'allDispatchJobsDiscontinued.', //+ index++ + '.'
+		'dispatchJobsDiscontinue' : 'allDispatchJobsDiscontinueButton.', //+ index++ + '.'
+		'dispatchJobsDispatch'    : 'allDispatchJobsDispatchButton.' //+ index++ + '.'
     },
 
-    'openJobsTab'  : {
-    	'currentJobsHeader'      : 'currentJobsHeader.',
-    	'dispatchJobsLabel'      : 'jobsButton.',
-    	'openJobs'               : 'openJobs', //+ index++ + '.'
-	    'openJobsDiscontinued'   : 'openJobsDiscontinued' //+ index++ + '.'
+    'allPendingJobsTab' : {
+    	'pendingJobsHeader'   : 'allPendingJobsHeader.', 
+    	'pendingJobsLabel'    : 'allPendingJobs.',
+		'pendingJobs'         : 'allPendingJobs', //+ index++ + '.'
+		'pendingDiscontinued' : 'allPendingdJobsDiscontinued.' //+ index++ + '.'
     },
 
-    'otherOpenJobsTab'                : {
+	'allAssignedJobsTab' : {  
+    	'assignedJobsHeader'       : 'allAssignedJobsHeader.',
+    	'assignedJobsLabel'        : 'allAssignedJobs.',
+		'assignedJobs'             : 'allAssignedJobs', //+ index++ + '.'
+		'assignedJobsDiscontinued' : 'allAssignedJobsDiscontinued.', //+ index++ + '.'
+		'assignedJobsDiscontinue'  : 'allAssignedJobsDiscontinueButton.', //+ index++ + '.'
+		'assignedJobsAccept'       : 'allAssignedJobsAcceptButton.', //+ index++ + '.'
+		'assignedJobsUndo'         : 'allAssignedJobsUndoButton.' //+ index++ + '.'
+	},
 
-    	'otherOpenJobsHeader'         : 'otherOpenJobsHeader.',
-	    'otherOpenJobs'               : 'inProgressJobs', //+ index++ + '.'
-	    'otherOpenJobsDiscontinued'   : 'inProgressJobsDiscontinued' //+ index++ + '.'
-    },
+	'allOpenJobsTab'  : {
+    	'openJobsHeader'        : 'allOpenJobsHeader.',
+    	'openJobsLabel'         : 'allOpenJobsLabel.',
+    	'openJobs'              : 'allOpenJobs', //+ index++ + '.'
+	    'openJobsDiscontinued'  : 'allOpenJobsDiscontinued.', //+ index++ + '.'
+	    'openJobsDiscontinue'   : 'allOpenJobsDiscontinueButton.', //+ index++ + '.'
+		'openJobsUpdateStatue'  : 'allOpenJobsAcceptButton.', //+ index++ + '.'
+	},
 
-    'appointmentJobsTab' : {
-    	'appointmentsHeader'          : 'appointmentsHeader.',
-        'appointmentJobs'             : 'appointmentJobs', //+ index++ + '.'
-	    'appointmentJobsDiscontinued' : 'appointmentJobsDiscontinued' //+ index++ + '.'
-    },
-
+	'allFutureJobsTab' : {
+    	'futureHeader'           : 'allFutureHeader.',
+        'futureJobs'             : 'allFutureJobs', //+ index++ + '.'
+	    'futureJobsDiscontinued' : 'allFutureJobsDiscontinued.', //+ index++ + '.'
+	    'futureJobsDiscontinue'  : 'allFutureJobsDiscontinueButton.', //+ index++ + '.'
+		'futureJobsAccept'       : 'allFutureJobsAcceptButton.' //+ index++ + '.'
+	},
+    
     'otherOptions'  : {
-		'back'      : 'jobsBackButton.'
+		'myJobsTab'  : 'myJobsTabButton.',
+		'allJobsTab' : 'allJobsTabButton.'
     }
 }
 
@@ -272,22 +341,32 @@ exports.workFormScreen = {
 	// 'newRecord'		: 
 	// 'showAll'		: formShowAllButton
 	'search'			: 'search.'
-
 }
 
 exports.actionsScreen = {
-	'clockOut'       : 'actionsClockoutButton.',
-	'clockIn'        : 'actionsClockinButton.',
-	'companyVehicle' : 'actionsCompanyVehiclesButton.',
-	'back'           : 'actionsBackButton.',
-	'drafts'         : 'draftsButton.',  // x: 416, y: 848
-	'photos'         : 'photosButton.',
-	'sync'           : 'refreshSyncButton.',
-	'logout'         : 'actionsLogoutButton.',
-	'about'          : 'aboutButton.', // x: 416, y: 1914
-	'settings'       : 'settingsButton.',
-	'resetData'      : 'resetAllDataButton.',
-	'sendDebug'      : 'sendDebugDataButton.'
+	'clockOut'       : 'menuClockOutButton.',
+	'clockIn'        : 'menuClockInButton.',
+	'companyVehicle' : 'menuCompanyVehicleButton.',
+	'drafts'         : 'menuDraftsButton.',  // x: 416, y: 848
+	'photos'         : 'menuLocalPhotosButton.',
+	'sync'           : 'menuRefreshSyncButton.',
+	'logout'         : 'menuLogoutButton.',
+	'about'          : 'menuAboutButton.', // x: 416, y: 1914
+	'settings'       : 'menuSettingsButton.',
+	'help'           : 'menuHelpButton.',
+	'resetData'      : 'menuResetAllDataButton.',
+	'route'          : 'menuRouteButton.',
+	'sendDebug'      : 'menuSendDebugDataButton.'
+}
+
+exports.helpScreen = {
+}
+
+exports.topicScreen = {
+	'back'       : 'topicBackButton.',
+	'topicLabel' : 'topicLabel.',
+	'topicDot'   : 'topicDot' //+ index + '.'
+	'topicImage' : 'topicImage' //+ index + '.'
 }
 
 exports.aboutScreen = {
