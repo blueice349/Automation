@@ -103,9 +103,9 @@ var whereAmI = function () {
 					return driver
 					.elementById( elements.newHomeScreen.dashBoardNotSelected )
 					.click()
-					.elementById(elements.newHomeScreen.dashBoardSelected )
-					.isDisplayed().should.eventually.be.true
-					.sleep( 1000 )  
+					.sleep( 1000 ) 
+					.elementById( elements.newHomeScreen.dashBoardSelected )
+					.isDisplayed().should.eventually.be.true 
 
 				} else {
 					console.log( 'App is not on the jobsScreen.'.red );
