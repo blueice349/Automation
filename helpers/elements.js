@@ -155,7 +155,7 @@ exports.newHomeScreen = {
 	'syncStatus'             : 'syncProgress.',
 	'syncAllowed'            : 'syncAllowed.',
 	'syncInProgress'         : 'syncInProgress.',
-	'hambu'                  : 'homeHamburgerButton.'
+	'hambu'                  : 'homeHamburgerButton.',
 	'actions'                : 'homeActionsButton.',
 	'name'                   : 'userLoggedIn.',
 	'button'                 : 'Button.',
@@ -365,7 +365,7 @@ exports.helpScreen = {
 exports.topicScreen = {
 	'back'       : 'topicBackButton.',
 	'topicLabel' : 'topicLabel.',
-	'topicDot'   : 'topicDot' //+ index + '.'
+	'topicDot'   : 'topicDot', //+ index + '.'
 	'topicImage' : 'topicImage' //+ index + '.'
 }
 
