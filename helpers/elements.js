@@ -222,102 +222,125 @@ exports.alertsScreen = {
 
 exports.jobsScreen = {
 	'updateStatusOptions' : {
-		'updateStatus'     : 'Update Status',
-		'acceptJob'        : 'Accept Job',
-		'driving'          : 'Driving to Job',
-		'drivingPlus'      : 'Driving to Job +',
-		'arrivedJob'       : 'Arrived at Job',
-	    'arrivedJobPlus'   : 'Arrived at Job +',
-	    'towing'           : 'Towing Vehicle',
-	    'towingPlus'       : 'Towing Vehicle +',
-	    'arrivedDest'      : 'Arrived at Destination',
-        'arrivedDestPlus'  : 'Arrived at Destination +',
-        'jobComplete'      : 'Job Complete',
-        'jobCompletePlus'  : 'Job complete +',
-        'cancel'           : 'Cancel'
+		'updateStatus'        : 'Update Status',
+		'acceptJob'           : 'Accept Job',
+		'driving'             : 'Driving to Job',
+		'drivingPlus'         : 'Driving to Job +',
+		'arrivedJob'          : 'Arrived at Job',
+		'arrivedJobPlus'      : 'Arrived at Job +',
+		'towing'              : 'Towing Vehicle',
+		'towingPlus'          : 'Towing Vehicle +',
+		'arrivedDest'         : 'Arrived at Destination',
+		'arrivedDestPlus'     : 'Arrived at Destination +',
+		'jobComplete'         : 'Job Complete',
+		'jobCompletePlus'     : 'Job complete +',
+		'cancel'              : 'Cancel'
     },
 
-	'myPendingJobsTab' : {
-		'pendingJobsHeader'   : 'myPendingJobsHeader.', 
-    	'pendingJobsLabel'    : 'myPendingJobs.',
-		'pendingJobs'         : 'myPendingJobs', //+ index++ + '.'
-		'pendingDiscontinued' : 'myPendingdJobsDiscontinued.' //+ index++ + '.'
+	'myJobsPendingTab' : {
+		'pendingHeader'       : 'myJobsPendingHeader.',
+		'pendingBadge'        : 'myJobsPendingBadge.',
+		'pendingCollapse'     : 'myJobsPendingCollapse.',
+		'pendingExpand'       : 'myJobsPendingExpand.',
+		'pending'             : 'myJobsPending', //+ index++ + '.'
+		'pendingDiscontinued' : 'myJobsPendingDiscontinued.' //+ index++ + '.'
+		'pendingIssRespond'   : 'myJobsPendingRespondButton' //+ index++ + '.'
 	},
 
-	'myAssignedJobsTab' : {  
-    	'assignedJobsHeader'       : 'myAssignedJobsHeader.', //This is used for intianl sync.
-    	'assignedJobsLabel'        : 'myAssignedJobs.',
-		'assignedJobs'             : 'myAssignedJobs', //+ index++ + '.'
-		'assignedJobsDiscontinued' : 'myAssignedJobsDiscontinued.', //+ index++ + '.'
-		'assignedJobsDiscontinue'  : 'myAssignedJobsDiscontinueButton.', //+ index++ + '.'
-		'assignedJobsAccept'       : 'myAssignedJobsAcceptButton.', //+ index++ + '.'
-		'assignedJobsUndo'         : 'myAssignedJobsUndoButton.' //+ index++ + '.'
+	'myJobsAssignedTab' : {
+		'assignedHeader'       : 'myJobsAssignedHeader.', //This is used for intianl sync.
+		'assignedBadge'        : 'myJobsAssignedBadge.',
+		'assignedCollapse'     : 'myJobsAssignedCollapse.',
+		'assignedExpand'       : 'myJobsAssignedExpand.',
+		'assigned'             : 'myJobsAssigned.', //+ index++ + '.'
+		'assignedDiscontinued' : 'myJobsAssignedDiscontinued.', //+ index++ + '.'
+		'assignedDiscontinue'  : 'myJobsAssignedDiscontinueButton.', //+ index++ + '.'
+		'assignedAccept'       : 'myJobsAssignedAcceptButton.', //+ index++ + '.'
+		'assignedUndo'         : 'myJobsAssignedUndoButton.' //+ index++ + '.'
 	},
 
-	'myOpenJobsTab'  : {
-    	'openJobsHeader'       : 'myOpenJobsHeader.',
-    	'openJobsLabel'        : 'myOpenJobsLabel.',
-    	'openJobs'             : 'myOpenJobs', //+ index++ + '.'
-	    'openJobsDiscontinued' : 'myOpenJobsDiscontinued.', //+ index++ + '.'
-	    'openJobsDiscontinue'  : 'myOpenJobsDiscontiuneButton.', //+ index++ + '.'
-		'openJobsUpdateStatue' : 'myOpenJobsUpdateStatusButton.', //+ index++ + '.'
+	'myJobsOpenTab' : {
+		'openHeader'       : 'myJobsOpenHeader.',
+		'openBadge'        : 'myJobsOpenBadge.',
+		'openCollapse'     : 'myJobsOpenCollapse.',
+		'openExpand'       : 'myJobsOpenExpand.',
+		'open'             : 'myJobsOpen', //+ index++ + '.'
+		'openDiscontinued' : 'myJobsOpenDiscontinued', //+ index++ + '.'
+		'openDiscontinue'  : 'myJobsOpenDiscontiuneButton', //+ index++ + '.'
+		'openUpdateStatus' : 'myJobsOpenUpdateStatusButton', //+ index++ + '.'
 	},
 
-	'myFutureJobsTab' : {
-    	'futureHeader'           : 'myFutureHeader.',
-        'futureJobs'             : 'myFutureJobs', //+ index++ + '.'
-	    'futureJobsDiscontinued' : 'myFutureJobsDiscontinued.', //+ index++ + '.'
-	    'futureJobsDiscontinue'  : 'myFutureJobsDiscontinueButton.', //+ index++ + '.'
-		'futureJobsAccept'       : 'myFutureJobsAcceptButton.' //+ index++ + '.'
+	'myJobsFutureTab' : {
+		'futureHeader'       : 'myJobsFutureHeader.',
+		'futureBadge'        : 'myJobsFutureBadge.',
+		'futureCollapse'     : 'myJobsFutureCollapse.',
+		'futureExpand'       : 'myJobsFutureExpand.',
+		'future'             : 'myJobsFuture', //+ index++ + '.'
+		'futureDiscontinued' : 'myJobsFutureDiscontinued', //+ index++ + '.'
+		'futureDiscontinue'  : 'myJobsFutureDiscontinueButton', //+ index++ + '.'
+		'futureAccept'       : 'myJobsFutureAcceptButton' //+ index++ + '.'
 	},
 
-	'allDispatchJobsTab' : { 
-		'newDispatch'             : 'jobsNewDispatchButton.',
-		'dispatchJobsHeader'      : 'allDispatcjJobsHeader.', 
-    	'dispatchJobsLabel'       : 'allDispatchJobs.',
-		'dispatchJobs'            : 'allDispatchJobs', //+ index++ + '.'
-		'dispatchDiscontinued'    : 'allDispatchJobsDiscontinued.', //+ index++ + '.'
-		'dispatchJobsDiscontinue' : 'allDispatchJobsDiscontinueButton.', //+ index++ + '.'
-		'dispatchJobsDispatch'    : 'allDispatchJobsDispatchButton.' //+ index++ + '.'
+	'allJobsDispatchTab' : {
+		'newDispatch'          : 'jobsNewDispatchButton.',
+		'dispatchHeader'       : 'allJobsDispatchHeader.',
+		'dispatchBadge'        : 'allJobsDispatchBadge.',
+		'dispatchCollapse'     : 'allJobsDispatchCollapse.',
+		'dispatchExpand'       : 'allJobsDispatchExpand.',
+		'dispatch'             : 'allJobsDispatch', //+ index++ + '.'
+		'dispatchDiscontinued' : 'allJobsDispatchDiscontinued', //+ index++ + '.'
+		'dispatchDiscontinue'  : 'allJobsDispatchDiscontinueButton', //+ index++ + '.'
+		'dispatchDispatch'     : 'allJobsDispatchDispatchButton' //+ index++ + '.'
     },
 
-    'allPendingJobsTab' : {
-    	'pendingJobsHeader'   : 'allPendingJobsHeader.', 
-    	'pendingJobsLabel'    : 'allPendingJobs.',
-		'pendingJobs'         : 'allPendingJobs', //+ index++ + '.'
-		'pendingDiscontinued' : 'allPendingdJobsDiscontinued.' //+ index++ + '.'
+	'allJobsPendingTab' : {
+		'pendingHeader'       : 'allJobsPendingHeader.',
+		'pendingBadge'        : 'allJobsPendingBadge.',
+		'pendingCollapse'     : 'allJobsPendingCollapse.',
+		'pendingExpand'       : 'allJobsPendingExpand.',
+		'pending'             : 'allJobsPending', //+ index++ + '.'
+		'pendingDiscontinued' : 'allJobsPendingDiscontinued', //+ index++ + '.'
+		'pendingIssRespond'   : 'allJobsPendingRespondButton' //+ index++ + '.'
     },
 
-	'allAssignedJobsTab' : {  
-    	'assignedJobsHeader'       : 'allAssignedJobsHeader.',
-    	'assignedJobsLabel'        : 'allAssignedJobs.',
-		'assignedJobs'             : 'allAssignedJobs', //+ index++ + '.'
-		'assignedJobsDiscontinued' : 'allAssignedJobsDiscontinued.', //+ index++ + '.'
-		'assignedJobsDiscontinue'  : 'allAssignedJobsDiscontinueButton.', //+ index++ + '.'
-		'assignedJobsAccept'       : 'allAssignedJobsAcceptButton.', //+ index++ + '.'
-		'assignedJobsUndo'         : 'allAssignedJobsUndoButton.' //+ index++ + '.'
+	'allJobsAssignedTab' : {
+		'assignedHeader'       : 'allJobsAssignedHeader.',
+		'assignedBadge'        : 'allJobsAssignedBadge.',
+		'assignedCollapse'     : 'allJobsAssignedCollapse.',
+		'assignedExpand'       : 'allJobsAssignedExpand.',
+		'assigned'             : 'allJobsAssigned', //+ index++ + '.'
+		'assignedDiscontinued' : 'allJobsAssignedDiscontinued', //+ index++ + '.'
+		'assignedDiscontinue'  : 'allJobsAssignedDiscontinueButton', //+ index++ + '.'
+		'assignedAccept'       : 'allJobsAssignedAcceptButton', //+ index++ + '.'
+		'assignedUndo'         : 'allJobsAssignedUndoButton' //+ index++ + '.'
 	},
 
-	'allOpenJobsTab'  : {
-    	'openJobsHeader'        : 'allOpenJobsHeader.',
-    	'openJobsLabel'         : 'allOpenJobsLabel.',
-    	'openJobs'              : 'allOpenJobs', //+ index++ + '.'
-	    'openJobsDiscontinued'  : 'allOpenJobsDiscontinued.', //+ index++ + '.'
-	    'openJobsDiscontinue'   : 'allOpenJobsDiscontinueButton.', //+ index++ + '.'
-		'openJobsUpdateStatue'  : 'allOpenJobsAcceptButton.', //+ index++ + '.'
+	'allJobsOpenTab' : {
+		'openHeader'       : 'allJobsOpenHeader.',
+		'openBadge'        : 'allJobsOpenBadge.',
+		'openCollapse'     : 'allJobsOpenCollapse.',
+		'openExpand'       : 'allJobsOpenExpand.',
+		'open'             : 'allJobsOpen', //+ index++ + '.'
+		'openDiscontinued' : 'allJobsOpenDiscontinued.', //+ index++ + '.'
+		'openDiscontinue'  : 'allJobsOpenDiscontinueButton.', //+ index++ + '.'
+		'openUpdateStatus' : 'allJobsOpenAcceptButton.', //+ index++ + '.'
 	},
 
-	'allFutureJobsTab' : {
-    	'futureHeader'           : 'allFutureHeader.',
-        'futureJobs'             : 'allFutureJobs', //+ index++ + '.'
-	    'futureJobsDiscontinued' : 'allFutureJobsDiscontinued.', //+ index++ + '.'
-	    'futureJobsDiscontinue'  : 'allFutureJobsDiscontinueButton.', //+ index++ + '.'
-		'futureJobsAccept'       : 'allFutureJobsAcceptButton.' //+ index++ + '.'
+	'allJobsFutureTab' : {
+		'futureHeader'       : 'allJobsFutureHeader.',
+		'futureBadge'        : 'allJobsFutureBadge.',
+		'futureCollapse'     : 'allJobsFutureCollapse.',
+		'futureExpand'       : 'allJobsFutureExpand.',
+		'future'             : 'allJobsFuture', //+ index++ + '.'
+		'futureDiscontinued' : 'allJobsFutureDiscontinued.', //+ index++ + '.'
+		'futureDiscontinue'  : 'allJobsFutureDiscontinueButton.', //+ index++ + '.'
+		'futureAccept'       : 'allJobsFutureAcceptButton.' //+ index++ + '.'
 	},
     
-    'otherOptions'  : {
+	'jobsTab' : {
 		'myJobsTab'  : 'myJobsTabButton.',
-		'allJobsTab' : 'allJobsTabButton.'
+		'allJobsTab' : 'allJobsTabButton.',
+		'noJobs'     : 'noJobs.'
     }
 }
 
