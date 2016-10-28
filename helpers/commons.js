@@ -8,6 +8,7 @@ var Store  = require( './Store' );
 
 var Commons = function () {
 
+	//this is used for getting the os and version of the app that was set in desired caps
 	this.os      = config.desired.platformName;
 	this.version = config.desired.platformVersion;
 
@@ -17,6 +18,7 @@ var Commons = function () {
 
 var convertDate = function ( ms ) {
 
+	//this is not used for anything that you will need! it is used for logging date/time and already set up
    var total = ms;
 
    var hours = Math.floor( total / 3600000 );
@@ -33,6 +35,7 @@ var convertDate = function ( ms ) {
 
 Commons.prototype.isAndroid = function () {
 
+	//This just checks if you are using iOS if so we set the function to true
 	if ( this.os == 'Android' ) {
 		return true;
 	} 
@@ -42,6 +45,7 @@ Commons.prototype.isAndroid = function () {
 
 Commons.prototype.isAndroid6 = function () {
 
+	//This just checks if you are using android6 if so we set the function to true
 	if ( this.os == 'Android'
 	&&   this.version == '6.0' ) {
 		return true;
@@ -52,6 +56,7 @@ Commons.prototype.isAndroid6 = function () {
 
 Commons.prototype.isIOS = function () {
 
+	//This just checks if you are using iOS if so we set the function to true
 	if ( this.os == 'iOS' ) {
 		return true;
 	} 
@@ -60,7 +65,8 @@ Commons.prototype.isIOS = function () {
 };
 
 var whereAmI = function () {
-		
+	
+	//this is used to find where the user is in the app in the event the app was reset on a failed test	
 	require( 'colors' );
 	var driver    = config.driver;
 	var elements  = config.elements;
@@ -70,6 +76,7 @@ var whereAmI = function () {
 
 	return driver
 	//.sleep( 3000 )
+	//checks to see if users is on a node edit screen
 	.elementByIdIfExists( elements.formScreen.actions )
 	.then( function ( isNodeEdit ) {
 
@@ -89,21 +96,16 @@ var whereAmI = function () {
 		} else {
 			console.log( 'App is not on a node edit screen.'.red );
 			return driver
-			.elementByIdIfExists( elements.jobsScreen.newJobsTab.newJobsHeader )
+			.elementByIdIfExists( elements.jobsScreen.otherOptions.otherOptions )
 			.then( function ( jobsScreen ) {
 				
 				if ( jobsScreen ) {
-					if ( isIOS ) {
-						return driver
-						.elementById( elements.jobsScreen.back )
-						.click()
-						.sleep ( 1000 );
-
-					} else if ( isAndroid ) { 
-						return driver
-						.back()
-						.sleep( 1000 );
-					}
+					return driver
+					.elementById( elements.newHomeScreen.dashBoardNotSelected )
+					.click()
+					.sleep( 1000 ) 
+					.elementById( elements.newHomeScreen.dashBoardSelected )
+					.isDisplayed().should.eventually.be.true 
 
 				} else {
 					console.log( 'App is not on the jobsScreen.'.red );
@@ -136,7 +138,7 @@ var whereAmI = function () {
 Commons.prototype.textToXPath = function ( text ) {
 
 	var driver = config.driver;
-
+	//this is used only if you need to get to an element using Xpath. most of the time you will use elementById()
 	if ( this.isAndroid() ) {
 		return '//*[ @text=\'' + text + '\' ]';
 
@@ -148,7 +150,8 @@ Commons.prototype.textToXPath = function ( text ) {
 Commons.prototype.sendKeys = function ( el, keys ) {
 	
 	var elements = config.elements;
-
+	//this is used to sendKeys to andorid and iOS I created this custom function so that android we can hide the keyboard, sense the hideKeyboard does not work on iOs, 
+	//also it ches for a button to make sure the keyboard is there before sending the keys to the app
 	if ( this.isAndroid() ) {
 		return el
 		.click()
@@ -179,7 +182,7 @@ Commons.prototype.sendKeys = function ( el, keys ) {
 Commons.prototype.getItem = function ( name, num ) {
 
 	var value = name;
-
+	//this is used to add a number and . at the end of a element
 	if ( !isNaN( num ) ) {
 		value = value + num; 
 	}
@@ -193,7 +196,7 @@ Commons.prototype.androidPermsAlertText = function ( alertText ) {
 
 	var driver   = config.driver;
 	var elements = config.elements;
-
+	//this is used to check for permissins on android no way to label android permissions in our Omadi app code.
 	if ( this.isAndroid()
 	||   this.isAndroid6() 
   	) {
@@ -205,6 +208,7 @@ Commons.prototype.alertText = function ( alertText ) {
 
 	var driver   = config.driver;
 	var elements = config.elements;
+	//This is used to read alertText in the app for both android and iOS they ruse different paths to get the data, it just makes sure what you pass into it is what the alerts is
 
 	if ( this.isIOS() ) {
 		return driver.alertText().should.eventually.contain( alertText );
@@ -243,6 +247,7 @@ Commons.prototype.beforeAll = function () {
 		config.currentTest        = 'notStarted';
 		
 		console.log( 'beforeEachIt... ' + JSON.stringify( beforeAllTime ) );
+		//this is where the driver is creted before ANY test runs
 		return driver.init( desired );
 	} );
 };
@@ -259,10 +264,12 @@ Commons.prototype.beforeEachDes = function ( ) {
 		&&   config.loginTest === true 
 		||   config.skip === true ) {
 
+			//This is to skip test if last test was not passed and it was a login test
 			console.log( 'Next test was skipped do to login failed test or your app is not up-to-date with current source code.'.red );
 			this.skip();
 
 		} else if ( config.currentTest === 'passed' ) {
+			//This is used for setting currentTest to notStarted if last test passed and the loginTest to false ( these get reset in the test it self )
 			config.currentTest = 'notStarted';
 			config.loginTest   = false;
 		}
@@ -281,12 +288,14 @@ Commons.prototype.beforeEachIt = function ( ) {
 		||   config.currentTest === 'notStarted'
 		||   config.currentTest === undefined
 		||   config.currentTest === null ) {
-			
+
+			//This sets currentTest to testStarted before the test runs if last test was passed, notStarted, undefined or null
 			config.currentTest = 'testStarted';
 
 		} else if ( config.currentTest != 'passed'
 			||      config.skip === true ) {
 			console.log( 'Next test was skipped'.red );
+			//This will skip the it test it is running if last test was != passed or skip -- true this ensures the next test desdribe test can run.
 			this.skip();
 		}
 	} );
@@ -300,6 +309,7 @@ Commons.prototype.afterEachIt = function () {
 
 		var afterEachItTime = convertDate( ( config.beforeItEndTime - config.beforeItStartTime ) );
 		console.log( 'afterEachIt... '.red + JSON.stringify( afterEachItTime ) );
+		//This only sets currentTest to the currentTest state ( passed if passed failed if falile etc.... )
 		config.currentTest = this.currentTest.state;
 	} );
 };
@@ -324,6 +334,7 @@ Commons.prototype.afterEachDes = function () {
 		if ( config.currentTest != 'passed' 
 		&&   config.loginTest != true ) {
 
+			//This runes after each describe if the test failed it will restart the app and run a whereAmI function which will find out where user is in the app and get them to a good state for the next test to run
 			config.currentTest = 'notStarted';
 			return driver
 			.resetApp()
@@ -334,10 +345,12 @@ Commons.prototype.afterEachDes = function () {
 
 		} else if ( config.loginTest === true 
 			&&      config.currentTest != 'passed' ) {
+			//If login test failed then NO OTHER test will run and will print out a console letting user know why NO OTHER test was able to run
 			
 			console.log( 'Automation could not resert and comeplete due to a login failed test. '.red );
 	
 		} else if ( config.currentTest === 'passed' ) {
+			//this just prints out console that last test passed and will start the next test
 			console.log( 'Last test "passed" will start next test...'.green );
 		}
 	} );
@@ -347,6 +360,7 @@ Commons.prototype.afterAll = function () {
 	
 	after( function () {
 
+		//this runs after ALL test have run to quit or close the driver, driver is what is created by appium to run the test
 		config.beforeAllEndTime = new Date().getTime();
 		var afterAllTime = convertDate( ( config.beforeAllEndTime - config.beforeAllStartTime ) );
 
