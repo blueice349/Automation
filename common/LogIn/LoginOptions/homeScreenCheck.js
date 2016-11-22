@@ -21,45 +21,34 @@ module.exports = function () {
 		it( 'should check if user is on homeScreen or jobsScreen'.green, function () {
 			
 			var lastUser = Store.get( 'lastUser' );
-			if ( lastUser.userRole === 'client' || lastUser.userRole === 'AdminClient' ) {
+			if ( lastUser.userRole === 'client'
+			||   lastUser.userRole === 'AdminClient' ) {
 				console.log( lastUser.userRole.red + ' does not have jobsScreen'.red );
 				return driver
-				.elementById( elements.homeScreen.actions )
+				.elementById(elements.dashboard.logout )
 				.isDisplayed().should.eventually.be.true
 
 			} else {
 				return driver
-				.elementByIdIfExists( elements.homeScreen.actions )
-				.isDisplayed()
-				.then( function ( homeScreen ) {
+				.elementByIdIfExists( elements.newHomeScreen.dashBoardSelected )
+				.then( function ( dashboard ) {
 
-					if ( homeScreen === true ) {
-						console.log( lastUser.userRole.red + ' is on the homeScreen'.red );
+					if ( dashboard ) {
+						console.log( lastUser.userRole.red + ' is on the dashboard'.red );
 
-					} else if ( homeScreen != true ) {
-						console.log( lastUser.userRole.red + ' is NOT on the homeScreen'.red );
+					} else {
+						console.log( lastUser.userRole.red + ' is NOT on the dashboard'.red );
 						return driver
-						.elementById( elements.jobsScreen.newJobsTab.newJobsHeader )
-						.isDisplayed()
+						.elementByIdIfExists( elements.newHomeScreen.jobsSelected )
 						.then( function ( jobsScreen ) {
 
 							if ( jobsScreen === true ) {
 								console.log( lastUser.userRole.red + ' is on the jobsScreen'.red );
-								if ( commons.isAndroid() ) {
-									return driver
-									.back()
-									.sleep( 100 )
-									.waitForElementById( elements.homeScreen.actions, 30000 )
-									.isDisplayed().should.eventually.be.true
-
-								} else if ( commons.isIOS() ) {
-									return driver
-									.elementById( elements.jobsScreen.otherOptions.back )
-									.click()
-									.sleep( 100 )
-									.waitForElementById( elements.homeScreen.actions, 30000 )
-									.isDisplayed().should.eventually.be.true
-								}
+								return driver
+								.elementById( elements.newHomeScreen.dashBoardNotSelected )
+								.click()
+								.elementById( elements.newHomeScreen.dashBoardSelected )
+								.isDisplayed().should.eventually.be.true
 							}
 						} )
 					}

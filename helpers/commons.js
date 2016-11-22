@@ -96,7 +96,7 @@ var whereAmI = function () {
 		} else {
 			console.log( 'App is not on a node edit screen.'.red );
 			return driver
-			.elementByIdIfExists( elements.jobsScreen.otherOptions.otherOptions )
+			.elementByIdIfExists( elements.newHomeScreen.jobsSelected )
 			.then( function ( jobsScreen ) {
 				
 				if ( jobsScreen ) {

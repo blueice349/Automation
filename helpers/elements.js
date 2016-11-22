@@ -118,7 +118,7 @@ exports.companyVehicle = {
 	'ok'               : 'OK'
 }	
 
-exports.oldHomeScreen = {
+exports.homeScreen = {
 	'actions'          : 'homeActionsButton.',
 	'button'           : 'Button.',
 	'clockOut'         : 'homeClockOutButton',
@@ -140,6 +140,7 @@ exports.dashboard = {
 	'userRealName'           : 'dashboardUserRealNameLabel.',
 	'userImage'              : 'dasboardUserImage.',
 	'userRoles'              : 'dashboardUserRoles.',
+	'logout'                 : 'dashboardLogoutButton.',
 	'editShortcuts'          : 'dashboardEditShortcuts.',
 	'clockIn'                : 'dashboardClockIn.',
 	'clockOut'               : 'dashboardClockOut.',
@@ -155,8 +156,8 @@ exports.newHomeScreen = {
 	'syncStatus'             : 'syncProgress.',
 	'syncAllowed'            : 'syncAllowed.',
 	'syncInProgress'         : 'syncInProgress.',
-	'hambu'                  : 'homeHamburgerButton.',
-	'actions'                : 'homeActionsButton.',
+	'hamburger'              : 'homeHamburgerButton.',
+	'menu'                   : 'homeActionsButton.',
 	'name'                   : 'userLoggedIn.',
 	'button'                 : 'Button.',
 	'plusButton'             : 'PlusButton.',
@@ -243,7 +244,7 @@ exports.jobsScreen = {
 		'pendingCollapse'     : 'myJobsPendingCollapse.',
 		'pendingExpand'       : 'myJobsPendingExpand.',
 		'pending'             : 'myJobsPending', //+ index++ + '.'
-		'pendingDiscontinued' : 'myJobsPendingDiscontinued.' //+ index++ + '.'
+		'pendingDiscontinued' : 'myJobsPendingDiscontinued.', //+ index++ + '.'
 		'pendingIssRespond'   : 'myJobsPendingRespondButton' //+ index++ + '.'
 	},
 

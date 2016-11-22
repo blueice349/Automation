@@ -23,58 +23,90 @@ module.exports = function () {
 		it( 'Should make sure all buttons are visble on homeScreen after intinal sync'.green, function () {
 			var lastUser = Store.get( 'lastUser' );
 	     	//Checks for buttons to be displayed on main menu after log on.
-			if ( lastUser.userRole == 'admin' || lastUser.userRole == 'driver' ) {
+			if ( lastUser.userRole === 'admin'
+			||   lastUser.userRole === 'driver' ) {
 				return driver
-				.elementById( elements.homeScreen.actions )
-				.click().sleep( 1000 )
-				.elementByXPath( commons.textToXPath( lastUser.name ) )
-				.text().should.eventually.become( lastUser.name )
-				.elementById( elements.newHomeScreen.actions )
+				.elementById(elements.newHomeScreen.dashBoardSelected )
 				.isDisplayed().should.eventually.be.true
-				.elementById( elements.newHomeScreen.syncAllowed )
+				.elementById( elements.newHomeScreen.dashBoardNotSelected )
+				.isDisplayed().should.eventually.be.false
+				.elementById( elements.newHomeScreen.alertsSelected )
+				.isDisplayed().should.eventually.be.false
+				.elementById( elements.newHomeScreen.alertsNotSelected )
 				.isDisplayed().should.eventually.be.true
-				.elementById( elements.newHomeScreen.alerts )
+				.elementById( elements.newHomeScreen.recentSelected )
+				.isDisplayed().should.eventually.be.false
+				.elementById( elements.newHomeScreen.recentNotSelected )
 				.isDisplayed().should.eventually.be.true
-				.elementById( elements.newHomeScreen.jobs )
+				.elementById( elements.newHomeScreen.hamburger )
+				.isDisplayed().should.eventually.be.true
+				.elementById( elements.newHomeScreen.menu )
+				.isDisplayed().should.eventually.be.true
+				.elementById( elements.dashboard.userRealName )
+				.isDisplayed().should.eventually.be.true
+				.elementById( elements.dashboard.userImage )
+				.isDisplayed().should.eventually.be.true
+				.elementById( elements.dashboard.editShortcuts )
+				.isDisplayed().should.eventually.be.true
+				.elementById( elements.dashboard.logout )
+				.isDisplayed().should.eventually.be.true
+				.elementById( elements.dashboard.userRoles )
 				.isDisplayed().should.eventually.be.true
 				.then( function () {
 
-					if ( lastUser.tagButton == true ) {
+					if ( lastUser.performJob === true ) {
 						return driver
-						.elementById( elements.newHomeScreen.expiredTags )
+						.elementById( elements.newHomeScreen.jobsSelected )
+						.isDisplayed().should.eventually.be.false
+						.elementById(elements.newHomeScreen.jobsNotSelected )
+						.isDisplayed().should.eventually.be.true
+					}
+
+					if ( lastUser.tagButton === true ) {
+						return driver
+						.elementById( elements.newHomeScreen.expiredTagsSelected )
+						.isDisplayed().should.eventually.be.false
+						.elementById( elements.newHomeScreen.expiredTagsNotSelected )
 						.isDisplayed().should.eventually.be.true
 					}
 				} );
 
 			} else if ( lastUser.userRole === 'client' || lastUser.userRole === 'AdminClient' ) {
 				return driver
-				.elementByXPath( commons.textToXPath( lastUser.name ) )
-				.text().should.eventually.become( lastUser.name )
-				.elementById( elements.newHomeScreen.actions )
+				.elementById(elements.newHomeScreen.dashBoardSelected )
+				.isDisplayed().should.eventually.be.false
+				.elementById( elements.newHomeScreen.dashBoardNotSelected )
+				.isDisplayed().should.eventually.be.false
+				.elementById( elements.newHomeScreen.alertsSelected )
+				.isDisplayed().should.eventually.be.false
+				.elementById( elements.newHomeScreen.alertsNotSelected )
+				.isDisplayed().should.eventually.be.false
+				.elementById( elements.newHomeScreen.jobsSelected )
+				.isDisplayed().should.eventually.be.false
+				.elementById(elements.newHomeScreen.jobsNotSelected )
+				.isDisplayed().should.eventually.be.false
+				.elementById( elements.newHomeScreen.recentSelected )
+				.isDisplayed().should.eventually.be.false
+				.elementById( elements.newHomeScreen.recentNotSelected )
+				.isDisplayed().should.eventually.be.false
+				.elementById( elements.newHomeScreen.expiredTagsSelected )
+				.isDisplayed().should.eventually.be.false
+				.elementById( elements.newHomeScreen.expiredTagsNotSelected )
+				.isDisplayed().should.eventually.be.false
+				.elementById( elements.newHomeScreen.hamburger )
 				.isDisplayed().should.eventually.be.true
-				.waitForElementById( elements.newHomeScreen.syncAllowed, 120000 )
-				.isDisplayed().should.eventually.be.true	
-				.elementByIdIfExists( elements.newHomeScreen.alerts )
-				.then( function ( alerts ) {
-
-					if ( alerts ) {
-						assert.fail( 'The following element exist and should not exist '.red + alerts );
-					}
-				} )
-				.elementByIdIfExists( elements.newHomeScreen.expiredTags )
-				.then( function ( expiredTags ) {
-
-					if ( expiredTags ) {
-						assert.fail( 'The following element exist and should not exist '.red + alerts );
-					}
-				} )
-				.elementByIdIfExists( elements.newHomeScreen.jobs )
-				.then( function ( jobs ) {
-
-					if ( jobs ) {
-						assert.fail( 'The following element exist and should not exist '.red + alerts );
-					}
-				} );
+				.elementById( elements.newHomeScreen.menu )
+				.isDisplayed().should.eventually.be.true
+				.elementById( elements.dashboard.userRealName )
+				.isDisplayed().should.eventually.be.false
+				.elementById( elements.dashboard.userImage )
+				.isDisplayed().should.eventually.be.true
+				.elementById( elements.dashboard.editShortcuts )
+				.isDisplayed().should.eventually.be.true
+				.elementById( elements.dashboard.logout )
+				.isDisplayed().should.eventually.be.true
+				.elementById( elements.dashboard.userRoles )
+				.isDisplayed().should.eventually.be.true
 			} else {
 				assert.fail( 'userRole needs to be updates.' );
 			}

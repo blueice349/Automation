@@ -203,6 +203,14 @@ module.exports = function () {
 						.click();
 					}
 				} )
+				.then( function ( topicScreen ) {
+
+					if ( topicScreen ) {
+						return driver
+						.elementById( elements.topicScreen.back )
+						.click()
+					}
+				} );	
 
 			} else if ( commons.isIOS()
 				&&     userRole != 'driver'
@@ -217,7 +225,16 @@ module.exports = function () {
 						.elementByXPath( commons.textToXPath( elements.alertButtons.allow ) )
 						.click();
 					}
-				} )
+				} )	
+				.elementByIdIfExists( elements.topicScreen.back )
+				.then( function ( topicScreen ) {
+
+					if ( topicScreen ) {
+						return driver
+						.elementById( elements.topicScreen.back )
+						.click()
+					}
+				} )	
 				.elementByXPathIfExists( commons.textToXPath( elements.alertButtons.ok ) )
 		   		.then( function ( ok ) {
 
@@ -233,6 +250,15 @@ module.exports = function () {
 				console.log( 'Client or CRM user on a Android 6.0.x device'.green );
 				return driver
 				.sleep( 2000 )
+				.elementByIdIfExists( elements.topicScreen.back )
+				.then( function ( topicScreen ) {
+
+					if ( topicScreen ) {
+						return driver
+						.elementById( elements.topicScreen.back )
+						.click()
+					}
+				} )
 				.elementByXPathIfExists( commons.textToXPath( elements.alertButtons.allow ) )
 				.then( function ( androidAllow ) {
 
@@ -290,7 +316,10 @@ module.exports = function () {
 				console.log( 'User has no truck or clock in options, will wait for syncAllowed'.red );
 				return driver
 				.waitForElementById( elements.homeScreen.syncAllowed, 120000 )
-				.isDisplayed().should.eventually.be.true
+				.then( function () {
+
+					console.log( 'Sync is compled'.green );
+				} );
 			}
 		} );
 		
