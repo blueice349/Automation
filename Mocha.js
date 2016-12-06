@@ -118,28 +118,28 @@ describe( 'Automation Test in Progress!'.green, function () {
 				//run.sourceCodeCheck( 'buildUpdates' );
 		} );
 
-		describe( 'Running wrong login and other login test'.red, function () {
+		// describe( 'Running wrong login and other login test'.red, function () {
 
-			var devlopeApp = true;
-			var run        = require( './TestFiles.js' );
-			run.logins( 'loginScreenAppVersionCheck' );
-			run.logins( 'loginScreenElementCheck' );
-			if ( commons.isIOS() || commons.isAndroid() && config.sim != true || commons.isAndroid6() && config.sim != true ) {
-				run.logins( 'wrongClientAccount' );
-				run.logins( 'wrongUserName' );		
-				run.logins( 'wrongPassword' );
-				run.logins( 'blankClientAccount' );
-				run.logins( 'blankUserName' );
-			} else {
-				console.log( 'Unable to run the following test on androidSim: 1. wrongClientAccount 2. wrongUserName 3. wrongPassword 4. blankClientAccount 5. blankUserName'.red );
-			}
-			if ( devlopeApp != true ) { 
-				run.logins( 'blankPassword' );
-				run.logins( 'termsNotAccepted' );
-			} else {
-				console.log( 'Unable to run the following test because the app is in devlope mode: 1. blank password 2. termsNotAccepted.'.red );
-			}
-		} );
+		// 	var devlopeApp = true;
+		// 	var run        = require( './TestFiles.js' );
+		// 	run.logins( 'loginScreenAppVersionCheck' );
+		// 	run.logins( 'loginScreenElementCheck' );
+		// 	if ( commons.isIOS() || commons.isAndroid() && config.sim != true || commons.isAndroid6() && config.sim != true ) {
+		// 		run.logins( 'wrongClientAccount' );
+		// 		run.logins( 'wrongUserName' );		
+		// 		run.logins( 'wrongPassword' );
+		// 		run.logins( 'blankClientAccount' );
+		// 		run.logins( 'blankUserName' );
+		// 	} else {
+		// 		console.log( 'Unable to run the following test on androidSim: 1. wrongClientAccount 2. wrongUserName 3. wrongPassword 4. blankClientAccount 5. blankUserName'.red );
+		// 	}
+		// 	if ( devlopeApp != true ) { 
+		// 		run.logins( 'blankPassword' );
+		// 		run.logins( 'termsNotAccepted' );
+		// 	} else {
+		// 		console.log( 'Unable to run the following test because the app is in devlope mode: 1. blank password 2. termsNotAccepted.'.red );
+		// 	}
+		// } );
 		
 		describe( 'Running "Driver1 iOS Test && Driver2 Android Test"'.red, function () {
 			
@@ -152,7 +152,7 @@ describe( 'Automation Test in Progress!'.green, function () {
 					run.logins( 'selectVehicle' );
 					run.logins( 'homeScreenCheck' );
 
-		       /* jobs test */
+		  //      /* jobs test */
 					run.homeScreen( 'homeScreenItems' );
 					run.jobsScreen( 'jobScreenCheck' );
 					run.jobsScreen( 'acceptJob' );
