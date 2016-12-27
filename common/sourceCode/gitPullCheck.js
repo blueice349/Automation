@@ -9,7 +9,7 @@ module.exports = function () {
 	var config  = require( '../../helpers/Config' );
 	var driver  = config.driver;
 
-	describe( 'Omadi Mobile Git Pull Request'.green, function () {
+	describe( 'Omadi Mobile Git Pull'.green, function () {
 	        
         commons.beforeEachDes();
 		commons.beforeEachIt();

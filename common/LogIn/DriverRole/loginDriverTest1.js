@@ -207,7 +207,7 @@ module.exports = function () {
 
 					if ( topicScreen ) {
 						return driver
-						.elementById( elements.topicScreen.back )
+						.elementById( elements.topicScreen.skip )
 						.click()
 					}
 				} );	
@@ -231,7 +231,7 @@ module.exports = function () {
 
 					if ( topicScreen ) {
 						return driver
-						.elementById( elements.topicScreen.back )
+						.elementById( elements.topicScreen.skip )
 						.click()
 					}
 				} )	
@@ -255,7 +255,7 @@ module.exports = function () {
 
 					if ( topicScreen ) {
 						return driver
-						.elementById( elements.topicScreen.back )
+						.elementById( elements.topicScreen.skip )
 						.click()
 					}
 				} )

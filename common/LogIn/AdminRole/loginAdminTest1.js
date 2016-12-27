@@ -12,7 +12,7 @@ module.exports = function () {
 	var elements = require( '../../../helpers/elements' );
 	var login    = require( '../../../helpers/loginTable' );
 	var Store    = require( '../../../helpers/Store' );
-	var driver = config.driver;
+	var driver   = config.driver;
 
 	var clientAccount;
 	var truckOption;

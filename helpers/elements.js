@@ -388,9 +388,13 @@ exports.helpScreen = {
 
 exports.topicScreen = {
 	'back'       : 'topicBackButton.',
+	'comeback'   : 'topicComebackText.',
 	'topicLabel' : 'topicLabel.',
 	'topicDot'   : 'topicDot', //+ index + '.'
-	'topicImage' : 'topicImage' //+ index + '.'
+	'topicImage' : 'topicImage', //+ index + '.'
+	'skip'       : 'topicSkipButton.',
+	'start'      : 'topicStartButton.',
+	'welcome'    : 'topicWelcomeText.'
 }
 
 exports.aboutScreen = {

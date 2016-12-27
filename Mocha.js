@@ -93,7 +93,7 @@ var commons = require( './helpers/Commons' );
 	// 		.sendKeys( keys );
 	// 	}
 	// } );
-var driver = wd.promiseChainRemote( serverConfigs.local );
+var driver = wd.promiseChainRemote( serverConfigs.local2 );
 config.set( {
 	'driver'   : driver,
 	'elements' : elements
@@ -116,6 +116,12 @@ describe( 'Automation Test in Progress!'.green, function () {
 			var run = require( './TestFiles.js' );
 				run.sourceCodeCheck( 'gitPullCheck' );
 				//run.sourceCodeCheck( 'buildUpdates' );
+		} );
+
+		describe( 'Running Sync Smoke Test'.red, function () {
+
+			var run = require( './TestFiles.js' );
+				run.logins( 'loginSanboxSmokeTest' );
 		} );
 
 		// describe( 'Running wrong login and other login test'.red, function () {

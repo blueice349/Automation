@@ -94,7 +94,7 @@
 			case 'loginScreenElementCheck'  :
 				return require( './common/Login/otherLogin/loginScreenElements.js' )();
 			case 'loginScreenAppVersionCheck'  :
-				return require( './common/Login/otherLogin/loginScreenAppVersionCheck.js' )();	
+				return require( './common/login/otherLogin/loginScreenAppVersionCheck.js' )();	
 			case 'admin1'             :
 				return require( './common/login/adminRole/loginAdminTest1.js' )();
 			case 'admin2'             :
@@ -129,6 +129,8 @@
 				return require( './common/login/LoginOptions/loginClockin.js' )();
 			case 'homeScreenCheck'    :
 				return require( './common/login/LoginOptions/homeScreenCheck.js' )();
+			case 'loginSanboxSmokeTest'  :
+				return require( './common/login/sandbox/sandboxLoginSmokeTest.js' )();	
 		}
 		console.log( 'No test case was selcected!' );
 	};

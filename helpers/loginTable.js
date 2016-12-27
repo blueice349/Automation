@@ -164,3 +164,21 @@ exports.driverLogins = {
 	}
 }
 
+exports.sanboxAccounts = {
+	'accounts' : [
+		'compostcrusader-test',
+		'allcountytowing-test',
+		'aps-test',
+		//'asaptowing-test',
+		//'bexar-test',
+		'compostcrusader-test',
+		'dti-test',
+		//'utt-test',
+		//'western-test',
+		'wyatts-test'
+	],
+	'users' : [
+		'admin1',
+		'driver1'
+	]
+}
