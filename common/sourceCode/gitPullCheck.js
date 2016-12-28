@@ -27,16 +27,27 @@ module.exports = function () {
 
 			var home            = homeDir();
 			var projectLocation = 'Projects/omadi_mobile ; git pull'
-            var output          = 'Already up-to-date.\n';
+            var output1         = 'Already up-to-date.\n';
+            var output2         = 'You are not currently on a branch.\n' + 
+            					  'Please specify which branch you want to merge with\n' + 
+            					  'See git-pull(1) for details.\n\n' + 
+            					  '    git pull <remote> <branch>\n';
             var updated         = 'Source Code is "Already up-to-date."';
             var noUpdated       = 'Source Code is "Already up-to-date."';
 
             cmd.get( 'cd' + home + projectLocation, function ( data ) {
 				
-				if ( data ===  output ) {
-					assert.equal( data, output, updated  );
+				if ( data ===  output1 ) {
+					assert.equal( data, output1, updated  );
+					console.log( 'Branch is updated' );
                 	config.appUpdated  = true;
-                	//config.currentTest = 'passed';
+                	config.currentTest = 'passed';
+
+                } else if ( data === output2 ) {
+                	assert.equal( data, output2, updated  );
+                	console.log( 'On a tag not branch' );
+                	config.appUpdated  = true;
+                	config.currentTest = 'passed';
                 
                 } else {
                 	config.appUpdated  = false;

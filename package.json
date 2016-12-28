@@ -14,6 +14,9 @@
     "q": "^2.0.2",
     "underscore": "^1.8.3",
     "wd": "^0.3.11",
-    "yiewd": "*"
+    "yiewd": "*",
+    "xm12js": "*",
+    "node-cmd": "*",
+    "console-timestamp": "*"
   }
 }
