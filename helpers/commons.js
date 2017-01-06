@@ -308,9 +308,16 @@ Commons.prototype.afterEachIt = function () {
 		config.beforeItEndTime = new Date().getTime();
 
 		var afterEachItTime = convertDate( ( config.beforeItEndTime - config.beforeItStartTime ) );
+		config.currentTest  = this.currentTest.state;
+		var thisTestTitle   = this.currentTest.title;
+		var driver          = config.driver;
 		console.log( 'afterEachIt... '.red + JSON.stringify( afterEachItTime ) );
-		//This only sets currentTest to the currentTest state ( passed if passed failed if falile etc.... )
-		config.currentTest = this.currentTest.state;
+		
+		if ( config.currentTest !== 'passed' ) {
+
+			return driver
+			.takeScreenshotMethod( thisTestTitle );
+		  }
 	} );
 };
 

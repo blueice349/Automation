@@ -1,7 +1,8 @@
 "use strict";
 
-var wd = require( 'wd' ),
-    Q  = require( 'q' );
+var wd = require( 'wd' );
+var Q  = require( 'q' );
+var fs = require( 'fs' );
 
 exports.swipe = function ( opts ) {
 
@@ -58,4 +59,31 @@ exports.zoom = function ( el ) {
     m.add( a1, a2 );
     return m.perform();
   }.bind( this ) );
+};
+
+
+exports.takeScreenshotMethod = function( testName ) {
+  
+  return this
+    // base64 screeshot
+    .takeScreenshot()
+    .should.eventually.exist
+    // save screenshot to local file
+    .then( function() {
+      
+      try {
+
+        fs.unlinkSync( 'screenShots/' + testName + '.png' );
+
+      } catch ( ign ) {
+
+      }
+
+      fs.existsSync( 'screenShots/' + testName + '.png' ).should.not.be.ok;
+    })
+    .saveScreenshot( 'screenShots/' + testName + '.png' )
+    .then( function() {
+
+      fs.existsSync( 'screenShots/' + testName + '.png' ).should.be.ok;
+    })
 };

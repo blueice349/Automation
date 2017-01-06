@@ -3,6 +3,7 @@
 require( 'colors' );
 require( './helpers/setup' );
 var wd            = require( 'wd' );
+var fs            = require( 'fs' );
 var assert        = require( 'assert' );
 var serverConfigs = require( './helpers/appium-servers' );
 var args          = process.argv.slice( 2 );
@@ -13,6 +14,7 @@ var timeout       = 180000;
 var simulator     = false;
 var desired;
 wd.addPromiseChainMethod( 'swipe', actions.swipe );
+wd.addPromiseChainMethod( 'takeScreenshotMethod', actions.takeScreenshotMethod );
 
 for ( var i in args ) {
 	var arg = args[ i ];
