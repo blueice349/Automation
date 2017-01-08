@@ -25,7 +25,7 @@ module.exports = function () {
 			
 			config.loginTest = true;
 			return driver
-			.waitForElementById( apps.appVersion, 10 )
+			.waitForElementById( apps.appVersion, 30000 )
 			.then( function ( appVersion ) {
 
 				 if ( commons.isIOS() ) {
