@@ -27,12 +27,19 @@ for ( var i in args ) {
 	var arg = args[ i ];
 	var i   = Number( i );
 
+
+
 	switch ( arg ) {
 		case '-sim' : {
 			appium = childProcess.spawn( 'appium', [
 				'--app-pkg', 'com.omadi.crm',
 				'--app', homeDir() + '/Projects/omadi_mobile/titanium_src/build/iphone/build/Products/Debug-iphonesimulator/Omadi.app',
 				'--no-reset',
+				'--session-override',
+				'--debug-log-spacing',
+				'--session-override',
+				'--log-level', 'debug',
+				'--platform-name', 'iOS',
 				//( config.get( 'reset' ) == true ? '--full-reset' : '--no-reset' ),
 				//'--dont-stop-app-on-reset',
 				//( config.get( 'reset' ) == true ? '--dont-stop-app-on-reset' : '' ),
@@ -43,7 +50,7 @@ for ( var i in args ) {
 				'--device-name', 'iPhone 6 Plus',
 				'--automation-name', 'Appium',
 				'--platform-name', 'iOS',
-				'--platform-version', '9.2',
+				'--platform-version', '9.3',
 				'--launch-timeout', '90000',
 				'--native-instruments-lib'
 			] );

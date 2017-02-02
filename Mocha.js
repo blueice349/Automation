@@ -77,7 +77,7 @@ for ( var i in args ) {
 }
 
 var commons = require( './helpers/Commons' );
-	//wd.addPromiseChainMethod( 'inputKeys', commons.sendKeys );
+	wd.addPromiseChainMethod( 'inputKeys', commons.sendKeys );
 	// wd.addPromiseChainMethod( 'inputKeys', function ( config, keys ) {
 
 	// 	if ( config.desired.platformName == 'Android' ) {
@@ -113,12 +113,12 @@ describe( 'Automation Test in Progress!'.green, function () {
 
 	describe( 'Running automation test, Please wait for all test to complete!'.red, function () {
 
-		describe( 'Running "SourceCode Check and SourceCode updates" Test.'.red, function () {
+		// describe( 'Running "SourceCode Check and SourceCode updates" Test.'.red, function () {
 			
-			var run = require( './TestFiles.js' );
-				run.sourceCodeCheck( 'gitPullCheck' );
-				//run.sourceCodeCheck( 'buildUpdates' );
-		} );
+		// 	var run = require( './TestFiles.js' );
+		// 		run.sourceCodeCheck( 'gitPullCheck' );
+		// 		//run.sourceCodeCheck( 'buildUpdates' );
+		// } );
 
 		describe( 'Running Sync Smoke Test'.red, function () {
 
