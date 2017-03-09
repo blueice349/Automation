@@ -58,7 +58,7 @@ for ( var i in args ) {
 			break;
 		}
 
-		case '-os' : {
+		case '-device' : {
 
 			if ( args[ i + 1 ] !== undefined ) {
 				if ( args[ i + 1 ].indexOf( 'android' ) != -1 ) {

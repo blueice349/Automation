@@ -57,7 +57,7 @@ for ( var i in args ) {
 			break;
 		}
 
-		case '-os' : {
+		case '-device' : {
 			if ( args[ i + 1 ] !== undefined ) {
 				desired = require( './helpers/caps' )[ args[ i + 1 ] ];
 
@@ -68,7 +68,7 @@ for ( var i in args ) {
 				} );
 			
 			} else {
-				throw 'You did not specify a os for -os';
+				throw 'You did not specify a os for -device';
 			}
 
 			break;
@@ -120,11 +120,11 @@ describe( 'Automation Test in Progress!'.green, function () {
 		// 		//run.sourceCodeCheck( 'buildUpdates' );
 		// } );
 
-		describe( 'Running Sync Smoke Test'.red, function () {
+		// describe( 'Running Sync Smoke Test'.red, function () {
 
-			var run = require( './TestFiles.js' );
-				run.logins( 'loginSanboxSmokeTest' );
-		} );
+		// 	var run = require( './TestFiles.js' );
+		// 		run.logins( 'loginSanboxSmokeTest' );
+		// } );
 
 		describe( 'Running wrong login and other login test'.red, function () {
 
